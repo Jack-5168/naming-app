@@ -734,17 +734,17 @@
     <div class="top-border"></div>
     
     <!-- 加载遮罩 -->
-    <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-overlay" id="loadingOverlay" role="alert" aria-live="polite" aria-busy="true">
         <div class="wenchang-brush"></div>
         <p class="loading-text" id="loadingText">正在查阅《诗经》《楚辞》...</p>
         <p class="loading-subtext" id="loadingSubtext">结合传统文化元素为您赐名</p>
     </div>
     
     <!-- 支付弹窗 -->
-    <div class="payment-modal" id="paymentModal">
+    <div class="payment-modal" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
         <div class="payment-content">
-            <button class="payment-close" onclick="closePaymentModal()">×</button>
-            <h3 class="payment-title">🎊 定制臻选版</h3>
+            <button class="payment-close" onclick="closePaymentModal()" aria-label="关闭支付弹窗">×</button>
+            <h3 class="payment-title" id="paymentTitle">🎊 定制臻选版</h3>
             <div class="payment-price">¥68.8</div>
             <p style="color: #666;">全方位定制，给孩子一个承载千年智慧的好名字</p>
             
@@ -809,7 +809,7 @@
                     <li class="disabled">名字保存功能</li>
                     <li class="disabled">高级定制选项</li>
                 </ul>
-                <button class="btn-tier btn-free" onclick="startFreeExperience()">🎯 立即免费体验</button>
+                <button class="btn-tier btn-free" onclick="startFreeExperience()" aria-label="开始免费起名体验，获得 3 个名字推荐">🎯 立即免费体验</button>
             </div>
             
             <!-- 付费层 -->
@@ -828,7 +828,7 @@
                     <li>数字纪念品制作</li>
                     <li>30 天后续咨询服务</li>
                 </ul>
-                <button class="btn-tier btn-premium" onclick="startPremiumExperience()">🎊 68.8 元定制臻选</button>
+                <button class="btn-tier btn-premium" onclick="startPremiumExperience()" aria-label="购买 68.8 元定制臻选版，获得 30 个深度名字方案和完整服务">🎊 68.8 元定制臻选</button>
             </div>
         </div>
         
@@ -843,13 +843,13 @@
             
             <div class="form-group">
                 <label>性别 <span class="required">*</span></label>
-                <div class="gender-select">
-                    <label class="gender-option" id="genderMale" onclick="selectGender('male')">
-                        <input type="radio" name="gender" value="male">
+                <div class="gender-select" role="radiogroup" aria-label="选择孩子性别">
+                    <label class="gender-option" id="genderMale" onclick="selectGender('male')" role="radio" aria-checked="false" tabindex="0">
+                        <input type="radio" name="gender" value="male" hidden>
                         👦 男孩
                     </label>
-                    <label class="gender-option" id="genderFemale" onclick="selectGender('female')">
-                        <input type="radio" name="gender" value="female">
+                    <label class="gender-option" id="genderFemale" onclick="selectGender('female')" role="radio" aria-checked="false" tabindex="0">
+                        <input type="radio" name="gender" value="female" hidden>
                         👧 女孩
                     </label>
                 </div>
@@ -917,13 +917,15 @@
         let selectedGender = null;
         let loadingInterval = null;
         
-        // 加载文案
+        // 加载文案 - 增加趣味性
         const loadingMessages = [
             "正在查阅《诗经》《楚辞》...",
             "正在分析五行八字...",
             "正在匹配诗词典故...",
             "正在推敲音韵平仄...",
-            "正在斟酌寓意内涵..."
+            "正在斟酌寓意内涵...",
+            "文昌帝君正在赐名中...",
+            "正在筛选最佳组合..."
         ];
         
         // 典籍出处库
@@ -1036,17 +1038,31 @@
         // 选择性别
         function selectGender(gender) {
             selectedGender = gender;
-            document.getElementById('genderMale').classList.remove('selected');
-            document.getElementById('genderFemale').classList.remove('selected');
+            const maleOption = document.getElementById('genderMale');
+            const femaleOption = document.getElementById('genderFemale');
+            
+            maleOption.classList.remove('selected');
+            femaleOption.classList.remove('selected');
+            maleOption.setAttribute('aria-checked', 'false');
+            femaleOption.setAttribute('aria-checked', 'false');
             
             if (gender === 'male') {
-                document.getElementById('genderMale').classList.add('selected');
-                document.querySelector('#genderMale input').checked = true;
+                maleOption.classList.add('selected');
+                maleOption.setAttribute('aria-checked', 'true');
+                maleOption.querySelector('input').checked = true;
             } else if (gender === 'female') {
-                document.getElementById('genderFemale').classList.add('selected');
-                document.querySelector('#genderFemale input').checked = true;
+                femaleOption.classList.add('selected');
+                femaleOption.setAttribute('aria-checked', 'true');
+                femaleOption.querySelector('input').checked = true;
             }
         }
+        
+        // ESC 关闭支付弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePaymentModal();
+            }
+        });
         
         // 开始免费体验
         function startFreeExperience() {
@@ -1071,6 +1087,7 @@
         function simulatePayment() {
             closePaymentModal();
             currentTier = 'premium';
+            clearDraft(); // 清除旧草稿
             showInputForm('📝 定制臻选版 - 68.8 元');
             document.getElementById('advancedOptions').style.display = 'block';
             document.getElementById('specialRequirements').style.display = 'block';
