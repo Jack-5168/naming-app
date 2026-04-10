@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文昌赐名 · 臻选版 - AI驱动的中华优秀传统文化起名服务</title>
+    <meta name="description" content="从功能购买转变为文化传承投资 · 68.8元给孩子一个承载千年智慧的好名字">
+    <style>
+        /* 基础样式保持简洁，专注于功能性 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        h1 { text-align: center; margin-bottom: 10px; color: #2d3a4b; font-size: 28px; }
+        .subtitle { text-align: center; color: #667eea; margin-bottom: 30px; font-size: 18px; font-weight: 600; }
+        .pricing-tagline { text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 8px; margin-bottom: 30px; font-size: 20px; font-weight: bold; }
+        
+        /* 三层产品展示 */
+        .pricing-tiers { display: grid; gap: 25px; margin: 30px 0; }
+        .tier-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 25px; transition: all 0.3s ease; }
+        .tier-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2); }
+        .tier-free { border-color: #48bb78; }
+        .tier-basic { border-color: #ed8936; }
+        .tier-premium { border-color: #667eea; position: relative; }
+        .tier-premium::before { content: "推荐"; position: absolute; top: -12px; right: 25px; background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        
+        .tier-header { margin-bottom: 20px; }
+        .tier-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #2d3a4b; }
+        .tier-price { font-size: 28px; font-weight: 800; color: #667eea; margin-bottom: 5px; }
+        .tier-price.free { color: #48bb78; }
+        .tier-price.basic { color: #ed8936; }
+        .tier-description { color: #718096; font-size: 14px; }
+        
+        .tier-features { margin: 20px 0; }
+        .feature-item { display: flex; align-items: center; margin-bottom: 12px; }
+        .feature-check { color: #48bb78; margin-right: 10px; font-weight: bold; }
+        .feature-cross { color: #e53e3e; margin-right: 10px; }
+        
+        .btn-tier { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 15px; transition: all 0.2s; }
+        .btn-free { background: #48bb78; color: white; }
+        .btn-free:hover { background: #38a169; transform: translateY(-2px); }
+        .btn-basic { background: #ed8936; color: white; }
+        .btn-basic:hover { background: #dd6b20; transform: translateY(-2px); }
+        .btn-premium { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3); }
+        
+        /* 输入表单 */
+        .form-section { background: #f8fafc; border-radius: 12px; padding: 25px; margin: 30px 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #2d3a4b; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
+        
+        /* 结果区域 */
+        .result-section { margin-top: 30px; display: none; }
+        .name-card { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; }
+        .blurred-content { filter: blur(8px); opacity: 0.6; }
+        .blur-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .unlock-btn { background: #667eea; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        
+        /* 对比功能 */
+        .comparison-section { margin-top: 30px; }
+        .comparison-table { width: 100%; border-collapse: collapse; }
+        .comparison-table th, .comparison-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .comparison-table th { background: #f7fafc; font-weight: 600; }
+        
+        /* 免责声明 */
+        .disclaimer { background: #fff8e1; border-left: 4px solid #f6ad55; padding: 15px; margin: 20px 0; border-radius: 8px; font-size: 14px; }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .pricing-tiers { grid-template-columns: 1fr; }
+            .container { padding: 20px; margin: 10px; }
+            h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文昌赐名 · 臻选版</h1>
+        <p class="subtitle">AI驱动的中华优秀传统文化起名服务</p>
+        <div class="pricing-tagline">68.8元，给孩子一个承载千年智慧的好名字</div>
+        
+        <!-- 免责声明 -->
+        <div class="disclaimer">
+            <strong>重要说明：</strong>本服务基于中华优秀传统文化元素进行智能匹配分析，不涉及任何命运预测或命理学内容。
+            所有分析结果仅供文化参考，最终名字选择请结合个人喜好和实际情况。
+        </div>
+
+        <!-- 三层产品架构 -->
+        <div class="pricing-tiers">
+            <!-- 免费层 -->
+            <div class="tier-card tier-free">
+                <div class="tier-header">
+                    <h3 class="tier-title">免费体验 · 文化实力展示</h3>
+                    <div class="tier-price free">免费</div>
+                    <p class="tier-description">展示我们的专业实力，建立文化信任</p>
+                </div>
+                <div class="tier-features">
+                    <div class="feature-item"><span class="feature-check">✓</span> 输入姓氏、性别、出生信息</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 获得3个高质量名字推荐</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 基础传统文化元素分析</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 典籍出处预览（部分内容模糊处理）</div>
+                    <div class="feature-item"><span class="feature-cross">×</span> 完整文化故事解读</div>
+                    <div class="feature-item"><span class="feature-cross">×</span> 名字保存功能</div>
+                    <div class="feature-item"><span class="feature-cross">×</span> 高级定制选项</div>
+                </div>
+                <button class="btn-tier btn-free" onclick="startFreeExperience()">立即免费体验</button>
+            </div>
+            
+            <!-- 第二层 -->
+            <div class="tier-card tier-basic">
+                <div class="tier-header">
+                    <h3 class="tier-title">深度体验版</h3>
+                    <div class="tier-price basic">28.8元</div>
+                    <p class="tier-description">完整深度解读，一次生成永久保存</p>
+                </div>
+                <div class="tier-features">
+                    <div class="feature-item"><span class="feature-check">✓</span> 3个名字完整深度解读</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 诗词典故完整故事</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 五行平衡详细分析</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 可保存结果到个人账户</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 允许修改1次生成结果</div>
+                    <div class="feature-item"><span class="feature-cross">×</span> 高级个性化定制</div>
+                    <div class="feature-item"><span class="feature-cross">×</span> 多次重新生成</div>
+                    <div class="feature-item"><span class="feature-cross">×</span> 名字对比功能</div>
+                </div>
+                <button class="btn-tier btn-basic" onclick="startBasicExperience()">28.8元深度体验</button>
+            </div>
+            
+            <!-- 第三层 -->
+            <div class="tier-card tier-premium">
+                <div class="tier-header">
+                    <h3 class="tier-title">定制臻选版</h3>
+                    <div class="tier-price">68.8元</div>
+                    <p class="tier-description">全方位定制，最多30个名字选择</p>
+                </div>
+                <div class="tier-features">
+                    <div class="feature-item"><span class="feature-check">✓</span> 详细个性化需求输入</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 风格偏好精细设置</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 每次生成3个深度方案</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 最多可提交10次（共30个名字）</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 智能名字对比功能</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 数字纪念品制作</div>
+                    <div class="feature-item"><span class="feature-check">✓</span> 30天后续咨询服务</div>
+                </div>
+                <button class="btn-tier btn-premium" onclick="startPremiumExperience()">68.8元定制臻选</button>
+            </div>
+        </div>
+
+        <!-- 输入表单（根据选择的层级动态显示） -->
+        <div class="form-section" id="inputFormSection" style="display: none;">
+            <h3 id="formTitle" style="margin-bottom: 20px; color: #2d3a4b;">请输入基本信息</h3>
+            
+            <div class="form-group">
+                <label for="surname">姓氏 *</label>
+                <input type="text" id="surname" placeholder="请输入姓氏（如：张、李、王）" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">性别 *</label>
+                <select id="gender" required>
+                    <option value="">请选择性别</option>
+                    <option value="male">男孩</option>
+                    <option value="female">女孩</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthDate">出生日期 *</label>
+                <input type="date" id="birthDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthLocation">出生地点（城市）</label>
+                <input type="text" id="birthLocation" placeholder="请输入出生城市（如：北京、上海）">
+            </div>
+            
+            <!-- 高级选项（仅在Premium层级显示） -->
+            <div class="form-group" id="advancedOptions" style="display: none;">
+                <label for="stylePreference">名字风格偏好</label>
+                <select id="stylePreference">
+                    <option value="balanced">平衡型（推荐）</option>
+                    <option value="poetic">诗意典雅</option>
+                    <option value="classical">古典厚重</option>
+                    <option value="modern">现代简洁</option>
+                    <option value="scholarly">书卷气息</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="specialRequirements" style="display: none;">
+                <label for="requirements">特殊要求（可选）</label>
+                <textarea id="requirements" rows="3" placeholder="如：希望包含某个字、避免某些偏旁、特定寓意等"></textarea>
+            </div>
+            
+            <button type="button" id="generateBtn" class="btn-tier btn-premium" style="width: auto; padding: 12px 24px;">生成名字</button>
+        </div>
+
+        <!-- 结果展示区域 -->
+        <div id="resultSection" class="result-section">
+            <h3>名字推荐结果</h3>
+            <div id="namesContainer"></div>
+            
+            <!-- 对比功能（仅Premium） -->
+            <div id="comparisonSection" class="comparison-section" style="display: none;">
+                <h4>名字对比分析</h4>
+                <table class="comparison-table" id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>名字</th>
+                            <th>音韵评分</th>
+                            <th>寓意深度</th>
+                            <th>文化适配</th>
+                            <th>独特性</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选择的层级
+        let currentTier = null;
+        let generatedResults = [];
+        let submissionCount = 0;
+        const MAX_SUBMISSIONS = 10;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认出生日期为今天
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0];
+            document.getElementById('birthDate').value = dateString;
+        });
+        
+        // 开始免费体验
+        function startFreeExperience() {
+            currentTier = 'free';
+            showInputForm('免费体验 · 文化实力展示');
+            document.getElementById('advancedOptions').style.display = 'none';
+            document.getElementById('specialRequirements').style.display = 'none';
+        }
+        
+        // 开始深度体验
+        function startBasicExperience() {
+            currentTier = 'basic';
+            showInputForm('深度体验版 - 28.8元');
+            document.getElementById('advancedOptions').style.display = 'none';
+            document.getElementById('specialRequirements').style.display = 'none';
+            // 这里应该跳转到支付流程
+            alert('28.8元深度体验版支付流程将在正式版中实现');
+        }
+        
+        // 开始定制臻选
+        function startPremiumExperience() {
+            currentTier = 'premium';
+            showInputForm('定制臻选版 - 68.8元');
+            document.getElementById('advancedOptions').style.display = 'block';
+            document.getElementById('specialRequirements').style.display = 'block';
+            // 这里应该跳转到支付流程
+            alert('68.8元定制臻选版支付流程将在正式版中实现');
+        }
+        
+        // 显示输入表单
+        function showInputForm(title) {
+            document.getElementById('formTitle').textContent = title;
+            document.getElementById('inputFormSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            
+            // 滚动到表单位置
+            document.getElementById('inputFormSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 生成名字（模拟AI生成）
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            if (!validateInputs()) return;
+            
+            // 模拟AI生成过程
+            showLoading();
+            
+            setTimeout(() => {
+                const names = generateSampleNames();
+                displayResults(names);
+            }, 1500);
+        });
+        
+        // 验证输入
+        function validateInputs() {
+            const surname = document.getElementById('surname').value.trim();
+            const gender = document.getElementById('gender').value;
+            const birthDate = document.getElementById('birthDate').value;
+            
+            if (!surname) {
+                alert('请输入姓氏');
+                return false;
+            }
+            
+            if (!gender) {
+                alert('请选择性别');
+                return false;
+            }
+            
+            if (!birthDate) {
+                alert('请选择出生日期');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.textContent = '正在生成...';
+            generateBtn.disabled = true;
+        }
+        
+        // 恢复按钮状态
+        function restoreButton() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.textContent = '生成名字';
+            generateBtn.disabled = false;
+        }
+        
+        // 生成示例名字（实际应调用千问API）
+        function generateSampleNames() {
+            const surname = document.getElementById('surname').value.trim();
+            const gender = document.getElementById('gender').value;
+            const style = document.getElementById('stylePreference')?.value || 'balanced';
+            
+            // 根据不同风格返回不同的名字
+            const nameSets = {
+                balanced: gender === 'male' ? 
+                    [`${surname}文轩`, `${surname}景瑜`, `${surname}浩然`] : 
+                    [`${surname}雅涵`, `${surname}诗琪`, `${surname}梦瑶`],
+                poetic: gender === 'male' ? 
+                    [`${surname}墨染`, `${surname}云舒`, `${surname}星河`] : 
+                    [`${surname}清漪`, `${surname}月华`, `${surname}雪霏`],
+                classical: gender === 'male' ? 
+                    [`${surname}承志`, `${surname}弘毅`, `${surname}明德`] : 
+                    [`${surname}婉仪`, `${surname}淑慎`, `${surname}静姝`],
+                modern: gender === 'male' ? 
+                    [`${surname}子睿`, `${surname}宇辰`, `${surname}泽楷`] : 
+                    [`${surname}梓萱`, `${surname}语桐`, `${surname}欣怡`],
+                scholarly: gender === 'male' ? 
+                    [`${surname}博文`, `${surname}修远`, `${surname}致远`] : 
+                    [`${surname}知微`, `${surname}思齐`, `${surname}慧心`]
+            };
+            
+            return nameSets[style] || nameSets.balanced;
+        }
+        
+        // 显示结果
+        function displayResults(names) {
+            restoreButton();
+            
+            const container = document.getElementById('namesContainer');
+            container.innerHTML = '';
+            
+            names.forEach((name, index) => {
+                const nameCard = document.createElement('div');
+                nameCard.className = 'name-card';
+                
+                if (currentTier === 'free') {
+                    // 免费层：部分内容模糊
+                    nameCard.innerHTML = `
+                        <h4>${name}</h4>
+                        <div class="blurred-content">
+                            <p><strong>典籍出处：</strong>出自《诗经·小雅》"高山仰止，景行行止"</p>
+                            <p><strong>文化寓意：</strong>寓意品德高尚，志向远大，如高山般令人敬仰</p>
+                            <p><strong>音韵分析：</strong>声调搭配和谐，读音响亮大气</p>
+                            <p><strong>五行属性：</strong>木火相生，补益命局</p>
+                        </div>
+                        <div class="blur-overlay">
+                            <button class="unlock-btn" onclick="unlockFullContent(this)">解锁完整解读</button>
+                        </div>
+                    `;
+                } else {
+                    // 付费层：完整内容
+                    nameCard.innerHTML = `
+                        <h4>${name}</h4>
+                        <p><strong>典籍出处：</strong>出自《诗经·小雅》"高山仰止，景行行止"</p>
+                        <p><strong>文化寓意：</strong>寓意品德高尚，志向远大，如高山般令人敬仰</p>
+                        <p><strong>音韵分析：</strong>声调搭配和谐，读音响亮大气</p>
+                        <p><strong>五行属性：</strong>木火相生，补益命局</p>
+                        ${currentTier === 'premium' ? '<p><strong>保存状态：</strong>✅ 已保存到您的账户</p>' : ''}
+                    `;
+                }
+                
+                container.appendChild(nameCard);
+            });
+            
+            // 显示对比功能（仅Premium）
+            if (currentTier === 'premium') {
+                document.getElementById('comparisonSection').style.display = 'block';
+                updateComparisonTable(names);
+            }
+            
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            
+            // 记录生成结果
+            generatedResults.push(...names);
+            submissionCount++;
+        }
+        
+        // 解锁完整内容（免费层）
+        function unlockFullContent(button) {
+            if (currentTier === 'free') {
+                const nameCard = button.closest('.name-card');
+                nameCard.querySelector('.blurred-content').classList.remove('blurred-content');
+                nameCard.querySelector('.blur-overlay').style.display = 'none';
+                
+                // 提示升级
+                setTimeout(() => {
+                    alert('您已预览完整内容！如需保存结果和获得更多名字，请升级到付费版本。');
+                }, 1000);
+            }
+        }
+        
+        // 更新对比表格
+        function updateComparisonTable(names) {
+            const tbody = document.getElementById('comparisonBody');
+            tbody.innerHTML = '';
+            
+            names.forEach(name => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>⭐⭐⭐⭐☆ (4.2/5)</td>
+                    <td>⭐⭐⭐⭐⭐ (4.8/5)</td>
+                    <td>⭐⭐⭐⭐☆ (4.5/5)</td>
+                    <td>⭐⭐⭐⭐ (4.0/5)</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
