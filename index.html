@@ -4,108 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文昌赐名 · 臻选版 - AI 驱动的中华优秀传统文化起名服务</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gold-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --jade-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --china-red: #c41e3a;
+            --china-gold: #d4af37;
+            --china-blue: #1e3a8a;
+            --ink-black: #2d2d2d;
+            --rice-paper: #f5f1e8;
+            --jade-green: #50c878;
         }
         
         body {
-            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-gradient);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--rice-paper);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            color: var(--ink-black);
+            line-height: 1.6;
         }
         
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* 顶部装饰 */
+        .top-border {
+            height: 8px;
+            background: linear-gradient(90deg, var(--china-red), var(--china-gold), var(--china-red));
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
+            padding: 40px 20px;
         }
         
         /* 头部设计 */
         .header {
             text-align: center;
-            padding: 40px 20px;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 60px 20px;
+            position: relative;
         }
         
+        .header::before,
+        .header::after {
+            content: '☁️';
+            font-size: 40px;
+            position: absolute;
+            top: 20px;
+            opacity: 0.6;
+        }
+        
+        .header::before { left: 40px; }
+        .header::after { right: 40px; }
+        
         .logo {
-            font-family: 'Noto Serif SC', serif;
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            letter-spacing: 8px;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 64px;
+            color: var(--china-red);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            letter-spacing: 12px;
         }
         
         .subtitle {
-            font-size: 16px;
-            opacity: 0.95;
-            font-weight: 300;
-            letter-spacing: 2px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 18px;
+            color: var(--china-blue);
+            font-weight: 600;
+            letter-spacing: 4px;
+            margin-bottom: 25px;
         }
         
         .tagline {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, var(--china-red), #a01530);
+            color: white;
             display: inline-block;
-            padding: 12px 30px;
-            border-radius: 30px;
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: 500;
-            border: 1px solid rgba(255,255,255,0.3);
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+            border: 2px solid var(--china-gold);
+        }
+        
+        /* 印章装饰 */
+        .seal {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--china-red);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 28px;
+            color: var(--china-red);
+            margin: 20px auto;
+            background: rgba(196, 30, 58, 0.05);
+            border-radius: 8px;
+            transform: rotate(-5deg);
         }
         
         /* 免责声明 */
         .disclaimer {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-left: 4px solid #f59623;
-            padding: 15px 20px;
-            margin: 20px auto 30px;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.8);
+            border: 2px solid var(--china-gold);
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin: 30px auto;
             max-width: 800px;
-            font-size: 13px;
+            font-size: 14px;
             color: #666;
-            line-height: 1.6;
+            line-height: 1.8;
+            text-align: center;
+            position: relative;
+        }
+        
+        .disclaimer::before {
+            content: '📜';
+            font-size: 24px;
+            display: block;
+            margin-bottom: 10px;
         }
         
         /* 产品卡片 */
         .pricing-tiers {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-            margin: 30px 0;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
         }
         
         .tier-card {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 16px;
+            padding: 35px;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border: 1px solid rgba(212, 175, 55, 0.3);
         }
         
         .tier-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border-color: var(--china-gold);
         }
         
         .tier-card::before {
@@ -114,103 +164,91 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 5px;
-        }
-        
-        .tier-free::before {
-            background: var(--jade-gradient);
-        }
-        
-        .tier-premium::before {
-            background: var(--primary-gradient);
+            height: 6px;
+            background: linear-gradient(90deg, var(--china-red), var(--china-gold));
         }
         
         .tier-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--primary-gradient);
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--china-red), #a01530);
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 6px 18px;
+            border-radius: 25px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 1px;
+            box-shadow: 0 2px 10px rgba(196, 30, 58, 0.3);
         }
         
         .tier-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 15px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-        
-        .tier-free .tier-icon {
-            background: var(--jade-gradient);
-        }
-        
-        .tier-premium .tier-icon {
-            background: var(--primary-gradient);
+            font-size: 36px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--china-gold), #b8962e);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
         }
         
         .tier-title {
             font-family: 'Noto Serif SC', serif;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 8px;
+            color: var(--china-blue);
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
         }
         
         .tier-price {
-            font-size: 42px;
-            font-weight: 800;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 15px 0;
-            letter-spacing: -1px;
-        }
-        
-        .tier-free .tier-price {
-            background: var(--jade-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 48px;
+            color: var(--china-red);
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
         .tier-description {
-            color: #718096;
-            font-size: 14px;
-            margin-bottom: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 25px;
             line-height: 1.6;
         }
         
         .tier-features {
             list-style: none;
-            margin: 20px 0;
+            margin: 25px 0;
         }
         
         .tier-features li {
-            padding: 10px 0;
-            padding-left: 30px;
+            padding: 12px 0;
+            padding-left: 35px;
             position: relative;
             color: #4a5568;
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.5;
+            border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
+        }
+        
+        .tier-features li:last-child {
+            border-bottom: none;
         }
         
         .tier-features li::before {
             content: '✓';
             position: absolute;
             left: 0;
-            color: #48bb78;
+            color: var(--jade-green);
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
+            font-family: 'Ma Shan Zheng', cursive;
         }
         
         .tier-features li.disabled {
@@ -220,75 +258,179 @@
         
         .tier-features li.disabled::before {
             content: '✗';
-            color: #f56565;
+            color: #999;
         }
         
         /* 按钮设计 */
         .btn-tier {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             border: none;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 25px;
             transition: all 0.3s ease;
-            font-family: 'Noto Sans SC', sans-serif;
-            letter-spacing: 1px;
+            font-family: 'Noto Serif SC', serif;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
         }
         
         .btn-free {
-            background: var(--jade-gradient);
+            background: linear-gradient(135deg, var(--jade-green), #3da860);
             color: white;
+            box-shadow: 0 4px 15px rgba(80, 200, 120, 0.3);
         }
         
         .btn-free:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+            box-shadow: 0 6px 20px rgba(80, 200, 120, 0.4);
         }
         
         .btn-premium {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, var(--china-red), #a01530);
             color: white;
+            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
         }
         
         .btn-premium:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
+        }
+        
+        /* 输入表单 */
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            margin: 40px 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .form-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 24px;
+            color: var(--china-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--ink-black);
+            font-size: 15px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--china-red);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+        
+        /* 结果展示 */
+        .result-section {
+            margin-top: 40px;
+            display: none;
+        }
+        
+        .result-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 26px;
+            color: var(--china-blue);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .name-card {
+            background: white;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .name-card h4 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 32px;
+            color: var(--china-red);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .name-info {
+            color: #4a5568;
+            line-height: 1.8;
+        }
+        
+        .name-info p {
+            margin-bottom: 10px;
+        }
+        
+        .name-info strong {
+            color: var(--china-blue);
         }
         
         /* 页脚 */
         .footer {
             text-align: center;
-            color: white;
-            padding: 30px 20px;
-            font-size: 14px;
-            opacity: 0.9;
+            padding: 40px 20px;
+            color: var(--ink-black);
+            font-size: 15px;
+            line-height: 1.8;
         }
         
-        .footer a {
-            color: white;
-            text-decoration: underline;
+        .footer-decor {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .footer p {
+            margin: 8px 0;
         }
         
         /* 响应式 */
         @media (max-width: 768px) {
-            .logo { font-size: 36px; letter-spacing: 4px; }
-            .subtitle { font-size: 14px; }
-            .tagline { font-size: 16px; padding: 10px 20px; }
+            .logo { font-size: 48px; letter-spacing: 8px; }
+            .subtitle { font-size: 16px; }
+            .tagline { font-size: 18px; padding: 12px 30px; }
             .pricing-tiers { grid-template-columns: 1fr; }
             .tier-card { padding: 25px; }
+            .header::before, .header::after { display: none; }
         }
         
-        /* 加载动画 */
+        /* 动画 */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .header, .tier-card {
-            animation: fadeIn 0.6s ease forwards;
+        .header, .tier-card, .form-section {
+            animation: fadeIn 0.8s ease forwards;
         }
         
         .tier-card:nth-child(1) { animation-delay: 0.2s; }
@@ -296,12 +438,15 @@
     </style>
 </head>
 <body>
+    <div class="top-border"></div>
+    
     <div class="container">
         <!-- 头部 -->
         <div class="header">
             <div class="logo">文昌赐名</div>
             <div class="subtitle">AI 驱动的中华优秀传统文化起名服务</div>
-            <div class="tagline">✨ 68.8 元，给孩子一个承载千年智慧的好名字 ✨</div>
+            <div class="seal">臻选</div>
+            <div class="tagline">✨ 68.8 元 给孩子一个承载千年智慧的好名字 ✨</div>
         </div>
         
         <!-- 免责声明 -->
@@ -328,7 +473,7 @@
                     <li class="disabled">名字保存功能</li>
                     <li class="disabled">高级定制选项</li>
                 </ul>
-                <button class="btn-tier btn-free" onclick="alert('即将开启免费体验！')">🎯 立即免费体验</button>
+                <button class="btn-tier btn-free" onclick="startFreeExperience()">🎯 立即免费体验</button>
             </div>
             
             <!-- 付费层 -->
@@ -347,15 +492,212 @@
                     <li>数字纪念品制作</li>
                     <li>30 天后续咨询服务</li>
                 </ul>
-                <button class="btn-tier btn-premium" onclick="alert('即将开启定制臻选服务！')">🎊 68.8 元定制臻选</button>
+                <button class="btn-tier btn-premium" onclick="startPremiumExperience()">🎊 68.8 元定制臻选</button>
             </div>
+        </div>
+        
+        <!-- 输入表单 -->
+        <div class="form-section" id="inputFormSection" style="display: none;">
+            <h3 class="form-title" id="formTitle">📝 请输入基本信息</h3>
+            
+            <div class="form-group">
+                <label for="surname">姓氏 *</label>
+                <input type="text" id="surname" placeholder="请输入姓氏（如：张、李、王）" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">性别 *</label>
+                <select id="gender" required>
+                    <option value="">请选择性别</option>
+                    <option value="male">男孩</option>
+                    <option value="female">女孩</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthDate">出生日期 *</label>
+                <input type="date" id="birthDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthLocation">出生地点（城市）</label>
+                <input type="text" id="birthLocation" placeholder="请输入出生城市（如：北京、上海）">
+            </div>
+            
+            <div class="form-group" id="advancedOptions" style="display: none;">
+                <label for="stylePreference">名字风格偏好</label>
+                <select id="stylePreference">
+                    <option value="balanced">平衡型（推荐）</option>
+                    <option value="poetic">诗意典雅</option>
+                    <option value="classical">古典厚重</option>
+                    <option value="modern">现代简洁</option>
+                    <option value="scholarly">书卷气息</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="specialRequirements" style="display: none;">
+                <label for="requirements">特殊要求（可选）</label>
+                <textarea id="requirements" rows="3" placeholder="如：希望包含某个字、避免某些偏旁、特定寓意等"></textarea>
+            </div>
+            
+            <button type="button" id="generateBtn" class="btn-tier btn-premium">🖌️ 生成名字</button>
+        </div>
+        
+        <!-- 结果展示 -->
+        <div id="resultSection" class="result-section">
+            <h3 class="result-title">📜 名字推荐结果</h3>
+            <div id="namesContainer"></div>
         </div>
         
         <!-- 页脚 -->
         <div class="footer">
-            <p>承古启今，以名载道</p>
-            <p style="margin-top: 10px; opacity: 0.8;">让每个名字都成为一份珍贵的文化传承礼物 🎋</p>
+            <div class="footer-decor">🎋 📚 🖌️</div>
+            <p><strong>承古启今，以名载道</strong></p>
+            <p>让每个名字都成为一份珍贵的文化传承礼物</p>
+            <p style="margin-top: 20px; font-size: 13px; color: #999;">
+                文昌赐名 · 传承中华优秀传统文化
+            </p>
         </div>
     </div>
+
+    <script>
+        // 当前选择的层级
+        let currentTier = null;
+        let generatedResults = [];
+        let submissionCount = 0;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0];
+            document.getElementById('birthDate').value = dateString;
+            
+            // 绑定生成按钮事件
+            document.getElementById('generateBtn').addEventListener('click', function() {
+                if (!validateInputs()) return;
+                showLoading();
+                setTimeout(() => {
+                    const names = generateSampleNames();
+                    displayResults(names);
+                }, 1500);
+            });
+        });
+        
+        // 开始免费体验
+        function startFreeExperience() {
+            currentTier = 'free';
+            showInputForm('📝 免费体验 · 文化实力展示');
+            document.getElementById('advancedOptions').style.display = 'none';
+            document.getElementById('specialRequirements').style.display = 'none';
+        }
+        
+        // 开始定制臻选
+        function startPremiumExperience() {
+            currentTier = 'premium';
+            showInputForm('📝 定制臻选版 - 68.8 元');
+            document.getElementById('advancedOptions').style.display = 'block';
+            document.getElementById('specialRequirements').style.display = 'block';
+            alert('支付流程将在正式版中实现，当前为演示版本');
+        }
+        
+        // 显示输入表单
+        function showInputForm(title) {
+            document.getElementById('formTitle').textContent = title;
+            document.getElementById('inputFormSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('inputFormSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 验证输入
+        function validateInputs() {
+            const surname = document.getElementById('surname').value.trim();
+            const gender = document.getElementById('gender').value;
+            const birthDate = document.getElementById('birthDate').value;
+            
+            if (!surname) {
+                alert('请输入姓氏');
+                return false;
+            }
+            if (!gender) {
+                alert('请选择性别');
+                return false;
+            }
+            if (!birthDate) {
+                alert('请选择出生日期');
+                return false;
+            }
+            return true;
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.textContent = '🖌️ 正在生成...';
+            generateBtn.disabled = true;
+        }
+        
+        // 恢复按钮状态
+        function restoreButton() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.textContent = '🖌️ 生成名字';
+            generateBtn.disabled = false;
+        }
+        
+        // 生成示例名字
+        function generateSampleNames() {
+            const surname = document.getElementById('surname').value.trim();
+            const gender = document.getElementById('gender').value;
+            const style = document.getElementById('stylePreference')?.value || 'balanced';
+            
+            const nameSets = {
+                balanced: gender === 'male' ? 
+                    [`${surname}文轩`, `${surname}景瑜`, `${surname}浩然`] : 
+                    [`${surname}雅涵`, `${surname}诗琪`, `${surname}梦瑶`],
+                poetic: gender === 'male' ? 
+                    [`${surname}墨染`, `${surname}云舒`, `${surname}星河`] : 
+                    [`${surname}清漪`, `${surname}月华`, `${surname}雪霏`],
+                classical: gender === 'male' ? 
+                    [`${surname}承志`, `${surname}弘毅`, `${surname}明德`] : 
+                    [`${surname}婉仪`, `${surname}淑慎`, `${surname}静姝`],
+                modern: gender === 'male' ? 
+                    [`${surname}子睿`, `${surname}宇辰`, `${surname}泽楷`] : 
+                    [`${surname}梓萱`, `${surname}语桐`, `${surname}欣怡`],
+                scholarly: gender === 'male' ? 
+                    [`${surname}博文`, `${surname}修远`, `${surname}致远`] : 
+                    [`${surname}知微`, `${surname}思齐`, `${surname}慧心`]
+            };
+            
+            return nameSets[style] || nameSets.balanced;
+        }
+        
+        // 显示结果
+        function displayResults(names) {
+            restoreButton();
+            const container = document.getElementById('namesContainer');
+            container.innerHTML = '';
+            
+            names.forEach((name, index) => {
+                const nameCard = document.createElement('div');
+                nameCard.className = 'name-card';
+                
+                nameCard.innerHTML = `
+                    <h4>${name}</h4>
+                    <div class="name-info">
+                        <p><strong>📖 典籍出处：</strong>出自《诗经·小雅》"高山仰止，景行行止"</p>
+                        <p><strong>🎋 文化寓意：</strong>寓意品德高尚，志向远大，如高山般令人敬仰</p>
+                        <p><strong>🎵 音韵分析：</strong>声调搭配和谐，读音响亮大气</p>
+                        <p><strong>☯️ 五行属性：</strong>木火相生，补益命局</p>
+                    </div>
+                `;
+                
+                container.appendChild(nameCard);
+            });
+            
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            generatedResults.push(...names);
+            submissionCount++;
+        }
+    </script>
 </body>
 </html>
