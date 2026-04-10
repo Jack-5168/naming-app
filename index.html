@@ -15,19 +15,18 @@
             --ink-black: #2d2d2d;
             --rice-paper: #f5f1e8;
             --jade-green: #50c878;
+            --error-red: #dc3545;
         }
         
         body {
             font-family: 'Noto Sans SC', sans-serif;
             background: var(--rice-paper);
-            background-image: 
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             min-height: 100vh;
             color: var(--ink-black);
             line-height: 1.6;
         }
         
-        /* 顶部装饰 */
         .top-border {
             height: 8px;
             background: linear-gradient(90deg, var(--china-red), var(--china-gold), var(--china-red));
@@ -94,7 +93,6 @@
             border: 2px solid var(--china-gold);
         }
         
-        /* 印章装饰 */
         .seal {
             width: 80px;
             height: 80px;
@@ -261,7 +259,7 @@
             color: #999;
         }
         
-        /* 按钮设计 */
+        /* 按钮设计 - 增强交互反馈 */
         .btn-tier {
             width: 100%;
             padding: 18px;
@@ -276,6 +274,21 @@
             letter-spacing: 2px;
             position: relative;
             overflow: hidden;
+            min-height: 56px;
+            touch-action: manipulation;
+        }
+        
+        .btn-tier:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-tier:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn-tier:focus {
+            outline: 3px solid rgba(212, 175, 55, 0.5);
+            outline-offset: 2px;
         }
         
         .btn-free {
@@ -285,7 +298,6 @@
         }
         
         .btn-free:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(80, 200, 120, 0.4);
         }
         
@@ -296,11 +308,10 @@
         }
         
         .btn-premium:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
         }
         
-        /* 输入表单 */
+        /* 输入表单 - 增强交互 */
         .form-section {
             background: white;
             border-radius: 16px;
@@ -308,6 +319,12 @@
             margin: 40px 0;
             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             border: 2px solid rgba(212, 175, 55, 0.3);
+            animation: slideDown 0.5s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .form-title {
@@ -321,6 +338,7 @@
         
         .form-group {
             margin-bottom: 25px;
+            position: relative;
         }
         
         .form-group label {
@@ -329,6 +347,11 @@
             font-weight: 600;
             color: var(--ink-black);
             font-size: 15px;
+        }
+        
+        .form-group label .required {
+            color: var(--error-red);
+            margin-left: 4px;
         }
         
         .form-group input,
@@ -351,10 +374,126 @@
             box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
         }
         
+        /* 性别选择增强 */
+        .gender-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .gender-option {
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .gender-option:hover {
+            border-color: var(--china-gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .gender-option.selected {
+            border-color: var(--china-red);
+            background: rgba(196, 30, 58, 0.05);
+            position: relative;
+        }
+        
+        .gender-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: var(--china-red);
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .gender-option input {
+            display: none;
+        }
+        
+        /* 错误提示样式 */
+        .form-group.error input,
+        .form-group.error select {
+            border-color: var(--error-red);
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+        
+        .error-message {
+            color: var(--error-red);
+            font-size: 13px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .error-message::before {
+            content: '⚠️';
+            font-size: 14px;
+        }
+        
+        /* 加载遮罩 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(245, 241, 232, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .wenchang-brush {
+            width: 80px;
+            height: 80px;
+            border: 4px solid var(--china-gold);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 18px;
+            color: var(--china-blue);
+            text-align: center;
+            animation: pulse 1.5s ease infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .loading-subtext {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
         /* 结果展示 */
         .result-section {
             margin-top: 40px;
             display: none;
+            animation: fadeIn 0.8s ease;
         }
         
         .result-title {
@@ -372,6 +511,12 @@
             padding: 25px;
             margin-bottom: 20px;
             position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .name-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
         
         .name-card h4 {
@@ -389,10 +534,125 @@
         
         .name-info p {
             margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .name-info p::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--china-gold);
+            font-weight: bold;
         }
         
         .name-info strong {
             color: var(--china-blue);
+        }
+        
+        /* 支付弹窗 */
+        .payment-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            backdrop-filter: blur(5px);
+        }
+        
+        .payment-modal.active {
+            display: flex;
+        }
+        
+        .payment-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: scaleUp 0.3s ease;
+        }
+        
+        @keyframes scaleUp {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .payment-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .payment-close:hover {
+            color: var(--china-red);
+        }
+        
+        .payment-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 28px;
+            color: var(--china-blue);
+            margin-bottom: 10px;
+        }
+        
+        .payment-price {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 48px;
+            color: var(--china-red);
+            margin: 20px 0;
+        }
+        
+        .payment-features {
+            text-align: left;
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(245, 241, 232, 0.5);
+            border-radius: 10px;
+        }
+        
+        .payment-features li {
+            padding: 8px 0;
+            color: #4a5568;
+            list-style: none;
+        }
+        
+        .payment-features li::before {
+            content: '✓ ';
+            color: var(--jade-green);
+            font-weight: bold;
+        }
+        
+        .payment-qr {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--china-gold);
+        }
+        
+        .payment-guarantee {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(80, 200, 120, 0.1);
+            border-radius: 8px;
+            color: var(--jade-green);
+            font-weight: 600;
         }
         
         /* 页脚 */
@@ -421,6 +681,19 @@
             .pricing-tiers { grid-template-columns: 1fr; }
             .tier-card { padding: 25px; }
             .header::before, .header::after { display: none; }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .btn-tier {
+                padding: 16px;
+                min-height: 56px;
+            }
+            
+            .payment-content {
+                padding: 30px 20px;
+            }
         }
         
         /* 动画 */
@@ -439,6 +712,49 @@
 </head>
 <body>
     <div class="top-border"></div>
+    
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="wenchang-brush"></div>
+        <p class="loading-text" id="loadingText">正在查阅《诗经》《楚辞》...</p>
+        <p class="loading-subtext" id="loadingSubtext">结合传统文化元素为您赐名</p>
+    </div>
+    
+    <!-- 支付弹窗 -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-content">
+            <button class="payment-close" onclick="closePaymentModal()">×</button>
+            <h3 class="payment-title">🎊 定制臻选版</h3>
+            <div class="payment-price">¥68.8</div>
+            <p style="color: #666;">全方位定制，给孩子一个承载千年智慧的好名字</p>
+            
+            <ul class="payment-features">
+                <li>详细个性化需求输入</li>
+                <li>风格偏好精细设置（诗意/古典/现代/书卷）</li>
+                <li>每次生成 3 个深度方案</li>
+                <li>最多可提交 10 次（共 30 个名字）</li>
+                <li>智能名字对比功能</li>
+                <li>数字纪念品制作</li>
+                <li>30 天后续咨询服务</li>
+            </ul>
+            
+            <div class="payment-qr">
+                <div style="text-align: center; color: #999;">
+                    <div style="font-size: 48px;">📱</div>
+                    <div>支付二维码</div>
+                    <div style="font-size: 12px; margin-top: 10px;">（演示版本）</div>
+                </div>
+            </div>
+            
+            <div class="payment-guarantee">
+                ✓ 满意保证 ✓ 安全支付 ✓ 专业团队
+            </div>
+            
+            <button class="btn-tier btn-premium" onclick="simulatePayment()" style="margin-top: 20px;">
+                🎁 我已支付，立即开始
+            </button>
+        </div>
+    </div>
     
     <div class="container">
         <!-- 头部 -->
@@ -501,21 +817,26 @@
             <h3 class="form-title" id="formTitle">📝 请输入基本信息</h3>
             
             <div class="form-group">
-                <label for="surname">姓氏 *</label>
+                <label for="surname">姓氏 <span class="required">*</span></label>
                 <input type="text" id="surname" placeholder="请输入姓氏（如：张、李、王）" required>
             </div>
             
             <div class="form-group">
-                <label for="gender">性别 *</label>
-                <select id="gender" required>
-                    <option value="">请选择性别</option>
-                    <option value="male">男孩</option>
-                    <option value="female">女孩</option>
-                </select>
+                <label>性别 <span class="required">*</span></label>
+                <div class="gender-select">
+                    <label class="gender-option" id="genderMale" onclick="selectGender('male')">
+                        <input type="radio" name="gender" value="male">
+                        👦 男孩
+                    </label>
+                    <label class="gender-option" id="genderFemale" onclick="selectGender('female')">
+                        <input type="radio" name="gender" value="female">
+                        👧 女孩
+                    </label>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="birthDate">出生日期 *</label>
+                <label for="birthDate">出生日期 <span class="required">*</span></label>
                 <input type="date" id="birthDate" required>
             </div>
             
@@ -527,11 +848,11 @@
             <div class="form-group" id="advancedOptions" style="display: none;">
                 <label for="stylePreference">名字风格偏好</label>
                 <select id="stylePreference">
-                    <option value="balanced">平衡型（推荐）</option>
-                    <option value="poetic">诗意典雅</option>
-                    <option value="classical">古典厚重</option>
-                    <option value="modern">现代简洁</option>
-                    <option value="scholarly">书卷气息</option>
+                    <option value="balanced">⚖️ 平衡型（推荐）</option>
+                    <option value="poetic">🎭 诗意典雅</option>
+                    <option value="classical">📜 古典厚重</option>
+                    <option value="modern">✨ 现代简洁</option>
+                    <option value="scholarly">📚 书卷气息</option>
                 </select>
             </div>
             
@@ -565,6 +886,34 @@
         let currentTier = null;
         let generatedResults = [];
         let submissionCount = 0;
+        let selectedGender = null;
+        
+        // 加载文案
+        const loadingMessages = [
+            "正在查阅《诗经》《楚辞》...",
+            "正在分析五行八字...",
+            "正在匹配诗词典故...",
+            "正在推敲音韵平仄...",
+            "正在斟酌寓意内涵..."
+        ];
+        
+        // 典籍出处库
+        const classicSources = {
+            male: [
+                { source: "《诗经·大雅》"，text: "高山仰止，景行行止", meaning: "寓意品德高尚，如高山般令人敬仰" },
+                { source: "《楚辞·离骚》"，text: "路漫漫其修远兮，吾将上下而求索", meaning: "寓意志向远大，坚持不懈" },
+                { source: "《论语》"，text: "君子坦荡荡，小人长戚戚", meaning: "寓意胸怀宽广，光明磊落" },
+                { source: "《周易》"，text: "天行健，君子以自强不息", meaning: "寓意刚毅坚卓，奋发图强" },
+                { source: "《尚书》"，text: "满招损，谦受益", meaning: "寓意谦虚谨慎，不断进步" }
+            ],
+            female: [
+                { source: "《诗经·周南》"，text: "桃之夭夭，灼灼其华", meaning: "寓意美丽动人，生机勃勃" },
+                { source: "《诗经·郑风》"，text: "有美一人，清扬婉兮", meaning: "寓意清雅脱俗，温婉贤淑" },
+                { source: "《楚辞·九歌》"，text: "帝子降兮北渚，目眇眇兮愁予", meaning: "寓意高贵典雅，气质不凡" },
+                { source: "《唐诗》"，text: "云想衣裳花想容，春风拂槛露华浓", meaning: "寓意容貌美丽，气质如兰" },
+                { source: "《宋词》"，text: "若把西湖比西子，淡妆浓抹总相宜", meaning: "寓意天生丽质，自然美好" }
+            ]
+        };
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -579,9 +928,27 @@
                 setTimeout(() => {
                     const names = generateSampleNames();
                     displayResults(names);
-                }, 1500);
+                }, 2000);
             });
+            
+            // 性别选择初始化
+            selectGender(null);
         });
+        
+        // 选择性别
+        function selectGender(gender) {
+            selectedGender = gender;
+            document.getElementById('genderMale').classList.remove('selected');
+            document.getElementById('genderFemale').classList.remove('selected');
+            
+            if (gender === 'male') {
+                document.getElementById('genderMale').classList.add('selected');
+                document.querySelector('#genderMale input').checked = true;
+            } else if (gender === 'female') {
+                document.getElementById('genderFemale').classList.add('selected');
+                document.querySelector('#genderFemale input').checked = true;
+            }
+        }
         
         // 开始免费体验
         function startFreeExperience() {
@@ -594,10 +961,22 @@
         // 开始定制臻选
         function startPremiumExperience() {
             currentTier = 'premium';
+            document.getElementById('paymentModal').classList.add('active');
+        }
+        
+        // 关闭支付弹窗
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+        }
+        
+        // 模拟支付
+        function simulatePayment() {
+            closePaymentModal();
+            currentTier = 'premium';
             showInputForm('📝 定制臻选版 - 68.8 元');
             document.getElementById('advancedOptions').style.display = 'block';
             document.getElementById('specialRequirements').style.display = 'block';
-            alert('支付流程将在正式版中实现，当前为演示版本');
+            alert('✅ 支付成功！现在开始为您定制名字...');
         }
         
         // 显示输入表单
@@ -608,32 +987,80 @@
             document.getElementById('inputFormSection').scrollIntoView({ behavior: 'smooth' });
         }
         
-        // 验证输入
+        // 验证输入（内联错误提示）
         function validateInputs() {
-            const surname = document.getElementById('surname').value.trim();
-            const gender = document.getElementById('gender').value;
-            const birthDate = document.getElementById('birthDate').value;
+            clearErrors();
+            let isValid = true;
             
-            if (!surname) {
-                alert('请输入姓氏');
-                return false;
+            const surname = document.getElementById('surname');
+            if (!surname.value.trim()) {
+                showError(surname, '请输入姓氏');
+                isValid = false;
             }
-            if (!gender) {
-                alert('请选择性别');
-                return false;
+            
+            if (!selectedGender) {
+                showError(document.querySelector('.gender-select'), '请选择性别');
+                isValid = false;
             }
-            if (!birthDate) {
-                alert('请选择出生日期');
-                return false;
+            
+            const birthDate = document.getElementById('birthDate');
+            if (!birthDate.value) {
+                showError(birthDate, '请选择出生日期');
+                isValid = false;
             }
-            return true;
+            
+            return isValid;
+        }
+        
+        // 清除错误
+        function clearErrors() {
+            document.querySelectorAll('.form-group.error').forEach(el => {
+                el.classList.remove('error');
+            });
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.remove();
+            });
+        }
+        
+        // 显示错误
+        function showError(element, message) {
+            const formGroup = element.closest('.form-group') || element.parentElement;
+            formGroup.classList.add('error');
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            formGroup.appendChild(errorDiv);
+            
+            // 聚焦到错误字段
+            if (element.querySelector('input') || element.querySelector('select')) {
+                (element.querySelector('input') || element.querySelector('select')).focus();
+            }
         }
         
         // 显示加载状态
         function showLoading() {
-            const generateBtn = document.getElementById('generateBtn');
-            generateBtn.textContent = '🖌️ 正在生成...';
-            generateBtn.disabled = true;
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const loadingSubtext = document.getElementById('loadingSubtext');
+            
+            overlay.classList.add('active');
+            
+            // 随机切换加载文案
+            let msgIndex = 0;
+            const msgInterval = setInterval(() => {
+                msgIndex = (msgIndex + 1) % loadingMessages.length;
+                loadingText.textContent = loadingMessages[msgIndex];
+            }, 400);
+            
+            setTimeout(() => {
+                clearInterval(msgInterval);
+            }, 2000);
+        }
+        
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
         }
         
         // 恢复按钮状态
@@ -641,12 +1068,13 @@
             const generateBtn = document.getElementById('generateBtn');
             generateBtn.textContent = '🖌️ 生成名字';
             generateBtn.disabled = false;
+            hideLoading();
         }
         
         // 生成示例名字
         function generateSampleNames() {
             const surname = document.getElementById('surname').value.trim();
-            const gender = document.getElementById('gender').value;
+            const gender = selectedGender;
             const style = document.getElementById('stylePreference')?.value || 'balanced';
             
             const nameSets = {
@@ -670,6 +1098,12 @@
             return nameSets[style] || nameSets.balanced;
         }
         
+        // 获取典籍出处
+        function getClassicSource(gender, index) {
+            const sources = classicSources[gender] || classicSources.male;
+            return sources[index % sources.length];
+        }
+        
         // 显示结果
         function displayResults(names) {
             restoreButton();
@@ -680,11 +1114,13 @@
                 const nameCard = document.createElement('div');
                 nameCard.className = 'name-card';
                 
+                const source = getClassicSource(selectedGender, index);
+                
                 nameCard.innerHTML = `
                     <h4>${name}</h4>
                     <div class="name-info">
-                        <p><strong>📖 典籍出处：</strong>出自《诗经·小雅》"高山仰止，景行行止"</p>
-                        <p><strong>🎋 文化寓意：</strong>寓意品德高尚，志向远大，如高山般令人敬仰</p>
+                        <p><strong>📖 典籍出处：</strong>${source.source}"${source.text}"</p>
+                        <p><strong>🎋 文化寓意：</strong>${source.meaning}</p>
                         <p><strong>🎵 音韵分析：</strong>声调搭配和谐，读音响亮大气</p>
                         <p><strong>☯️ 五行属性：</strong>木火相生，补益命局</p>
                     </div>
