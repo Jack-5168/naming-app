@@ -3,8 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文昌赐名 · 臻选版 - AI 驱动的中华优秀传统文化起名服务</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- SEO 优化 -->
+    <meta name="description" content="文昌赐名 - AI 驱动的中华传统文化起名服务，基于《诗经》《楚辞》等典籍，为孩子起一个承载千年智慧的好名字。免费体验 + 68.8 元定制臻选版。">
+    <meta name="keywords" content="起名，取名，宝宝起名，新生儿名字，传统文化，诗经，楚辞，AI 起名">
+    <link rel="canonical" href="https://jack-5168.github.io/naming-app/">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="文昌赐名 · 臻选版 - AI 驱动的中华优秀传统文化起名服务">
+    <meta property="og:description" content="68.8 元给孩子一个承载千年智慧的好名字">
+    <meta property="og:url" content="https://jack-5168.github.io/naming-app/">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="文昌赐名 · 臻选版">
+    <meta name="twitter:description" content="AI 驱动的中华传统文化起名服务">
+    
+    <!-- 字体预加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet"></noscript>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -882,11 +902,20 @@
     </div>
 
     <script>
+        // 安全工具函数 - HTML 实体转义（防止 XSS）
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
         // 当前选择的层级
         let currentTier = null;
         let generatedResults = [];
         let submissionCount = 0;
         let selectedGender = null;
+        let loadingInterval = null;
         
         // 加载文案
         const loadingMessages = [
@@ -915,11 +944,30 @@
             ]
         };
         
+        // 全局错误处理
+        window.addEventListener('error', function(event) {
+            console.error('全局错误:', event.message);
+            // 可以在这里添加错误上报逻辑
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('未处理的 Promise 拒绝:', event.reason);
+        });
+        
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const dateString = today.toISOString().split('T')[0];
             document.getElementById('birthDate').value = dateString;
+            
+            // 恢复草稿
+            loadDraft();
+            
+            // 自动保存草稿
+            const formInputs = document.querySelectorAll('#inputFormSection input, #inputFormSection select, #inputFormSection textarea');
+            formInputs.forEach(input => {
+                input.addEventListener('input', saveDraft);
+            });
             
             // 绑定生成按钮事件
             document.getElementById('generateBtn').addEventListener('click', function() {
@@ -933,6 +981,56 @@
             
             // 性别选择初始化
             selectGender(null);
+        });
+        
+        // 保存草稿到 localStorage
+        function saveDraft() {
+            const draft = {
+                surname: document.getElementById('surname').value,
+                gender: selectedGender,
+                birthDate: document.getElementById('birthDate').value,
+                birthLocation: document.getElementById('birthLocation').value,
+                stylePreference: document.getElementById('stylePreference')?.value,
+                requirements: document.getElementById('requirements')?.value
+            };
+            localStorage.setItem('namingDraft', JSON.stringify(draft));
+        }
+        
+        // 从 localStorage 恢复草稿
+        function loadDraft() {
+            const draftStr = localStorage.getItem('namingDraft');
+            if (!draftStr) return;
+            
+            try {
+                const draft = JSON.parse(draftStr);
+                if (draft.surname) document.getElementById('surname').value = draft.surname;
+                if (draft.gender) selectGender(draft.gender);
+                if (draft.birthDate) document.getElementById('birthDate').value = draft.birthDate;
+                if (draft.birthLocation) document.getElementById('birthLocation').value = draft.birthLocation;
+                if (draft.stylePreference && document.getElementById('stylePreference')) {
+                    document.getElementById('stylePreference').value = draft.stylePreference;
+                }
+                if (draft.requirements && document.getElementById('requirements')) {
+                    document.getElementById('requirements').value = draft.requirements;
+                }
+            } catch (e) {
+                console.error('恢复草稿失败:', e);
+            }
+        }
+        
+        // 清除草稿
+        function clearDraft() {
+            localStorage.removeItem('namingDraft');
+        }
+        
+        // 刷新前确认
+        window.addEventListener('beforeunload', (e) => {
+            const draftStr = localStorage.getItem('namingDraft');
+            if (draftStr && document.getElementById('inputFormSection').style.display === 'block') {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
         });
         
         // 选择性别
@@ -987,14 +1085,20 @@
             document.getElementById('inputFormSection').scrollIntoView({ behavior: 'smooth' });
         }
         
-        // 验证输入（内联错误提示）
+        // 验证输入（内联错误提示 + 完整验证）
         function validateInputs() {
             clearErrors();
             let isValid = true;
             
             const surname = document.getElementById('surname');
-            if (!surname.value.trim()) {
+            const surnameValue = surname.value.trim();
+            
+            // 姓氏验证：1-4 个中文字符
+            if (!surnameValue) {
                 showError(surname, '请输入姓氏');
+                isValid = false;
+            } else if (!/^[\u4e00-\u9fa5]{1,4}$/.test(surnameValue)) {
+                showError(surname, '姓氏应为 1-4 个汉字');
                 isValid = false;
             }
             
@@ -1004,8 +1108,25 @@
             }
             
             const birthDate = document.getElementById('birthDate');
+            const birthDateValue = new Date(birthDate.value);
+            const today = new Date();
+            const tenYearsAgo = new Date();
+            tenYearsAgo.setFullYear(today.getFullYear() - 10);
+            
             if (!birthDate.value) {
                 showError(birthDate, '请选择出生日期');
+                isValid = false;
+            } else if (birthDateValue > today) {
+                showError(birthDate, '出生日期不能是未来');
+                isValid = false;
+            } else if (birthDateValue < tenYearsAgo) {
+                showError(birthDate, '孩子年龄应在 10 岁以内');
+                isValid = false;
+            }
+            
+            const birthLocation = document.getElementById('birthLocation');
+            if (birthLocation.value && birthLocation.value.length > 50) {
+                showError(birthLocation, '地点名称过长（最多 50 字）');
                 isValid = false;
             }
             
@@ -1042,26 +1163,44 @@
         function showLoading() {
             const overlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
-            const loadingSubtext = document.getElementById('loadingSubtext');
+            
+            // 清理之前的定时器
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+            }
             
             overlay.classList.add('active');
             
             // 随机切换加载文案
             let msgIndex = 0;
-            const msgInterval = setInterval(() => {
+            loadingInterval = setInterval(() => {
                 msgIndex = (msgIndex + 1) % loadingMessages.length;
                 loadingText.textContent = loadingMessages[msgIndex];
             }, 400);
             
             setTimeout(() => {
-                clearInterval(msgInterval);
+                if (loadingInterval) {
+                    clearInterval(loadingInterval);
+                    loadingInterval = null;
+                }
             }, 2000);
         }
         
         // 隐藏加载状态
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.remove('active');
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
         }
+        
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', () => {
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+            }
+        });
         
         // 恢复按钮状态
         function restoreButton() {
@@ -1116,11 +1255,12 @@
                 
                 const source = getClassicSource(selectedGender, index);
                 
+                // 安全地使用 escapeHtml 转义所有用户输入
                 nameCard.innerHTML = `
-                    <h4>${name}</h4>
+                    <h4>${escapeHtml(name)}</h4>
                     <div class="name-info">
-                        <p><strong>📖 典籍出处：</strong>${source.source}"${source.text}"</p>
-                        <p><strong>🎋 文化寓意：</strong>${source.meaning}</p>
+                        <p><strong>📖 典籍出处：</strong>${escapeHtml(source.source)}"${escapeHtml(source.text)}"</p>
+                        <p><strong>🎋 文化寓意：</strong>${escapeHtml(source.meaning)}</p>
                         <p><strong>🎵 音韵分析：</strong>声调搭配和谐，读音响亮大气</p>
                         <p><strong>☯️ 五行属性：</strong>木火相生，补益命局</p>
                     </div>
