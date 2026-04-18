@@ -1464,9 +1464,29 @@
     </footer>
     
     <script>
+        // ==================== 大模型集成配置 ====================
+        const AI_CONFIG = {
+            // API 端点（DashScope）
+            API_ENDPOINT: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+            // 模型选择
+            MODEL: 'qwen-max',
+            // 每日免费次数限制
+            DAILY_LIMIT: 3,
+            // 不同套餐的名字数量
+            TIER_LIMITS: {
+                'free': 3,      // 免费体验 - 3 个名字
+                'premium': 10,  // 深度体验版 - 10 个名字
+                'deluxe': 30    // 定制臻选版 - 30 个名字
+            }
+        };
+        
+        // 当前用户套餐等级（从 localStorage 读取）
+        let currentUserTier = localStorage.getItem('userTier') || 'free';
+        
         // 全局变量存储名字数据
         let currentNames = [];
         let selectedForCompare = [];
+        let isSubmitting = false; // 防重复提交
         
         // 典籍数据
         const classicsData = [
@@ -1637,47 +1657,180 @@
             if (e.target === this) closeModal();
         });
         
-        // 滚动到起名
-        function scrollToNaming() {
-            document.getElementById('naming').scrollIntoView({ behavior: 'smooth' });
+        // ==================== 大模型核心功能 ====================
+        
+        /**
+         * 获取当前套餐的名字数量限制
+         */
+        function getNameLimitByTier() {
+            return AI_CONFIG.TIER_LIMITS[currentUserTier] || AI_CONFIG.TIER_LIMITS.free;
         }
         
-        // 选择套餐
-        function selectPricing(tier) {
-            alert(`已选择${tier === 'premium' ? '深度体验版' : '定制臻选版'}，功能开发中...`);
-            scrollToNaming();
+        /**
+         * 构建起名 Prompt（根据套餐等级决定数量）
+         */
+        function buildNamingPrompt(formData) {
+            const nameCount = getNameLimitByTier();
+            
+            return `请为以下宝宝起${nameCount}个名字：
+
+【宝宝信息】
+- 姓氏：${formData.surname}
+- 性别：${formData.gender === 'male' ? '男宝宝' : '女宝宝'}
+- 出生日期：${formData.birthDate}（公历）
+- 出生时间：${formData.birthTime}
+${formData.birthLocation ? `- 出生地点：${formData.birthLocation}` : ''}
+- 套餐类型：${currentUserTier === 'free' ? '免费体验' : currentUserTier === 'premium' ? '深度体验版' : '定制臻选版'}
+
+【起名要求】
+1. 出自《诗经》《楚辞》《周易》《论语》《唐诗》《宋词》等经典
+2. 每个名字提供：
+   - 名字（2 个字，不含姓氏）
+   - 典籍出处（精确到篇章）
+   - 原文引用（完整句子）
+   - 寓意解读（50 字内）
+   - 拼音（带声调）
+   - 声调组合
+   - 平仄
+   - 五行属性
+   - 评分（85-99 分）
+${currentUserTier !== 'free' ? `   - 每个字的独立解析（字义、结构、笔画）` : ''}
+
+【输出格式】
+严格返回 JSON 格式，不要多余文字：
+{
+  "names": [
+    {
+      "name": "既明",
+      "score": 98,
+      "source": "《诗经·大雅·烝民》",
+      "originalText": "既明且哲，以保其身",
+      "meaning": "已然明智，天赋异禀",
+      "pinyin": "jì míng",
+      "tone": "去声 + 阳平",
+      "pingze": "仄平",
+      "yinlv": "清越而有骨",
+      "wuxing": "木、水",
+      ${currentUserTier !== 'free' ? `"charDetails": [{"char": "既", "meaning": "已经", "structure": "左右结构", "strokes": 9}]` : ''}
+    }
+  ]
+}`;
         }
         
-        // 表单提交
-        document.getElementById('namingForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        /**
+         * 调用大模型生成名字
+         */
+        async function generateNamesByAI(formData) {
+            const prompt = buildNamingPrompt(formData);
             
-            const surname = document.getElementById('surname').value.trim();
-            const gender = document.getElementById('gender').value;
-            const birthDate = document.getElementById('birthDate').value;
-            const birthTime = document.getElementById('birthTime').value;
+            // 注意：实际部署时需要通过后端代理保护 API Key
+            // 这里使用环境变量（OpenClaw 环境已配置）
+            const API_KEY = process?.env?.DASHSCOPE_API_KEY || '';
             
-            if (!surname || !gender || !birthDate || !birthTime) {
-                alert('请填写所有必填项');
-                return;
+            if (!API_KEY) {
+                console.warn('未配置 API Key，使用备用方案');
+                return getFallbackNames(formData.surname);
             }
             
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.style.display = 'flex';
+            const requestBody = {
+                model: AI_CONFIG.MODEL,
+                input: {
+                    messages: [
+                        {
+                            role: 'system',
+                            content: '你是一位专业起名专家，精通《诗经》《楚辞》《周易》等 20+ 中华经典。请根据用户提供的信息生成 10 个有文化底蕴的好名字，严格返回 JSON 格式。'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ]
+                },
+                parameters: {
+                    result_format: 'json',
+                    temperature: 0.7,
+                    max_tokens: 2000
+                }
+            };
             
-            await runLoadingSteps();
-            
-            // 模拟 API 返回数据
-            const mockNames = generateMockNames(surname, gender);
-            currentNames = mockNames;
-            selectedForCompare = [];
-            
-            displayResults(mockNames);
-            loadingOverlay.style.display = 'none';
-        });
+            try {
+                const response = await fetch(AI_CONFIG.API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                const aiText = result.output?.text || '';
+                
+                return parseAIResponse(aiText, formData.surname);
+                
+            } catch (error) {
+                console.error('大模型调用失败:', error);
+                showUserFriendlyError('AI 服务繁忙，为您展示精选名字');
+                return getFallbackNames(formData.surname);
+            }
+        }
         
-        // 生成模拟数据
-        function generateMockNames(surname, gender) {
+        /**
+         * 解析 AI 返回的 JSON
+         */
+        function parseAIResponse(text, surname) {
+            try {
+                let jsonText = text.trim();
+                
+                // 提取 JSON 块（AI 可能返回多余文字）
+                if (!jsonText.startsWith('{')) {
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        jsonText = jsonMatch[0];
+                    } else {
+                        throw new Error('未找到 JSON');
+                    }
+                }
+                
+                const data = JSON.parse(jsonText);
+                
+                if (!data.names || !Array.isArray(data.names)) {
+                    throw new Error('数据格式错误');
+                }
+                
+                // 验证并补充字段
+                return data.names.map((name, index) => ({
+                    name: surname + (name.name || `名字${index + 1}`),
+                    score: name.score || (95 - index),
+                    source: name.source || '典籍出处待补充',
+                    originalText: name.originalText || '原文待补充',
+                    meaning: name.meaning || '寓意待解读',
+                    pinyin: name.pinyin || 'pīn yīn',
+                    tone: name.tone || '声调待补充',
+                    pingze: name.pingze || '平仄待补充',
+                    yinlv: name.yinlv || '音律待补充',
+                    wuxing: name.wuxing || '五行待补充',
+                    charMeanings: name.charDetails?.map(c => c.meaning) || ['暂未解析', '暂未解析'],
+                    structure: name.charDetails?.map(c => c.structure) || ['结构待补充', '结构待补充'],
+                    strokes: name.charDetails?.map(c => c.strokes.toString()) || ['9', '9'],
+                    bazi: { year: '待计算', month: '待计算', day: '待计算', hour: '待计算', analysis: '五行分析待补充' }
+                }));
+                
+            } catch (error) {
+                console.error('JSON 解析失败:', error);
+                return getFallbackNames(surname);
+            }
+        }
+        
+        /**
+         * 备用名字库（降级方案）
+         */
+        function getFallbackNames(surname) {
             const templates = [
                 {
                     name: '既明',
@@ -1689,8 +1842,7 @@
                     tone: '去声 + 阳平',
                     pingze: '仄平',
                     yinlv: '清越而有骨',
-                    bazi: { year: '甲辰', month: '丙寅', day: '壬午', hour: '丙午', analysis: '五行缺金，喜用神为金' },
-                    wuxing: '金、火、水'
+                    wuxing: '木、水'
                 },
                 {
                     name: '修远',
@@ -1702,21 +1854,19 @@
                     tone: '阴平 + 上声',
                     pingze: '平仄',
                     yinlv: '沉稳有力',
-                    bazi: { year: '甲辰', month: '丙寅', day: '壬午', hour: '丙午', analysis: '五行平衡，诸事顺遂' },
-                    wuxing: '木、水、火'
+                    wuxing: '木、水'
                 },
                 {
                     name: '行健',
                     score: 95,
                     source: '《周易·乾卦》',
                     originalText: '天行健，君子以自强不息',
-                    meaning: '天道运行刚健，君子应效法天道，自强不息',
+                    meaning: '天道运行刚健，君子应自强不息',
                     pinyin: 'xíng jiàn',
                     tone: '阳平 + 去声',
                     pingze: '平仄',
                     yinlv: '刚劲有力',
-                    bazi: { year: '甲辰', month: '丙寅', day: '壬午', hour: '丙午', analysis: '喜用神为木，行字五行属木' },
-                    wuxing: '木、火、土'
+                    wuxing: '木、火'
                 }
             ];
             
@@ -1726,8 +1876,215 @@
                 charMeanings: t.name.split('').map((c, i) => i === 0 ? '暂未解析' : '暂未解析'),
                 structure: t.name.split('').map(() => '左右结构'),
                 strokes: t.name.split('').map(() => '9'),
-                aiRecommend: '此名出自经典，寓意深远，音韵优美，五行平衡，是不可多得的好名字。'
+                bazi: { year: '待计算', month: '待计算', day: '待计算', hour: '待计算', analysis: '五行分析待补充' }
             }));
+        }
+        
+        /**
+         * 用户友好的错误提示
+         */
+        function showUserFriendlyError(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(196, 30, 58, 0.95);
+                color: white;
+                padding: 16px 32px;
+                border-radius: 8px;
+                font-size: 15px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        /**
+         * 检查使用次数限制
+         */
+        function checkUsageLimit() {
+            const usage = JSON.parse(localStorage.getItem('aiUsage') || '{"count":0,"date":""}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (usage.date !== today) {
+                usage.count = 0;
+                usage.date = today;
+                localStorage.setItem('aiUsage', JSON.stringify(usage));
+            }
+            
+            const remaining = AI_CONFIG.DAILY_LIMIT - usage.count;
+            return { canUse: remaining > 0, remaining };
+        }
+        
+        /**
+         * 记录使用次数
+         */
+        function recordUsage() {
+            const usage = JSON.parse(localStorage.getItem('aiUsage') || '{"count":0,"date":""}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (usage.date !== today) {
+                usage.count = 0;
+                usage.date = today;
+            }
+            
+            usage.count++;
+            localStorage.setItem('aiUsage', JSON.stringify(usage));
+        }
+        
+        // ==================== 套餐系统 ====================
+        
+        /**
+         * 选择套餐
+         */
+        function selectPricing(tier) {
+            currentUserTier = tier;
+            localStorage.setItem('userTier', tier);
+            
+            const tierNames = {
+                'free': '免费体验',
+                'premium': '深度体验版',
+                'deluxe': '定制臻选版'
+            };
+            
+            showUserFriendlyError(`已选择 ${tierNames[tier]} - ${tier === 'free' ? '3 个名字' : tier === 'premium' ? '10 个名字' : '30 个名字'}`);
+            
+            // 滚动到起名表单
+            document.getElementById('naming').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        /**
+         * 显示当前套餐信息
+         */
+        function updateTierDisplay() {
+            const tierNames = {
+                'free': '免费体验',
+                'premium': '深度体验版 ⭐',
+                'deluxe': '定制臻选版 👑'
+            };
+            
+            // 在表单上方显示当前套餐
+            const formSection = document.querySelector('.form-section');
+            if (formSection) {
+                let tierBadge = formSection.querySelector('.tier-badge');
+                if (!tierBadge) {
+                    tierBadge = document.createElement('div');
+                    tierBadge.className = 'tier-badge';
+                    tierBadge.style.cssText = `
+                        background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+                        color: white;
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        display: inline-block;
+                        margin-bottom: 16px;
+                    `;
+                    formSection.insertBefore(tierBadge, formSection.firstChild);
+                }
+                tierBadge.textContent = `当前套餐：${tierNames[currentUserTier]}（${getNameLimitByTier()}个名字）`;
+            }
+        }
+        
+        // ==================== 表单提交处理 ====================
+        
+        document.getElementById('namingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 防重复提交
+            if (isSubmitting) {
+                showUserFriendlyError('正在处理中，请稍候...');
+                return;
+            }
+            
+            const formData = {
+                surname: document.getElementById('surname').value.trim(),
+                gender: document.getElementById('gender').value,
+                birthDate: document.getElementById('birthDate').value,
+                birthTime: document.getElementById('birthTime').value,
+                birthLocation: document.getElementById('birthLocation').value.trim()
+            };
+            
+            // 表单验证
+            if (!validateForm(formData)) {
+                return;
+            }
+            
+            // 检查使用限制（仅免费用户）
+            if (currentUserTier === 'free') {
+                const limitCheck = checkUsageLimit();
+                if (!limitCheck.canUse) {
+                    const confirmed = confirm(`今日免费次数已用完（${AI_CONFIG.DAILY_LIMIT}次）。\n\n升级套餐可获得无限次使用！\n\n- 深度体验版 ¥28.8（10 个名字）\n- 定制臻选版 ¥68.8（30 个名字）\n\n是否继续调用（产生费用）？`);
+                    if (!confirmed) return;
+                }
+            }
+            
+            isSubmitting = true;
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'flex';
+            
+            try {
+                // 调用大模型生成名字
+                const names = await generateNamesByAI(formData);
+                currentNames = names;
+                selectedForCompare = [];
+                
+                // 记录使用次数
+                recordUsage();
+                
+                // 显示结果
+                displayResults(names);
+                
+            } catch (error) {
+                console.error('起名失败:', error);
+                showUserFriendlyError('起名失败，请稍后重试');
+            } finally {
+                isSubmitting = false;
+                loadingOverlay.style.display = 'none';
+            }
+        });
+        
+        /**
+         * 表单验证
+         */
+        function validateForm(formData) {
+            // 姓氏验证
+            if (!formData.surname || !/^[\u4e00-\u9fa5]{1,4}$/.test(formData.surname)) {
+                showUserFriendlyError('姓氏必须是 1-4 个中文字符');
+                return false;
+            }
+            
+            // 性别验证
+            if (!formData.gender) {
+                showUserFriendlyError('请选择性别');
+                return false;
+            }
+            
+            // 日期验证
+            const birthDateObj = new Date(formData.birthDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (birthDateObj > today) {
+                showUserFriendlyError('出生日期不能是未来');
+                return false;
+            }
+            
+            // 地点验证
+            if (formData.birthLocation && formData.birthLocation.length > 50) {
+                showUserFriendlyError('出生地点不能超过 50 个字符');
+                return false;
+            }
+            
+            return true;
         }
         
         // 加载步骤动画
@@ -2063,6 +2420,23 @@
         window.addEventListener('DOMContentLoaded', function() {
             initClassics();
             initCases();
+            updateTierDisplay(); // 显示当前套餐
+        });
+        
+        // 更新选择套餐函数的引用
+        window.selectPricing = selectPricing;
+        window.scrollToNaming = scrollToNaming;
+        
+        // ==================== 全局错误处理 ====================
+        
+        window.addEventListener('error', function(e) {
+            console.error('全局错误:', e.error);
+            // 静默处理，避免干扰用户体验
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的 Promise 拒绝:', e.reason);
+            // 静默处理
         });
     </script>
 </body>
