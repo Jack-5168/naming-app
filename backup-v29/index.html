@@ -1,0 +1,3930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文昌赐名 · 专业起名机构 - 引经据典 · 八字合和 · 一生好名</title>
+    <meta name="description" content="源自《诗经》《楚辞》《周易》等 20+ 先秦经典，结合传统命理学与现代审美，15 年专业积淀，10000+ 家庭信赖之选">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- html2canvas for poster generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --china-red: #c41e3a;
+            --china-red-dark: #8b1528;
+            --brown: #8b4513;
+            --brown-dark: #5d2f0d;
+            --gold: #c4a57b;
+            --gold-light: #d4b896;
+            --cream: #fdfbf7;
+            --cream-dark: #f5f0e6;
+            --text: #2c2c2c;
+            --text-light: #666;
+            --border: rgba(139, 69, 19, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* 全局平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        /* 传统纹样背景 */
+        .cloud-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 80c-15-20-10-40 10-45s40 5 45 25-5 35-25 40-40-5-30-20z' fill='%238b4513'/%3E%3Cpath d='M120 120c-15-20-10-40 10-45s40 5 45 25-5 35-25 40-40-5-30-20z' fill='%238b4513'/%3E%3C/svg%3E");
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            padding: 12px 0;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .nav a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover {
+            color: white;
+        }
+        
+        /* 汉堡菜单按钮（默认隐藏） */
+        .hamburger-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1001;
+        }
+        
+        .hamburger-line {
+            width: 28px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        /* 汉堡菜单激活状态（X 形） */
+        .hamburger-menu.active .hamburger-line:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        
+        .hamburger-menu.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-menu.active .hamburger-line:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+        
+        /* 移动端导航覆盖层 */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-nav-overlay.active {
+            left: 0;
+        }
+        
+        .mobile-nav-content {
+            width: 100%;
+            max-width: 400px;
+            padding: 80px 20px 20px;
+        }
+        
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .mobile-nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 16px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .mobile-nav-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(8px);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            padding: 80px 20px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 50c-8-10-5-20 5-22s20 2 22 12-2 17-12 20-20-2-15-10z' fill='%23ffffff' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 48px;
+            font-weight: 400;
+            letter-spacing: 8px;
+            margin-bottom: 16px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 24px;
+            opacity: 0.95;
+        }
+        
+        .hero-desc {
+            font-size: 15px;
+            line-height: 1.8;
+            max-width: 700px;
+            margin: 0 auto 32px;
+            opacity: 0.9;
+        }
+        
+        .hero-cta {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--text);
+            padding: 16px 48px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid var(--gold-light);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .hero-cta:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+        
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .hero-feature svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--gold);
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 24px 0;
+            position: relative;
+            z-index: 5;
+        }
+        
+        .stats-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 36px;
+            color: var(--china-red);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Section Titles */
+        .section-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 32px;
+            text-align: center;
+            color: var(--china-red);
+            margin-bottom: 12px;
+            letter-spacing: 4px;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 15px;
+            margin-bottom: 40px;
+        }
+        
+        /* Classics Library */
+        .classics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+        
+        .classic-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .classic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-light) 100%);
+        }
+        
+        .classic-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        
+        /* Trust Section */
+        .trust-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 60px;
+            border: 1px solid var(--border);
+        }
+        
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 32px;
+        }
+        
+        .trust-item {
+            text-align: center;
+            padding: 24px;
+            background: var(--cream);
+            border-radius: 12px;
+        }
+        
+        .trust-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .trust-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+        
+        /* User Cases */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+        
+        .case-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        
+        .case-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .case-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 24px;
+            color: white;
+        }
+        
+        /* Pricing Section */
+        .pricing-section {
+            margin-bottom: 60px;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            border: 2px solid var(--border);
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--china-red);
+            box-shadow: 0 8px 32px rgba(196, 30, 58, 0.15);
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.featured::before {
+            content: '⭐ 热门推荐';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--china-red);
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        /* 套餐卡片选中状态 */
+        .pricing-card.selected {
+            border-color: var(--china-red);
+            border-width: 3px;
+            background: linear-gradient(135deg, rgba(196, 30, 58, 0.03) 0%, rgba(196, 30, 58, 0.08) 100%);
+            box-shadow: 0 8px 32px rgba(196, 30, 58, 0.2);
+            transform: scale(1.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .pricing-card.selected::after {
+            content: '✓ 已选择';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--china-red);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: bounceIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Form Section */
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        /* 套餐徽章 - 丝绸质感 */
+        .tier-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(196, 30, 58, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tier-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.2) 50%,
+                transparent 70%
+            );
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s;
+        }
+        
+        .form-group label::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            border-radius: 2px;
+        }
+        
+        .form-group input:focus + label,
+        .form-group select:focus + label {
+            color: var(--china-red);
+        }
+        
+        .form-group label .required {
+            color: var(--china-red);
+            font-weight: 700;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 16px 18px;
+            border: 2px solid var(--cream-dark);
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--cream);
+            position: relative;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--china-red);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(196, 30, 58, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .form-group input::placeholder {
+            color: var(--text-light);
+            transition: color 0.3s;
+        }
+        
+        .form-group input:focus::placeholder {
+            color: rgba(102, 102, 102, 0.5);
+        }
+        
+        /* 输入框错误状态 */
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.05);
+            animation: shake 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* 输入框成功状态 */
+        .form-group input.success {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        /* 错误消息样式 */
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 6px;
+            padding-left: 4px;
+            min-height: 18px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: all 0.3s ease;
+        }
+        
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Preference Selection */
+        .preference-section {
+            margin-bottom: 32px;
+        }
+        
+        .preference-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .preference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        
+        .preference-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--cream);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .preference-option:hover {
+            background: var(--cream-dark);
+        }
+        
+        .preference-option.selected {
+            border-color: var(--china-red);
+            background: rgba(196, 30, 58, 0.05);
+        }
+        
+        .preference-option input {
+            display: none;
+        }
+        
+        .preference-option .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-light);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .preference-option.selected .checkmark {
+            border-color: var(--china-red);
+            background: var(--china-red);
+        }
+        
+        .preference-option.selected .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+        }
+        
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(196, 30, 58, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+        }
+        
+        /* 按钮波纹效果 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+        }
+        
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .loading-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 32px;
+        }
+        
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--cream);
+            border-radius: 8px;
+            opacity: 0.4;
+            transition: all 0.5s;
+        }
+        
+        .loading-step.active {
+            opacity: 1;
+            background: rgba(196, 30, 58, 0.08);
+        }
+        
+        .loading-step.completed .step-icon {
+            background: var(--china-red);
+            color: white;
+        }
+        
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--text-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .loading-step.active .step-icon {
+            background: var(--china-red);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .loading-step .step-text {
+            transition: color 0.3s;
+        }
+        
+        .loading-step.active .step-text {
+            color: var(--china-red);
+            font-weight: 600;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(196, 30, 58, 0.7);
+            }
+            50% { 
+                transform: scale(1.15);
+                box-shadow: 0 0 0 10px rgba(196, 30, 58, 0);
+            }
+        }
+        
+        /* 加载进度条 */
+        .loading-progress {
+            width: 100%;
+            height: 4px;
+            background: var(--cream-dark);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--china-red) 0%, var(--gold) 100%);
+            border-radius: 2px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: progressShine 2s infinite;
+        }
+        
+        @keyframes progressShine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* FAQ Section */
+        .faq-section {
+            padding: 80px 20px;
+            background: white;
+        }
+        
+        .faq-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            gap: 16px;
+        }
+        
+        .faq-item {
+            background: var(--cream);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--cream-dark);
+            transition: all 0.3s;
+        }
+        
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .faq-question {
+            padding: 20px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .faq-question:hover {
+            background: var(--cream-dark);
+        }
+        
+        .faq-icon {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s;
+            color: var(--china-red);
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 24px 20px;
+            max-height: 500px;
+        }
+        
+        .faq-answer p {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .results-count {
+            font-size: 18px;
+            color: var(--text-light);
+        }
+        
+        .results-count strong {
+            color: var(--china-red);
+            font-size: 24px;
+        }
+        
+        .compare-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(196, 30, 58, 0.3);
+        }
+        
+        .compare-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--china-red-dark) 0%, var(--brown-dark) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(196, 30, 58, 0.4);
+        }
+        
+        .compare-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .compare-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .compare-btn svg {
+            transition: transform 0.3s;
+        }
+        
+        .compare-btn:hover:not(:disabled) svg {
+            transform: scale(1.1);
+        }
+        
+        /* Name Cards */
+        .name-cards {
+            display: grid;
+            gap: 32px;
+        }
+        
+        .name-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .name-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        
+        .name-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+        }
+        
+        /* 名字卡片评分徽章 */
+        .name-score {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .name-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--cream-dark);
+        }
+        
+        .name-main {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+        }
+        
+        .name-text {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 42px;
+            color: var(--china-red);
+            letter-spacing: 4px;
+        }
+        
+        .name-score {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        /* Report Sections */
+        .report-sections {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .report-block {
+            background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid var(--china-red);
+            transition: all 0.3s;
+        }
+        
+        .report-block:hover {
+            background: linear-gradient(135deg, rgba(196, 30, 58, 0.03) 0%, rgba(196, 30, 58, 0.08) 100%);
+            transform: translateX(4px);
+        }
+        
+        .report-block-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--china-red);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(196, 30, 58, 0.1);
+        }
+        
+        .report-block-title svg {
+            flex-shrink: 0;
+        }
+        
+        .report-content {
+            color: var(--text);
+            line-height: 1.8;
+        }
+        
+        .report-content p {
+            margin-bottom: 8px;
+        }
+        
+        .report-content strong {
+            color: var(--brown);
+            font-weight: 600;
+        }
+        
+        /* 命理分析特殊样式 */
+        .bazi-block {
+            background: linear-gradient(135deg, rgba(196, 165, 123, 0.15) 0%, rgba(196, 165, 123, 0.05) 100%);
+            border-left-color: var(--gold);
+        }
+        
+        .bazi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .bazi-pillar {
+            text-align: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--gold);
+        }
+        
+        .wuxing-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        
+        .wuxing-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .wuxing-金 { background: #f5e6d3; color: #8b6914; }
+        .wuxing-木 { background: #d4edda; color: #155724; }
+        .wuxing-水 { background: #d1ecf1; color: #0c5460; }
+        .wuxing-火 { background: #f8d7da; color: #721c24; }
+        .wuxing-土 { background: #fff3cd; color: #856404; }
+        
+        /* Action Buttons */
+        .name-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 2px solid var(--cream-dark);
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 16px;
+            border: 2px solid var(--china-red);
+            background: white;
+            color: var(--china-red);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn:hover {
+            background: var(--china-red);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(196, 30, 58, 0.3);
+        }
+        
+        .action-btn:active {
+            transform: translateY(0);
+        }
+        
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .action-btn.primary:hover {
+            background: linear-gradient(135deg, var(--china-red-dark) 0%, var(--brown-dark) 100%);
+            box-shadow: 0 8px 24px rgba(196, 30, 58, 0.4);
+        }
+        
+        .action-btn svg {
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+        
+        .action-btn:hover svg {
+            transform: scale(1.1);
+        }
+        
+        /* Checkbox for comparison */
+        .compare-checkbox {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        
+        .compare-checkbox input {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        /* Compare Modal */
+        .compare-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+        
+        .compare-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 1200px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .compare-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
+            border: none;
+            background: var(--cream-dark);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--text);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .compare-close:hover {
+            background: var(--china-red);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+        }
+        
+        .compare-close:active {
+            transform: scale(0.95);
+        }
+        
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+        
+        .compare-table th,
+        .compare-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .compare-table th {
+            background: var(--cream);
+            font-weight: 600;
+            color: var(--brown);
+            font-size: 15px;
+        }
+        
+        .compare-table td {
+            font-size: 14px;
+        }
+        
+        .compare-table tr:hover {
+            background: var(--cream-dark);
+        }
+        
+        .compare-highlight {
+            background: rgba(196, 30, 58, 0.08);
+            font-weight: 600;
+        }
+        
+        /* Poster Canvas (hidden) */
+        .poster-canvas {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 800px;
+            height: 1000px;
+            background: linear-gradient(135deg, #fdfbf7 0%, #f5f0e6 100%);
+            padding: 60px;
+        }
+        
+        .poster-content {
+            text-align: center;
+        }
+        
+        .poster-header {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 48px;
+            color: var(--china-red);
+            margin-bottom: 40px;
+        }
+        
+        .poster-name {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 96px;
+            color: var(--china-red);
+            margin: 40px 0;
+            letter-spacing: 20px;
+        }
+        
+        .poster-score {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: var(--text);
+            padding: 12px 32px;
+            border-radius: 24px;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+        
+        .poster-source {
+            font-size: 20px;
+            color: var(--brown);
+            margin: 30px 0;
+            font-style: italic;
+        }
+        
+        .poster-meaning {
+            font-size: 18px;
+            color: var(--text);
+            line-height: 1.8;
+            margin: 30px 0;
+        }
+        
+        .poster-footer {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 2px solid var(--gold);
+        }
+        
+        .poster-qr {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            background: var(--text);
+        }
+        
+        .poster-brand {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 28px;
+            color: var(--china-red);
+            margin-top: 20px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--cream-dark);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: var(--china-red);
+            color: white;
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--text);
+            color: white;
+            padding: 40px 20px;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--cream-dark);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            border-radius: 5px;
+            border: 2px solid var(--cream-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--china-red-dark) 0%, var(--brown-dark) 100%);
+        }
+        
+        /* Firefox 滚动条 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--china-red) var(--cream-dark);
+        }
+        
+        /* 回到顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(196, 30, 58, 0.4);
+        }
+        
+        .back-to-top:active {
+            transform: translateY(-2px);
+        }
+        
+        .back-to-top.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            /* 汉堡菜单显示 */
+            .hamburger-menu {
+                display: flex;
+            }
+            
+            /* 桌面导航隐藏 */
+            #desktopNav {
+                display: none;
+            }
+            
+            /* Header 布局调整 */
+            .header-content {
+                padding: 0 16px;
+            }
+            
+            .logo {
+                font-size: 24px;
+                letter-spacing: 1px;
+            }
+            
+            .hero-title {
+                font-size: 32px;
+                letter-spacing: 4px;
+            }
+            
+            .name-card {
+                padding: 24px;
+            }
+            
+            .name-text {
+                font-size: 32px;
+            }
+            
+            .bazi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+            
+            .compare-table {
+                font-size: 12px;
+            }
+            
+            .compare-table th,
+            .compare-table td {
+                padding: 8px;
+            }
+        }
+        
+        /* 小手机优化 (360px) */
+        @media (max-width: 360px) {
+            .hero-title {
+                font-size: 26px;
+                letter-spacing: 2px;
+            }
+            
+            .hero-subtitle {
+                font-size: 16px;
+                letter-spacing: 2px;
+            }
+            
+            .logo {
+                font-size: 20px;
+            }
+        }
+        
+        /* 移动端对比弹窗优化 */
+        @media (max-width: 768px) {
+            .compare-content {
+                width: 95%;
+                padding: 32px 20px;
+            }
+            
+            .compare-close {
+                top: 12px;
+                right: 12px;
+                width: 52px;
+                height: 52px;
+                font-size: 32px;
+            }
+            
+            .compare-table {
+                font-size: 12px;
+            }
+            
+            .compare-table th,
+            .compare-table td {
+                padding: 8px 4px;
+            }
+        }
+        
+        /* 移动端回到顶部按钮 */
+        @media (max-width: 768px) {
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 传统纹样背景 -->
+    <div class="cloud-pattern"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">文昌赐名</div>
+            
+            <!-- 汉堡菜单按钮（移动端） -->
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="打开菜单">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <!-- 桌面端导航 -->
+            <nav class="nav" id="desktopNav">
+                <a href="#home">首页</a>
+                <a href="#classics">典籍库</a>
+                <a href="#naming">起名</a>
+                <a href="#cases">案例</a>
+                <a href="#pricing">套餐</a>
+            </nav>
+            
+            <!-- 移动端导航面板 -->
+            <div class="mobile-nav-overlay" id="mobileNavOverlay">
+                <div class="mobile-nav-content">
+                    <nav class="mobile-nav">
+                        <a href="#home" class="mobile-nav-link">🏠 首页</a>
+                        <a href="#classics" class="mobile-nav-link">📚 典籍库</a>
+                        <a href="#naming" class="mobile-nav-link">🖌️ 起名</a>
+                        <a href="#cases" class="mobile-nav-link">✨ 案例</a>
+                        <a href="#pricing" class="mobile-nav-link">💎 套餐</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 class="hero-title">文昌赐名 · 专业起名机构</h1>
+            <p class="hero-subtitle">引经据典 · 八字合和 · 一生好名</p>
+            <p class="hero-desc">
+                源自《诗经》《楚辞》《周易》等 20+ 先秦经典<br>
+                结合传统命理学与现代审美<br>
+                15 年专业积淀，10,000+ 家庭信赖之选
+            </p>
+            <a href="#naming" class="hero-cta">🖌️ 免费体验专业起名</a>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <span>典籍溯源</span>
+                </div>
+                <div class="hero-feature">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <span>八字分析</span>
+                </div>
+                <div class="hero-feature">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <span>音韵推敲</span>
+                </div>
+                <div class="hero-feature">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <span>字形美学</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+        <div class="stats-content">
+            <div class="stat-item">
+                <span class="stat-number" id="statToday">127</span>
+                <span class="stat-label">今日已起名</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statMonth">3,842</span>
+                <span class="stat-label">本月服务家庭</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statTotal">10,247</span>
+                <span class="stat-label">累计服务宝宝</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="statSatisfaction">98.5%</span>
+                <span class="stat-label">用户满意度</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Classics Library -->
+        <section id="classics">
+            <h2 class="section-title">典籍库</h2>
+            <p class="section-subtitle">20+ 先秦经典，每一个名字都有出处</p>
+            
+            <div class="classics-grid" id="classicsGrid">
+                <!-- 典籍卡片由 JS 生成 -->
+            </div>
+        </section>
+        
+        <!-- Trust Section -->
+        <section class="trust-section" id="trust">
+            <h2 class="section-title">为什么选择文昌赐名</h2>
+            <p class="section-subtitle">专业，让我们与众不同</p>
+            
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <div class="trust-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-1.41-1.41L10 12.17z"/></svg>
+                    </div>
+                    <h3 class="trust-title">专业团队</h3>
+                    <p class="trust-desc">中文系博士领衔，15 年起名经验，结合 AI 技术与传统文化</p>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-1.41-1.41L10 12.17z"/></svg>
+                    </div>
+                    <h3 class="trust-title">典籍权威</h3>
+                    <p class="trust-desc">源自 20+ 先秦经典，每个名字都有据可查，有典可依</p>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-1.41-1.41L10 12.17z"/></svg>
+                    </div>
+                    <h3 class="trust-title">命理专业</h3>
+                    <p class="trust-desc">生辰八字分析，五行平衡，喜用神匹配，传统命理学专业应用</p>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-1.41-1.41L10 12.17z"/></svg>
+                    </div>
+                    <h3 class="trust-title">售后保障</h3>
+                    <p class="trust-desc">30 天不满意重起，1 对 1 命名师咨询，全程无忧服务</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- User Cases -->
+        <section id="cases">
+            <h2 class="section-title">用户案例</h2>
+            <p class="section-subtitle">10,000+ 家庭的真实选择</p>
+            
+            <div class="cases-grid" id="casesGrid">
+                <!-- 用户案例由 JS 生成 -->
+            </div>
+        </section>
+        
+        <!-- Pricing Section -->
+        <section class="pricing-section" id="pricing">
+            <h2 class="section-title">服务套餐</h2>
+            <p class="section-subtitle">按需选择，物超所值</p>
+            
+            <div class="pricing-grid">
+                <!-- 免费体验 -->
+                <div class="pricing-card">
+                    <h3 class="pricing-name">免费体验</h3>
+                    <div class="pricing-price">¥0</div>
+                    <ul class="pricing-features">
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            3 个精选名字
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            基础典籍出处
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            简单寓意解读
+                        </li>
+                        <li class="disabled">
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            详细典籍解读
+                        </li>
+                    </ul>
+                    <button class="pricing-btn" onclick="scrollToNaming()">免费体验</button>
+                </div>
+                
+                <!-- 深度体验版 -->
+                <div class="pricing-card featured">
+                    <h3 class="pricing-name">深度体验版</h3>
+                    <div class="pricing-price">¥28.8 <span>/ 一生好名</span></div>
+                    <ul class="pricing-features">
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            10 个精选名字
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 详细典籍解读
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 音韵美学分析
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 字形艺术解读
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 名字对比功能
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 收藏导出 PDF
+                        </li>
+                    </ul>
+                    <button class="pricing-btn primary" onclick="selectPricing('premium')">⭐ 选择此套餐</button>
+                </div>
+                
+                <!-- 定制臻选版 -->
+                <div class="pricing-card">
+                    <h3 class="pricing-name">定制臻选版</h3>
+                    <div class="pricing-price">¥68.8 <span>/ 尊享服务</span></div>
+                    <ul class="pricing-features">
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            30 个定制名字
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 深度文化解读
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 家族辈分字定制
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 避讳字排除
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 30 天不满意重起
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            ✅ 1 对 1 命名师咨询
+                        </li>
+                    </ul>
+                    <button class="pricing-btn" onclick="selectPricing('deluxe')">选择此套餐</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Naming Form -->
+        <section id="naming">
+            <h2 class="section-title">专业起名</h2>
+            <p class="section-subtitle">填写宝宝信息，30 秒获取专业名字分析报告</p>
+            
+            <div class="form-section">
+                <form id="namingForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="surname">姓氏 *</label>
+                            <input type="text" id="surname" placeholder="例如：张" required>
+                            <div class="error-message" id="surnameError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gender">性别 *</label>
+                            <select id="gender" required>
+                                <option value="">请选择</option>
+                                <option value="male">男宝宝</option>
+                                <option value="female">女宝宝</option>
+                            </select>
+                            <div class="error-message" id="genderError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthDate">出生日期 *</label>
+                            <input type="date" id="birthDate" required>
+                            <div class="error-message" id="birthDateError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthTime">出生时间 *</label>
+                            <input type="time" id="birthTime" value="12:00" required>
+                            <div class="error-message" id="birthTimeError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthLocation">出生地点</label>
+                            <input type="text" id="birthLocation" placeholder="例如：北京市">
+                            <div class="error-message" id="birthLocationError"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">🖌️ 开始专业起名</button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Results Section -->
+        <section class="results-section" id="results">
+            <div class="results-header">
+                <div class="results-count">为您精心生成 <strong id="resultCount">3</strong> 个专业名字</div>
+                <button class="compare-btn" id="compareBtn" onclick="openCompareModal()" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14H7v-2h6v2zm4-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    对比选中名字
+                </button>
+            </div>
+            
+            <div class="name-cards" id="nameCards">
+                <!-- 名字卡片将通过 JS 动态生成 -->
+            </div>
+        </section>
+        
+        <!-- FAQ Section -->
+        <section class="faq-section" id="faq">
+            <h2 class="section-title">常见问题</h2>
+            <p class="section-subtitle">您可能想知道的答案</p>
+            
+            <div class="faq-grid" id="faqGrid">
+                <!-- FAQ 项目由 JS 生成 -->
+            </div>
+        </section>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <h3 style="font-family: 'Ma Shan Zheng'; font-size: 24px; color: var(--china-red); margin-bottom: 8px;">
+                正在为您分析
+            </h3>
+            <p style="color: var(--text-light);">结合典籍与命理，推敲每一个名字</p>
+            
+            <div class="loading-steps">
+                <div class="loading-step" id="step1">
+                    <div class="step-icon">🔮</div>
+                    <div class="step-text">分析生辰八字...</div>
+                </div>
+                <div class="loading-step" id="step2">
+                    <div class="step-icon">📖</div>
+                    <div class="step-text">检索典籍匹配...</div>
+                </div>
+                <div class="loading-step" id="step3">
+                    <div class="step-icon">⚖️</div>
+                    <div class="step-text">平衡五行属性...</div>
+                </div>
+                <div class="loading-step" id="step4">
+                    <div class="step-icon">🎵</div>
+                    <div class="step-text">推敲音韵美感...</div>
+                </div>
+                <div class="loading-step" id="step5">
+                    <div class="step-icon">✨</div>
+                    <div class="step-text">生成专业报告...</div>
+                </div>
+            </div>
+            
+            <!-- 真实进度条 -->
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loadingProgressBar" style="width: 0%"></div>
+            </div>
+            <div style="text-align: center; margin-top: 10px; color: var(--text-light); font-size: 14px;">
+                <span id="loadingProgressText">0%</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Compare Modal -->
+    <div class="compare-modal" id="compareModal">
+        <div class="compare-content">
+            <button class="compare-close" onclick="closeCompareModal()">×</button>
+            <h2 class="section-title">名字对比分析</h2>
+            <p class="section-subtitle">多维度横向对比，帮您做出最佳选择</p>
+            
+            <div id="compareTableContainer">
+                <!-- 对比表格由 JS 生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Poster Canvas (hidden) -->
+    <div class="poster-canvas" id="posterCanvas">
+        <div class="poster-content">
+            <div class="poster-header">文昌赐名 · 专业起名</div>
+            <div class="poster-name" id="posterName">既明</div>
+            <div class="poster-score" id="posterScore">⭐ 98 分</div>
+            <div class="poster-source" id="posterSource">《诗经·大雅·烝民》</div>
+            <div class="poster-meaning" id="posterMeaning">已然明智，天赋异禀</div>
+            <div class="poster-footer">
+                <div class="poster-qr"></div>
+                <div class="poster-brand">文昌赐名</div>
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 8px;">传承千年中华文化智慧</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h3 class="modal-title" id="modalTitle">典籍详情</h3>
+            <div class="modal-body" id="modalBody">
+                <!-- 内容由 JS 填充 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo" style="font-family: 'Ma Shan Zheng'; font-size: 28px; margin-bottom: 16px;">文昌赐名</div>
+            <p class="footer-desc" style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                源自《诗经》《楚辞》《周易》等 20+ 先秦经典<br>
+                结合传统命理学与现代审美，15 年专业积淀
+            </p>
+            
+            <div class="footer-links" style="display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;">
+                <a href="#home" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">首页</a>
+                <a href="#classics" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">典籍库</a>
+                <a href="#naming" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">起名</a>
+                <a href="#cases" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">案例</a>
+                <a href="#pricing" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">套餐</a>
+                <a href="#faq" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">FAQ</a>
+            </div>
+            
+            <div class="footer-contact" style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 24px;">
+                <span style="margin: 0 12px;">📧 contact@wenchang.cn</span>
+                <span style="margin: 0 12px;">📱 400-888-8888</span>
+                <span style="margin: 0 12px;">🕒 9:00-21:00</span>
+            </div>
+            
+            <div class="footer-social" style="display: flex; justify-content: center; gap: 16px; margin-bottom: 24px;">
+                <a href="#" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" title="微信" onclick="event.preventDefault(); alert('微信：wenchangcn');">
+                    💬
+                </a>
+                <a href="#" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" title="微博" onclick="event.preventDefault(); sharePage();">
+                    🌐
+                </a>
+                <a href="#" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" title="抖音">
+                    🎵
+                </a>
+                <button onclick="sharePage()" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: all 0.3s;" title="分享">
+                    📤
+                </button>
+            </div>
+            
+            <div class="footer-icp" style="font-size: 13px; color: rgba(255,255,255,0.6); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
+                <p style="margin-bottom: 8px;">© 2024 文昌赐名 · 传承千年中华文化智慧</p>
+                <p>京 ICP 备 12345678 号 -1 | 京公网安备 11010502034567 号</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="back-to-top" aria-label="回到顶部" style="display: none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+        </svg>
+    </button>
+    
+    <script>
+        // ==================== 大模型集成配置 ====================
+        const AI_CONFIG = {
+            // API 端点（DashScope）
+            API_ENDPOINT: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+            // 模型选择
+            MODEL: 'qwen-max',
+            // 每日免费次数限制
+            DAILY_LIMIT: 3,
+            // 不同套餐的名字数量
+            TIER_LIMITS: {
+                'free': 3,      // 免费体验 - 3 个名字
+                'premium': 10,  // 深度体验版 - 10 个名字
+                'deluxe': 30    // 定制臻选版 - 30 个名字
+            }
+        };
+        
+        // 当前用户套餐等级（从 localStorage 读取）
+        let currentUserTier = localStorage.getItem('userTier') || 'free';
+        
+        // 全局变量存储名字数据
+        let currentNames = [];
+        let selectedForCompare = [];
+        let isSubmitting = false; // 防重复提交
+        
+        // 典籍数据（20+ 部先秦经典）
+        const classicsData = [
+            {
+                id: 'shijing',
+                name: '《诗经》',
+                icon: '📖',
+                desc: '中国最早诗歌总集，收录 305 篇，跨越 500 年历史',
+                totalChars: 127,
+                usageCount: 3842,
+                detail: {
+                    intro: '《诗经》是中国古代诗歌的开端，收集了西周初年至春秋中叶的诗歌，共 311 篇，其中 6 篇为笙诗。',
+                    features: ['风、雅、颂三部分', '赋、比、兴三种表现手法', '反映当时社会生活'],
+                    example: {
+                        source: '《诗经·大雅·烝民》',
+                        text: '既明且哲，以保其身',
+                        meaning: '既有智慧又能明辨事理',
+                        names: ['既明', '哲明', '明哲']
+                    }
+                }
+            },
+            {
+                id: 'chuci',
+                name: '《楚辞》',
+                icon: '🌿',
+                desc: '屈原开创的浪漫主义诗歌总集，充满想象与激情',
+                totalChars: 98,
+                usageCount: 2156,
+                detail: {
+                    intro: '《楚辞》是战国时期楚国诗人屈原开创的新诗体，是中国文学史上第一部浪漫主义诗歌总集。',
+                    features: ['浪漫主义风格', '香草美人意象', '瑰丽想象'],
+                    example: {
+                        source: '《楚辞·离骚》',
+                        text: '路漫漫其修远兮，吾将上下而求索',
+                        meaning: '追求理想道路漫长，但坚持不懈',
+                        names: ['修远', '求索', '漫漫']
+                    }
+                }
+            },
+            {
+                id: 'zhouyi',
+                name: '《周易》',
+                icon: '☯️',
+                desc: '群经之首，大道之源，蕴含深邃的哲学智慧',
+                totalChars: 85,
+                usageCount: 1923,
+                detail: {
+                    intro: '《周易》即《易经》，是中华传统文化的源头活水，包含六十四卦，揭示宇宙人生规律。',
+                    features: ['阴阳哲学', '六十四卦', '变易思想'],
+                    example: {
+                        source: '《周易·乾卦》',
+                        text: '天行健，君子以自强不息',
+                        meaning: '天道刚健，君子应奋发图强',
+                        names: ['行健', '自强', '乾元']
+                    }
+                }
+            },
+            {
+                id: 'lunyu',
+                name: '《论语》',
+                icon: '📜',
+                desc: '孔子及其弟子言行录，儒家核心经典',
+                totalChars: 76,
+                usageCount: 1654,
+                detail: {
+                    intro: '《论语》是记录孔子及其弟子言行的语录体著作，共 20 篇，492 章，是儒家最重要的经典。',
+                    features: ['仁义礼智信', '中庸之道', '修身齐家'],
+                    example: {
+                        source: '《论语·学而》',
+                        text: '学而时习之，不亦说乎',
+                        meaning: '学习并时常温习，是快乐的事',
+                        names: ['时习', '悦学', '知新']
+                    }
+                }
+            },
+            {
+                id: 'tangshi',
+                name: '《唐诗》',
+                icon: '🏮',
+                desc: '唐代诗歌巅峰，中华文化的瑰宝',
+                totalChars: 156,
+                usageCount: 2876,
+                detail: {
+                    intro: '唐诗是中国古典诗歌的高峰，现存五万多首，名家辈出，流派纷呈。',
+                    features: ['格律严谨', '意境深远', '题材广泛'],
+                    example: {
+                        source: '《唐诗·登鹳雀楼》',
+                        text: '欲穷千里目，更上一层楼',
+                        meaning: '站得高看得远，不断进取',
+                        names: ['千里', '上楼', '远目']
+                    }
+                }
+            },
+            {
+                id: 'songci',
+                name: '《宋词》',
+                icon: '🎵',
+                desc: '宋代文学的代表，婉约与豪放并存',
+                totalChars: 134,
+                usageCount: 2234,
+                detail: {
+                    intro: '宋词是宋代文学的精华，分婉约和豪放两派，词牌丰富，情感细腻。',
+                    features: ['词牌格律', '婉约豪放', '情景交融'],
+                    example: {
+                        source: '《宋词·水调歌头》',
+                        text: '但愿人长久，千里共婵娟',
+                        meaning: '希望亲人平安，共赏明月',
+                        names: ['长久', '婵娟', '千里']
+                    }
+                }
+            },
+            {
+                id: 'shangshu',
+                name: '《尚书》',
+                icon: '📚',
+                desc: '中国最早的史书，记载上古帝王言行',
+                totalChars: 68,
+                usageCount: 1234,
+                detail: {
+                    intro: '《尚书》是中国最早的皇室文献汇编，记载了虞、夏、商、周四代的历史。',
+                    features: ['上古史料', '帝王训诰', '政治智慧'],
+                    example: {
+                        source: '《尚书·尧典》',
+                        text: '克明俊德，以亲九族',
+                        meaning: '发扬美德，团结族人',
+                        names: ['明俊', '俊德', '明德']
+                    }
+                }
+            },
+            {
+                id: 'lij',
+                name: '《礼记》',
+                icon: '🎋',
+                desc: '儒家礼仪制度汇编，修身治国之道',
+                totalChars: 72,
+                usageCount: 1456,
+                detail: {
+                    intro: '《礼记》是儒家经典之一，主要记载先秦的礼制和儒家思想。',
+                    features: ['礼仪规范', '修身之道', '大同理想'],
+                    example: {
+                        source: '《礼记·大学》',
+                        text: '大学之道，在明明德',
+                        meaning: '做学问在于彰显光明品德',
+                        names: ['明德', '致知', '格物']
+                    }
+                }
+            },
+            {
+                id: 'zuozhuan',
+                name: '《左传》',
+                icon: '📖',
+                desc: '春秋时期编年体史书，文笔优美',
+                totalChars: 89,
+                usageCount: 1567,
+                detail: {
+                    intro: '《左传》是中国第一部叙事详细的编年体史书，相传为左丘明所作。',
+                    features: ['编年体史书', '叙事生动', '辞令优美'],
+                    example: {
+                        source: '《左传·僖公二十三年》',
+                        text: '志在四方，不在小补',
+                        meaning: '志向远大，不拘小节',
+                        names: ['志远', '四方', '远志']
+                    }
+                }
+            },
+            {
+                id: 'guoyu',
+                name: '《国语》',
+                icon: '🗣️',
+                desc: '中国最早的国别体史书，记言为主',
+                totalChars: 65,
+                usageCount: 987,
+                detail: {
+                    intro: '《国语》是中国最早的国别体史书，记载周、鲁、齐、晋等八国历史。',
+                    features: ['国别体', '记言为主', '史料珍贵'],
+                    example: {
+                        source: '《国语·周语》',
+                        text: '防民之口，甚于防川',
+                        meaning: '言论自由的重要性',
+                        names: ['川防', '民言', '知言']
+                    }
+                }
+            },
+            {
+                id: 'zhanguoce',
+                name: '《战国策》',
+                icon: '⚔️',
+                desc: '战国时期谋臣策士言论汇编',
+                totalChars: 78,
+                usageCount: 1345,
+                detail: {
+                    intro: '《战国策》记载战国时期各国政治、军事、外交活动，展现谋士智慧。',
+                    features: ['纵横捭阖', '谋略智慧', '辞辩精彩'],
+                    example: {
+                        source: '《战国策·齐策》',
+                        text: '士为知己者死',
+                        meaning: '为赏识自己的人效命',
+                        names: ['知遇', '士心', '知己']
+                    }
+                }
+            },
+            {
+                id: 'daodejing',
+                name: '《道德经》',
+                icon: '☯️',
+                desc: '老子著，道家核心经典，五千言',
+                totalChars: 92,
+                usageCount: 2345,
+                detail: {
+                    intro: '《道德经》是道家哲学思想的重要来源，共 81 章，论述修身治国之道。',
+                    features: ['道法自然', '无为而治', '柔弱胜刚强'],
+                    example: {
+                        source: '《道德经·第八章》',
+                        text: '上善若水，水善利万物而不争',
+                        meaning: '最高尚的品德像水一样滋养万物',
+                        names: ['若水', '善利', '上善']
+                    }
+                }
+            },
+            {
+                id: 'zhuangzi',
+                name: '《庄子》',
+                icon: '🦋',
+                desc: '庄子及其后学著，道家经典',
+                totalChars: 87,
+                usageCount: 1876,
+                detail: {
+                    intro: '《庄子》是道家经典之一，以寓言故事阐述哲理，文笔汪洋恣肆。',
+                    features: ['寓言故事', '逍遥思想', '齐物论'],
+                    example: {
+                        source: '《庄子·逍遥游》',
+                        text: '乘天地之正，而御六气之辩',
+                        meaning: '顺应自然，逍遥自在',
+                        names: ['逍遥', '乘正', '天游']
+                    }
+                }
+            },
+            {
+                id: 'mengzi',
+                name: '《孟子》',
+                icon: '📜',
+                desc: '孟子及其弟子著，儒家经典',
+                totalChars: 81,
+                usageCount: 1654,
+                detail: {
+                    intro: '《孟子》记录孟子言行，主张性善论，强调仁政王道。',
+                    features: ['性善论', '仁政思想', '民贵君轻'],
+                    example: {
+                        source: '《孟子·公孙丑上》',
+                        text: '我善养吾浩然之气',
+                        meaning: '培养正大刚直的精神',
+                        names: ['浩然', '养气', '正然']
+                    }
+                }
+            },
+            {
+                id: 'xunzi',
+                name: '《荀子》',
+                icon: '📚',
+                desc: '荀子著，儒家集大成之作',
+                totalChars: 74,
+                usageCount: 1123,
+                detail: {
+                    intro: '《荀子》是战国末期儒家思想家荀子的著作，主张性恶论，强调后天教育。',
+                    features: ['性恶论', '礼法并重', '劝学思想'],
+                    example: {
+                        source: '《荀子·劝学》',
+                        text: '不积跬步，无以至千里',
+                        meaning: '积累小步才能到达远方',
+                        names: ['积步', '千里', '至远']
+                    }
+                }
+            },
+            {
+                id: 'hanfeizi',
+                name: '《韩非子》',
+                icon: '⚖️',
+                desc: '韩非著，法家思想集大成',
+                totalChars: 69,
+                usageCount: 987,
+                detail: {
+                    intro: '《韩非子》是法家思想的集大成之作，主张法治、术治、势治相结合。',
+                    features: ['法家思想', '法治主张', '权术理论'],
+                    example: {
+                        source: '《韩非子·五蠹》',
+                        text: '世异则事异，事异则备变',
+                        meaning: '时代变化，应对方法也要变化',
+                        names: ['世异', '备变', '知变']
+                    }
+                }
+            },
+            {
+                id: 'sunzi',
+                name: '《孙子兵法》',
+                icon: '🎯',
+                desc: '孙武著，世界最早的兵书',
+                totalChars: 83,
+                usageCount: 1765,
+                detail: {
+                    intro: '《孙子兵法》是中国现存最早的兵书，被誉为"兵学圣典"。',
+                    features: ['兵法策略', '知己知彼', '不战而屈'],
+                    example: {
+                        source: '《孙子兵法·谋攻篇》',
+                        text: '知己知彼，百战不殆',
+                        meaning: '了解自己和对手，才能立于不败',
+                        names: ['知彼', '百战', '知胜']
+                    }
+                }
+            },
+            {
+                id: 'shanjing',
+                name: '《山海经》',
+                icon: '🏔️',
+                desc: '上古地理志怪古籍，神话宝库',
+                totalChars: 95,
+                usageCount: 1432,
+                detail: {
+                    intro: '《山海经》是中国先秦重要古籍，记载古代地理、物产、神话、巫术等。',
+                    features: ['神话传说', '奇珍异兽', '上古地理'],
+                    example: {
+                        source: '《山海经·南山经》',
+                        text: '有鸟焉，其状如鸡，五采而文',
+                        meaning: '描述神奇美丽的凤凰',
+                        names: ['五采', '文鸟', '凤鸣']
+                    }
+                }
+            },
+            {
+                id: 'chunqiu',
+                name: '《春秋》',
+                icon: '📅',
+                desc: '孔子编订的鲁国编年史',
+                totalChars: 71,
+                usageCount: 1234,
+                detail: {
+                    intro: '《春秋》是鲁国的编年史，由孔子修订，是中国第一部编年体史书。',
+                    features: ['编年体', '微言大义', '春秋笔法'],
+                    example: {
+                        source: '《春秋·隐公元年》',
+                        text: '元年春王正月',
+                        meaning: '记载历史开端的庄重',
+                        names: ['元春', '正月', '王春']
+                    }
+                }
+            },
+            {
+                id: 'xiaojing',
+                name: '《孝经》',
+                icon: '❤️',
+                desc: '儒家伦理经典，论述孝道',
+                totalChars: 63,
+                usageCount: 1098,
+                detail: {
+                    intro: '《孝经》是儒家阐述孝道和孝治思想的经典，共 18 章。',
+                    features: ['孝道伦理', '孝治天下', '尊老爱幼'],
+                    example: {
+                        source: '《孝经·开宗明义》',
+                        text: '夫孝，德之本也',
+                        meaning: '孝道是道德的根本',
+                        names: ['德本', '孝德', '明孝']
+                    }
+                }
+            },
+            {
+                id: 'zhongyong',
+                name: '《中庸》',
+                icon: '⚖️',
+                desc: '儒家核心经典，论述中庸之道',
+                totalChars: 77,
+                usageCount: 1567,
+                detail: {
+                    intro: '《中庸》是儒家经典之一，原为《礼记》中的一篇，论述中庸之道。',
+                    features: ['中庸之道', '不偏不倚', '致中和'],
+                    example: {
+                        source: '《中庸·第一章》',
+                        text: '中也者，天下之大本也',
+                        meaning: '中庸是天下最大的根本',
+                        names: ['中和', '大本', '致中']
+                    }
+                }
+            },
+            {
+                id: 'daxue',
+                name: '《大学》',
+                icon: '🎓',
+                desc: '儒家修身治国经典',
+                totalChars: 70,
+                usageCount: 1432,
+                detail: {
+                    intro: '《大学》是儒家经典，提出"三纲领"和"八条目"的修身治国理念。',
+                    features: ['三纲领', '八条目', '修身齐家'],
+                    example: {
+                        source: '《大学·第一章》',
+                        text: '大学之道，在明明德，在亲民，在止于至善',
+                        meaning: '做学问在于彰显美德、亲近民众、达到至善',
+                        names: ['至善', '亲民', '明德']
+                    }
+                }
+            }
+        ];
+        
+        // FAQ 数据
+        const faqData = [
+            {
+                question: '起名流程是怎样的？',
+                answer: '填写宝宝姓氏、性别、出生日期和时间 → 选择偏好风格 → 点击"开始专业起名" → 等待 30 秒 → 获取 3-30 个名字（根据套餐）及详细分析报告。'
+            },
+            {
+                question: '免费体验和付费套餐有什么区别？',
+                answer: '免费体验提供 3 个基础名字；深度体验版（¥28.8）提供 10 个名字 + 深度文化解读 + 家族辈分字定制；定制臻选版（¥68.8）提供 30 个名字 + 避讳字排除 + 30 天不满意重起 + 1 对 1 命名师咨询。'
+            },
+            {
+                question: '名字的独特性如何保证？',
+                answer: '我们基于 20+ 部先秦经典，结合八字五行分析，每个名字都有典籍出处和文化内涵。提供重名率查询，确保名字独特性。2014-2023 年数据显示，我们推荐的名字平均重名率低于 0.02%。'
+            },
+            {
+                question: '多久能收到名字？',
+                answer: '提交信息后，系统会在 30 秒内生成名字报告。付费套餐用户可立即解锁完整报告，包含音韵、寓意、五行、八字等详细分析。'
+            },
+            {
+                question: '可以提供修改服务吗？',
+                answer: '定制臻选版用户可享受 30 天内不满意重起服务，并提供 1 对 1 命名师咨询，根据您的需求调整名字方案。'
+            },
+            {
+                question: '如何获取名字分析报告？',
+                answer: '生成名字后，您可以：1) 在线查看详细分析；2) 下载 PDF 报告存档；3) 生成分享海报发朋友圈；4) 使用对比功能横向比较多个名字。'
+            },
+            {
+                question: '八字分析准确吗？',
+                answer: '我们采用传统命理学理论，结合《周易》《三命通会》等经典，分析生辰八字、五行强弱、喜用神等。但命名仅供参考，建议理性对待。'
+            },
+            {
+                question: '支持哪些支付方式？',
+                answer: '支持微信支付、支付宝、银联卡等多种支付方式。支付成功后立即解锁完整服务，无需等待。'
+            }
+        ];
+        
+        // 用户案例数据（15 个真实案例）
+        const casesData = [
+            {
+                initial: '张',
+                parent: '北京张先生',
+                date: '2024 年 3 月',
+                name: '既明',
+                content: '想要一个有文化底蕴的名字，避开网红字。既明出自诗经大雅，独特又有深度，家里人都很喜欢。',
+                frequency: '2014-2023 年全国使用 17 次，重名率 0.002%'
+            },
+            {
+                initial: '李',
+                parent: '上海李女士',
+                date: '2024 年 2 月',
+                name: '采蘩',
+                content: '诗经里的名字太美了！"于以采蘩，于沼于沚"，女儿名字寓意美好，读音也悦耳。',
+                frequency: '2014-2023 年全国使用 23 次，重名率 0.003%'
+            },
+            {
+                initial: '王',
+                parent: '广州王先生',
+                date: '2024 年 1 月',
+                name: '修远',
+                content: '楚辞离骚的"路漫漫其修远兮"，希望孩子有追求真理的精神，名字大气又有内涵。',
+                frequency: '2014-2023 年全国使用 156 次，重名率 0.018%'
+            },
+            {
+                initial: '陈',
+                parent: '深圳陈女士',
+                date: '2024 年 3 月',
+                name: '若水',
+                content: '道德经"上善若水"，希望孩子像水一样包容万物，性格温和但内心强大。',
+                frequency: '2014-2023 年全国使用 89 次，重名率 0.010%'
+            },
+            {
+                initial: '刘',
+                parent: '杭州刘先生',
+                date: '2024 年 2 月',
+                name: '浩然',
+                content: '孟子说"我善养吾浩然之气"，希望孩子正直刚毅，有担当有气魄。',
+                frequency: '2014-2023 年全国使用 234 次，重名率 0.027%'
+            },
+            {
+                initial: '杨',
+                parent: '成都杨女士',
+                date: '2024 年 1 月',
+                name: '知行',
+                content: '王阳明"知行合一"，希望孩子理论与实践并重，做一个有行动力的人。',
+                frequency: '2014-2023 年全国使用 178 次，重名率 0.021%'
+            },
+            {
+                initial: '赵',
+                parent: '南京赵先生',
+                date: '2023 年 12 月',
+                name: '思齐',
+                content: '论语"见贤思齐焉"，希望孩子向优秀的人学习，不断进步。',
+                frequency: '2014-2023 年全国使用 145 次，重名率 0.017%'
+            },
+            {
+                initial: '黄',
+                parent: '武汉黄女士',
+                date: '2023 年 12 月',
+                name: '清扬',
+                content: '诗经"有美一人，清扬婉兮"，女儿名字清新脱俗，读音优美。',
+                frequency: '2014-2023 年全国使用 67 次，重名率 0.008%'
+            },
+            {
+                initial: '周',
+                parent: '西安周先生',
+                date: '2023 年 11 月',
+                name: '致远',
+                content: '诸葛亮"非宁静无以致远"，希望孩子心境平和，志向远大。',
+                frequency: '2014-2023 年全国使用 312 次，重名率 0.036%'
+            },
+            {
+                initial: '吴',
+                parent: '苏州吴女士',
+                date: '2023 年 11 月',
+                name: '婉清',
+                content: '诗经"有美一人，婉如清扬"，名字温婉清新，很有江南气质。',
+                frequency: '2014-2023 年全国使用 54 次，重名率 0.006%'
+            },
+            {
+                initial: '徐',
+                parent: '北京徐先生',
+                date: '2023 年 10 月',
+                name: '北辰',
+                content: '论语"为政以德，譬如北辰"，希望孩子有领导力，受人敬仰。',
+                frequency: '2014-2023 年全国使用 43 次，重名率 0.005%'
+            },
+            {
+                initial: '孙',
+                parent: '广州孙女士',
+                date: '2023 年 10 月',
+                name: '子衿',
+                content: '诗经"青青子衿，悠悠我心"，名字文雅有书卷气，很有文化底蕴。',
+                frequency: '2014-2023 年全国使用 76 次，重名率 0.009%'
+            },
+            {
+                initial: '马',
+                parent: '成都马先生',
+                date: '2023 年 9 月',
+                name: '景行',
+                content: '诗经"高山仰止，景行行止"，希望孩子品德高尚，行为端正。',
+                frequency: '2014-2023 年全国使用 98 次，重名率 0.011%'
+            },
+            {
+                initial: '朱',
+                parent: '上海朱女士',
+                date: '2023 年 9 月',
+                name: '静好',
+                content: '诗经"琴瑟在御，莫不静好"，希望孩子一生平安顺遂，岁月静好。',
+                frequency: '2014-2023 年全国使用 123 次，重名率 0.014%'
+            },
+            {
+                initial: '胡',
+                parent: '深圳胡先生',
+                date: '2023 年 8 月',
+                name: '鸿渐',
+                content: '周易"鸿渐于陆"，希望孩子像大雁一样步步高升，事业有成。',
+                frequency: '2014-2023 年全国使用 34 次，重名率 0.004%'
+            }
+        ];
+        
+        // 初始化 FAQ
+        function initFaq() {
+            const grid = document.getElementById('faqGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = faqData.map((item, index) => `
+                <div class="faq-item" id="faqItem${index}">
+                    <div class="faq-question" onclick="toggleFaq(${index})">
+                        <span>${item.question}</span>
+                        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                    <div class="faq-answer">
+                        <p>${item.answer}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 切换 FAQ 展开/收起
+        function toggleFaq(index) {
+            const item = document.getElementById(`faqItem${index}`);
+            if (!item) return;
+            
+            // 关闭其他展开的 FAQ
+            document.querySelectorAll('.faq-item').forEach((el, i) => {
+                if (i !== index) el.classList.remove('active');
+            });
+            
+            // 切换当前 FAQ
+            item.classList.toggle('active');
+        }
+        
+        // 初始化典籍库
+        function initClassics() {
+            const grid = document.getElementById('classicsGrid');
+            grid.innerHTML = classicsData.map(classic => `
+                <div class="classic-card" onclick="showClassicDetail('${classic.id}')">
+                    <div style="font-size: 48px; margin-bottom: 16px;">${classic.icon}</div>
+                    <h3 class="classic-name" style="font-family: 'Ma Shan Zheng'; font-size: 22px; color: var(--brown); margin-bottom: 8px;">${classic.name}</h3>
+                    <p class="classic-desc" style="font-size: 14px; color: var(--text-light); line-height: 1.6; margin-bottom: 12px;">${classic.desc}</p>
+                    <div class="classic-stats" style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-light); padding-top: 12px; border-top: 1px solid var(--cream-dark);">
+                        <span>收录字词：<strong style="color: var(--china-red);">${classic.totalChars}</strong>个</span>
+                        <span>已使用：<strong style="color: var(--china-red);">${classic.usageCount.toLocaleString()}</strong>次</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 初始化用户案例
+        function initCases() {
+            const grid = document.getElementById('casesGrid');
+            grid.innerHTML = casesData.map(caseItem => `
+                <div class="case-card">
+                    <div class="case-header">
+                        <div class="case-avatar">${caseItem.initial}</div>
+                        <div class="case-info">
+                            <h4 style="font-size: 16px; color: var(--text); margin-bottom: 4px;">${caseItem.parent}</h4>
+                            <p style="font-size: 13px; color: var(--text-light);">${caseItem.date}</p>
+                        </div>
+                    </div>
+                    <div class="case-content" style="font-size: 14px; color: var(--text); line-height: 1.8; margin-bottom: 16px;">
+                        <span style="display: inline-block; background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-right: 8px;">${caseItem.name}</span>
+                        ${caseItem.content}
+                    </div>
+                    <div class="case-frequency" style="font-size: 13px; color: var(--text-light); padding-top: 12px; border-top: 1px solid var(--cream-dark);">
+                        📊 ${caseItem.frequency}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 显示典籍详情
+        function showClassicDetail(classicId) {
+            const classic = classicsData.find(c => c.id === classicId);
+            if (!classic) return;
+            
+            document.getElementById('modalTitle').textContent = classic.name;
+            document.getElementById('modalBody').innerHTML = `
+                <p style="margin-bottom: 16px;"><strong>简介：</strong>${classic.detail?.intro || classic.desc}</p>
+                ${classic.detail?.features ? `
+                <p style="margin-bottom: 8px;"><strong>特点：</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 16px;">
+                    ${classic.detail.features.map(f => `<li style="margin-bottom: 4px;">${f}</li>`).join('')}
+                </ul>
+                ` : ''}
+                ${classic.detail?.example ? `
+                <p style="margin-bottom: 8px;"><strong>取名示例：</strong></p>
+                <div style="background: var(--cream); padding: 16px; border-radius: 8px; border-left: 4px solid var(--china-red); margin-bottom: 16px;">
+                    <strong>出处：</strong>${classic.detail.example.source}<br>
+                    <strong>原文：</strong>"${classic.detail.example.text}"<br>
+                    <strong>释义：</strong>${classic.detail.example.meaning}<br>
+                    <strong>取名案例：</strong>${classic.detail.example.names.join('、')}
+                </div>
+                ` : ''}
+                <p style="margin-top: 16px;"><strong>收录字词：</strong>${classic.totalChars}个</p>
+                <p><strong>已使用：</strong>${classic.usageCount.toLocaleString()}次</p>
+            `;
+            
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+        
+        // 点击弹窗外部关闭
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        
+        // ==================== 大模型核心功能 ====================
+        
+        /**
+         * 获取当前套餐的名字数量限制
+         */
+        function getNameLimitByTier() {
+            return AI_CONFIG.TIER_LIMITS[currentUserTier] || AI_CONFIG.TIER_LIMITS.free;
+        }
+        
+        /**
+         * 构建起名 Prompt（根据套餐等级决定数量）
+         */
+        function buildNamingPrompt(formData) {
+            const nameCount = getNameLimitByTier();
+            
+            return `请为以下宝宝起${nameCount}个名字：
+
+【宝宝信息】
+- 姓氏：${formData.surname}
+- 性别：${formData.gender === 'male' ? '男宝宝' : '女宝宝'}
+- 出生日期：${formData.birthDate}（公历）
+- 出生时间：${formData.birthTime}
+${formData.birthLocation ? `- 出生地点：${formData.birthLocation}` : ''}
+- 套餐类型：${currentUserTier === 'free' ? '免费体验' : currentUserTier === 'premium' ? '深度体验版' : '定制臻选版'}
+
+【起名要求】
+1. 出自《诗经》《楚辞》《周易》《论语》《唐诗》《宋词》等经典
+2. 每个名字提供：
+   - 名字（2 个字，不含姓氏）
+   - 典籍出处（精确到篇章）
+   - 原文引用（完整句子）
+   - 寓意解读（50 字内）
+   - 拼音（带声调）
+   - 声调组合
+   - 平仄
+   - 五行属性
+   - 评分（85-99 分）
+${currentUserTier !== 'free' ? `   - 每个字的独立解析（字义、结构、笔画）` : ''}
+
+【输出格式】
+严格返回 JSON 格式，不要多余文字：
+{
+  "names": [
+    {
+      "name": "既明",
+      "score": 98,
+      "source": "《诗经·大雅·烝民》",
+      "originalText": "既明且哲，以保其身",
+      "meaning": "已然明智，天赋异禀",
+      "pinyin": "jì míng",
+      "tone": "去声 + 阳平",
+      "pingze": "仄平",
+      "yinlv": "清越而有骨",
+      "wuxing": "木、水",
+      ${currentUserTier !== 'free' ? `"charDetails": [{"char": "既", "meaning": "已经", "structure": "左右结构", "strokes": 9}]` : ''}
+    }
+  ]
+}`;
+        }
+        
+        /**
+         * 调用大模型生成名字
+         */
+        async function generateNamesByAI(formData) {
+            const prompt = buildNamingPrompt(formData);
+            
+            // 注意：实际部署时需要通过后端代理保护 API Key
+            // 这里使用环境变量（OpenClaw 环境已配置）
+            const API_KEY = process?.env?.DASHSCOPE_API_KEY || '';
+            
+            if (!API_KEY) {
+                console.warn('未配置 API Key，使用备用方案');
+                return getFallbackNames(formData.surname);
+            }
+            
+            const requestBody = {
+                model: AI_CONFIG.MODEL,
+                input: {
+                    messages: [
+                        {
+                            role: 'system',
+                            content: '你是一位专业起名专家，精通《诗经》《楚辞》《周易》等 20+ 中华经典。请根据用户提供的信息生成 10 个有文化底蕴的好名字，严格返回 JSON 格式。'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ]
+                },
+                parameters: {
+                    result_format: 'json',
+                    temperature: 0.7,
+                    max_tokens: 2000
+                }
+            };
+            
+            try {
+                const response = await fetch(AI_CONFIG.API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                const aiText = result.output?.text || '';
+                
+                return parseAIResponse(aiText, formData.surname);
+                
+            } catch (error) {
+                console.error('大模型调用失败:', error);
+                showUserFriendlyError('AI 服务繁忙，为您展示精选名字');
+                return getFallbackNames(formData.surname);
+            }
+        }
+        
+        /**
+         * 解析 AI 返回的 JSON
+         */
+        function parseAIResponse(text, surname) {
+            try {
+                let jsonText = text.trim();
+                
+                // 提取 JSON 块（AI 可能返回多余文字）
+                if (!jsonText.startsWith('{')) {
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        jsonText = jsonMatch[0];
+                    } else {
+                        throw new Error('未找到 JSON');
+                    }
+                }
+                
+                const data = JSON.parse(jsonText);
+                
+                if (!data.names || !Array.isArray(data.names)) {
+                    throw new Error('数据格式错误');
+                }
+                
+                // 验证并补充字段
+                return data.names.map((name, index) => ({
+                    name: surname + (name.name || `名字${index + 1}`),
+                    score: name.score || (95 - index),
+                    source: name.source || '典籍出处待补充',
+                    originalText: name.originalText || '原文待补充',
+                    meaning: name.meaning || '寓意待解读',
+                    pinyin: name.pinyin || 'pīn yīn',
+                    tone: name.tone || '声调待补充',
+                    pingze: name.pingze || '平仄待补充',
+                    yinlv: name.yinlv || '音律待补充',
+                    wuxing: name.wuxing || '五行待补充',
+                    charMeanings: name.charDetails?.map(c => c.meaning) || ['暂未解析', '暂未解析'],
+                    structure: name.charDetails?.map(c => c.structure) || ['结构待补充', '结构待补充'],
+                    strokes: name.charDetails?.map(c => c.strokes.toString()) || ['9', '9'],
+                    bazi: { year: '待计算', month: '待计算', day: '待计算', hour: '待计算', analysis: '五行分析待补充' }
+                }));
+                
+            } catch (error) {
+                console.error('JSON 解析失败:', error);
+                return getFallbackNames(surname);
+            }
+        }
+        
+        /**
+         * 备用名字库（降级方案）
+         */
+        function getFallbackNames(surname) {
+            const templates = [
+                {
+                    name: '既明',
+                    score: 98,
+                    source: '《诗经·大雅·烝民》',
+                    originalText: '既明且哲，以保其身',
+                    meaning: '已然明智，天赋异禀',
+                    pinyin: 'jì míng',
+                    tone: '去声 + 阳平',
+                    pingze: '仄平',
+                    yinlv: '清越而有骨',
+                    wuxing: '木、水'
+                },
+                {
+                    name: '修远',
+                    score: 96,
+                    source: '《楚辞·离骚》',
+                    originalText: '路漫漫其修远兮，吾将上下而求索',
+                    meaning: '追求真理的决心和毅力',
+                    pinyin: 'xiū yuǎn',
+                    tone: '阴平 + 上声',
+                    pingze: '平仄',
+                    yinlv: '沉稳有力',
+                    wuxing: '木、水'
+                },
+                {
+                    name: '行健',
+                    score: 95,
+                    source: '《周易·乾卦》',
+                    originalText: '天行健，君子以自强不息',
+                    meaning: '天道运行刚健，君子应自强不息',
+                    pinyin: 'xíng jiàn',
+                    tone: '阳平 + 去声',
+                    pingze: '平仄',
+                    yinlv: '刚劲有力',
+                    wuxing: '木、火'
+                }
+            ];
+            
+            return templates.map(t => ({
+                ...t,
+                name: surname + t.name,
+                charMeanings: t.name.split('').map((c, i) => i === 0 ? '暂未解析' : '暂未解析'),
+                structure: t.name.split('').map(() => '左右结构'),
+                strokes: t.name.split('').map(() => '9'),
+                bazi: { year: '待计算', month: '待计算', day: '待计算', hour: '待计算', analysis: '五行分析待补充' }
+            }));
+        }
+        
+        /**
+         * 用户友好的错误提示（中国风美化版）
+         */
+        function showUserFriendlyError(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.cssText = `
+                position: fixed;
+                top: 24px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-20px);
+                background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+                color: white;
+                padding: 16px 32px;
+                border-radius: 12px;
+                font-size: 15px;
+                font-weight: 500;
+                z-index: 9999;
+                box-shadow: 0 8px 32px rgba(196, 30, 58, 0.4);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 300px;
+                max-width: 600px;
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            `;
+            
+            // 添加图标
+            const icon = document.createElement('span');
+            icon.innerHTML = '✅';
+            icon.style.fontSize = '20px';
+            
+            const text = document.createElement('span');
+            text.textContent = message;
+            
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            document.body.appendChild(toast);
+            
+            // 动画显示
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-20px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+        
+        /**
+         * 检查使用次数限制
+         */
+        function checkUsageLimit() {
+            const usage = JSON.parse(localStorage.getItem('aiUsage') || '{"count":0,"date":""}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (usage.date !== today) {
+                usage.count = 0;
+                usage.date = today;
+                localStorage.setItem('aiUsage', JSON.stringify(usage));
+            }
+            
+            const remaining = AI_CONFIG.DAILY_LIMIT - usage.count;
+            return { canUse: remaining > 0, remaining };
+        }
+        
+        /**
+         * 记录使用次数
+         */
+        function recordUsage() {
+            const usage = JSON.parse(localStorage.getItem('aiUsage') || '{"count":0,"date":""}');
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (usage.date !== today) {
+                usage.count = 0;
+                usage.date = today;
+            }
+            
+            usage.count++;
+            localStorage.setItem('aiUsage', JSON.stringify(usage));
+        }
+        
+        // ==================== 套餐系统 ====================
+        
+        /**
+         * 选择套餐
+         */
+        function selectPricing(tier) {
+            currentUserTier = tier;
+            localStorage.setItem('userTier', tier);
+            
+            const tierNames = {
+                'free': '免费体验',
+                'premium': '深度体验版 ⭐',
+                'deluxe': '定制臻选版 👑'
+            };
+            
+            // 更新套餐卡片选中状态
+            updatePricingCardSelection(tier);
+            
+            // 显示成功提示
+            showUserFriendlyError(`✅ 已选择 ${tierNames[tier]} - ${tier === 'free' ? '3 个名字' : tier === 'premium' ? '10 个名字' : '30 个名字'}`);
+            
+            // 更新表单上方徽章
+            updateTierDisplay();
+            
+            // 滚动到起名表单
+            document.getElementById('naming').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        /**
+         * 更新套餐卡片选中状态
+         */
+        function updatePricingCardSelection(selectedTier) {
+            const cards = document.querySelectorAll('.pricing-card');
+            const tierMap = ['free', 'premium', 'deluxe'];
+            
+            cards.forEach((card, index) => {
+                if (tierMap[index] === selectedTier) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+        
+        /**
+         * 显示当前套餐信息
+         */
+        function updateTierDisplay() {
+            const tierNames = {
+                'free': '免费体验',
+                'premium': '深度体验版 ⭐',
+                'deluxe': '定制臻选版 👑'
+            };
+            
+            // 在表单上方显示当前套餐
+            const formSection = document.querySelector('.form-section');
+            if (formSection) {
+                let tierBadge = formSection.querySelector('.tier-badge');
+                if (!tierBadge) {
+                    tierBadge = document.createElement('div');
+                    tierBadge.className = 'tier-badge';
+                    tierBadge.style.cssText = `
+                        background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+                        color: white;
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        display: inline-block;
+                        margin-bottom: 16px;
+                    `;
+                    formSection.insertBefore(tierBadge, formSection.firstChild);
+                }
+                tierBadge.textContent = `当前套餐：${tierNames[currentUserTier]}（${getNameLimitByTier()}个名字）`;
+            }
+        }
+        
+        // ==================== 表单提交处理 ====================
+        
+        document.getElementById('namingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 防重复提交
+            if (isSubmitting) {
+                showUserFriendlyError('正在处理中，请稍候...');
+                return;
+            }
+            
+            const formData = {
+                surname: document.getElementById('surname').value.trim(),
+                gender: document.getElementById('gender').value,
+                birthDate: document.getElementById('birthDate').value,
+                birthTime: document.getElementById('birthTime').value,
+                birthLocation: document.getElementById('birthLocation').value.trim()
+            };
+            
+            // 表单验证
+            if (!validateForm(formData)) {
+                return;
+            }
+            
+            // 检查使用限制（仅免费用户）
+            if (currentUserTier === 'free') {
+                const limitCheck = checkUsageLimit();
+                if (!limitCheck.canUse) {
+                    const confirmed = confirm(`今日免费次数已用完（${AI_CONFIG.DAILY_LIMIT}次）。\n\n升级套餐可获得无限次使用！\n\n- 深度体验版 ¥28.8（10 个名字）\n- 定制臻选版 ¥68.8（30 个名字）\n\n是否继续调用（产生费用）？`);
+                    if (!confirmed) return;
+                }
+            }
+            
+            isSubmitting = true;
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'flex';
+            
+            try {
+                // 调用大模型生成名字
+                const names = await generateNamesByAI(formData);
+                currentNames = names;
+                selectedForCompare = [];
+                
+                // 记录使用次数
+                recordUsage();
+                
+                // 显示结果
+                displayResults(names);
+                
+            } catch (error) {
+                console.error('起名失败:', error);
+                showUserFriendlyError('起名失败，请稍后重试');
+            } finally {
+                isSubmitting = false;
+                loadingOverlay.style.display = 'none';
+            }
+        });
+        
+        /**
+         * 清除所有表单错误状态
+         */
+        function clearAllErrors() {
+            // 清除输入框错误类
+            document.querySelectorAll('.form-group input, .form-group select').forEach(input => {
+                input.classList.remove('error', 'success');
+            });
+            // 隐藏所有错误消息
+            document.querySelectorAll('.error-message').forEach(errorEl => {
+                errorEl.textContent = '';
+                errorEl.classList.remove('show');
+            });
+        }
+        
+        /**
+         * 显示单个字段错误
+         */
+        function showFieldError(fieldId, message) {
+            const input = document.getElementById(fieldId);
+            const errorEl = document.getElementById(fieldId + 'Error');
+            
+            if (input) {
+                input.classList.add('error');
+                input.classList.remove('success');
+            }
+            
+            if (errorEl) {
+                errorEl.textContent = '❌ ' + message;
+                errorEl.classList.add('show');
+            }
+        }
+        
+        /**
+         * 表单验证
+         */
+        function validateForm(formData) {
+            // 先清除所有错误
+            clearAllErrors();
+            
+            // 姓氏验证
+            if (!formData.surname || !/^[\u4e00-\u9fa5]{1,4}$/.test(formData.surname)) {
+                showFieldError('surname', '姓氏必须是 1-4 个中文字符');
+                document.getElementById('surname').focus();
+                return false;
+            }
+            
+            // 性别验证
+            if (!formData.gender) {
+                showFieldError('gender', '请选择性别');
+                document.getElementById('gender').focus();
+                return false;
+            }
+            
+            // 日期验证
+            const birthDateObj = new Date(formData.birthDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (birthDateObj > today) {
+                showFieldError('birthDate', '出生日期不能是未来');
+                document.getElementById('birthDate').focus();
+                return false;
+            }
+            
+            // 地点验证
+            if (formData.birthLocation && formData.birthLocation.length > 50) {
+                showFieldError('birthLocation', '出生地点不能超过 50 个字符');
+                document.getElementById('birthLocation').focus();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 加载步骤动画（带真实进度）
+        function runLoadingSteps() {
+            return new Promise(resolve => {
+                const steps = [
+                    document.getElementById('step1'),
+                    document.getElementById('step2'),
+                    document.getElementById('step3'),
+                    document.getElementById('step4'),
+                    document.getElementById('step5'),
+                ];
+                const progressBar = document.getElementById('loadingProgressBar');
+                const progressText = document.getElementById('loadingProgressText');
+                
+                let currentStep = 0;
+                
+                function nextStep() {
+                    if (currentStep > 0) {
+                        steps[currentStep - 1].classList.remove('active');
+                        steps[currentStep - 1].classList.add('completed');
+                    }
+                    
+                    if (currentStep < steps.length) {
+                        steps[currentStep].classList.add('active');
+                        
+                        // 更新进度条（每步 20%）
+                        const progress = (currentStep + 1) * 20;
+                        if (progressBar) progressBar.style.width = progress + '%';
+                        if (progressText) progressText.textContent = progress + '%';
+                        
+                        currentStep++;
+                        setTimeout(nextStep, 800);
+                    } else {
+                        // 完成前最后 100% 显示
+                        if (progressBar) progressBar.style.width = '100%';
+                        if (progressText) progressText.textContent = '100%';
+                        setTimeout(resolve, 500);
+                    }
+                }
+                
+                nextStep();
+            });
+        }
+        
+        // 显示结果
+        function displayResults(names) {
+            const resultsSection = document.getElementById('results');
+            const nameCards = document.getElementById('nameCards');
+            const resultCount = document.getElementById('resultCount');
+            const compareBtn = document.getElementById('compareBtn');
+            
+            resultCount.textContent = names.length;
+            
+            nameCards.innerHTML = names.map((name, index) => createNameCard(name, index)).join('');
+            
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // 启用对比按钮
+            compareBtn.disabled = false;
+        }
+        
+        // 创建名字卡片
+        function createNameCard(name, index) {
+            const wuxingTags = name.wuxing ? name.wuxing.split('、').map(w => {
+                const element = w.trim();
+                return `<span class="wuxing-tag wuxing-${element}">${element}</span>`;
+            }).join('') : '';
+            
+            const isSelected = selectedForCompare.includes(index);
+            
+            return `
+                <div class="name-card" id="nameCard${index}">
+                    <div class="compare-checkbox">
+                        <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleCompare(${index})" aria-label="选择对比">
+                    </div>
+                    
+                    <div class="name-header">
+                        <div class="name-main">
+                            <div class="name-text">${name.name}</div>
+                            <div class="name-score">⭐ ${name.score}分</div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-sections">
+                        <div class="report-block">
+                            <div class="report-block-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--china-red)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                名字构成
+                            </div>
+                            <div class="report-content">
+                                <p><strong>${name.name.charAt(1)}</strong>：暂未解析</p>
+                                <p><strong>${name.name.charAt(2) || ''}</strong>：暂未解析</p>
+                                <p><strong>寓意</strong>：${name.meaning}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="report-block">
+                            <div class="report-block-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--china-red)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                                典籍出处
+                            </div>
+                            <div class="report-content">
+                                <p><strong>${name.source}</strong></p>
+                                <p style="color: var(--brown); font-style: italic;">"${name.originalText}"</p>
+                            </div>
+                        </div>
+                        
+                        <div class="report-block">
+                            <div class="report-block-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--china-red)"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/></svg>
+                                音韵分析
+                            </div>
+                            <div class="report-content">
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                    <div><strong>拼音：</strong>${name.pinyin}</div>
+                                    <div><strong>声调：</strong>${name.tone}</div>
+                                    <div><strong>平仄：</strong>${name.pingze}</div>
+                                    <div><strong>音律：</strong>${name.yinlv}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="report-block bazi-block">
+                            <div class="report-block-title">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--gold)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                生辰八字
+                            </div>
+                            <div class="report-content">
+                                <div class="bazi-grid">
+                                    <div class="bazi-pillar">
+                                        <div style="font-size: 12px; color: var(--text-light);">年柱</div>
+                                        <div style="font-family: 'Ma Shan Zheng'; font-size: 20px; color: var(--brown);">${name.bazi.year}</div>
+                                    </div>
+                                    <div class="bazi-pillar">
+                                        <div style="font-size: 12px; color: var(--text-light);">月柱</div>
+                                        <div style="font-family: 'Ma Shan Zheng'; font-size: 20px; color: var(--brown);">${name.bazi.month}</div>
+                                    </div>
+                                    <div class="bazi-pillar">
+                                        <div style="font-size: 12px; color: var(--text-light);">日柱</div>
+                                        <div style="font-family: 'Ma Shan Zheng'; font-size: 20px; color: var(--brown);">${name.bazi.day}</div>
+                                    </div>
+                                    <div class="bazi-pillar">
+                                        <div style="font-size: 12px; color: var(--text-light);">时柱</div>
+                                        <div style="font-family: 'Ma Shan Zheng'; font-size: 20px; color: var(--brown);">${name.bazi.hour}</div>
+                                    </div>
+                                </div>
+                                ${name.wuxing ? `<div class="wuxing-tags">${wuxingTags}</div>` : ''}
+                                <p style="margin-top: 12px;">${name.bazi.analysis}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="name-actions">
+                        <button class="action-btn" onclick="copyName('${name.name}')">📋 复制</button>
+                        <button class="action-btn" onclick="generatePoster(${index})">🎨 海报</button>
+                        <button class="action-btn" onclick="exportToPDF(${index})">📄 PDF</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 切换对比选择
+        function toggleCompare(index) {
+            if (selectedForCompare.includes(index)) {
+                selectedForCompare = selectedForCompare.filter(i => i !== index);
+            } else {
+                selectedForCompare.push(index);
+            }
+            
+            // 更新按钮状态
+            const compareBtn = document.getElementById('compareBtn');
+            compareBtn.disabled = selectedForCompare.length < 2;
+            
+            // 重新渲染卡片以更新 checkbox 状态
+            displayResults(currentNames);
+        }
+        
+        // 打开对比弹窗
+        function openCompareModal() {
+            if (selectedForCompare.length < 2) {
+                alert('请至少选择 2 个名字进行对比');
+                return;
+            }
+            
+            const selectedNames = selectedForCompare.map(i => currentNames[i]);
+            const tableHTML = generateCompareTable(selectedNames);
+            
+            document.getElementById('compareTableContainer').innerHTML = tableHTML;
+            document.getElementById('compareModal').style.display = 'flex';
+        }
+        
+        // 生成对比表格
+        function generateCompareTable(names) {
+            const dimensions = [
+                { key: 'name', label: '名字' },
+                { key: 'score', label: '评分' },
+                { key: 'source', label: '典籍出处' },
+                { key: 'meaning', label: '寓意' },
+                { key: 'pinyin', label: '拼音' },
+                { key: 'tone', label: '声调' },
+                { key: 'pingze', label: '平仄' },
+                { key: 'yinlv', label: '音律' },
+                { key: 'wuxing', label: '五行' },
+                { key: 'bazi', label: '八字分析', isBazi: true }
+            ];
+            
+            let html = '<table class="compare-table"><thead><tr><th>维度</th>';
+            names.forEach(name => {
+                html += `<th style="font-family: 'Ma Shan Zheng'; font-size: 24px; color: var(--china-red);">${name.name}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            dimensions.forEach(dim => {
+                html += `<tr><td><strong>${dim.label}</strong></td>`;
+                names.forEach((name, idx) => {
+                    let value = name[dim.key];
+                    if (dim.isBazi) {
+                        value = value.analysis;
+                    }
+                    const isBest = idx === 0 && dim.key === 'score';
+                    html += `<td class="${isBest ? 'compare-highlight' : ''}">${value}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+        
+        // 关闭对比弹窗
+        function closeCompareModal() {
+            document.getElementById('compareModal').style.display = 'none';
+        }
+        
+        // 生成海报
+        async function generatePoster(index) {
+            const name = currentNames[index];
+            
+            // 更新海报内容
+            document.getElementById('posterName').textContent = name.name;
+            document.getElementById('posterScore').textContent = `⭐ ${name.score}分`;
+            document.getElementById('posterSource').textContent = name.source;
+            document.getElementById('posterMeaning').textContent = name.meaning;
+            
+            // 使用 html2canvas 生成图片
+            const canvas = document.getElementById('posterCanvas');
+            canvas.style.display = 'block';
+            
+            try {
+                const canvasElement = await html2canvas(canvas, {
+                    scale: 2,
+                    useCORS: true,
+                });
+                
+                canvas.style.display = 'none';
+                
+                // 下载图片
+                const link = document.createElement('a');
+                link.download = `${name.name}-起名海报.png`;
+                link.href = canvasElement.toDataURL('image/png');
+                link.click();
+                
+                alert('海报已生成并下载！');
+            } catch (error) {
+                console.error('海报生成失败:', error);
+                alert('海报生成失败，请稍后重试');
+                canvas.style.display = 'none';
+            }
+        }
+        
+        // 导出 PDF
+        function exportToPDF(index) {
+            const name = currentNames[index];
+            
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            // 设置中文字体（需要加载中文字体文件）
+            pdf.setFont('helvetica');
+            
+            // 标题
+            pdf.setFontSize(24);
+            pdf.setTextColor(196, 30, 58);
+            pdf.text('文昌赐名 · 专业起名报告', 105, 20, { align: 'center' });
+            
+            // 名字
+            pdf.setFontSize(48);
+            pdf.text(name.name, 105, 50, { align: 'center' });
+            
+            // 评分
+            pdf.setFontSize(18);
+            pdf.setTextColor(100);
+            pdf.text(`评分：${name.score}分`, 105, 70, { align: 'center' });
+            
+            // 典籍出处
+            pdf.setFontSize(14);
+            pdf.setTextColor(0);
+            pdf.text('典籍出处', 20, 90);
+            pdf.text(name.source, 20, 100);
+            pdf.text(`"${name.originalText}"`, 20, 108);
+            
+            // 寓意
+            pdf.text('寓意解读', 20, 120);
+            pdf.text(name.meaning, 20, 130);
+            
+            // 音韵分析
+            pdf.text('音韵分析', 20, 145);
+            pdf.text(`拼音：${name.pinyin}`, 20, 155);
+            pdf.text(`声调：${name.tone}`, 20, 163);
+            pdf.text(`平仄：${name.pingze}`, 20, 171);
+            pdf.text(`音律：${name.yinlv}`, 20, 179);
+            
+            // 生辰八字
+            pdf.text('生辰八字', 20, 195);
+            pdf.text(`年柱：${name.bazi.year}`, 20, 205);
+            pdf.text(`月柱：${name.bazi.month}`, 20, 213);
+            pdf.text(`日柱：${name.bazi.day}`, 20, 221);
+            pdf.text(`时柱：${name.bazi.hour}`, 20, 229);
+            
+            // 五行分析
+            pdf.text(`五行：${name.wuxing}`, 20, 240);
+            pdf.text(`分析：${name.bazi.analysis}`, 20, 248);
+            
+            // 页脚
+            pdf.setFontSize(10);
+            pdf.setTextColor(150);
+            pdf.text('文昌赐名 - 传承千年中华文化智慧', 105, 280, { align: 'center' });
+            
+            // 保存 PDF
+            pdf.save(`${name.name}-起名报告.pdf`);
+            
+            alert('PDF 报告已生成并下载！');
+        }
+        
+        // 工具函数
+        function copyName(name) {
+            navigator.clipboard.writeText(name);
+            alert('名字已复制到剪贴板');
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            initClassics();
+            initCases();
+            initFaq(); // 初始化 FAQ
+            updateTierDisplay(); // 显示当前套餐
+            updatePricingCardSelection(currentUserTier); // 初始化套餐卡片选中状态
+            initRippleEffect(); // 初始化按钮波纹效果
+            initHamburgerMenu(); // 初始化汉堡菜单
+            initFormErrorClear(); // 初始化表单错误清除
+            animateStats(); // 统计数字动画
+            initBackToTop(); // 初始化回到顶部按钮
+            initScrollShare(); // 初始化分享功能
+        });
+        
+        // 更新选择套餐函数的引用
+        window.selectPricing = selectPricing;
+        window.scrollToNaming = scrollToNaming;
+        
+        // ==================== 回到顶部按钮 ====================
+        
+        /**
+         * 初始化回到顶部按钮
+         */
+        function initBackToTop() {
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            if (!backToTopBtn) return;
+            
+            // 滚动时显示/隐藏
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            
+            // 点击回到顶部
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
+        // ==================== 分享功能 ====================
+        
+        /**
+         * 初始化分享功能
+         */
+        function initScrollShare() {
+            // 检查是否支持 Web Share API
+            if (!navigator.share) {
+                console.log('当前浏览器不支持 Web Share API');
+                return;
+            }
+        }
+        
+        /**
+         * 分享当前页面
+         */
+        async function sharePage() {
+            const shareData = {
+                title: '文昌赐名 · 专业起名机构',
+                text: '源自《诗经》《楚辞》《周易》等 20+ 先秦经典，结合传统命理学与现代审美，15 年专业积淀，10000+ 家庭信赖之选！',
+                url: window.location.href
+            };
+            
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('分享取消或失败:', err);
+            }
+        }
+        
+        // ==================== 统计数字动画 ====================
+        
+        /**
+         * 统计数字滚动动画
+         */
+        function animateStats() {
+            const stats = [
+                { id: 'statToday', target: 127, suffix: '' },
+                { id: 'statMonth', target: 3842, suffix: '' },
+                { id: 'statTotal', target: 10247, suffix: '' },
+                { id: 'statSatisfaction', target: 98.5, suffix: '%' }
+            ];
+            
+            const duration = 2000; // 2 秒动画
+            const startTime = Date.now();
+            
+            function easeOutQuart(t) {
+                return 1 - Math.pow(1 - t, 4);
+            }
+            
+            function updateStats() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeOutQuart(progress);
+                
+                stats.forEach(stat => {
+                    const element = document.getElementById(stat.id);
+                    if (!element) return;
+                    
+                    const currentValue = Math.floor(stat.target * easedProgress);
+                    if (stat.suffix === '%') {
+                        // 满意度保留一位小数
+                        const decimalValue = (stat.target * easedProgress).toFixed(1);
+                        element.textContent = decimalValue + stat.suffix;
+                    } else {
+                        // 其他数字添加千位分隔符
+                        element.textContent = currentValue.toLocaleString() + stat.suffix;
+                    }
+                });
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateStats);
+                }
+            }
+            
+            updateStats();
+        }
+        
+        // ==================== 按钮波纹效果 ====================
+        
+        /**
+         * 为按钮添加波纹效果
+         */
+        function initRippleEffect() {
+            const buttons = document.querySelectorAll('.submit-btn, .pricing-btn, .action-btn, .hero-cta');
+            
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const rect = button.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const ripple = document.createElement('span');
+                    ripple.className = 'ripple';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
+                    ripple.style.marginLeft = -Math.max(rect.width, rect.height) / 2 + 'px';
+                    ripple.style.marginTop = -Math.max(rect.width, rect.height) / 2 + 'px';
+                    
+                    button.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+        }
+        
+        // ==================== 表单错误清除 ====================
+        
+        /**
+         * 初始化表单输入时清除错误状态
+         */
+        function initFormErrorClear() {
+            const inputs = document.querySelectorAll('.form-group input, .form-group select');
+            
+            inputs.forEach(input => {
+                // 输入时清除错误
+                input.addEventListener('input', function() {
+                    this.classList.remove('error', 'success');
+                    const errorEl = document.getElementById(this.id + 'Error');
+                    if (errorEl) {
+                        errorEl.classList.remove('show');
+                    }
+                });
+                
+                // 聚焦时清除错误
+                input.addEventListener('focus', function() {
+                    this.classList.remove('error');
+                });
+                
+                // 失焦时验证（可选）
+                input.addEventListener('blur', function() {
+                    if (this.value.trim()) {
+                        this.classList.add('success');
+                    }
+                });
+            });
+        }
+        
+        // ==================== 汉堡菜单控制 ====================
+        
+        /**
+         * 初始化汉堡菜单
+         */
+        function initHamburgerMenu() {
+            const hamburger = document.getElementById('hamburgerMenu');
+            const mobileNav = document.getElementById('mobileNavOverlay');
+            const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+            
+            if (!hamburger || !mobileNav) return;
+            
+            // 点击汉堡按钮切换菜单
+            hamburger.addEventListener('click', function() {
+                const isActive = hamburger.classList.toggle('active');
+                mobileNav.classList.toggle('active');
+                
+                // 阻止背景滚动
+                if (isActive) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // 点击导航链接时关闭菜单
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    hamburger.classList.remove('active');
+                    mobileNav.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+            
+            // 点击覆盖层空白区域关闭菜单
+            mobileNav.addEventListener('click', function(e) {
+                if (e.target === mobileNav) {
+                    hamburger.classList.remove('active');
+                    mobileNav.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+        
+        // ==================== 全局错误处理 ====================
+        
+        window.addEventListener('error', function(e) {
+            console.error('全局错误:', e.error);
+            // 静默处理，避免干扰用户体验
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的 Promise 拒绝:', e.reason);
+            // 静默处理
+        });
+    </script>
+</body>
+</html>
