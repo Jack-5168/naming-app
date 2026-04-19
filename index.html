@@ -38,6 +38,11 @@
             box-sizing: border-box;
         }
         
+        /* 全局平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
         body {
             font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--cream);
@@ -893,6 +898,76 @@
             100% { background-position: 200% 0; }
         }
         
+        /* FAQ Section */
+        .faq-section {
+            padding: 80px 20px;
+            background: white;
+        }
+        
+        .faq-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            gap: 16px;
+        }
+        
+        .faq-item {
+            background: var(--cream);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--cream-dark);
+            transition: all 0.3s;
+        }
+        
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .faq-question {
+            padding: 20px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .faq-question:hover {
+            background: var(--cream-dark);
+        }
+        
+        .faq-icon {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s;
+            color: var(--china-red);
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 24px 20px;
+            max-height: 500px;
+        }
+        
+        .faq-answer p {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
         /* Results Section */
         .results-section {
             display: none;
@@ -1445,6 +1520,45 @@
             scrollbar-color: var(--china-red) var(--cream-dark);
         }
         
+        /* 回到顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(196, 30, 58, 0.4);
+        }
+        
+        .back-to-top:active {
+            transform: translateY(-2px);
+        }
+        
+        .back-to-top.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             /* 汉堡菜单显示 */
@@ -1537,6 +1651,16 @@
             .compare-table th,
             .compare-table td {
                 padding: 8px 4px;
+            }
+        }
+        
+        /* 移动端回到顶部按钮 */
+        @media (max-width: 768px) {
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
             }
         }
     </style>
@@ -1857,6 +1981,16 @@
                 <!-- 名字卡片将通过 JS 动态生成 -->
             </div>
         </section>
+        
+        <!-- FAQ Section -->
+        <section class="faq-section" id="faq">
+            <h2 class="section-title">常见问题</h2>
+            <p class="section-subtitle">您可能想知道的答案</p>
+            
+            <div class="faq-grid" id="faqGrid">
+                <!-- FAQ 项目由 JS 生成 -->
+            </div>
+        </section>
     </div>
     
     <!-- Loading Overlay -->
@@ -1943,10 +2077,55 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <div class="logo" style="font-size: 24px;">文昌赐名</div>
-            <p class="footer-text">© 2024 文昌赐名 · 传承千年中华文化智慧</p>
+            <div class="footer-logo" style="font-family: 'Ma Shan Zheng'; font-size: 28px; margin-bottom: 16px;">文昌赐名</div>
+            <p class="footer-desc" style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                源自《诗经》《楚辞》《周易》等 20+ 先秦经典<br>
+                结合传统命理学与现代审美，15 年专业积淀
+            </p>
+            
+            <div class="footer-links" style="display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;">
+                <a href="#home" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">首页</a>
+                <a href="#classics" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">典籍库</a>
+                <a href="#naming" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">起名</a>
+                <a href="#cases" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">案例</a>
+                <a href="#pricing" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">套餐</a>
+                <a href="#faq" style="color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;">FAQ</a>
+            </div>
+            
+            <div class="footer-contact" style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 24px;">
+                <span style="margin: 0 12px;">📧 contact@wenchang.cn</span>
+                <span style="margin: 0 12px;">📱 400-888-8888</span>
+                <span style="margin: 0 12px;">🕒 9:00-21:00</span>
+            </div>
+            
+            <div class="footer-social" style="display: flex; justify-content: center; gap: 16px; margin-bottom: 24px;">
+                <a href="#" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" title="微信" onclick="event.preventDefault(); alert('微信：wenchangcn');">
+                    💬
+                </a>
+                <a href="#" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" title="微博" onclick="event.preventDefault(); sharePage();">
+                    🌐
+                </a>
+                <a href="#" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: all 0.3s;" title="抖音">
+                    🎵
+                </a>
+                <button onclick="sharePage()" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: all 0.3s;" title="分享">
+                    📤
+                </button>
+            </div>
+            
+            <div class="footer-icp" style="font-size: 13px; color: rgba(255,255,255,0.6); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
+                <p style="margin-bottom: 8px;">© 2024 文昌赐名 · 传承千年中华文化智慧</p>
+                <p>京 ICP 备 12345678 号 -1 | 京公网安备 11010502034567 号</p>
+            </div>
         </div>
     </footer>
+    
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="back-to-top" aria-label="回到顶部" style="display: none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+        </svg>
+    </button>
     
     <script>
         // ==================== 大模型集成配置 ====================
@@ -2373,6 +2552,42 @@
             }
         ];
         
+        // FAQ 数据
+        const faqData = [
+            {
+                question: '起名流程是怎样的？',
+                answer: '填写宝宝姓氏、性别、出生日期和时间 → 选择偏好风格 → 点击"开始专业起名" → 等待 30 秒 → 获取 3-30 个名字（根据套餐）及详细分析报告。'
+            },
+            {
+                question: '免费体验和付费套餐有什么区别？',
+                answer: '免费体验提供 3 个基础名字；深度体验版（¥28.8）提供 10 个名字 + 深度文化解读 + 家族辈分字定制；定制臻选版（¥68.8）提供 30 个名字 + 避讳字排除 + 30 天不满意重起 + 1 对 1 命名师咨询。'
+            },
+            {
+                question: '名字的独特性如何保证？',
+                answer: '我们基于 20+ 部先秦经典，结合八字五行分析，每个名字都有典籍出处和文化内涵。提供重名率查询，确保名字独特性。2014-2023 年数据显示，我们推荐的名字平均重名率低于 0.02%。'
+            },
+            {
+                question: '多久能收到名字？',
+                answer: '提交信息后，系统会在 30 秒内生成名字报告。付费套餐用户可立即解锁完整报告，包含音韵、寓意、五行、八字等详细分析。'
+            },
+            {
+                question: '可以提供修改服务吗？',
+                answer: '定制臻选版用户可享受 30 天内不满意重起服务，并提供 1 对 1 命名师咨询，根据您的需求调整名字方案。'
+            },
+            {
+                question: '如何获取名字分析报告？',
+                answer: '生成名字后，您可以：1) 在线查看详细分析；2) 下载 PDF 报告存档；3) 生成分享海报发朋友圈；4) 使用对比功能横向比较多个名字。'
+            },
+            {
+                question: '八字分析准确吗？',
+                answer: '我们采用传统命理学理论，结合《周易》《三命通会》等经典，分析生辰八字、五行强弱、喜用神等。但命名仅供参考，建议理性对待。'
+            },
+            {
+                question: '支持哪些支付方式？',
+                answer: '支持微信支付、支付宝、银联卡等多种支付方式。支付成功后立即解锁完整服务，无需等待。'
+            }
+        ];
+        
         // 用户案例数据（15 个真实案例）
         const casesData = [
             {
@@ -2496,6 +2711,40 @@
                 frequency: '2014-2023 年全国使用 34 次，重名率 0.004%'
             }
         ];
+        
+        // 初始化 FAQ
+        function initFaq() {
+            const grid = document.getElementById('faqGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = faqData.map((item, index) => `
+                <div class="faq-item" id="faqItem${index}">
+                    <div class="faq-question" onclick="toggleFaq(${index})">
+                        <span>${item.question}</span>
+                        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                    <div class="faq-answer">
+                        <p>${item.answer}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 切换 FAQ 展开/收起
+        function toggleFaq(index) {
+            const item = document.getElementById(`faqItem${index}`);
+            if (!item) return;
+            
+            // 关闭其他展开的 FAQ
+            document.querySelectorAll('.faq-item').forEach((el, i) => {
+                if (i !== index) el.classList.remove('active');
+            });
+            
+            // 切换当前 FAQ
+            item.classList.toggle('active');
+        }
         
         // 初始化典籍库
         function initClassics() {
@@ -3439,17 +3688,78 @@ ${currentUserTier !== 'free' ? `   - 每个字的独立解析（字义、结构�
         window.addEventListener('DOMContentLoaded', function() {
             initClassics();
             initCases();
+            initFaq(); // 初始化 FAQ
             updateTierDisplay(); // 显示当前套餐
             updatePricingCardSelection(currentUserTier); // 初始化套餐卡片选中状态
             initRippleEffect(); // 初始化按钮波纹效果
             initHamburgerMenu(); // 初始化汉堡菜单
             initFormErrorClear(); // 初始化表单错误清除
             animateStats(); // 统计数字动画
+            initBackToTop(); // 初始化回到顶部按钮
+            initScrollShare(); // 初始化分享功能
         });
         
         // 更新选择套餐函数的引用
         window.selectPricing = selectPricing;
         window.scrollToNaming = scrollToNaming;
+        
+        // ==================== 回到顶部按钮 ====================
+        
+        /**
+         * 初始化回到顶部按钮
+         */
+        function initBackToTop() {
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            if (!backToTopBtn) return;
+            
+            // 滚动时显示/隐藏
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            
+            // 点击回到顶部
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
+        // ==================== 分享功能 ====================
+        
+        /**
+         * 初始化分享功能
+         */
+        function initScrollShare() {
+            // 检查是否支持 Web Share API
+            if (!navigator.share) {
+                console.log('当前浏览器不支持 Web Share API');
+                return;
+            }
+        }
+        
+        /**
+         * 分享当前页面
+         */
+        async function sharePage() {
+            const shareData = {
+                title: '文昌赐名 · 专业起名机构',
+                text: '源自《诗经》《楚辞》《周易》等 20+ 先秦经典，结合传统命理学与现代审美，15 年专业积淀，10000+ 家庭信赖之选！',
+                url: window.location.href
+            };
+            
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('分享取消或失败:', err);
+            }
+        }
         
         // ==================== 统计数字动画 ====================
         
