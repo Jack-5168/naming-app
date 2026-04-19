@@ -1,0 +1,181 @@
+/* About Page Styles */
+
+.page-hero {
+    background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+    color: white;
+    padding: 100px 20px 60px;
+    text-align: center;
+}
+
+.page-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 48px;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.page-subtitle {
+    font-size: 18px;
+    opacity: 0.95;
+}
+
+.brand-story {
+    padding: 80px 20px;
+    background: white;
+}
+
+.story-content {
+    max-width: 900px;
+    margin: 0 auto;
+    font-size: 16px;
+    line-height: 2;
+    color: var(--text);
+}
+
+.story-content p {
+    margin-bottom: 24px;
+}
+
+.story-list {
+    list-style: none;
+    margin: 32px 0;
+}
+
+.story-list li {
+    margin-bottom: 16px;
+    padding-left: 8px;
+}
+
+.team-section {
+    padding: 80px 20px;
+    background: var(--cream);
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+}
+
+.team-card {
+    background: white;
+    padding: 40px 32px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s;
+}
+
+.team-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.team-avatar {
+    font-size: 80px;
+    margin-bottom: 16px;
+}
+
+.team-name {
+    font-size: 24px;
+    color: var(--brown);
+    margin-bottom: 8px;
+    font-family: 'Ma Shan Zheng', cursive;
+}
+
+.team-title {
+    font-size: 14px;
+    color: var(--china-red);
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.team-desc {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+.about-stats {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+}
+
+.stat-card {
+    text-align: center;
+}
+
+.stat-card .stat-number {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-family: 'Ma Shan Zheng', cursive;
+}
+
+.stat-card .stat-label {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.values-section {
+    padding: 80px 20px;
+    background: white;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+}
+
+.value-card {
+    text-align: center;
+    padding: 32px 24px;
+    background: var(--cream);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.value-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.value-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.value-card h3 {
+    font-size: 20px;
+    color: var(--brown);
+    margin-bottom: 12px;
+}
+
+.value-card p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+    .page-hero {
+        padding: 80px 20px 40px;
+    }
+    
+    .page-title {
+        font-size: 36px;
+    }
+    
+    .team-grid,
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+}

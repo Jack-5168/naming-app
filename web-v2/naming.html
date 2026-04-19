@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费起名 - 文昌赐名专业起名工具</title>
+    <meta name="description" content="文昌赐名免费起名工具，30 秒获取专业名字分析报告。基于《诗经》《楚辞》《周易》等 20+ 部先秦经典，结合八字五行分析，为宝宝起一生好名。">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/naming.css">
+</head>
+<body>
+    <div class="cloud-pattern"></div>
+    
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">文昌赐名</a>
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="打开菜单">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            <nav class="nav" id="desktopNav">
+                <a href="index.html">首页</a>
+                <a href="about.html">关于</a>
+                <a href="services.html">服务</a>
+                <a href="classics.html">典籍</a>
+                <a href="cases.html">案例</a>
+                <a href="naming.html" class="active">起名</a>
+                <a href="blog.html">博客</a>
+                <a href="contact.html">联系</a>
+            </nav>
+            <div class="mobile-nav-overlay" id="mobileNavOverlay">
+                <div class="mobile-nav-content">
+                    <nav class="mobile-nav">
+                        <a href="index.html" class="mobile-nav-link">🏠 首页</a>
+                        <a href="about.html" class="mobile-nav-link">📖 关于</a>
+                        <a href="services.html" class="mobile-nav-link">💎 服务</a>
+                        <a href="classics.html" class="mobile-nav-link">📚 典籍</a>
+                        <a href="cases.html" class="mobile-nav-link">✨ 案例</a>
+                        <a href="naming.html" class="mobile-nav-link">🖌️ 起名</a>
+                        <a href="blog.html" class="mobile-nav-link">📝 博客</a>
+                        <a href="contact.html" class="mobile-nav-link">📧 联系</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1 class="page-title">专业起名</h1>
+            <p class="page-subtitle">填写宝宝信息，30 秒获取专业名字分析报告</p>
+        </div>
+    </section>
+
+    <main class="naming-main">
+        <div class="container">
+            <div class="naming-container">
+                <div class="naming-form-section">
+                    <form id="namingForm" class="naming-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="surname">姓氏 *</label>
+                                <input type="text" id="surname" placeholder="例如：张" required>
+                                <div class="error-message" id="surnameError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gender">性别 *</label>
+                                <select id="gender" required>
+                                    <option value="">请选择</option>
+                                    <option value="male">男宝宝</option>
+                                    <option value="female">女宝宝</option>
+                                </select>
+                                <div class="error-message" id="genderError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="birthDate">出生日期 *</label>
+                                <input type="date" id="birthDate" required>
+                                <div class="error-message" id="birthDateError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="birthTime">出生时间 *</label>
+                                <input type="time" id="birthTime" value="12:00" required>
+                                <div class="error-message" id="birthTimeError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="birthLocation">出生地点</label>
+                                <input type="text" id="birthLocation" placeholder="例如：北京市">
+                                <div class="error-message" id="birthLocationError"></div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">🖌️ 开始专业起名</button>
+                    </form>
+                </div>
+
+                <div class="naming-results" id="results" style="display: none;">
+                    <div class="results-header">
+                        <div class="results-count">为您精心生成 <strong id="resultCount">3</strong> 个专业名字</div>
+                        <button class="compare-btn" id="compareBtn" onclick="openCompareModal()" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14H7v-2h6v2zm4-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            对比选中名字
+                        </button>
+                    </div>
+                    <div class="name-cards" id="nameCards"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <h3 style="font-family: 'Ma Shan Zheng'; font-size: 24px; color: var(--china-red); margin-bottom: 8px;">正在为您分析</h3>
+            <p style="color: var(--text-light);">结合典籍与命理，推敲每一个名字</p>
+            <div class="loading-steps">
+                <div class="loading-step" id="step1"><div class="step-icon">🔮</div><div class="step-text">分析生辰八字...</div></div>
+                <div class="loading-step" id="step2"><div class="step-icon">📖</div><div class="step-text">检索典籍匹配...</div></div>
+                <div class="loading-step" id="step3"><div class="step-icon">⚖️</div><div class="step-text">平衡五行属性...</div></div>
+                <div class="loading-step" id="step4"><div class="step-icon">🎵</div><div class="step-text">推敲音韵美感...</div></div>
+                <div class="loading-step" id="step5"><div class="step-icon">✨</div><div class="step-text">生成专业报告...</div></div>
+            </div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loadingProgressBar" style="width: 0%"></div>
+            </div>
+            <div style="text-align: center; margin-top: 10px; color: var(--text-light); font-size: 14px;">
+                <span id="loadingProgressText">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="compare-modal" id="compareModal">
+        <div class="compare-content">
+            <button class="compare-close" onclick="closeCompareModal()">×</button>
+            <h2 class="section-title">名字对比分析</h2>
+            <p class="section-subtitle">多维度横向对比，帮您做出最佳选择</p>
+            <div id="compareTableContainer"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo" style="font-family: 'Ma Shan Zheng'; font-size: 28px; margin-bottom: 16px;">文昌赐名</div>
+            <p class="footer-desc" style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                源自《诗经》《楚辞》《周易》等 20+ 先秦经典<br>
+                结合传统命理学与现代审美，15 年专业积淀
+            </p>
+            <div class="footer-icp" style="font-size: 13px; color: rgba(255,255,255,0.6); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
+                <p style="margin-bottom: 8px;">© 2024 文昌赐名 · 传承千年中华文化智慧</p>
+                <p>京 ICP 备 12345678 号 -1 | 京公网安备 11010502034567 号</p>
+            </div>
+        </div>
+    </footer>
+
+    <button id="backToTop" class="back-to-top" aria-label="回到顶部" style="display: none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+        </svg>
+    </button>
+
+    <script src="js/main.js"></script>
+    <script src="js/naming.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+/* Services Page Styles */
+
+.pricing-section {
+    padding: 80px 20px;
+    background: var(--cream);
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pricing-card {
+    background: white;
+    padding: 40px 32px;
+    border-radius: 16px;
+    border: 2px solid var(--cream-dark);
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.pricing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+}
+
+.pricing-card.featured {
+    border-color: var(--china-red);
+    box-shadow: 0 8px 24px rgba(196, 30, 58, 0.15);
+    transform: scale(1.05);
+}
+
+.pricing-card.featured:hover {
+    transform: scale(1.05) translateY(-8px);
+}
+
+.featured-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+    color: white;
+    padding: 6px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
+}
+
+.pricing-name {
+    font-size: 24px;
+    color: var(--brown);
+    margin-bottom: 16px;
+    font-family: 'Ma Shan Zheng', cursive;
+}
+
+.pricing-price {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--china-red);
+    margin-bottom: 8px;
+    font-family: 'Ma Shan Zheng', cursive;
+}
+
+.pricing-price span {
+    font-size: 16px;
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+.pricing-features {
+    list-style: none;
+    margin: 32px 0;
+    text-align: left;
+}
+
+.pricing-features li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--cream-dark);
+    font-size: 15px;
+    color: var(--text);
+}
+
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+
+.pricing-features svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--china-red);
+    flex-shrink: 0;
+}
+
+.pricing-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: var(--cream-dark);
+    color: var(--text);
+    border: 2px solid var(--cream-dark);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.pricing-btn:hover {
+    background: transparent;
+    border-color: var(--china-red);
+    color: var(--china-red);
+}
+
+.pricing-btn.primary {
+    background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+    color: white;
+    border-color: var(--china-red);
+}
+
+.pricing-btn.primary:hover {
+    background: linear-gradient(135deg, var(--china-red-dark) 0%, var(--brown-dark) 100%);
+    border-color: var(--brown-dark);
+}
+
+.pricing-note {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+/* Process Section */
+.process-section {
+    padding: 80px 20px;
+    background: white;
+}
+
+.process-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.process-step {
+    text-align: center;
+    padding: 32px 24px;
+    position: relative;
+}
+
+.step-number {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Ma Shan Zheng', cursive;
+}
+
+.process-step h3 {
+    font-size: 20px;
+    color: var(--brown);
+    margin-bottom: 12px;
+}
+
+.process-step p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+/* Guarantee Section */
+.guarantee-section {
+    padding: 80px 20px;
+    background: var(--cream);
+}
+
+.guarantee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.guarantee-card {
+    text-align: center;
+    padding: 32px 24px;
+    background: white;
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.guarantee-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.guarantee-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.guarantee-card h3 {
+    font-size: 20px;
+    color: var(--brown);
+    margin-bottom: 12px;
+}
+
+.guarantee-card p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+    .pricing-card.featured {
+        transform: none;
+    }
+    
+    .pricing-card.featured:hover {
+        transform: translateY(-8px);
+    }
+    
+    .process-timeline,
+    .guarantee-grid {
+        grid-template-columns: 1fr;
+    }
+}
