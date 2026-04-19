@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#c41e3a">
+    <meta name="description" content="文昌赐名 - 源自《诗经》《楚辞》《周易》等 20+ 先秦经典，15 年专业积淀，10000+ 家庭信赖之选">
+    <meta name="keywords" content="起名，取名，宝宝起名，诗经起名，楚辞起名，周易起名">
+    <title>文昌赐名 - 专业起名机构</title>
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖌️</text></svg>">
+</head>
+<body>
+    <!-- 背景纹样 -->
+    <div class="cloud-pattern"></div>
+    
+    <!-- 主内容区 -->
+    <main class="mobile-main">
+        <!-- Tab 1: 首页 -->
+        <section class="page active" id="page-home" data-tab="home">
+            <!-- Hero -->
+            <div class="mobile-hero">
+                <h1 class="mobile-title">文昌赐名</h1>
+                <p class="mobile-subtitle">引经据典 · 八字合和 · 一生好名</p>
+                <button class="mobile-cta" onclick="switchTab('naming')">🖌️ 免费起名</button>
+            </div>
+            
+            <!-- 统计 -->
+            <div class="mobile-stats">
+                <div class="stat-item">
+                    <div class="stat-num" id="statToday">127</div>
+                    <div class="stat-label">今日</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="statMonth">3,842</div>
+                    <div class="stat-label">本月</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="statTotal">10,247</div>
+                    <div class="stat-label">累计</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" id="statSatisfaction">98.5%</div>
+                    <div class="stat-label">满意度</div>
+                </div>
+            </div>
+            
+            <!-- 核心功能 -->
+            <div class="quick-entry">
+                <a href="#" class="entry-card primary" onclick="switchTab('naming')">
+                    <div class="entry-icon">🖌️</div>
+                    <div class="entry-title">免费起名</div>
+                    <div class="entry-desc">30 秒获取报告</div>
+                </a>
+                <a href="#" class="entry-card" onclick="showPackages()">
+                    <div class="entry-icon">💎</div>
+                    <div class="entry-title">服务套餐</div>
+                    <div class="entry-desc">三种套餐可选</div>
+                </a>
+                <a href="#" class="entry-card" onclick="showAbout()">
+                    <div class="entry-icon">📖</div>
+                    <div class="entry-title">品牌故事</div>
+                    <div class="entry-desc">15 年专业积淀</div>
+                </a>
+                <a href="#" class="entry-card" onclick="showContact()">
+                    <div class="entry-icon">📧</div>
+                    <div class="entry-title">联系客服</div>
+                    <div class="entry-desc">专业解答</div>
+                </a>
+            </div>
+            
+            <!-- 信任背书 -->
+            <div class="trust-section">
+                <h2 class="section-title">为什么选择我们</h2>
+                <div class="trust-grid">
+                    <div class="trust-item">
+                        <div class="trust-icon">📚</div>
+                        <div class="trust-text">典籍权威</div>
+                    </div>
+                    <div class="trust-item">
+                        <div class="trust-icon">☯️</div>
+                        <div class="trust-text">八字专业</div>
+                    </div>
+                    <div class="trust-item">
+                        <div class="trust-icon">🎵</div>
+                        <div class="trust-text">音韵优美</div>
+                    </div>
+                    <div class="trust-item">
+                        <div class="trust-icon">✅</div>
+                        <div class="trust-text">售后保障</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Tab 2: 典籍 -->
+        <section class="page" id="page-classics" data-tab="classics">
+            <div class="page-header">
+                <h1 class="page-title">典籍库</h1>
+                <p class="page-subtitle">20+ 部先秦经典，每一个名字都有出处</p>
+                <input type="text" class="search-input" placeholder="搜索典籍或名句..." id="classicsSearch">
+            </div>
+            <div class="classics-grid" id="classicsGrid"></div>
+        </section>
+        
+        <!-- Tab 3: 案例 -->
+        <section class="page" id="page-cases" data-tab="cases">
+            <div class="page-header">
+                <h1 class="page-title">成功案例</h1>
+                <p class="page-subtitle">10000+ 家庭真实评价</p>
+                <div class="case-stats">
+                    <div class="case-stat">
+                        <div class="case-stat-num">10,247+</div>
+                        <div class="case-stat-label">服务家庭</div>
+                    </div>
+                    <div class="case-stat">
+                        <div class="case-stat-num">98.5%</div>
+                        <div class="case-stat-label">满意度</div>
+                    </div>
+                    <div class="case-stat">
+                        <div class="case-stat-num">0.02%</div>
+                        <div class="case-stat-label">平均重名率</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cases-grid" id="casesGrid"></div>
+        </section>
+        
+        <!-- Tab 4: 我的 -->
+        <section class="page" id="page-naming" data-tab="naming">
+            <div class="page-header">
+                <h1 class="page-title">专业起名</h1>
+                <p class="page-subtitle">填写宝宝信息，30 秒获取专业名字分析报告</p>
+            </div>
+            
+            <!-- 起名表单 -->
+            <form id="namingForm" class="mobile-form">
+                <div class="form-group">
+                    <label for="surname">姓氏 *</label>
+                    <input type="text" id="surname" placeholder="例如：张" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gender">性别 *</label>
+                        <select id="gender" required>
+                            <option value="">请选择</option>
+                            <option value="male">男宝宝</option>
+                            <option value="female">女宝宝</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthDate">出生日期 *</label>
+                        <input type="date" id="birthDate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthTime">出生时间 *</label>
+                        <input type="time" id="birthTime" value="12:00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthLocation">出生地点</label>
+                        <input type="text" id="birthLocation" placeholder="例如：北京市">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">🖌️ 开始专业起名</button>
+            </form>
+            
+            <!-- 结果展示 -->
+            <div id="results" style="display:none;">
+                <div class="results-header">
+                    <span>为您生成 <strong id="resultCount">3</strong> 个专业名字</span>
+                </div>
+                <div class="name-cards" id="nameCards"></div>
+            </div>
+            
+            <!-- 用户中心入口（未登录显示） -->
+            <div class="user-section">
+                <h2 class="section-title">用户服务</h2>
+                <div class="user-grid">
+                    <div class="user-card">
+                        <div class="user-icon">💬</div>
+                        <div class="user-title">联系客服</div>
+                        <div class="user-desc">专业解答疑问</div>
+                    </div>
+                    <div class="user-card">
+                        <div class="user-icon">❓</div>
+                        <div class="user-title">常见问题</div>
+                        <div class="user-desc">查看 FAQ</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-tab="home">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-text">首页</div>
+        </a>
+        <a href="#" class="nav-item" data-tab="classics">
+            <div class="nav-icon">📚</div>
+            <div class="nav-text">典籍</div>
+        </a>
+        <a href="#" class="nav-item" data-tab="cases">
+            <div class="nav-icon">✨</div>
+            <div class="nav-text">案例</div>
+        </a>
+        <a href="#" class="nav-item" data-tab="naming">
+            <div class="nav-icon">🖌️</div>
+            <div class="nav-text">我的</div>
+        </a>
+    </nav>
+    
+    <!-- 弹窗容器 -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    <div class="modal-container" id="modalContainer"></div>
+    
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/mobile.js"></script>
+</body>
+</html>
