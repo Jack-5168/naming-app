@@ -1,0 +1,55 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - '*.md'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          echo "🚀 开始部署到服务器..."
+          rsync -avz --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'node_modules/' \
+            --exclude '*.md' \
+            -e ssh \
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}
+          echo "✅ 部署完成！"
+
+      - name: Set permissions
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "chmod -R 755 ${{ secrets.SERVER_PATH }} && \
+             chown -R www:www ${{ secrets.SERVER_PATH }} 2>/dev/null || true"
+          echo "✅ 权限设置完成！"
