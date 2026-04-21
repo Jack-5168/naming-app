@@ -140,13 +140,14 @@ export function ipRateLimiter(limit: number = IP_LIMIT, windowMs: number = DAY_M
       await prisma.securityLog.create({
         data: {
           eventType: 'rate_limit_exceeded',
+          identifier: req.user?.id?.toString() || req.ip || 'unknown',
           ipAddress: req.ip,
           userId: req.user?.id,
-          details: JSON.stringify({
+          metadata: {
             path: req.path,
             method: req.method,
             userAgent: req.headers['user-agent'],
-          }),
+          },
         },
       });
       
@@ -281,14 +282,15 @@ export async function securityLogMiddleware(req: Request, res: Response, next: N
       await prisma.securityLog.create({
         data: {
           eventType: 'slow_request',
+          identifier: req.user?.id?.toString() || req.ip || 'unknown',
           ipAddress: req.ip,
           userId: req.user?.id,
-          details: JSON.stringify({
+          metadata: {
             path: req.path,
             method: req.method,
             duration,
             statusCode: res.statusCode,
-          }),
+          },
         },
       });
     }
@@ -298,14 +300,15 @@ export async function securityLogMiddleware(req: Request, res: Response, next: N
       await prisma.securityLog.create({
         data: {
           eventType: 'error_response',
+          identifier: req.user?.id?.toString() || req.ip || 'unknown',
           ipAddress: req.ip,
           userId: req.user?.id,
-          details: JSON.stringify({
+          metadata: {
             path: req.path,
             method: req.method,
             statusCode: res.statusCode,
             duration,
-          }),
+          },
         },
       });
     }

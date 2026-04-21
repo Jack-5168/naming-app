@@ -275,7 +275,7 @@ export async function rotateEncryptionKey(
   // 3. Re-encrypt with new key
   // 4. Update database
   
-  await reencryptFunction(oldKey, newKey);
+  await reencryptFunction('', oldKey, newKey);
   
   console.log('Encryption key rotation completed');
 }

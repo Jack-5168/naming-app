@@ -10,7 +10,7 @@
  */
 
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, MembershipLevel, MembershipStatus, OrderStatus, PushNotificationType } from '@prisma/client';
 import { createPushNotification } from '../services/push-notification';
 import * as crypto from 'crypto';
 
@@ -335,7 +335,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
         const userId = order.userId;
         await createPushNotification({
           userId,
-          type: 'payment_success',
+          type: 'payment_success' as PushNotificationType,
           title: '支付成功',
           content: `您已成功支付¥${Number(order.amount)}，会员权益已激活`,
           deepLink: '/user/membership',
@@ -614,9 +614,9 @@ async function activateMembershipBenefits(order: any) {
       await prisma.membership.update({
         where: { userId },
         data: {
-          level: product.level,
+          level: product.level as MembershipLevel,
           endDate: newEndDate,
-          status: 'active',
+          status: 'active' as MembershipStatus,
           autoRenew: false,
         },
       });
@@ -633,8 +633,8 @@ async function activateMembershipBenefits(order: any) {
       const newMembership: any = await prisma.membership.create({
         data: {
           userId,
-          level: product.level,
-          status: 'active',
+          level: product.level as MembershipLevel,
+          status: 'active' as MembershipStatus,
           startDate: now,
           endDate,
           autoRenew: false,
@@ -654,7 +654,7 @@ async function activateMembershipBenefits(order: any) {
     await prisma.user.update({
       where: { id: userId },
       data: {
-        membershipLevel: product.level,
+        membershipLevel: product.level as MembershipLevel,
       },
     });
 

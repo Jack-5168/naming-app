@@ -347,12 +347,12 @@ export async function warmCache() {
     // Warm top users' membership cache
     const topUsers = await prisma.user.findMany({
       take: 100,
-      include: { membership: true },
+      include: { memberships: true },
     });
     
     for (const user of topUsers) {
-      if (user.membership) {
-        await setCachedMembership(user.id, user.membership);
+      if (user.memberships && user.memberships.length > 0) {
+        await setCachedMembership(user.id, user.memberships[0]);
       }
     }
     

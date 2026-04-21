@@ -273,7 +273,7 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
     master: { min: 4000, max: 5000 }
   };
   
-  const limit = wordLimits[reportType];
+  const limit = wordLimits[reportType as 'basic' | 'pro' | 'master'];
   if (wordCount < limit.min) {
     issues.push(`字数不足：${wordCount}/${limit.min}`);
   } else if (wordCount > limit.max) {
@@ -300,7 +300,7 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
     master: ['人格本质', '生命历程', '认知功能', '优势', '阴影', '关系', '职业', '成长']
   };
   
-  const sections = requiredSections[reportType];
+  const sections = requiredSections[reportType as 'basic' | 'pro' | 'master'];
   for (const section of sections) {
     if (!content.includes(section)) {
       issues.push(`缺少章节：${section}`);
@@ -451,14 +451,15 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
         break;
       } catch (error) {
         lastError = error as Error;
-        reportEvents.emit('reportRetry', { requestId, attempt, error: error.message });
+        reportEvents.emit('reportRetry', { requestId, attempt, error: (error as Error).message });
         
         if (attempt === maxRetries) {
           // 尝试降级
-          if (getFallbackModel()) {
-            reportEvents.emit('reportFallback', { requestId, from: strategy.model, to: getFallbackModel() });
+          const fallbackModel = getFallbackModel();
+          if (fallbackModel) {
+            reportEvents.emit('reportFallback', { requestId, from: strategy.model, to: fallbackModel });
             try {
-              result = await callLLM(prompt, getFallbackModel(), strategy.maxTokens);
+              result = await callLLM(prompt, fallbackModel, strategy.maxTokens);
             } catch (fallbackError) {
               // 降级也失败
             }

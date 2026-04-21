@@ -318,11 +318,14 @@ export async function upgradeMembership(req: Request, res: Response) {
     }
 
     // Create order
+    const orderNo = `ORD${Date.now()}${Math.random().toString(36).substr(2, 6)}`;
     const order = await prisma.order.create({
       data: {
+        orderNo,
         userId,
         productId,
-        amount: product.price,
+        productType: 'membership',
+        amount: Number(product.price),
         currency: product.currency,
         status: 'pending',
         paymentMethod,
@@ -359,9 +362,9 @@ export async function upgradeMembership(req: Request, res: Response) {
       membership = await prisma.membership.update({
         where: { userId },
         data: {
-          level: product.level,
+          level: product.level as MembershipLevel,
           endDate: newEndDate,
-          status: 'active',
+          status: 'active' as MembershipStatus,
         },
       });
     } else {
@@ -369,8 +372,8 @@ export async function upgradeMembership(req: Request, res: Response) {
       membership = await prisma.membership.create({
         data: {
           userId,
-          level: product.level,
-          status: 'active',
+          level: product.level as MembershipLevel,
+          status: 'active' as MembershipStatus,
           startDate: now,
           endDate,
           autoRenew: false,

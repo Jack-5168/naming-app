@@ -171,7 +171,7 @@ export function getModelStrategy(reportType: string): { model: string; maxTokens
 /**
  * 获取降级模型
  */
-export function getFallbackModel(): string {
+export function getFallbackModel(): string | null {
   return COST_CONTROL.fallback.enabled ? COST_CONTROL.fallback.fallbackModel : null;
 }
 

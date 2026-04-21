@@ -1,20 +1,26 @@
 /**
- * Authentication Controller (Simplified Version)
+ * Authentication Controller
  * Phase 1: MVP Implementation
  * 
  * API Endpoints:
  * - POST /api/v1/auth/wechat/login - WeChat login
  * - POST /api/v1/auth/refresh - Refresh access token
  * - GET /api/v1/users/me - Get current user info
- * 
- * Note: This is a simplified implementation without membership queries
  */
 
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import * as winston from 'winston';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  revokeRefreshToken,
+  generateDeviceFingerprint,
+  recordDeviceFingerprint,
+  detectAnomalousLogin,
+  recordLogin,
+} from '../security/auth';
 
 const prisma = new PrismaClient();
 
@@ -43,10 +49,6 @@ const WECHAT_APP_ID = process.env.WECHAT_APP_ID || '';
 const WECHAT_APP_SECRET = process.env.WECHAT_APP_SECRET || '';
 const WECHAT_LOGIN_URL = 'https://api.weixin.qq.com/sns/jscode2session';
 
-// JWT Configuration (simplified - no key rotation for MVP)
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || crypto.randomBytes(64).toString('hex');
-
 // ==================== Types ====================
 
 interface WechatLoginResponse {
@@ -59,8 +61,11 @@ interface WechatLoginResponse {
     user: {
       id: number;
       openid: string;
-      nickname: string | null;
+      nickname: string;
       avatar_url: string | null;
+      membership: {
+        level: string;
+      };
     };
   };
 }
@@ -79,11 +84,15 @@ interface UserInfoResponse {
   code: number;
   data: {
     id: number;
-    openid: string | null;
+    openid: string;
     nickname: string | null;
     avatar_url: string | null;
     test_count: number;
     last_test_at: Date | null;
+    membership: {
+      level: string;
+      end_date: Date | null;
+    };
   };
 }
 
@@ -107,88 +116,6 @@ interface User {
   lastLoginIp: string | null;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// JWT Payload types
-interface JWTPayload {
-  userId: number;
-  iat: number;
-  exp: number;
-}
-
-interface RefreshTokenPayload {
-  userId: number;
-  iat: number;
-  exp: number;
-}
-
-// ==================== Helper Functions ====================
-
-/**
- * Call WeChat API to get openid from login code
- */
-async function wechatAuth(code: string): Promise<string> {
-  const wechatUrl = `${WECHAT_LOGIN_URL}?appid=${WECHAT_APP_ID}&secret=${WECHAT_APP_SECRET}&js_code=${code}&grant_type=authorization_code`;
-  
-  const wechatResponse = await fetch(wechatUrl);
-  const wechatData = await wechatResponse.json();
-
-  // Handle WeChat API errors
-  if (wechatData.errcode) {
-    logger.error('WeChat API error', { 
-      errcode: wechatData.errcode, 
-      errmsg: wechatData.errmsg,
-      code: code.substring(0, 8) + '...'
-    });
-    throw new Error(`微信登录失败：${wechatData.errmsg || '未知错误'}`);
-  }
-
-  const { openid } = wechatData;
-
-  if (!openid) {
-    logger.error('WeChat login failed: no openid in response', { wechatData });
-    throw new Error('微信服务器返回数据异常');
-  }
-
-  return openid;
-}
-
-/**
- * Generate JWT access token (simplified - 2 hours expiry)
- */
-export function generateJWT(userId: number): string {
-  const payload: JWTPayload = {
-    userId,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 7200, // 2 hours
-  };
-  
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: '2h',
-  });
-}
-
-/**
- * Generate JWT refresh token (simplified - 30 days expiry)
- */
-export function generateRefreshJWT(userId: number): string {
-  const payload: RefreshTokenPayload = {
-    userId,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 2592000, // 30 days
-  };
-  
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
-    expiresIn: '30d',
-  });
-}
-
-/**
- * Verify JWT refresh token (simplified - no DB lookup)
- */
-export function verifyRefreshJWT(token: string): RefreshTokenPayload {
-  const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
-  return decoded;
 }
 
 // ==================== Controllers ====================
@@ -218,8 +145,36 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
 
     logger.info('Processing WeChat login', { code: code.substring(0, 8) + '...' });
 
-    // Call WeChat API to get openid
-    const openid = await wechatAuth(code);
+    // Exchange code for openid and session_key
+    const wechatUrl = `${WECHAT_LOGIN_URL}?appid=${WECHAT_APP_ID}&secret=${WECHAT_APP_SECRET}&js_code=${code}&grant_type=authorization_code`;
+    
+    const wechatResponse = await fetch(wechatUrl);
+    const wechatData: any = await wechatResponse.json();
+
+    // Handle WeChat API errors
+    if (wechatData.errcode) {
+      logger.error('WeChat API error', { 
+        errcode: wechatData.errcode, 
+        errmsg: wechatData.errmsg,
+        code: code.substring(0, 8) + '...'
+      });
+      return res.status(400).json({
+        code: 400,
+        error: 'WECHAT_API_ERROR',
+        message: `微信登录失败：${wechatData.errmsg || '未知错误'}`,
+      });
+    }
+
+    const { openid, session_key, unionid } = wechatData;
+
+    if (!openid) {
+      logger.error('WeChat login failed: no openid in response', { wechatData });
+      return res.status(500).json({
+        code: 500,
+        error: 'WECHAT_INVALID_RESPONSE',
+        message: '微信服务器返回数据异常',
+      });
+    }
 
     // Find or create user
     let user: User | null = await prisma.user.findUnique({
@@ -233,38 +188,81 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
       user = await prisma.user.create({
         data: {
           wechatOpenid: openid,
-          nickname: '用户',
+          wechatUnionid: unionid,
+          nickname: `探索者${openid.substring(0, 6)}`,
           avatar: '',
           membershipLevel: 'free',
         } as any,
       }) as any;
-      logger.info('New user created', { userId: user.id, openid: openid.substring(0, 8) + '...' });
+      logger.info('New user created', { userId: (user as User).id, openid: openid.substring(0, 8) + '...' });
     } else {
-      logger.info('Existing user login', { userId: user.id });
+      logger.info('Existing user login', { userId: (user as User).id });
     }
 
-    // Generate JWT tokens
-    const token = generateJWT(user.id);
-    const refreshToken = generateRefreshJWT(user.id);
+    // user is guaranteed to exist here (after create or find)
+    const u = user as User;
+
+    // Get device fingerprint
+    const fingerprint = generateDeviceFingerprint(
+      req.headers['user-agent'] || '',
+      req.ip || '',
+      req.headers
+    );
+
+    // Check for anomalous login (security check)
+    const anomalyCheck = await detectAnomalousLogin(
+      u.id,
+      req.ip || '',
+      req.headers['user-agent'] || ''
+    );
+
+    if (anomalyCheck.anomalous) {
+      logger.warn('Anomalous login detected', { 
+        userId: u.id, 
+        reasons: anomalyCheck.reasons,
+        ip: req.ip 
+      });
+    }
+
+    // Record login and device
+    await recordLogin(u.id, req.ip || '', req.headers['user-agent'] || '', true);
+    await recordDeviceFingerprint(u.id, fingerprint, req.headers['user-agent'] || '', req.ip || '');
+
+    // Generate tokens
+    const accessToken = generateAccessToken(u.id, u.email || `wechat_${openid}`, fingerprint);
+    const { token: refreshToken } = await generateRefreshToken(u.id, fingerprint);
+
+    // Update user's last login
+    await prisma.user.update({
+      where: { id: u.id },
+      data: {
+        lastLoginAt: new Date(),
+        lastLoginIp: req.ip || '',
+      } as any,
+    });
 
     logger.info('WeChat login successful', { 
-      userId: user.id, 
-      isNewUser
+      userId: u.id, 
+      isNewUser,
+      anomalyDetected: anomalyCheck.anomalous 
     });
 
     // Return response in required format
     res.json({
       code: 0,
       data: {
-        token,
+        token: accessToken,
         expires_in: 7200, // 2 hours
         refresh_token: refreshToken,
         refresh_expires_in: 2592000, // 30 days
         user: {
-          id: user.id,
-          openid: user.wechatOpenid || openid,
-          nickname: user.nickname || '',
-          avatar_url: user.avatar || '',
+          id: u.id,
+          openid: openid,
+          nickname: u.nickname || '',
+          avatar_url: u.avatar || '',
+          membership: {
+            level: u.membershipLevel || 'free',
+          },
         },
       },
     });
@@ -303,9 +301,9 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     logger.info('Processing token refresh', { ip: req.ip });
 
     // Verify refresh token
-    let payload: RefreshTokenPayload;
+    let payload: any;
     try {
-      payload = verifyRefreshJWT(refresh_token);
+      payload = await verifyRefreshToken(refresh_token);
     } catch (error: any) {
       logger.warn('Invalid refresh token', { error: error.message });
       return res.status(401).json({
@@ -315,7 +313,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
       });
     }
 
-    // Get user to verify existence
+    // Get user
     const user: User | null = await prisma.user.findUnique({
       where: { id: payload.userId },
     }) as any;
@@ -329,9 +327,16 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
       });
     }
 
+    // Revoke old refresh token
+    await revokeRefreshToken(payload.tokenId);
+
     // Generate new tokens
-    const newToken = generateJWT(payload.userId);
-    const newRefreshToken = generateRefreshJWT(payload.userId);
+    const newAccessToken = generateAccessToken(
+      user.id,
+      user.email || `wechat_${user.wechatOpenid}`,
+      payload.deviceId
+    );
+    const { token: newRefreshToken } = await generateRefreshToken(user.id, payload.deviceId);
 
     logger.info('Token refresh successful', { userId: user.id });
 
@@ -339,7 +344,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     res.json({
       code: 0,
       data: {
-        token: newToken,
+        token: newAccessToken,
         expires_in: 7200, // 2 hours
         refresh_token: newRefreshToken,
         refresh_expires_in: 2592000, // 30 days
@@ -347,6 +352,16 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     });
   } catch (error: any) {
     logger.error('Error in token refresh', { error });
+    
+    // Handle specific error types
+    if (error.message === 'Refresh token is invalid or revoked') {
+      return res.status(401).json({
+        code: 401,
+        error: 'TOKEN_REVOKED',
+        message: 'refresh_token 已失效',
+      });
+    }
+
     res.status(500).json({
       code: 500,
       error: 'INTERNAL_ERROR',
@@ -365,7 +380,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
  */
 export async function getUserInfo(req: Request, res: Response<UserInfoResponse | ErrorResponse>) {
   try {
-    // Extract user ID from request context (set by auth middleware)
+    // Extract user ID from request (set by authMiddleware)
     const userId = (req as any).user?.id;
 
     if (!userId) {
@@ -380,17 +395,9 @@ export async function getUserInfo(req: Request, res: Response<UserInfoResponse |
     logger.info('Getting user info', { userId });
 
     // Get user info
-    const user = await prisma.user.findUnique({
+    const user: User | null = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        wechatOpenid: true,
-        nickname: true,
-        avatar: true,
-        testCount: true,
-        lastLoginAt: true,
-      },
-    });
+    }) as any;
 
     if (!user) {
       logger.warn('User not found', { userId });
@@ -401,7 +408,11 @@ export async function getUserInfo(req: Request, res: Response<UserInfoResponse |
       });
     }
 
-    logger.info('User info retrieved', { userId });
+    // Get membership info from user
+    const membershipLevel = user.membershipLevel || 'free';
+    const membershipEndDate: Date | null = null;
+
+    logger.info('User info retrieved', { userId, membershipLevel });
 
     // Return response in required format
     res.json({
@@ -412,7 +423,11 @@ export async function getUserInfo(req: Request, res: Response<UserInfoResponse |
         nickname: user.nickname || '',
         avatar_url: user.avatar || '',
         test_count: user.testCount || 0,
-        last_test_at: user.lastLoginAt || null,
+        last_test_at: (user as any).lastTestAt || user.lastLoginAt || null,
+        membership: {
+          level: membershipLevel,
+          end_date: membershipEndDate,
+        },
       },
     });
   } catch (error: any) {

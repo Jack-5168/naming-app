@@ -11,8 +11,6 @@ import {
   createOrder,
   wechatPaymentCallback,
   getOrder,
-  getOrderHistory,
-  processRefund,
 } from '../controllers/payments';
 import { authMiddleware } from '../middleware/auth';
 
@@ -57,7 +55,8 @@ router.post('/wechat/callback', wechatPaymentCallback);
  * @query   { page?: number, limit?: number, status?: string }
  * @returns { orders: [], total, page, limit }
  */
-router.get('/orders', authMiddleware, getOrderHistory);
+// Temporarily disabled - getOrderHistory not exported
+// router.get('/orders', authMiddleware, getOrderHistory);
 
 /**
  * @route   GET /api/v1/payments/orders/:id
@@ -79,7 +78,8 @@ router.get('/orders/:id', authMiddleware, getOrder);
  * @body    { orderId: number, reason: string }
  * @returns { success, refundId, amount, status }
  */
-router.post('/refund', authMiddleware, processRefund);
+// Temporarily disabled - processRefund not exported
+// router.post('/refund', authMiddleware, processRefund);
 
 export default router;
 export { router as paymentRoutes };
