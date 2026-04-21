@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./server
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mysql://root:${MYSQL_PASSWORD}@mysql:3306/persona_lab
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mysql
+      - redis
+  
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=persona_lab
+    volumes:
+      - mysql_data:/var/lib/mysql
+  
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_data:
+  redis_data:

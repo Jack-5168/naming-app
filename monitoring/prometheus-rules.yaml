@@ -1,0 +1,240 @@
+# Prometheus Alert Rules
+# Persona Lab - Phase 4 Monitoring
+
+groups:
+  # ==================== Business Alerts ====================
+  - name: persona_lab_business
+    interval: 1m
+    rules:
+      # Test Completion Rate < 60% (10 minutes)
+      - alert: LowTestCompletionRate
+        expr: |
+          sum(rate(test_completed_total[10m])) / sum(rate(test_started_total[10m])) * 100 < 60
+        for: 10m
+        labels:
+          severity: warning
+          team: product
+        annotations:
+          summary: "测试完成率低于 60%"
+          description: "当前测试完成率为 {{ $value }}%，低于目标值 60%"
+          runbook_url: "https://wiki.personaalab.com/runbooks/low-completion-rate"
+
+      # Payment Conversion Rate < 4% (24 hours)
+      - alert: LowPaymentConversionRate
+        expr: |
+          sum(rate(payment_completed_total[1h])) / sum(rate(test_completed_total[1h])) * 100 < 4
+        for: 24h
+        labels:
+          severity: warning
+          team: growth
+        annotations:
+          summary: "付费转化率低于 4%"
+          description: "当前付费转化率为 {{ $value }}%，低于目标值 4%"
+          runbook_url: "https://wiki.personaalab.com/runbooks/low-conversion"
+
+      # LLM Cost > 80% Budget
+      - alert: HighLLMCost
+        expr: |
+          sum(llm_api_cost_total) / sum(llm_budget_total) * 100 > 80
+        for: 1h
+        labels:
+          severity: critical
+          team: engineering
+        annotations:
+          summary: "LLM 成本超过预算 80%"
+          description: "当前 LLM 成本为预算的 {{ $value }}%"
+          runbook_url: "https://wiki.personaalab.com/runbooks/high-llm-cost"
+
+      # Membership Expiring Soon (High Volume)
+      - alert: HighMembershipExpirations
+        expr: |
+          sum(increase(membership_expiring_total[24h])) > 100
+        for: 1h
+        labels:
+          severity: info
+          team: growth
+        annotations:
+          summary: "大量会员即将到期"
+          description: "未来 7 天内有 {{ $value }} 个会员即将到期"
+
+  # ==================== Technical Alerts ====================
+  - name: persona_lab_technical
+    interval: 30s
+    rules:
+      # Error Rate > 1% (5 minutes)
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 1
+        for: 5m
+        labels:
+          severity: critical
+          team: engineering
+        annotations:
+          summary: "API 错误率超过 1%"
+          description: "当前 5xx 错误率为 {{ $value }}%"
+          runbook_url: "https://wiki.personaalab.com/runbooks/high-error-rate"
+
+      # P99 Response Time > 2s (5 minutes)
+      - alert: HighP99Latency
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: engineering
+        annotations:
+          summary: "API P99 响应时间超过 2 秒"
+          description: "当前 P99 响应时间为 {{ $value }}秒"
+          runbook_url: "https://wiki.personaalab.com/runbooks/high-latency"
+
+      # Database Connection Failure
+      - alert: DatabaseConnectionFailure
+        expr: |
+          pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "数据库连接失败"
+          description: "PostgreSQL 数据库无法连接"
+          runbook_url: "https://wiki.personaalab.com/runbooks/db-connection-failure"
+
+      # Database Connection Pool Exhaustion
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          pg_stat_activity_count > 18
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "数据库连接池接近耗尽"
+          description: "当前活跃连接数：{{ $value }}（最大 20）"
+
+      # Redis Connection Failure
+      - alert: RedisConnectionFailure
+        expr: |
+          redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Redis 连接失败"
+          description: "Redis 服务器无法连接"
+          runbook_url: "https://wiki.personaalab.com/runbooks/redis-failure"
+
+      # Redis Low Hit Rate
+      - alert: RedisLowHitRate
+        expr: |
+          redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total) * 100 < 90
+        for: 10m
+        labels:
+          severity: warning
+          team: engineering
+        annotations:
+          summary: "Redis 命中率低于 90%"
+          description: "当前 Redis 命中率为 {{ $value }}%"
+
+      # Memory Usage High
+      - alert: HighMemoryUsage
+        expr: |
+          process_resident_memory_bytes / container_memory_limit_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "内存使用率超过 85%"
+          description: "当前内存使用率为 {{ $value }}%"
+
+      # CPU Usage High
+      - alert: HighCPUUsage
+        expr: |
+          rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "CPU 使用率超过 80%"
+          description: "当前 CPU 使用率为 {{ $value }}%"
+
+      # Disk Usage High
+      - alert: HighDiskUsage
+        expr: |
+          node_filesystem_avail_bytes / node_filesystem_size_bytes * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "磁盘空间不足"
+          description: "剩余磁盘空间：{{ $value }}%"
+
+  # ==================== Security Alerts ====================
+  - name: persona_lab_security
+    interval: 1m
+    rules:
+      # High Rate of Failed Logins
+      - alert: HighFailedLoginRate
+        expr: |
+          sum(rate(login_failed_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "登录失败率异常"
+          description: "过去 5 分钟内有 {{ $value }} 次登录失败"
+
+      # Rate Limit Exceeded
+      - alert: HighRateLimitExceeded
+        expr: |
+          sum(rate(rate_limit_exceeded_total[5m])) > 100
+        for: 5m
+        labels:
+          severity: info
+          team: security
+        annotations:
+          summary: "大量请求触发限流"
+          description: "过去 5 分钟内有 {{ $value }} 次请求被限流"
+
+      # JWT Token Rotation Needed
+      - alert: JWTKeyRotationNeeded
+        expr: |
+          (time() - jwt_key_created_timestamp) > 7776000
+        for: 1h
+        labels:
+          severity: info
+          team: security
+        annotations:
+          summary: "JWT 密钥需要轮换"
+          description: "JWT 密钥已使用超过 90 天"
+
+  # ==================== Recording Rules ====================
+  - name: persona_lab_recording
+    interval: 30s
+    rules:
+      # Pre-calculate API latency percentiles
+      - record: http_request_duration_seconds:p50
+        expr: histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+      - record: http_request_duration_seconds:p95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+      - record: http_request_duration_seconds:p99
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+      # Pre-calculate error rates
+      - record: http_error_rate:ratio_rate5m
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+
+      # Pre-calculate test metrics
+      - record: test_completion_rate:ratio_rate10m
+        expr: sum(rate(test_completed_total[10m])) / sum(rate(test_started_total[10m]))
+
+      # Pre-calculate payment metrics
+      - record: payment_conversion_rate:ratio_rate1h
+        expr: sum(rate(payment_completed_total[1h])) / sum(rate(test_completed_total[1h]))

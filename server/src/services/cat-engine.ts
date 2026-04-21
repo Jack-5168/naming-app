@@ -1,21 +1,23 @@
 /**
  * CAT Engine - Computerized Adaptive Testing
  * Implements 2PL MIRT model with maximum information item selection
- * and Bayesian EAP ability estimation
+ * and Bayesian EAP ability estimation for Big Five personality traits
  */
 
 import {
   CATConfig,
   Question,
   Answer,
-  AbilityEstimate
+  AbilityEstimate,
+  Big5Dimension
 } from '../types';
 
 const DEFAULT_CONFIG: CATConfig = {
   maxQuestions: 20,
   minQuestions: 10,
   targetSEM: 0.3,
-  abilityRange: [-3, 3]
+  abilityRange: [-3, 3],
+  dimensions: ['O', 'C', 'E', 'A', 'N']
 };
 
 export class CATEngine {
@@ -74,7 +76,10 @@ export class CATEngine {
 
       const p = this.calculateProbability(theta, question.difficulty, question.discrimination);
       
-      if (answer.response === 1) {
+      // For Likert scale, treat higher responses as endorsing the trait
+      const endorsed = answer.response >= 3;
+      
+      if (endorsed) {
         logLikelihood += Math.log(Math.max(p, 1e-10));
       } else {
         logLikelihood += Math.log(Math.max(1 - p, 1e-10));
@@ -191,16 +196,16 @@ export class CATEngine {
     const theta = this.estimateAbility(answers);
 
     // 按维度分组，确保各维度题目平衡
-    const dimensionCounts: { [key: string]: number } = { E: 0, N: 0, T: 0, J: 0 };
+    const dimensionCounts: { [key in Big5Dimension]: number } = { O: 0, C: 0, E: 0, A: 0, N: 0 };
     answers.forEach(a => {
       dimensionCounts[a.dimension] = (dimensionCounts[a.dimension] || 0) + 1;
     });
 
     // 找出作答次数最少的维度
     const minCount = Math.min(...Object.values(dimensionCounts));
-    const targetDimensions = Object.entries(dimensionCounts)
-      .filter(([_, count]) => count === minCount)
-      .map(([dim]) => dim);
+    const targetDimensions = (Object.keys(dimensionCounts) as Big5Dimension[]).filter(
+      dim => dimensionCounts[dim] === minCount
+    );
 
     // 在目标维度中选择信息量最大的题目
     let bestQuestion: Question | null = null;
@@ -325,6 +330,25 @@ export class CATEngine {
    */
   scoreToTheta(score: number): number {
     return (score / 100) * 6 - 3;
+  }
+
+  /**
+   * 按维度估计能力
+   */
+  estimateAbilityByDimension(answers: Answer[]): { [key in Big5Dimension]?: AbilityEstimate } {
+    const result: { [key in Big5Dimension]?: AbilityEstimate } = {};
+    const dimensions = new Set<Big5Dimension>();
+    
+    answers.forEach(a => dimensions.add(a.dimension));
+
+    for (const dim of dimensions) {
+      const dimAnswers = answers.filter(a => a.dimension === dim);
+      if (dimAnswers.length > 0) {
+        result[dim] = this.getAbilityEstimate(dimAnswers);
+      }
+    }
+
+    return result;
   }
 }
 

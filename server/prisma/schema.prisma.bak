@@ -37,8 +37,7 @@ model User {
   loginHistories  LoginHistory[]
   usageRecords    UsageRecord[]
   lifeEvents      LifeEvent[]
-  dualTestsInitiator DualTest[] @relation("DualTestInitiator")
-  dualTestsParticipant DualTest[] @relation("DualTestParticipant")
+  dualTests       DualTest[]
   referrals       Referral[]
   commissions     Commission[]
 }

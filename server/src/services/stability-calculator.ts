@@ -7,7 +7,8 @@ import {
   TestResult,
   StabilityResult,
   StabilityConfig,
-  DimensionStability
+  Big5Scores,
+  Big5Dimension
 } from '../types';
 
 const DEFAULT_CONFIG: StabilityConfig = {
@@ -28,37 +29,23 @@ function boxMullerRandom(): number {
 }
 
 /**
- * 计算单个维度的稳定性
+ * 计算单个维度的稳定性统计
  */
-function calculateDimensionStability(scores: number[]): DimensionStability {
+function calculateDimensionStats(scores: number[]): { mean: number; std: number; cv: number } {
   if (scores.length === 0) {
-    return {
-      mean: 50,
-      stdDev: 0,
-      range: 0,
-      stabilityIndex: 0
-    };
+    return { mean: 50, std: 0, cv: 0 };
   }
 
   const n = scores.length;
   const mean = scores.reduce((a, b) => a + b, 0) / n;
   
   const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / (n - 1 || 1);
-  const stdDev = Math.sqrt(variance);
+  const std = Math.sqrt(variance);
   
-  const range = Math.max(...scores) - Math.min(...scores);
-  
-  // 稳定性指数：基于变异系数 (CV)
-  // CV = stdDev / mean, 越小越稳定
-  const cv = mean > 0 ? stdDev / mean : stdDev / 50;
-  const stabilityIndex = Math.max(0, 1 - cv);
+  // 变异系数 CV = std / mean
+  const cv = mean > 0 ? std / mean : std / 50;
 
-  return {
-    mean,
-    stdDev,
-    range,
-    stabilityIndex
-  };
+  return { mean, std, cv };
 }
 
 /**
@@ -83,7 +70,14 @@ export async function calculateStability(
       isRange: false,
       stabilityWarning: `需要至少${config.minTestsForEvolving}次测试才能计算稳定性，当前仅有${testHistory.length}次`,
       confidenceBand: [0, 0],
-      status: 'insufficient_data'
+      status: 'insufficient_data',
+      perDimension: {
+        O: { mean: 50, std: 0, cv: 0 },
+        C: { mean: 50, std: 0, cv: 0 },
+        E: { mean: 50, std: 0, cv: 0 },
+        A: { mean: 50, std: 0, cv: 0 },
+        N: { mean: 50, std: 0, cv: 0 }
+      }
     };
   }
 
@@ -91,28 +85,34 @@ export async function calculateStability(
   const sortedTests = [...testHistory].sort((a, b) => a.completedAt - b.completedAt);
 
   // 提取各维度得分序列
-  const dimensionScores = {
+  const dimensionScores: { [key in Big5Dimension]: number[] } = {
+    O: sortedTests.map(t => t.scores.O),
+    C: sortedTests.map(t => t.scores.C),
     E: sortedTests.map(t => t.scores.E),
-    N: sortedTests.map(t => t.scores.N),
-    T: sortedTests.map(t => t.scores.T),
-    J: sortedTests.map(t => t.scores.J)
+    A: sortedTests.map(t => t.scores.A),
+    N: sortedTests.map(t => t.scores.N)
   };
 
-  // 计算各维度的基础稳定性
-  const dimensionStability = {
-    E: calculateDimensionStability(dimensionScores.E),
-    N: calculateDimensionStability(dimensionScores.N),
-    T: calculateDimensionStability(dimensionScores.T),
-    J: calculateDimensionStability(dimensionScores.J)
+  // 计算各维度的基础统计
+  const perDimension = {
+    O: calculateDimensionStats(dimensionScores.O),
+    C: calculateDimensionStats(dimensionScores.C),
+    E: calculateDimensionStats(dimensionScores.E),
+    A: calculateDimensionStats(dimensionScores.A),
+    N: calculateDimensionStats(dimensionScores.N)
   };
 
-  // 计算总体稳定性指数 (四个维度的平均)
-  const overallStabilityIndex = (
-    dimensionStability.E.stabilityIndex +
-    dimensionStability.N.stabilityIndex +
-    dimensionStability.T.stabilityIndex +
-    dimensionStability.J.stabilityIndex
-  ) / 4;
+  // 计算总体稳定性指数 (基于平均 CV，CV 越小越稳定)
+  const avgCV = (
+    perDimension.O.cv +
+    perDimension.C.cv +
+    perDimension.E.cv +
+    perDimension.A.cv +
+    perDimension.N.cv
+  ) / 5;
+
+  // 稳定性指数 = 1 - CV (限制在 0-1 范围)
+  const overallStabilityIndex = Math.max(0, Math.min(1, 1 - avgCV));
 
   // Monte Carlo 模拟计算稳定性概率
   const simulationResult = await runMonteCarloSimulation(
@@ -161,7 +161,7 @@ export async function calculateStability(
     stabilityWarning,
     confidenceBand: simulationResult.confidenceBand,
     status,
-    dimensionBreakdown: dimensionStability
+    perDimension
   };
 }
 
@@ -178,20 +178,17 @@ interface MonteCarloResult {
  * 通过重采样估计稳定性概率的分布
  */
 async function runMonteCarloSimulation(
-  dimensionScores: {
-    E: number[];
-    N: number[];
-    T: number[];
-    J: number[];
-  },
+  dimensionScores: { [key in Big5Dimension]: number[] },
   iterations: number,
   confidenceLevel: number
 ): Promise<MonteCarloResult> {
+  // 合并所有维度分数
   const allScores = [
+    ...dimensionScores.O,
+    ...dimensionScores.C,
     ...dimensionScores.E,
-    ...dimensionScores.N,
-    ...dimensionScores.T,
-    ...dimensionScores.J
+    ...dimensionScores.A,
+    ...dimensionScores.N
   ];
 
   const n = allScores.length;
@@ -202,11 +199,8 @@ async function runMonteCarloSimulation(
     };
   }
 
-  // 计算观测到的稳定性指数
-  const observedStability = calculateDimensionStability(allScores).stabilityIndex;
-
   // Monte Carlo 模拟：bootstrap 重采样
-  const simulatedStabilities: number[] = [];
+  const simulatedCVs: number[] = [];
 
   for (let i = 0; i < iterations; i++) {
     // 有放回抽样
@@ -216,25 +210,26 @@ async function runMonteCarloSimulation(
       resampledScores.push(allScores[randomIndex]);
     }
 
-    const resampledStability = calculateDimensionStability(resampledScores).stabilityIndex;
-    simulatedStabilities.push(resampledStability);
+    const stats = calculateDimensionStats(resampledScores);
+    simulatedCVs.push(stats.cv);
   }
 
   // 计算稳定性概率
-  // 定义为：重采样稳定性指数 ≥ 0.7 的概率
-  const threshold = 0.7;
-  const stableCount = simulatedStabilities.filter(s => s >= threshold).length;
+  // 定义为：重采样 CV ≤ 0.15 的概率 (CV 越小越稳定)
+  const threshold = 0.15;
+  const stableCount = simulatedCVs.filter(cv => cv <= threshold).length;
   const stabilityProbability = (stableCount / iterations) * 100;
 
   // 计算置信区间
-  simulatedStabilities.sort((a, b) => a - b);
+  simulatedCVs.sort((a, b) => a - b);
   const alpha = 1 - confidenceLevel;
   const lowerIndex = Math.floor((alpha / 2) * iterations);
   const upperIndex = Math.floor((1 - alpha / 2) * iterations);
 
+  // 转换为稳定性指数的置信区间
   const confidenceBand: [number, number] = [
-    simulatedStabilities[lowerIndex],
-    simulatedStabilities[upperIndex]
+    Math.max(0, 1 - simulatedCVs[upperIndex]),
+    Math.min(1, 1 - simulatedCVs[lowerIndex])
   ];
 
   return {
@@ -259,8 +254,8 @@ export function calculateTestRetestReliability(testHistory: TestResult[]): numbe
     const test1 = testHistory[i];
     const test2 = testHistory[i + 1];
 
-    const scores1 = [test1.scores.E, test1.scores.N, test1.scores.T, test1.scores.J];
-    const scores2 = [test2.scores.E, test2.scores.N, test2.scores.T, test2.scores.J];
+    const scores1 = [test1.scores.O, test1.scores.C, test1.scores.E, test1.scores.A, test1.scores.N];
+    const scores2 = [test2.scores.O, test2.scores.C, test2.scores.E, test2.scores.A, test2.scores.N];
 
     const correlation = pearsonCorrelation(scores1, scores2);
     correlations.push(correlation);

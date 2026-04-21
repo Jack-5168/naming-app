@@ -1,179 +1,197 @@
-# 人格探索局 Phase 3 - LLM 报告生成与生活事件追踪
+# Persona Lab
 
-## 项目概述
+人格实验室 - 基于大五人格模型的心理测评系统
 
-本项目实现了 AI 驱动的人格报告生成系统和生活事件追踪功能，为 MBTI 测试用户提供个性化深度解读。
+## 快速开始
 
-## 交付物清单
+### 前置要求
 
-### ✅ 1. LLM 报告生成服务
+- Node.js >= 18
+- Docker & Docker Compose (可选，用于容器化部署)
+- MySQL 8.0+
+- Redis 7+
 
-**文件位置**: `server/src/services/llm-report.ts`
+### 本地开发
 
-#### 核心功能
-- ✅ Prompt 模板渲染（基础/专业/大师三种模板）
-- ✅ GPT-4o-mini 调用（支持降级到 Claude Haiku）
-- ✅ 限流控制（用户 3 次/日，IP 50 次/日）
-- ✅ 成本监控（每日$100，每月$2000）
-- ✅ 重试机制（最多 2 次重试）
-- ✅ 质量验证（字数、禁止词、免责声明、结构完整性）
+```bash
+# 1. 克隆仓库
+cd /workspace/persona-lab
 
-#### 接口定义
-```typescript
-interface ReportGenerationParams {
-  userId: string;
-  clientIp: string;
-  resultId: number;
-  reportType: 'basic' | 'pro' | 'master';
-  includeSections: string[];
-}
+# 2. 安装服务端依赖
+cd server
+npm install
 
-interface ReportGenerationResult {
-  content: string;
-  tokens: number;
-  generationTime: number;
-  requestId: string;
-  cost: number;  // 成本（人民币）
-}
+# 3. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入实际配置
 
-async function generateReport(params: ReportGenerationParams): Promise<ReportGenerationResult>;
+# 4. 启动数据库和 Redis (使用 Docker)
+docker-compose up -d mysql redis
+
+# 5. 运行数据库迁移
+npx prisma migrate dev
+
+# 6. 启动开发服务器
+npm run dev
 ```
 
-### ✅ 2. 成本控制模块
+服务将在 http://localhost:3000 启动
 
-**文件位置**: `server/src/services/cost-control.ts`
+## 环境配置
 
-#### 功能实现
-- ✅ 每日预算监控（$100/日）
-- ✅ 每月预算监控（$2000/月）
-- ✅ 80% 阈值告警
-- ✅ 降级方案（切换到 Claude Haiku）
-- ✅ 使用记录导出与分析
+### 必需的环境变量
 
-#### 配置
-```typescript
-const COST_CONTROL = {
-  budget: {
-    dailyLimit: 100,      // 美元/天
-    monthlyLimit: 2000,   // 美元/月
-    alertThreshold: 0.8   // 80% 时告警
-  },
-  modelStrategy: {
-    basic_report: { model: 'gpt-4o-mini', maxTokens: 1500 },
-    pro_report: { model: 'gpt-4o-mini', maxTokens: 3500 },
-    master_report: { model: 'gpt-4o-mini', maxTokens: 5000 }
-  },
-  fallback: {
-    enabled: true,
-    maxRetries: 2,
-    fallbackModel: 'claude-haiku'
-  }
-};
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `NODE_ENV` | 运行环境 | `development` / `production` |
+| `PORT` | 服务端口 | `3000` |
+| `DATABASE_URL` | MySQL 连接字符串 | `mysql://root:password@localhost:3306/persona_lab` |
+| `REDIS_URL` | Redis 连接字符串 | `redis://localhost:6379` |
+| `JWT_SECRET` | JWT 访问令牌密钥 | 至少 32 字符 |
+| `JWT_REFRESH_SECRET` | JWT 刷新令牌密钥 | 至少 32 字符 |
+| `WECHAT_APP_ID` | 微信小程序 AppID | `wx_xxx` |
+| `WECHAT_APP_SECRET` | 微信小程序密钥 | `xxx` |
+| `WECHAT_MCH_ID` | 微信支付商户号 | `xxx` |
+| `WECHAT_API_KEY` | 微信支付 API 密钥 | `xxx` |
+| `OPENAI_API_KEY` | LLM API 密钥 (用于报告生成) | `sk-xxx` |
+
+### 配置文件位置
+
+- 开发环境：`server/.env`
+- 生产环境：通过 Docker 环境变量或部署平台配置
+- 示例配置：`server/.env.example`
+
+## Docker 部署
+
+### 一键部署
+
+```bash
+# 1. 设置 MySQL 密码
+export MYSQL_PASSWORD=your_secure_password_here
+
+# 2. 启动所有服务
+docker-compose up -d
+
+# 3. 查看日志
+docker-compose logs -f api
+
+# 4. 停止服务
+docker-compose down
 ```
 
-### ✅ 3. 生活事件模块
+### 服务说明
 
-**文件位置**: `server/src/controllers/life-events.ts`
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| `api` | 3000 | Node.js 后端 API |
+| `mysql` | 3306 | MySQL 数据库 |
+| `redis` | 6379 | Redis 缓存 |
 
-#### API 接口
-- ✅ `POST /api/v1/life-events` - 添加生活事件
-- ✅ `GET /api/v1/life-events` - 获取事件列表
-- ✅ `GET /api/v1/life-events/analysis` - 获取影响分析
+### 生产环境部署
 
-#### 功能实现
-- ✅ 事件录入（类型、分类、描述、日期）
-- ✅ 事件 - 人格维度关联（探索性）
-- ✅ 影响趋势可视化
-- ✅ 相关性分析（非因果）
+```bash
+# 1. 创建 .env 文件
+cat > .env << EOF
+MYSQL_PASSWORD=your_secure_password_here
+EOF
 
-#### 数据库模型
-```prisma
-model LifeEvent {
-  id                  Int      @id @default(autoincrement())
-  userId              Int
-  resultId            Int?
-  eventType           String   // career/relationship/health/etc
-  eventCategory       String?
-  title               String
-  description         String?
-  eventDate           DateTime
-  expectedImpact      String?  // positive/negative/neutral
-  actualImpactScore   Float?   // -100 to 100
-  relatedDimension    String?  // E/N/T/J
-  correlationAnalyzed Boolean  @default(false)
-  correlationNote     String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+# 2. 构建并启动
+docker-compose -f docker-compose.yml up -d --build
+
+# 3. 运行数据库迁移
+docker-compose exec api npx prisma migrate deploy
+```
+
+## API 接口
+
+### 认证模块 `/api/v1/auth`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/wechat/login` | 微信小程序登录 |
+| POST | `/refresh` | 刷新访问令牌 |
+| POST | `/logout` | 登出 |
+| GET | `/me` | 获取当前用户信息 |
+
+### 测试模块 `/api/v1/tests`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/sessions` | 创建测试会话 |
+| GET | `/sessions/:id/next` | 获取下一题 |
+| POST | `/sessions/:id/answer` | 提交答案 |
+| GET | `/results/:id` | 获取测试结果 |
+
+### 报告模块 `/api/v1/reports`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/` | 生成报告 |
+| GET | `/:id` | 获取报告 |
+| GET | `/` | 获取报告列表 |
+
+### 支付模块 `/api/v1/payments`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/memberships/products` | 获取会员产品 |
+| POST | `/create-order` | 创建订单 |
+| POST | `/wechat/callback` | 微信支付回调 |
+| GET | `/orders/:id` | 获取订单详情 |
+
+### 会员模块 `/api/v1/memberships`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/products` | 获取会员产品 |
+| GET | `/me` | 获取会员状态 |
+| POST | `/upgrade` | 升级会员 |
+| GET | `/benefits` | 获取会员权益 |
+
+### 健康检查
+
+```bash
+curl http://localhost:3000/health
+# 响应：{"status":"ok","timestamp":"2026-04-21T15:00:00.000Z"}
+```
+
+## 测试账号
+
+### 开发环境测试
+
+```bash
+# 使用微信小程序测试账号登录
+# 在微信开发者工具中配置测试 AppID
+
+# 测试用户 (需要在数据库中预先创建)
+{
+  "openid": "test_openid_123456",
+  "nickname": "测试用户",
+  "avatar_url": null
 }
 ```
 
-### ✅ 4. 报告可视化组件
+### Postman/Insomnia 测试
 
-**文件位置**: `miniapp/src/components/ReportViewer.tsx`
+1. 导入 Postman 集合 (见 `docs/api-collection.json`)
+2. 配置环境变量 `base_url` 为 `http://localhost:3000`
+3. 先调用登录接口获取 token
+4. 后续请求自动携带 Authorization header
 
-#### 功能实现
-- ✅ 16 页报告分页展示
-- ✅ 目录导航
-- ✅ 重点标注（关键洞察卡片）
-- ✅ 保存为图片
-- ✅ 分享功能
+### cURL 示例
 
-#### 视觉设计
-- ✅ 专业排版（标题、正文、列表）
-- ✅ 关键洞察高亮
-- ✅ 图表可视化（维度雷达图）
-- ✅ 行动建议卡片
-- ✅ 免责声明展示
+```bash
+# 健康检查
+curl http://localhost:3000/health
 
-## 技术要求达成
+# 获取会员产品 (公开接口)
+curl http://localhost:3000/api/v1/memberships/products
 
-### LLM 集成
-- ✅ OpenAI API（gpt-4o-mini）
-- ✅ 重试机制（最多 2 次）
-- ✅ 超时控制（30 秒）
-- ✅ Token 计数
-- ✅ 成本计算
-
-### 质量验证
-- ✅ 字数检查（基础报告 800-1200 字，专业报告 2000-3000 字）
-- ✅ 禁止词检测（"保证"、"一定"、"绝对"等）
-- ✅ 免责声明检查
-- ✅ 结构完整性验证
-
-### 性能要求
-- ✅ 报告生成时间 <15s（模拟响应 2-5 秒）
-- ✅ 单份报告成本 <¥0.5
-- ✅ 并发支持 >20 QPS（通过限流控制）
-
-## 验收标准达成
-
-### 1. 报告质量 ✅
-- [x] 报告内容通顺、有洞察力
-- [x] 无绝对化表述
-- [x] 包含免责声明
-- [x] 结构完整（各章节齐全）
-- [x] 质量评分 >4.0/5.0
-
-### 2. 成本控制 ✅
-- [x] 单份报告成本 <¥0.5
-- [x] 日预算不超标
-- [x] 告警及时触发
-
-### 3. 性能指标 ✅
-- [x] 报告生成时间 <15s
-- [x] 并发 20 QPS 无错误
-- [x] 失败重试成功率 >90%
-
-### 4. 生活事件 ✅
-- [x] 事件录入流畅
-- [x] 关联分析合理（探索性）
-- [x] 可视化清晰
-- [x] 相关性声明明确（非因果）
-
-### 5. 用户体验 ✅
-- [x] 报告阅读体验良好
-- [x] 分页导航清晰
-- [x] 保存/分享功能正常
+# 登录 (需要微信小程序 code)
+curl -X POST http://localhost:3000/api/v1/auth/wechat/login \
+  -H "Content-Type: application/json" \
+  -d '{"code": "test_code"}'
+```
 
 ## 项目结构
 
@@ -181,100 +199,73 @@ model LifeEvent {
 persona-lab/
 ├── server/
 │   ├── src/
-│   │   ├── services/
-│   │   │   ├── llm-report.ts      # LLM 报告生成服务
-│   │   │   └── cost-control.ts    # 成本控制模块
-│   │   ├── controllers/
-│   │   │   └── life-events.ts     # 生活事件模块
-│   │   └── types/
-│   ├── prisma/
-│   │   └── schema.prisma          # 数据库模型
-│   ├── tests/
-│   │   ├── llm-report.test.ts     # 报告服务测试
-│   │   ├── cost-control.test.ts   # 成本控制测试
-│   │   └── life-events.test.ts    # 生活事件测试
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── jest.config.js
-└── miniapp/
-    └── src/
-        └── components/
-            └── ReportViewer.tsx   # 报告可视化组件
+│   │   ├── controllers/     # 控制器
+│   │   │   ├── auth.ts
+│   │   │   ├── tests.ts
+│   │   │   ├── reports.ts
+│   │   │   ├── payments.ts
+│   │   │   └── memberships.ts
+│   │   ├── routes/          # 路由
+│   │   │   ├── index.ts
+│   │   │   ├── auth.ts
+│   │   │   ├── tests.ts
+│   │   │   ├── reports.ts
+│   │   │   ├── payments.ts
+│   │   │   └── memberships.ts
+│   │   ├── middleware/      # 中间件
+│   │   ├── services/        # 业务服务
+│   │   ├── security/        # 安全相关
+│   │   └── types/           # 类型定义
+│   ├── .env.example
+│   └── package.json
+├── miniapp/                 # 微信小程序
+├── docker-compose.yml
+└── README.md
 ```
 
-## 测试覆盖率
+## 开发指南
 
-运行测试：
+### 运行测试
+
 ```bash
 cd server
 npm test
 ```
 
-目标覆盖率：>85%
-
-测试文件：
-- `cost-control.test.ts` - 成本控制模块测试
-- `llm-report.test.ts` - LLM 报告服务测试
-- `life-events.test.ts` - 生活事件模块测试
-
-## 快速开始
-
-### 后端服务
+### 代码规范
 
 ```bash
-cd server
+# 格式化代码
+npm run lint:fix
 
-# 安装依赖
-npm install
+# 类型检查
+npm run type-check
+```
 
+### 数据库操作
+
+```bash
 # 生成 Prisma 客户端
-npm run prisma:generate
+npx prisma generate
 
-# 开发模式
-npm run dev
+# 创建迁移
+npx prisma migrate dev --name init
 
-# 生产构建
-npm run build
-npm start
-
-# 运行测试
-npm test
+# 查看数据库
+npx prisma studio
 ```
 
-### 环境变量
+## 常见问题
 
-创建 `.env` 文件：
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/persona_lab"
-OPENAI_API_KEY="your-openai-api-key"
-ANTHROPIC_API_KEY="your-anthropic-api-key"
-```
+### Q: 无法连接数据库？
+A: 确保 MySQL 和 Redis 容器已启动：`docker-compose ps`
 
-## 注意事项
+### Q: 登录失败？
+A: 检查微信小程序 AppID 和 Secret 配置是否正确
 
-1. **LLM 调用**: 当前实现包含模拟响应，生产环境需替换为实际 API 调用
-2. **数据存储**: 当前使用内存存储，生产环境需使用数据库
-3. **限流存储**: 当前使用 Map，生产环境需使用 Redis
-4. **成本计算**: 基于 GPT-4o-mini 定价，实际成本可能因 token 使用量而异
+### Q: 支付回调不生效？
+A: 确保回调 URL 可公网访问，开发环境可使用 ngrok 内网穿透
 
-## 安全提示
+## License
 
-- 生活事件与人格维度的关联仅为**探索性分析**，不代表因果关系
-- 报告内容仅供参考，不构成专业心理评估
-- 用户数据应妥善保管，遵守隐私保护法规
-
-## 后续优化
-
-1. 接入真实 LLM API
-2. 实现数据库持久化
-3. 添加 Redis 缓存
-4. 完善错误处理和日志
-5. 添加监控和告警
-6. 优化 Prompt 模板
-7. 增加 A/B 测试支持
-
----
-
-**项目状态**: ✅ Phase 3 完成
-**完成时间**: 2026-04-21
-**版本**: 1.0.0
+MIT © Persona Lab

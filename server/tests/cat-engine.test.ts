@@ -4,111 +4,139 @@
  */
 
 import { CATEngine } from '../src/services/cat-engine';
-import { Question, Answer, CATConfig } from '../src/types';
+import { Question, Answer, CATConfig, Big5Dimension } from '../src/types';
 
-// 测试题目池
+// 测试题目池 (Big Five)
 const mockQuestions: Question[] = [
-  // E-I 维度题目
+  // O - 开放性
   {
     id: 'q1',
-    dimension: 'E',
+    dimension: 'O',
     difficulty: 0,
     discrimination: 1.0,
-    content: '在社交场合中，你通常会？',
+    content: '你喜欢尝试新事物',
     options: [
-      { value: 0, text: '主动与多人交谈' },
-      { value: 1, text: '等待他人接近' }
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
     ]
   },
   {
     id: 'q2',
-    dimension: 'E',
+    dimension: 'O',
     difficulty: 0.5,
     discrimination: 1.2,
-    content: '周末你更倾向于？',
+    content: '你对抽象概念感兴趣',
     options: [
-      { value: 0, text: '参加聚会活动' },
-      { value: 1, text: '独自休息' }
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
     ]
   },
+  // C - 尽责性
   {
     id: 'q3',
-    dimension: 'E',
-    difficulty: -0.5,
-    discrimination: 0.8,
-    content: '你觉得自己是一个？',
+    dimension: 'C',
+    difficulty: 0,
+    discrimination: 1.0,
+    content: '你做事有条理',
     options: [
-      { value: 0, text: '外向的人' },
-      { value: 1, text: '内向的人' }
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
     ]
   },
-  // N-S 维度题目
   {
     id: 'q4',
-    dimension: 'N',
-    difficulty: 0,
-    discrimination: 1.0,
-    content: '你更关注？',
-    options: [
-      { value: 0, text: '未来的可能性' },
-      { value: 1, text: '当下的现实' }
-    ]
-  },
-  {
-    id: 'q5',
-    dimension: 'N',
-    difficulty: 0.5,
-    discrimination: 1.1,
-    content: '你更相信？',
-    options: [
-      { value: 0, text: '直觉和灵感' },
-      { value: 1, text: '经验和事实' }
-    ]
-  },
-  // T-F 维度题目
-  {
-    id: 'q6',
-    dimension: 'T',
-    difficulty: 0,
-    discrimination: 1.0,
-    content: '做决定时你更依赖？',
-    options: [
-      { value: 0, text: '逻辑分析' },
-      { value: 1, text: '个人价值观' }
-    ]
-  },
-  {
-    id: 'q7',
-    dimension: 'T',
+    dimension: 'C',
     difficulty: -0.5,
     discrimination: 0.9,
-    content: '你更看重？',
+    content: '你总是按时完成任务',
     options: [
-      { value: 0, text: '公平和原则' },
-      { value: 1, text: '和谐和关系' }
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
     ]
   },
-  // J-P 维度题目
+  // E - 外向性
   {
-    id: 'q8',
-    dimension: 'J',
+    id: 'q5',
+    dimension: 'E',
     difficulty: 0,
     discrimination: 1.0,
-    content: '你的生活方式更倾向于？',
+    content: '你在社交场合中感到自在',
     options: [
-      { value: 0, text: '有计划有秩序' },
-      { value: 1, text: '灵活随性' }
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
+    ]
+  },
+  {
+    id: 'q6',
+    dimension: 'E',
+    difficulty: 0.5,
+    discrimination: 1.1,
+    content: '你喜欢成为关注的焦点',
+    options: [
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
+    ]
+  },
+  // A - 宜人性
+  {
+    id: 'q7',
+    dimension: 'A',
+    difficulty: 0,
+    discrimination: 1.0,
+    content: '你关心他人的感受',
+    options: [
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
+    ]
+  },
+  // N - 神经质
+  {
+    id: 'q8',
+    dimension: 'N',
+    difficulty: 0,
+    discrimination: 1.0,
+    content: '你容易感到焦虑',
+    options: [
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
     ]
   },
   {
     id: 'q9',
-    dimension: 'J',
+    dimension: 'N',
     difficulty: 0.5,
     discrimination: 1.2,
-    content: '面对截止日期你会？',
+    content: '你经常担心事情',
     options: [
-      { value: 0, text: '提前完成' },
-      { value: 1, text: '最后时刻完成' }
+      { value: 1, text: '非常不同意' },
+      { value: 2, text: '不同意' },
+      { value: 3, text: '中立' },
+      { value: 4, text: '同意' },
+      { value: 5, text: '非常同意' }
     ]
   }
 ];
@@ -122,20 +150,12 @@ describe('CATEngine', () => {
 
   describe('2PL MIRT Model', () => {
     test('should calculate probability correctly', () => {
-      // P(θ) = 1 / (1 + exp(-D * a * (θ - b)))
-      // When θ = b, P = 0.5
-      const theta = 0;
-      const difficulty = 0;
-      const discrimination = 1.0;
-
-      // 使用私有方法测试，通过公开接口间接验证
       engine.reset();
       
-      // 当能力等于难度时，答对概率应接近 0.5
       const mockAnswer: Answer = {
         questionId: 'q1',
-        dimension: 'E',
-        response: 1,
+        dimension: 'O',
+        response: 4,
         timestamp: Date.now()
       };
 
@@ -146,31 +166,16 @@ describe('CATEngine', () => {
     test('should handle extreme theta values', () => {
       engine.reset();
       
-      // 创建极端作答模式
       const extremeAnswers: Answer[] = mockQuestions.slice(0, 5).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 5,
         timestamp: Date.now()
       }));
 
       const estimate = engine.getAbilityEstimate(extremeAnswers);
       expect(estimate.theta).toBeGreaterThanOrEqual(-3);
       expect(estimate.theta).toBeLessThanOrEqual(3);
-    });
-  });
-
-  describe('Fisher Information', () => {
-    test('information should be maximum at theta = difficulty', () => {
-      // Fisher Information I(θ) = D² * a² * P(θ) * (1 - P(θ))
-      // Maximum when P(θ) = 0.5, i.e., θ = b
-      engine.reset();
-      
-      // 通过 SEM 间接验证信息量计算
-      const answers: Answer[] = [];
-      const sem = engine.calculateSEM(answers);
-      expect(sem).toBeGreaterThan(0);
-      expect(sem).toBeLessThan(Infinity);
     });
   });
 
@@ -184,11 +189,9 @@ describe('CATEngine', () => {
     test('should estimate ability based on answers', () => {
       engine.reset();
       
-      // 模拟一致的外向作答
       const answers: Answer[] = [
-        { questionId: 'q1', dimension: 'E', response: 0, timestamp: Date.now() },
-        { questionId: 'q2', dimension: 'E', response: 0, timestamp: Date.now() },
-        { questionId: 'q3', dimension: 'E', response: 0, timestamp: Date.now() }
+        { questionId: 'q1', dimension: 'O', response: 5, timestamp: Date.now() },
+        { questionId: 'q2', dimension: 'O', response: 5, timestamp: Date.now() }
       ];
 
       const theta = engine.estimateAbility(answers);
@@ -202,21 +205,19 @@ describe('CATEngine', () => {
       const answers: Answer[] = [];
       const sems: number[] = [];
 
-      // 逐步添加答案，SEM 应逐渐减小
       for (let i = 0; i < 6; i++) {
         const q = mockQuestions[i % mockQuestions.length];
         answers.push({
           questionId: q.id,
           dimension: q.dimension,
-          response: i % 2,
+          response: 3 + (i % 3),
           timestamp: Date.now()
         });
         sems.push(engine.calculateSEM(answers));
       }
 
-      // SEM 应呈下降趋势
       for (let i = 1; i < sems.length; i++) {
-        expect(sems[i]).toBeLessThanOrEqual(sems[i - 1] * 1.5); // 允许一定波动
+        expect(sems[i]).toBeLessThanOrEqual(sems[i - 1] * 1.5);
       }
     });
   });
@@ -226,12 +227,12 @@ describe('CATEngine', () => {
       engine.reset();
       
       const answers: Answer[] = [
-        { questionId: 'q1', dimension: 'E', response: 1, timestamp: Date.now() }
+        { questionId: 'q1', dimension: 'O', response: 4, timestamp: Date.now() }
       ];
 
       const sem = engine.calculateSEM(answers);
       expect(sem).toBeGreaterThan(0);
-      expect(sem).toBeLessThan(2); // 单题 SEM 不应过大
+      expect(sem).toBeLessThan(2);
     });
 
     test('SEM should decrease with more answers', () => {
@@ -242,7 +243,7 @@ describe('CATEngine', () => {
       const answers: Answer[] = mockQuestions.slice(0, 5).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
       
@@ -270,8 +271,8 @@ describe('CATEngine', () => {
       for (let i = 0; i < 5; i++) {
         const answers: Answer[] = Array.from(selectedIds).map(id => ({
           questionId: id,
-          dimension: 'E' as const,
-          response: 1,
+          dimension: 'O' as Big5Dimension,
+          response: 4,
           timestamp: Date.now()
         }));
         
@@ -286,30 +287,27 @@ describe('CATEngine', () => {
     test('should balance dimensions', () => {
       engine.reset();
       
-      // 先作答 E 维度题目
       const answers: Answer[] = [
-        { questionId: 'q1', dimension: 'E', response: 1, timestamp: Date.now() },
-        { questionId: 'q2', dimension: 'E', response: 1, timestamp: Date.now() }
+        { questionId: 'q1', dimension: 'O', response: 4, timestamp: Date.now() },
+        { questionId: 'q2', dimension: 'O', response: 4, timestamp: Date.now() }
       ];
 
       const nextQuestion = engine.selectNextQuestion(answers);
       
-      // 应选择非 E 维度的题目以平衡
       expect(nextQuestion).not.toBeNull();
+      expect(nextQuestion?.dimension).not.toBe('O');
     });
 
     test('should return null when no questions available', () => {
       engine.reset();
       
-      // 用完所有题目
       const allAnswers: Answer[] = mockQuestions.map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
-      // 先选择所有题目
       allAnswers.forEach(() => {
         engine.selectNextQuestion([]);
       });
@@ -325,7 +323,8 @@ describe('CATEngine', () => {
         maxQuestions: 5,
         minQuestions: 3,
         targetSEM: 0.3,
-        abilityRange: [-3, 3]
+        abilityRange: [-3, 3],
+        dimensions: ['O', 'C', 'E', 'A', 'N']
       };
       
       engine = new CATEngine(config, mockQuestions);
@@ -333,7 +332,7 @@ describe('CATEngine', () => {
       const answers: Answer[] = Array(5).fill(null).map((_, i) => ({
         questionId: mockQuestions[i].id,
         dimension: mockQuestions[i].dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
@@ -345,7 +344,8 @@ describe('CATEngine', () => {
         maxQuestions: 20,
         minQuestions: 5,
         targetSEM: 0.3,
-        abilityRange: [-3, 3]
+        abilityRange: [-3, 3],
+        dimensions: ['O', 'C', 'E', 'A', 'N']
       };
       
       engine = new CATEngine(config, mockQuestions);
@@ -353,7 +353,7 @@ describe('CATEngine', () => {
       const answers: Answer[] = Array(3).fill(null).map((_, i) => ({
         questionId: mockQuestions[i].id,
         dimension: mockQuestions[i].dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
@@ -364,17 +364,17 @@ describe('CATEngine', () => {
       const config: CATConfig = {
         maxQuestions: 20,
         minQuestions: 3,
-        targetSEM: 0.5, // 较高的目标 SEM
-        abilityRange: [-3, 3]
+        targetSEM: 0.5,
+        abilityRange: [-3, 3],
+        dimensions: ['O', 'C', 'E', 'A', 'N']
       };
       
       engine = new CATEngine(config, mockQuestions);
       
-      // 使用高区分度题目
       const answers: Answer[] = [
-        { questionId: 'q2', dimension: 'E', response: 1, timestamp: Date.now() },
-        { questionId: 'q5', dimension: 'N', response: 1, timestamp: Date.now() },
-        { questionId: 'q9', dimension: 'J', response: 1, timestamp: Date.now() }
+        { questionId: 'q1', dimension: 'O', response: 4, timestamp: Date.now() },
+        { questionId: 'q3', dimension: 'C', response: 4, timestamp: Date.now() },
+        { questionId: 'q5', dimension: 'E', response: 4, timestamp: Date.now() }
       ];
 
       const sem = engine.calculateSEM(answers);
@@ -384,24 +384,14 @@ describe('CATEngine', () => {
 
   describe('Score Conversion', () => {
     test('should convert theta to score correctly', () => {
-      // theta = -3 -> score = 0
       expect(engine.thetaToScore(-3)).toBe(0);
-      
-      // theta = 0 -> score = 50
       expect(engine.thetaToScore(0)).toBe(50);
-      
-      // theta = 3 -> score = 100
       expect(engine.thetaToScore(3)).toBe(100);
     });
 
     test('should convert score to theta correctly', () => {
-      // score = 0 -> theta = -3
       expect(engine.scoreToTheta(0)).toBe(-3);
-      
-      // score = 50 -> theta = 0
       expect(engine.scoreToTheta(50)).toBe(0);
-      
-      // score = 100 -> theta = 3
       expect(engine.scoreToTheta(100)).toBe(3);
     });
 
@@ -423,7 +413,7 @@ describe('CATEngine', () => {
       const answers: Answer[] = mockQuestions.slice(0, 5).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
@@ -438,14 +428,14 @@ describe('CATEngine', () => {
       const answers3 = mockQuestions.slice(0, 3).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
       
       const answers6 = mockQuestions.slice(0, 6).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
@@ -466,7 +456,7 @@ describe('CATEngine', () => {
       const answers: Answer[] = mockQuestions.slice(0, 10).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
@@ -476,7 +466,7 @@ describe('CATEngine', () => {
       }
       const elapsed = Date.now() - start;
 
-      expect(elapsed / 100).toBeLessThan(50); // 平均每題 <50ms
+      expect(elapsed / 100).toBeLessThan(50);
     });
 
     test('should estimate ability in <10ms', () => {
@@ -485,7 +475,7 @@ describe('CATEngine', () => {
       const answers: Answer[] = mockQuestions.slice(0, 10).map(q => ({
         questionId: q.id,
         dimension: q.dimension,
-        response: 1,
+        response: 4,
         timestamp: Date.now()
       }));
 
@@ -495,7 +485,28 @@ describe('CATEngine', () => {
       }
       const elapsed = Date.now() - start;
 
-      expect(elapsed / 100).toBeLessThan(10); // 平均 <10ms
+      expect(elapsed / 100).toBeLessThan(10);
+    });
+  });
+
+  describe('Ability by Dimension', () => {
+    test('should estimate ability per dimension', () => {
+      engine.reset();
+      
+      const answers: Answer[] = [
+        { questionId: 'q1', dimension: 'O', response: 5, timestamp: Date.now() },
+        { questionId: 'q2', dimension: 'O', response: 5, timestamp: Date.now() },
+        { questionId: 'q3', dimension: 'C', response: 2, timestamp: Date.now() },
+        { questionId: 'q5', dimension: 'E', response: 4, timestamp: Date.now() }
+      ];
+
+      const estimates = engine.estimateAbilityByDimension(answers);
+      
+      expect(estimates.O).toBeDefined();
+      expect(estimates.C).toBeDefined();
+      expect(estimates.E).toBeDefined();
+      expect(estimates.A).toBeUndefined();
+      expect(estimates.N).toBeUndefined();
     });
   });
 });

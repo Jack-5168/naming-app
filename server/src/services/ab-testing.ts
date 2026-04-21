@@ -1,6 +1,11 @@
 /**
  * A/B Testing Framework - 实验配置管理和效果分析
  * 支持流量分配、数据埋点和统计分析
+ * 
+ * 实验配置:
+ * - CAT vs 经典模式对比
+ * - 连续谱 vs 类型标签
+ * - 五维度 vs 四维度呈现
  */
 
 import {
@@ -407,14 +412,14 @@ export class ABTestingManager {
 }
 
 /**
- * 创建预设实验配置
+ * 创建预设实验配置 (v2 版 - 基于 IPIP-NEO 五维度)
  */
 export function createPresetExperiments(): ABTestConfig[] {
   return [
     {
-      experimentId: 'cat-vs-classic',
-      name: 'CAT vs 经典模式对比',
-      description: '比较自适应测试与传统固定长度测试的用户体验',
+      experimentId: 'cat-vs-classic-v2',
+      name: 'CAT vs 经典模式对比 (五维度)',
+      description: '比较自适应测试与传统固定长度测试在五维度模型下的用户体验',
       trafficSplit: 0.5,
       startDate: Date.now(),
       status: 'draft',
@@ -422,26 +427,27 @@ export function createPresetExperiments(): ABTestConfig[] {
         {
           variantId: 'control',
           name: '经典模式',
-          description: '30 题固定长度测试',
-          config: { testMode: 'CLASSIC', questionCount: 30 }
+          description: '50 题固定长度测试 (五维度)',
+          config: { testMode: 'CLASSIC', questionCount: 50, model: 'IPIP-NEO-5' }
         },
         {
           variantId: 'treatment',
           name: 'CAT 模式',
-          description: '10-20 题自适应测试',
-          config: { testMode: 'CAT', minQuestions: 10, maxQuestions: 20 }
+          description: '10-20 题自适应测试 (五维度)',
+          config: { testMode: 'CAT', minQuestions: 10, maxQuestions: 20, model: 'IPIP-NEO-5' }
         }
       ],
       metrics: [
         { metricId: 'completion_rate', name: '完成率', type: 'conversion' },
-        { metricId: 'completion_time', name: '完成时间', type: 'continuous' },
-        { metricId: 'satisfaction_score', name: '满意度评分', type: 'continuous' }
+        { metricId: 'completion_time', name: '完成时间 (秒)', type: 'continuous' },
+        { metricId: 'satisfaction_score', name: '满意度评分', type: 'continuous' },
+        { metricId: 'accuracy_correlation', name: '与经典模式相关性', type: 'continuous' }
       ]
     },
     {
-      experimentId: 'spectrum-vs-type',
-      name: '连续谱 vs 类型标签',
-      description: '比较连续谱展示与类型标签的用户理解度',
+      experimentId: 'spectrum-vs-type-v2',
+      name: '连续谱 vs 类型标签 (五维度)',
+      description: '比较连续谱展示与类型标签在五维度模型下的用户理解度',
       trafficSplit: 0.5,
       startDate: Date.now(),
       status: 'draft',
@@ -449,50 +455,96 @@ export function createPresetExperiments(): ABTestConfig[] {
         {
           variantId: 'type-labels',
           name: '类型标签',
-          description: '显示 ENFJ 等类型标签',
-          config: { displayMode: 'TYPE_LABELS' }
+          description: '显示 ENFJ 等 MBTI 类型标签',
+          config: { displayMode: 'TYPE_LABELS', showMBTI: true }
         },
         {
           variantId: 'spectrum',
           name: '连续谱',
-          description: '显示连续谱和置信区间',
-          config: { displayMode: 'SPECTRUM' }
+          description: '显示五维度连续谱和置信区间',
+          config: { displayMode: 'SPECTRUM', showMBTI: false }
         }
       ],
       metrics: [
         { metricId: 'understanding_score', name: '理解度评分', type: 'continuous' },
-        { metricId: 'time_on_results', name: '结果页停留时间', type: 'continuous' },
-        { metricId: 'share_rate', name: '分享率', type: 'conversion' }
+        { metricId: 'time_on_results', name: '结果页停留时间 (秒)', type: 'continuous' },
+        { metricId: 'share_rate', name: '分享率', type: 'conversion' },
+        { metricId: 'retake_rate', name: '重测率', type: 'conversion' }
       ]
     },
     {
-      experimentId: 'paywall-position',
-      name: '付费点位置测试',
-      description: '测试不同付费点位置对转化率的影响',
+      experimentId: 'big5-vs-mbti-presentation',
+      name: '五维度 vs 四维度呈现',
+      description: '测试用户对大五维度与 MBTI 四维度的偏好',
       trafficSplit: 0.5,
       startDate: Date.now(),
       status: 'draft',
       variants: [
         {
-          variantId: 'before-test',
-          name: '测试前付费',
-          description: '在开始测试前展示付费提示',
-          config: { paywallPosition: 'BEFORE' }
+          variantId: 'big5-only',
+          name: '五维度呈现',
+          description: '仅显示 OCEAN 五维度得分和解释',
+          config: { presentationMode: 'BIG5', showMBTIReference: false }
         },
         {
-          variantId: 'after-results',
-          name: '结果后付费',
-          description: '在查看完整结果前展示付费提示',
-          config: { paywallPosition: 'AFTER' }
+          variantId: 'mbti-reference',
+          name: '五维度 + MBTI 参考',
+          description: '显示五维度得分并附带 MBTI 类型参考',
+          config: { presentationMode: 'BIG5', showMBTIReference: true }
         }
       ],
       metrics: [
-        { metricId: 'conversion_rate', name: '付费转化率', type: 'conversion' },
-        { metricId: 'test_start_rate', name: '测试开始率', type: 'conversion' },
-        { metricId: 'revenue_per_user', name: '单用户收入', type: 'continuous' }
+        { metricId: 'preference_score', name: '偏好评分', type: 'continuous' },
+        { metricId: 'clarity_score', name: '清晰度评分', type: 'continuous' },
+        { metricId: 'engagement_time', name: '参与时长 (秒)', type: 'continuous' }
+      ]
+    },
+    {
+      experimentId: 'stability-display-format',
+      name: '稳定性指数展示格式',
+      description: '测试不同稳定性指数展示方式对用户理解的影响',
+      trafficSplit: 0.5,
+      startDate: Date.now(),
+      status: 'draft',
+      variants: [
+        {
+          variantId: 'gauge',
+          name: '仪表盘',
+          description: '使用仪表盘展示稳定性指数',
+          config: { stabilityDisplay: 'GAUGE' }
+        },
+        {
+          variantId: 'progress-bar',
+          name: '进度条',
+          description: '使用进度条展示稳定性指数',
+          config: { stabilityDisplay: 'PROGRESS_BAR' }
+        }
+      ],
+      metrics: [
+        { metricId: 'comprehension_score', name: '理解度评分', type: 'continuous' },
+        { metricId: 'trust_score', name: '信任度评分', type: 'continuous' }
       ]
     }
   ];
+}
+
+/**
+ * 创建实验并立即启动
+ */
+export function createAndStartExperiment(
+  manager: ABTestingManager,
+  experimentId: string
+): ABTestConfig | null {
+  const presets = createPresetExperiments();
+  const preset = presets.find(p => p.experimentId === experimentId);
+  
+  if (!preset) {
+    return null;
+  }
+
+  // 更新状态为运行中
+  const config = { ...preset, status: 'running' as const };
+  return manager.createExperiment(config);
 }
 
 export default ABTestingManager;

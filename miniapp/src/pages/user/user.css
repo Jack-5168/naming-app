@@ -1,0 +1,245 @@
+.user-page {
+  min-height: 100vh;
+  background: #f5f6f7;
+  padding: 40px 30px;
+}
+
+.login-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+}
+
+.login-title {
+  font-size: 32px;
+  color: #666666;
+  margin-bottom: 40px;
+  display: block;
+}
+
+.login-btn {
+  width: 100%;
+  height: 88px;
+  font-size: 32px;
+  font-weight: bold;
+  background: #07c160;
+  color: #ffffff;
+  border-radius: 44px;
+  border: none;
+}
+
+.profile-section {
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 40px 30px;
+  margin-bottom: 30px;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #ffffff;
+  margin: 0 auto 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar image {
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-placeholder {
+  font-size: 60px;
+}
+
+.nickname {
+  font-size: 36px;
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.member-badge {
+  display: inline-block;
+  background: #ff9800;
+  color: #ffffff;
+  font-size: 22px;
+  padding: 8px 24px;
+  border-radius: 20px;
+}
+
+.stats-section {
+  display: flex;
+  justify-content: space-around;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+}
+
+.stat-label {
+  font-size: 24px;
+  color: #999999;
+  display: block;
+  margin-top: 8px;
+}
+
+.stat-divider {
+  width: 1px;
+  background: #e0e0e0;
+}
+
+.membership-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 30px;
+}
+
+.membership-title {
+  font-size: 26px;
+  opacity: 0.9;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.membership-date {
+  font-size: 36px;
+  font-weight: bold;
+  display: block;
+}
+
+.membership-promo {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.promo-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333333;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.promo-text {
+  font-size: 26px;
+  color: #999999;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.upgrade-btn {
+  width: 100%;
+  height: 80px;
+  font-size: 30px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border-radius: 40px;
+  border: none;
+}
+
+.history-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333333;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-info {
+  flex: 1;
+}
+
+.history-type {
+  font-size: 28px;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.history-date {
+  font-size: 24px;
+  color: #999999;
+  display: block;
+}
+
+.history-stability {
+  text-align: right;
+}
+
+.stability-label {
+  font-size: 22px;
+  color: #999999;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stability-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 40px 0;
+  color: #999999;
+  font-size: 26px;
+}
+
+.logout-btn {
+  width: 100%;
+  height: 80px;
+  font-size: 30px;
+  color: #ff5722;
+  background: #ffffff;
+  border-radius: 40px;
+  border: 2px solid #ff5722;
+}
