@@ -1,0 +1,450 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== User Management ====================
+
+model User {
+  id              Int           @id @default(autoincrement())
+  email           String?       @unique
+  nickname        String?
+  avatar          String?
+  wechatOpenid    String?       @unique
+  wechatUnionid   String?
+  membershipLevel String        @default("free") // free/basic/pro/premium
+  testCount       Int           @default(0)
+  lastLoginAt     DateTime?
+  lastLoginIp     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  testSessions    TestSession[]
+  testResults     TestResult[]
+  reports         Report[]
+  memberships     Membership[]
+  orders          Order[]
+  refreshTokens   RefreshToken[]
+  deviceFingerprints DeviceFingerprint[]
+  loginHistories  LoginHistory[]
+  usageRecords    UsageRecord[]
+  lifeEvents      LifeEvent[]
+  dualTests       DualTest[]
+  referrals       Referral[]
+  commissions     Commission[]
+}
+
+// ==================== Test System ====================
+
+model TestSession {
+  id              Int          @id @default(autoincrement())
+  sessionId       String       @unique
+  userId          Int
+  user            User         @relation(fields: [userId], references: [id])
+  
+  status          String       @default("active") // active/completed/expired
+  maxQuestions    Int          @default(15)
+  startedAt       DateTime     @default(now())
+  completedAt     DateTime?
+  lastAnsweredAt  DateTime?
+  testResultId    Int?
+  testResult      TestResult?  @relation(fields: [testResultId], references: [id])
+  
+  responses       Response[]
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([status])
+}
+
+model Question {
+  id              Int          @id @default(autoincrement())
+  text            String       @db.Text
+  dimension       String       // E/N/T/J
+  difficulty      Float        @default(0.5) // IRT difficulty parameter
+  discrimination  Float        @default(1.0) // IRT discrimination parameter
+  pseudoGuessing  Float        @default(0.2) // IRT guessing parameter
+  isActive        Boolean      @default(true)
+  calibrationData Json?
+  
+  options         QuestionOption[]
+  responses       Response[]
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([dimension])
+  @@index([isActive])
+}
+
+model QuestionOption {
+  id              Int          @id @default(autoincrement())
+  questionId      Int
+  question        Question     @relation(fields: [questionId], references: [id])
+  
+  text            String       @db.Text
+  score           Int          // Positive for one pole, negative for the other
+  isCorrect       Boolean?     // For calibration purposes
+  
+  responses       Response[]
+  
+  createdAt       DateTime     @default(now())
+
+  @@index([questionId])
+}
+
+model Response {
+  id              Int          @id @default(autoincrement())
+  sessionId       Int
+  session         TestSession  @relation(fields: [sessionId], references: [id])
+  
+  questionId      Int
+  question        Question     @relation(fields: [questionId], references: [id])
+  
+  optionId        Int
+  option          QuestionOption @relation(fields: [optionId], references: [id])
+  
+  timeSpent       Int          // seconds
+  
+  createdAt       DateTime     @default(now())
+
+  @@index([sessionId])
+  @@index([questionId])
+}
+
+model TestResult {
+  id              Int          @id @default(autoincrement())
+  userId          Int
+  user            User         @relation(fields: [userId], references: [id])
+  sessionId       Int?
+  session         TestSession? @relation(fields: [sessionId], references: [id])
+  
+  // MBTI dimension scores (0-100)
+  eScore          Float        @default(50)
+  nScore          Float        @default(50)
+  tScore          Float        @default(50)
+  jScore          Float        @default(50)
+  
+  // Calculated personality type
+  mbtiType        String       // e.g., "INTJ"
+  
+  // Stability index (0-1)
+  stabilityIndex  Float        @default(0.5)
+  
+  // Raw answers
+  answers         Json?
+  
+  reports         Report[]
+  lifeEvents      LifeEvent[]
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([mbtiType])
+}
+
+// ==================== Report System ====================
+
+model Report {
+  id              Int          @id @default(autoincrement())
+  testResultId    Int
+  testResult      TestResult   @relation(fields: [testResultId], references: [id])
+  
+  reportType      String       // basic/pro/master
+  content         String       @db.Text
+  tokens          Int
+  generationTime  Int          // milliseconds
+  requestId       String       @unique
+  cost            Float        // USD
+  
+  status          String       @default("completed") // pending/completed/failed
+  qualityScore    Float?       // 1-5
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([testResultId])
+  @@index([reportType])
+  @@index([status])
+}
+
+model ReportUsage {
+  id              Int          @id @default(autoincrement())
+  userId          Int
+  user            User         @relation(fields: [userId], references: [id])
+  
+  date            DateTime     @db.Date
+  count           Int          @default(0)
+  
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+// ==================== Membership System ====================
+
+model Membership {
+  id              Int            @id @default(autoincrement())
+  userId          Int            @unique
+  user            User           @relation(fields: [userId], references: [id])
+  
+  level           String         @default("free") // free/basic/pro/premium
+  status          String         @default("active") // active/expired/cancelled
+  startDate       DateTime       @default(now())
+  endDate         DateTime
+  autoRenew       Boolean        @default(false)
+  
+  orders          Order[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([level])
+  @@index([status])
+}
+
+model MembershipProduct {
+  id              Int            @id @default(autoincrement())
+  name            String
+  description     String         @db.Text
+  price           Decimal        @db.Decimal(10, 2)
+  currency        String         @default("CNY")
+  durationDays    Int            // 0 for one-time products
+  level           String         // basic/pro/premium
+  features        Json
+  isActive        Boolean        @default(true)
+  sortOrder       Int            @default(0)
+  
+  orders          Order[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([isActive])
+  @@index([level])
+}
+
+// ==================== Payment System ====================
+
+model Order {
+  id              Int            @id @default(autoincrement())
+  orderNo         String         @unique
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  productId       String
+  productType     String         // membership/report
+  membershipId    Int?
+  membership      Membership?    @relation(fields: [membershipId], references: [id])
+  membershipProduct MembershipProduct? @relation(fields: [productId], references: [id])
+  
+  amount          Decimal        @db.Decimal(10, 2)
+  currency        String         @default("CNY")
+  status          String         @default("pending") // pending/paid/failed/refunded
+  paymentMethod   String?        // wechat/alipay/card
+  
+  transactionId   String?
+  paidAt          DateTime?
+  refundReason    String?
+  refundedAt      DateTime?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([orderNo])
+  @@index([status])
+}
+
+// ==================== Security & Auth ====================
+
+model RefreshToken {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  tokenId         String         @unique
+  deviceId        String?
+  expiresAt       DateTime
+  revoked         Boolean        @default(false)
+  revokedAt       DateTime?
+  
+  createdAt       DateTime       @default(now())
+
+  @@index([userId])
+  @@index([tokenId])
+}
+
+model DeviceFingerprint {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  fingerprint     String
+  userAgent       String         @db.Text
+  ipAddress       String
+  
+  firstSeenAt     DateTime       @default(now())
+  lastSeenAt      DateTime       @default(now())
+  
+  @@unique([userId, fingerprint])
+  @@index([userId])
+}
+
+model LoginHistory {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  ipAddress       String
+  userAgent       String         @db.Text
+  success         Boolean        @default(true)
+  timestamp       DateTime       @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+}
+
+// ==================== Usage Tracking ====================
+
+model UsageRecord {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  feature         String         // report_basic/report_pro/dual_test/etc
+  metadata        Json?
+  consumedAt      DateTime       @default(now())
+
+  @@index([userId])
+  @@index([feature])
+  @@index([consumedAt])
+}
+
+model CostRecord {
+  id              Int            @id @default(autoincrement())
+  
+  timestamp       DateTime       @default(now())
+  cost            Float          // USD
+  model           String
+  reportType      String
+  userId          String
+  
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model RateLimit {
+  id              Int            @id @default(autoincrement())
+  
+  identifier      String         @unique // userId or IP
+  type            String         // user/ip
+  count           Int            @default(0)
+  resetTime       DateTime
+  
+  @@index([type])
+  @@index([resetTime])
+}
+
+// ==================== Growth Features ====================
+
+model DualTest {
+  id              Int            @id @default(autoincrement())
+  initiatorId     Int
+  initiator       User           @relation(fields: [initiatorId], references: [id], onDelete: Cascade, name: "DualTestInitiator")
+  
+  participantId   Int?
+  participant     User?          @relation(fields: [participantId], references: [id], onDelete: SetNull, name: "DualTestParticipant")
+  
+  inviteCode      String         @unique
+  status          String         @default("pending") // pending/accepted/completed/cancelled
+  
+  compatibilityScore Float?
+  conflictWarnings Json?
+  
+  completedAt     DateTime?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([inviteCode])
+  @@index([status])
+}
+
+model Referral {
+  id              Int            @id @default(autoincrement())
+  referrerId      Int
+  referrer        User           @relation(fields: [referrerId], references: [id])
+  
+  refereeEmail    String?
+  code            String         @unique
+  status          String         @default("pending") // pending/converted/expired
+  
+  commissionRate  Decimal        @default(0.15) // 15%
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([referrerId])
+  @@index([code])
+}
+
+model Commission {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  amount          Decimal        @db.Decimal(10, 2) // Positive for earnings, negative for withdrawals
+  status          String         @default("pending") // pending/approved/paid
+  
+  orderId         String?
+  referralId      Int?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ==================== Life Events ====================
+
+model LifeEvent {
+  id                  Int          @id @default(autoincrement())
+  userId              Int
+  user                User         @relation(fields: [userId], references: [id])
+  resultId            Int?
+  result              TestResult?  @relation(fields: [resultId], references: [id])
+  
+  eventType           String       // career/relationship/health/etc
+  eventCategory       String?
+  title               String
+  description         String?
+  eventDate           DateTime
+  expectedImpact      String?      // positive/negative/neutral
+  actualImpactScore   Float?       // -100 to 100
+  relatedDimension    String?      // E/N/T/J
+  correlationAnalyzed Boolean      @default(false)
+  correlationNote     String?
+  
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([resultId])
+  @@index([eventType])
+  @@index([eventDate])
+}
