@@ -1,0 +1,117 @@
+.stability-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.gauge-container {
+  position: relative;
+  width: 300px;
+  height: 160px;
+  overflow: hidden;
+}
+
+.gauge-background {
+  position: absolute;
+  width: 300px;
+  height: 150px;
+  border-radius: 150px 150px 0 0;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.gauge-arc {
+  position: absolute;
+  width: 300px;
+  height: 150px;
+  border-radius: 150px 150px 0 0;
+  background: conic-gradient(
+    from 180deg,
+    #f44336 0deg,
+    #ff9800 45deg,
+    #ffeb3b 90deg,
+    #8bc34a 135deg,
+    #07c160 180deg
+  );
+  mask: radial-gradient(
+    transparent 65px,
+    black 66px
+  );
+  -webkit-mask: radial-gradient(
+    transparent 65px,
+    black 66px
+  );
+}
+
+.gauge-needle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  height: 130px;
+  background: #333333;
+  transform-origin: bottom center;
+  transform: rotate(-90deg);
+  transition: transform 0.5s ease;
+  border-radius: 2px;
+}
+
+.gauge-needle::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -6px;
+  width: 16px;
+  height: 16px;
+  background: #333333;
+  border-radius: 50%;
+}
+
+.gauge-center {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gauge-value {
+  font-size: 40px;
+  font-weight: bold;
+  color: #333333;
+}
+
+.gauge-labels {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.gauge-level {
+  font-size: 32px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.gauge-stars {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.star {
+  font-size: 36px;
+  color: #e0e0e0;
+}
+
+.star.active {
+  color: #ff9800;
+}
