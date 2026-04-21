@@ -1,3 +1,4 @@
+// 简化版 Schema - 用于快速部署测试
 generator client {
   provider = "prisma-client-js"
 }
@@ -39,7 +40,6 @@ model QuestionOption {
   question        Question     @relation(fields: [questionId], references: [id])
   text            String       @db.Text
   score           Int
-  responses       Response[]
 }
 
 model Response {
