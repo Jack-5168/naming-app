@@ -10,6 +10,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==================== Enums ====================
+
+enum DualTestStatus {
+  pending
+  accepted
+  completed
+  cancelled
+}
+
+enum ReferralStatus {
+  pending
+  converted
+  expired
+}
+
+enum CommissionStatus {
+  pending
+  approved
+  paid
+}
+
+enum MembershipLevel {
+  free
+  basic
+  pro
+  premium
+}
+
+enum MembershipStatus {
+  active
+  expired
+  cancelled
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum PushNotificationType {
+  report_ready
+  retest_reminder
+  membership_expiring
+  personalized
+  dual_test_invite
+  commission_paid
+}
+
+enum PushStatus {
+  pending
+  sent
+  failed
+}
+
 // ==================== User Management ====================
 
 model User {
@@ -19,7 +75,7 @@ model User {
   avatar          String?
   wechatOpenid    String?       @unique
   wechatUnionid   String?
-  membershipLevel String        @default("free") // free/basic/pro/premium
+  membershipLevel MembershipLevel @default(free)
   testCount       Int           @default(0)
   lastLoginAt     DateTime?
   lastLoginIp     String?
@@ -36,11 +92,14 @@ model User {
   deviceFingerprints DeviceFingerprint[]
   loginHistories  LoginHistory[]
   usageRecords    UsageRecord[]
+  reportUsages    ReportUsage[]
   lifeEvents      LifeEvent[]
   dualTestsInitiator DualTest[] @relation("DualTestInitiator")
   dualTestsParticipant DualTest[] @relation("DualTestParticipant")
   referrals       Referral[]
   commissions     Commission[]
+  pushSubscriptions PushSubscription[]
+  pushNotifications PushNotification[]
 }
 
 // ==================== Test System ====================
@@ -56,8 +115,8 @@ model TestSession {
   startedAt       DateTime     @default(now())
   completedAt     DateTime?
   lastAnsweredAt  DateTime?
-  testResultId    Int?
-  testResult      TestResult?  @relation(fields: [testResultId], references: [id])
+  testResultId    Int?         @unique
+  testResult      TestResult?  @relation(fields: [testResultId], references: [id], name: "TestSessionToTestResult")
   
   responses       Response[]
   
@@ -128,8 +187,8 @@ model TestResult {
   id              Int          @id @default(autoincrement())
   userId          Int
   user            User         @relation(fields: [userId], references: [id])
-  sessionId       Int?
-  session         TestSession? @relation(fields: [sessionId], references: [id])
+  sessionId       Int?         @unique
+  session         TestSession? @relation("TestSessionToTestResult")
   
   // MBTI dimension scores (0-100)
   eScore          Float        @default(50)
@@ -162,6 +221,8 @@ model Report {
   id              Int          @id @default(autoincrement())
   testResultId    Int
   testResult      TestResult   @relation(fields: [testResultId], references: [id])
+  userId          Int
+  user            User         @relation(fields: [userId], references: [id])
   
   reportType      String       // basic/pro/master
   content         String       @db.Text
@@ -179,6 +240,7 @@ model Report {
   @@index([testResultId])
   @@index([reportType])
   @@index([status])
+  @@index([userId])
 }
 
 model ReportUsage {
@@ -201,8 +263,8 @@ model Membership {
   userId          Int            @unique
   user            User           @relation(fields: [userId], references: [id])
   
-  level           String         @default("free") // free/basic/pro/premium
-  status          String         @default("active") // active/expired/cancelled
+  level           MembershipLevel @default(free)
+  status          MembershipStatus @default(active)
   startDate       DateTime       @default(now())
   endDate         DateTime
   autoRenew       Boolean        @default(false)
@@ -246,7 +308,7 @@ model Order {
   userId          Int
   user            User           @relation(fields: [userId], references: [id])
   
-  productId       String
+  productId       Int?
   productType     String         // membership/report
   membershipId    Int?
   membership      Membership?    @relation(fields: [membershipId], references: [id])
@@ -254,7 +316,7 @@ model Order {
   
   amount          Decimal        @db.Decimal(10, 2)
   currency        String         @default("CNY")
-  status          String         @default("pending") // pending/paid/failed/refunded
+  status          OrderStatus    @default(pending)
   paymentMethod   String?        // wechat/alipay/card
   
   transactionId   String?
@@ -371,7 +433,7 @@ model DualTest {
   participant     User?          @relation(fields: [participantId], references: [id], onDelete: SetNull, name: "DualTestParticipant")
   
   inviteCode      String         @unique
-  status          String         @default("pending") // pending/accepted/completed/cancelled
+  status          DualTestStatus @default(pending)
   
   compatibilityScore Float?
   conflictWarnings Json?
@@ -392,7 +454,7 @@ model Referral {
   
   refereeEmail    String?
   code            String         @unique
-  status          String         @default("pending") // pending/converted/expired
+  status          ReferralStatus @default(pending)
   
   commissionRate  Decimal        @default(0.15) // 15%
   
@@ -409,7 +471,7 @@ model Commission {
   user            User           @relation(fields: [userId], references: [id])
   
   amount          Decimal        @db.Decimal(10, 2) // Positive for earnings, negative for withdrawals
-  status          String         @default("pending") // pending/approved/paid
+  status          CommissionStatus @default(pending)
   
   orderId         String?
   referralId      Int?
@@ -448,4 +510,68 @@ model LifeEvent {
   @@index([resultId])
   @@index([eventType])
   @@index([eventDate])
+}
+
+// ==================== Security Logs ====================
+
+model SecurityLog {
+  id              Int            @id @default(autoincrement())
+  
+  eventType       String         // rate_limit/login_attempt/suspicious_activity
+  identifier      String         // userId or IP
+  ipAddress       String?
+  userId          Int?
+  severity        String         @default("info") // info/warning/critical
+  metadata        Json?
+  timestamp       DateTime       @default(now())
+
+  @@index([eventType])
+  @@index([identifier])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+// ==================== Push Notifications ====================
+
+model PushSubscription {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  endpoint        String         @unique
+  p256dh          String
+  auth            String
+  platform        String?        // web/ios/android
+  userAgent       String?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([platform])
+}
+
+model PushNotification {
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  
+  type            PushNotificationType
+  title           String
+  body            String         @db.Text
+  content         String?        @db.Text
+  data            Json?
+  deepLink        String?
+  
+  status          PushStatus     @default(pending)
+  sentAt          DateTime?
+  scheduledAt     DateTime?
+  error           String?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
 }

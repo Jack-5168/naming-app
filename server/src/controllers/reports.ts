@@ -394,7 +394,7 @@ export async function generateReportHandler(
     // 7. 检查是否已存在相同报告
     const existingReport = await prisma.report.findFirst({
       where: {
-        resultId: result_id,
+        testResultId: result_id,
         reportType: report_type,
         status: 'completed',
       },
@@ -417,7 +417,7 @@ export async function generateReportHandler(
     // 8. 创建待处理的报告记录
     const report = await prisma.report.create({
       data: {
-        resultId: result_id,
+        testResultId: result_id,
         reportType: report_type,
         content: '', // 初始为空
         tokens: 0,
@@ -563,7 +563,7 @@ export async function getReportHandler(
     const report = await prisma.report.findUnique({
       where: { id: reportId },
       include: {
-        result: true,
+        testResult: true,
       },
     });
 
@@ -577,7 +577,7 @@ export async function getReportHandler(
     }
 
     // 4. 验证所有权
-    if (report.result.userId !== userId) {
+    if (report.testResult.userId !== userId) {
       logger.warn('Access denied to report', { requestId, userId, reportId });
       res.status(403).json({
         code: 403,
@@ -612,8 +612,8 @@ export async function getReportHandler(
 
     // 6. 已完成：返回完整报告内容
     const content = parseReportContent(report.content);
-    const title = generateReportTitle(report.result.mbtiType, report.reportType);
-    const summary = generateReportSummary(report.result.mbtiType, report.reportType);
+    const title = generateReportTitle(report.testResult.mbtiType, report.reportType);
+    const summary = generateReportSummary(report.testResult.mbtiType, report.reportType);
 
     // 更新已读时间
     await prisma.report.update({
@@ -719,7 +719,7 @@ export async function getReportHistoryHandler(
     const reports = await prisma.report.findMany({
       where,
       include: {
-        result: {
+        testResult: {
           select: {
             mbtiType: true,
             createdAt: true,
@@ -734,10 +734,10 @@ export async function getReportHistoryHandler(
     // 6. 格式化响应
     const items = reports.map((report) => ({
       report_id: report.id,
-      personality_type: report.result.mbtiType,
+      personality_type: report.testResult.mbtiType,
       type: report.reportType,
-      title: generateReportTitle(report.result.mbtiType, report.reportType),
-      summary: generateReportSummary(report.result.mbtiType, report.reportType),
+      title: generateReportTitle(report.testResult.mbtiType, report.reportType),
+      summary: generateReportSummary(report.testResult.mbtiType, report.reportType),
       created_at: report.createdAt.toISOString(),
       read_at: report.updatedAt.toISOString(), // 使用 updatedAt 作为已读时间
     }));
