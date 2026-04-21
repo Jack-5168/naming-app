@@ -1,0 +1,142 @@
+.index-page {
+  padding: 40px 30px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.9);
+  display: block;
+}
+
+.social-proof {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 30px 20px;
+  margin-bottom: 40px;
+  backdrop-filter: blur(10px);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+}
+
+.stat-label {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  margin-top: 8px;
+}
+
+.report-preview {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333333;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.preview-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.preview-item {
+  margin-bottom: 20px;
+}
+
+.preview-item:last-child {
+  margin-bottom: 0;
+}
+
+.preview-label {
+  font-size: 24px;
+  color: #666666;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.preview-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+}
+
+.score-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.score-bar {
+  height: 12px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 6px;
+}
+
+.cta-section {
+  margin-bottom: 30px;
+}
+
+.start-btn,
+.login-btn {
+  width: 100%;
+  height: 88px;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 44px;
+  border: none;
+}
+
+.start-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+}
+
+.login-btn {
+  background: #07c160;
+  color: #ffffff;
+}
+
+.user-info {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 26px;
+}
+
+.user-info text {
+  display: block;
+  margin: 8px 0;
+}
