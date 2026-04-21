@@ -540,8 +540,8 @@ export async function submitAnswer(
 
     logger.info('Answer submitted', {
       sessionId: session_id,
-      questionId,
-      optionId,
+      question_id,
+      option_id,
       responseTimeMs: response_time_ms,
       progress,
     });
@@ -658,7 +658,7 @@ export async function getTestResults(
     };
 
     logger.info('Test results retrieved', {
-      resultId,
+      result_id,
       userId,
       personalityType: testResult.mbtiType,
     });
