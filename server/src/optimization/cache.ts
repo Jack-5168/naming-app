@@ -254,7 +254,7 @@ export function getStaticCacheHeaders() {
 export function getReportCacheHeaders(reportId: string) {
   return {
     'Cache-Control': `public, max-age=${CACHE_CONFIG.REPORT_IMAGES}`,
-    'ETag": `"report-${reportId}"`,
+    'ETag': `"report-${reportId}"`,
   };
 }
 

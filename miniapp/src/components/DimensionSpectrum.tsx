@@ -1,10 +1,10 @@
 /**
- * DimensionSpectrum - 连续谱可视化组件
- * 展示四大人格维度的连续谱分布
+ * DimensionSpectrum - 连续谱可视化组件 (Big Five)
+ * 展示五大人格维度的连续谱分布
  */
 
 import React, { useMemo } from 'react';
-import { DimensionSpectrumData, StabilityResult } from '../../types';
+import { DimensionSpectrumData, StabilityResult, Big5Dimension } from '../../types';
 
 interface DimensionSpectrumProps {
   dimensions: DimensionSpectrumData[];
@@ -23,43 +23,53 @@ interface DimensionBarProps {
 }
 
 /**
- * 获取维度标签
+ * 获取维度中文名称
  */
-function getDimensionLabels(dimension: string): { left: string; right: string } {
+function getDimensionName(dimension: Big5Dimension): string {
   switch (dimension) {
-    case 'E-I':
-      return { left: '外向性 (E)', right: '内向性 (I)' };
-    case 'N-S':
-      return { left: '直觉性 (N)', right: '实感性 (S)' };
-    case 'T-F':
-      return { left: '思考性 (T)', right: '情感性 (F)' };
-    case 'J-P':
-      return { left: '判断性 (J)', right: '知觉性 (P)' };
-    default:
-      return { left: '左', right: '右' };
+    case 'O': return '开放性';
+    case 'C': return '尽责性';
+    case 'E': return '外向性';
+    case 'A': return '宜人性';
+    case 'N': return '神经质';
+    default: return dimension;
   }
 }
 
 /**
  * 获取维度描述
  */
-function getDimensionDescription(dimension: string, score: number): string {
-  const labels = getDimensionLabels(dimension);
+function getDimensionDescription(dimension: Big5Dimension, score: number): string {
+  const name = getDimensionName(dimension);
   
-  if (score < 30) {
-    return `强烈${labels.left.split(' ')[0]}倾向`;
-  } else if (score < 40) {
-    return `中等${labels.left.split(' ')[0]}倾向`;
-  } else if (score < 50) {
-    return `轻微${labels.left.split(' ')[0]}倾向`;
-  } else if (score < 60) {
-    return '平衡型';
-  } else if (score < 70) {
-    return `轻微${labels.right.split(' ')[0]}倾向`;
+  if (score < 20) {
+    return `极低${name}`;
+  } else if (score < 35) {
+    return `较低${name}`;
+  } else if (score < 45) {
+    return `略低${name}`;
+  } else if (score < 55) {
+    return `中等${name}`;
+  } else if (score < 65) {
+    return `略高${name}`;
   } else if (score < 80) {
-    return `中等${labels.right.split(' ')[0]}倾向`;
+    return `较高${name}`;
   } else {
-    return `强烈${labels.right.split(' ')[0]}倾向`;
+    return `极高${name}`;
+  }
+}
+
+/**
+ * 获取维度颜色
+ */
+function getDimensionColor(dimension: Big5Dimension): string {
+  switch (dimension) {
+    case 'O': return '#8b5cf6';  // purple
+    case 'C': return '#3b82f6';  // blue
+    case 'E': return '#f59e0b';  // amber
+    case 'A': return '#22c55e';  // green
+    case 'N': return '#ef4444';  // red
+    default: return '#6b7280';
   }
 }
 
@@ -88,8 +98,9 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
   showStability,
   onClick
 }) => {
-  const labels = getDimensionLabels(data.dimension);
-  const description = getDimensionDescription(data.dimension, data.score);
+  const dimensionName = getDimensionName(data.dimension as Big5Dimension);
+  const description = getDimensionDescription(data.dimension as Big5Dimension, data.score);
+  const color = getDimensionColor(data.dimension as Big5Dimension);
 
   // 计算位置百分比
   const positionPercent = data.score;
@@ -108,26 +119,37 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
         cursor: onClick ? 'pointer' : 'default'
       }}
     >
-      {/* 维度标题 */}
+      {/* 维度标题和分数 */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: '8px',
-        fontSize: '14px',
-        fontWeight: 600,
-        color: '#374151'
+        alignItems: 'center',
+        marginBottom: '8px'
       }}>
-        <span>{labels.left}</span>
-        <span>{labels.right}</span>
+        <span style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: color
+        }}>
+          {dimensionName}
+        </span>
+        <span style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#374151'
+        }}>
+          {data.score}/100
+        </span>
       </div>
 
       {/* 谱条背景 */}
       <div style={{
         position: 'relative',
         height: '32px',
-        background: 'linear-gradient(90deg, #e0e7ff 0%, #f3f4f6 50%, #fee2e2 100%)',
+        background: `linear-gradient(90deg, #f3f4f6 0%, ${color}20 50%, #f3f4f6 100%)`,
         borderRadius: '16px',
-        overflow: 'visible'
+        overflow: 'visible',
+        border: '1px solid #e5e7eb'
       }}>
         {/* 置信区间 */}
         {showConfidenceInterval && (
@@ -136,9 +158,9 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
             left: `${ciLeft}%`,
             width: `${ciWidth}%`,
             height: '100%',
-            background: 'rgba(0, 0, 0, 0.1)',
+            background: `${color}40`,
             borderRadius: '16px',
-            border: '2px dashed rgba(0, 0, 0, 0.2)'
+            border: `2px dashed ${color}`
           }} />
         )}
 
@@ -150,7 +172,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
           transform: 'translate(-50%, -50%)',
           width: '4px',
           height: '40px',
-          background: '#4f46e5',
+          background: color,
           borderRadius: '2px',
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
         }}>
@@ -185,7 +207,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
         ))}
       </div>
 
-      {/* 分数和描述 */}
+      {/* 描述 */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -198,26 +220,15 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
         }}>
           {description}
         </span>
-        <span style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#4f46e5'
-        }}>
-          {data.score}/100
-        </span>
+        {showConfidenceInterval && (
+          <span style={{
+            fontSize: '11px',
+            color: '#9ca3af'
+          }}>
+            95% CI: [{data.confidenceInterval[0]}, {data.confidenceInterval[1]}]
+          </span>
+        )}
       </div>
-
-      {/* 置信区间数值 */}
-      {showConfidenceInterval && (
-        <div style={{
-          fontSize: '11px',
-          color: '#9ca3af',
-          marginTop: '4px',
-          textAlign: 'center'
-        }}>
-          95% CI: [{data.confidenceInterval[0]}, {data.confidenceInterval[1]}]
-        </div>
-      )}
     </div>
   );
 };
@@ -229,6 +240,7 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
   const percentage = Math.round(stability.stabilityProbability);
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const color = getStabilityColor(stability.status);
 
   return (
     <div style={{
@@ -271,7 +283,7 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
             cy="60"
             r="45"
             fill="none"
-            stroke={getStabilityColor(stability.status)}
+            stroke={color}
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -348,9 +360,9 @@ export const DimensionSpectrum: React.FC<DimensionSpectrumProps> = ({
   className = ''
 }) => {
   const sortedDimensions = useMemo(() => {
-    const order = ['E-I', 'N-S', 'T-F', 'J-P'];
+    const order: Big5Dimension[] = ['O', 'C', 'E', 'A', 'N'];
     return [...dimensions].sort((a, b) => {
-      return order.indexOf(a.dimension) - order.indexOf(b.dimension);
+      return order.indexOf(a.dimension as Big5Dimension) - order.indexOf(b.dimension as Big5Dimension);
     });
   }, [dimensions]);
 
@@ -378,7 +390,7 @@ export const DimensionSpectrum: React.FC<DimensionSpectrumProps> = ({
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           padding: 16px;
           background: white;
-          border-radius: 12px;
+          border-radius: '12px';
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 

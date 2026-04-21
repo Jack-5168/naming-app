@@ -1,42 +1,78 @@
 /**
  * Persona Lab - Type Definitions
- * Core types for CAT engine, stability calculation, and A/B testing
+ * Core types for CAT engine (IPIP-NEO 5 dimensions), stability calculation, and A/B testing
  */
 
-// ==================== CAT Engine Types ====================
+// ==================== CAT Engine Types (IPIP-NEO 5 Dimensions) ====================
+
+export type Big5Dimension = 'O' | 'C' | 'E' | 'A' | 'N';
 
 export interface CATConfig {
   maxQuestions: number;      // 最大题目数：20
   minQuestions: number;      // 最小题目数：10
   targetSEM: number;         // 目标标准误：0.3
   abilityRange: [number, number];  // 能力范围：[-3, 3]
+  dimensions: Big5Dimension[]; // ['O', 'C', 'E', 'A', 'N']
 }
 
 export interface Question {
   id: string;
-  dimension: 'E' | 'N' | 'T' | 'J';  // E-I, N-S, T-F, J-P
+  dimension: Big5Dimension;  // O/C/E/A/N
   difficulty: number;        // b parameter in 2PL
   discrimination: number;    // a parameter in 2PL
   content: string;
   options: QuestionOption[];
+  reverseScored?: boolean;   // 是否反向计分
 }
 
 export interface QuestionOption {
-  value: number;             // 选项对应的特质方向 (0 或 1)
+  value: number;             // Likert scale: 1-5
   text: string;
 }
 
 export interface Answer {
   questionId: string;
-  dimension: 'E' | 'N' | 'T' | 'J';
-  response: number;          // 0 或 1
+  dimension: Big5Dimension;
+  response: number;          // 1-5 (Likert scale)
   timestamp: number;
 }
 
 export interface AbilityEstimate {
-  theta: number;             // 能力估计值
+  theta: number;             // 能力估计值 [-3, 3]
   sem: number;               // 标准误
   confidenceInterval: [number, number];
+}
+
+// ==================== Big Five Scores ====================
+
+export interface Big5Scores {
+  O: number;  // 开放性 0-100
+  C: number;  // 尽责性 0-100
+  E: number;  // 外向性 0-100
+  A: number;  // 宜人性 0-100
+  N: number;  // 神经质 0-100
+}
+
+// ==================== MBTI Mapping Types ====================
+
+export interface MBTIResult {
+  type: string;  // 'INFJ', 'ENFP', etc.
+  dimensions: {
+    E_I: 'E' | 'I' | 'balanced';
+    N_S: 'N' | 'S' | 'balanced';
+    T_F: 'T' | 'F' | 'balanced';
+    J_P: 'J' | 'P' | 'balanced';
+  };
+  confidence: {
+    overall: number;  // 0-1
+    perDimension: {
+      E_I: number;
+      N_S: number;
+      T_F: number;
+      J_P: number;
+    };
+  };
+  description: string;  // 类型描述
 }
 
 // ==================== Stability Calculator Types ====================
@@ -45,12 +81,7 @@ export interface TestResult {
   testId: string;
   userId: number;
   completedAt: number;
-  scores: {
-    E: number;               // 外向性得分 0-100
-    N: number;               // 直觉性得分 0-100
-    T: number;               // 思考性得分 0-100
-    J: number;               // 判断性得分 0-100
-  };
+  scores: Big5Scores;  // 大五维度得分
   questionCount: number;
   testMode: 'CAT' | 'CLASSIC';
 }
@@ -63,11 +94,12 @@ export interface StabilityResult {
   stabilityWarning: string | null;  // 警告信息
   confidenceBand: [number, number]; // 置信区间
   status: 'stable' | 'evolving' | 'unstable' | 'insufficient_data';
-  dimensionBreakdown?: {
-    E: DimensionStability;
-    N: DimensionStability;
-    T: DimensionStability;
-    J: DimensionStability;
+  perDimension: {
+    O: { mean: number; std: number; cv: number; };
+    C: { mean: number; std: number; cv: number; };
+    E: { mean: number; std: number; cv: number; };
+    A: { mean: number; std: number; cv: number; };
+    N: { mean: number; std: number; cv: number; };
   };
 }
 
@@ -151,12 +183,14 @@ export interface ABTestResults {
   recommendation: string;
 }
 
-// ==================== Dimension Spectrum Types ====================
+// ==================== Dimension Spectrum Types (Big Five) ====================
 
 export interface DimensionSpectrumData {
-  dimension: 'E-I' | 'N-S' | 'T-F' | 'J-P';
-  score: number;                 // 0-100
-  label: string;
+  dimension: Big5Dimension;
+  dimensionName: string;  // 开放性，尽责性等
+  score: number;          // 0-100
+  percentile?: number;    // 百分位数
+  label: string;          // 描述性标签
   confidenceInterval: [number, number];
   stabilityIndex: number;
   stabilityStatus: 'stable' | 'evolving' | 'unstable' | 'insufficient_data';
@@ -165,6 +199,7 @@ export interface DimensionSpectrumData {
 export interface PersonalityProfile {
   userId: number;
   dimensions: DimensionSpectrumData[];
+  mbtiReference?: MBTIResult;  // MBTI 参考类型
   overallStability: StabilityResult;
   lastUpdatedAt: number;
 }
