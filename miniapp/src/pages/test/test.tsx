@@ -1,166 +1,193 @@
-import { View, Text, Button } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
-import QuestionCard from '../../components/QuestionCard';
-import ProgressBar from '../../components/ProgressBar';
-import './test.css';
+/**
+ * Test Page - CAT-Enabled Adaptive Testing
+ * Phase 2 Integration: Real-time ability estimates and CAT question selection
+ */
 
-const Test = () => {
-  const [sessionId, setSessionId] = useState('');
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [questionNumber, setQuestionNumber] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [startTime, setStartTime] = useState(null);
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, Progress } from '@tarojs/components';
+import { useNavigate } from '@tarojs/taro';
+import { Question, AnswerResponse } from '../../types';
 
+interface TestPageProps {
+  sessionId: string;
+}
+
+interface AbilityEstimate {
+  E: number;
+  N: number;
+  T: number;
+  J: number;
+}
+
+export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
+  const navigate = useNavigate();
+  
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 20, percentage: 0 });
+  const [ability, setAbility] = useState<AbilityEstimate | null>(null);
+  const [sem, setSem] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch initial question
   useEffect(() => {
-    createTestSession();
+    fetchInitialQuestion();
   }, []);
 
-  const createTestSession = async () => {
+  const fetchInitialQuestion = async () => {
     try {
-      const token = Taro.getStorageSync('accessToken');
-      const res = await Taro.request({
-        url: 'http://localhost:3000/api/v1/tests/sessions',
-        method: 'POST',
-        header: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setSessionId(res.data.sessionId);
-      setTotalQuestions(res.data.totalQuestions);
-      setStartTime(Date.now());
-      fetchNextQuestion();
-    } catch (error) {
-      Taro.showToast({
-        title: '创建测试失败',
-        icon: 'none',
-      });
+      setLoading(true);
+      // In production, this would call the API to start the test
+      // For now, we assume the session is already created
+      setError(null);
+    } catch (err) {
+      setError('Failed to load test');
+    } finally {
       setLoading(false);
     }
   };
 
-  const fetchNextQuestion = async () => {
+  /**
+   * Handle answer submission with CAT integration
+   * Phase 2: Receives real-time ability estimates and next question from CAT engine
+   */
+  const onAnswerSubmit = async (answer: { questionId: string; dimension: string; selectedOption: string }) => {
     try {
-      const res = await Taro.request({
-        url: `http://localhost:3000/api/v1/tests/sessions/${sessionId}/next`,
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/v1/tests/sessions/${sessionId}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(answer)
       });
 
-      if (res.data.completed) {
-        // Test completed
-        finishTest();
-        return;
+      const data: AnswerResponse = await response.json();
+
+      if (!data.accepted) {
+        throw new Error('Answer not accepted');
       }
 
-      setCurrentQuestion(res.data.question);
-      setQuestionNumber(res.data.questionNumber);
+      if (data.completed) {
+        // Test completed - navigate to results with stability data
+        navigateToResult(data.result!, data.stability);
+      } else {
+        // Test continues - update UI with next question and real-time estimates
+        setCurrentQuestion(data.nextQuestion!);
+        setProgress(data.progress);
+        
+        // Phase 2: Display real-time ability estimates (optional feature)
+        if (data.ability) {
+          setAbility(data.ability);
+          setSem(data.sem || null);
+          updateProgress(data.ability, data.sem || 0);
+        }
+      }
+    } catch (err) {
+      setError('Failed to submit answer');
+      console.error(err);
+    } finally {
       setLoading(false);
-    } catch (error) {
-      Taro.showToast({
-        title: '加载题目失败',
-        icon: 'none',
-      });
     }
   };
 
-  const handleAnswer = async (optionId) => {
-    if (submitting) return;
-    setSubmitting(true);
-
-    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-
-    try {
-      const token = Taro.getStorageSync('accessToken');
-      await Taro.request({
-        url: `http://localhost:3000/api/v1/tests/sessions/${sessionId}/answer`,
-        method: 'POST',
-        header: {
-          Authorization: `Bearer ${token}`,
-        },
-        data: {
-          questionId: currentQuestion.id,
-          optionId,
-          timeSpent,
-        },
-      });
-
-      // Auto navigate to next question with animation
-      setTimeout(() => {
-        setStartTime(Date.now());
-        fetchNextQuestion();
-        setSubmitting(false);
-      }, 300);
-    } catch (error) {
-      Taro.showToast({
-        title: '提交失败',
-        icon: 'none',
-      });
-      setSubmitting(false);
-    }
+  /**
+   * Navigate to result page with test results and stability index
+   */
+  const navigateToResult = (result: any, stability: any) => {
+    navigate({
+      url: `/pages/result/result?sessionId=${sessionId}&result=${JSON.stringify(result)}&stability=${JSON.stringify(stability)}`
+    });
   };
 
-  const finishTest = async () => {
-    try {
-      const token = Taro.getStorageSync('accessToken');
-      
-      // Get test results
-      const resultRes = await Taro.request({
-        url: `http://localhost:3000/api/v1/tests/results/${sessionId}`,
-        header: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Generate report
-      const reportRes = await Taro.request({
-        url: 'http://localhost:3000/api/v1/reports',
-        method: 'POST',
-        header: {
-          Authorization: `Bearer ${token}`,
-        },
-        data: {
-          testResultId: resultRes.data.id,
-        },
-      });
-
-      // Navigate to result page
-      Taro.redirectTo({
-        url: `/pages/result/result?id=${resultRes.data.id}&reportId=${reportRes.data.id}`,
-      });
-    } catch (error) {
-      Taro.showToast({
-        title: '完成测试失败',
-        icon: 'none',
-      });
-    }
+  /**
+   * Update progress display with optional ability estimates
+   */
+  const updateProgress = (abilityEstimate: AbilityEstimate, semValue: number) => {
+    // Could show a live chart of ability estimates
+    // For now, just update state for optional display
+    console.log('Current ability estimates:', abilityEstimate);
+    console.log('Standard error:', semValue);
   };
 
-  if (loading) {
+  if (loading && !currentQuestion) {
     return (
-      <View className="test-page loading">
-        <Text>加载中...</Text>
+      <View className="test-loading">
+        <Text>Loading test...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="test-error">
+        <Text>{error}</Text>
+        <Button onClick={fetchInitialQuestion}>Retry</Button>
+      </View>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <View className="test-start">
+        <Text>Ready to start your personality assessment?</Text>
+        <Button onClick={fetchInitialQuestion}>Start Test</Button>
       </View>
     );
   }
 
   return (
     <View className="test-page">
-      <ProgressBar current={questionNumber} total={totalQuestions} />
-      
-      <View className="question-container">
-        {currentQuestion && (
-          <QuestionCard
-            question={currentQuestion}
-            questionNumber={questionNumber}
-            onAnswer={handleAnswer}
-            disabled={submitting}
-          />
-        )}
+      {/* Progress Bar */}
+      <View className="progress-section">
+        <Progress 
+          percent={progress.percentage} 
+          color="#4A90E2"
+          backgroundColor="#E0E0E0"
+        />
+        <Text className="progress-text">
+          Question {progress.current} of {progress.total}
+        </Text>
+      </View>
+
+      {/* Optional: Real-time Ability Display (Phase 2 Feature) */}
+      {ability && (
+        <View className="ability-display">
+          <Text className="ability-title">Current Estimates:</Text>
+          <View className="ability-scores">
+            <Text>E: {ability.E}</Text>
+            <Text>N: {ability.N}</Text>
+            <Text>T: {ability.T}</Text>
+            <Text>J: {ability.J}</Text>
+            {sem && <Text className="sem">SEM: {sem.toFixed(2)}</Text>}
+          </View>
+        </View>
+      )}
+
+      {/* Question Content */}
+      <View className="question-section">
+        <Text className="question-text">{currentQuestion.content}</Text>
+        
+        {/* Answer Options */}
+        <View className="options-section">
+          {currentQuestion.options.map((option) => (
+            <Button
+              key={option.id}
+              className="option-button"
+              onClick={() => onAnswerSubmit({
+                questionId: currentQuestion.id,
+                dimension: currentQuestion.dimension,
+                selectedOption: option.id
+              })}
+              disabled={loading}
+            >
+              {option.text}
+            </Button>
+          ))}
+        </View>
       </View>
     </View>
   );
 };
 
-export default Test;
+export default TestPage;

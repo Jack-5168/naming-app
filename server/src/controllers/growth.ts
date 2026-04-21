@@ -258,7 +258,7 @@ export async function getDualTest(req: Request, res: Response) {
     }
 
     const dualTest = await prisma.dualTest.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: {
         initiator: {
           select: {
@@ -324,21 +324,21 @@ export async function generatePersonalityCard(req: Request, res: Response) {
     }
 
     // Get test result
-    const testRecord = await prisma.testRecord.findFirst({
+    const testResult = await prisma.testResult.findFirst({
       where: {
-        id: testId as string,
+        id: Number(testId),
         userId,
       },
     });
 
-    if (!testRecord) {
+    if (!testResult) {
       return res.status(404).json({
         success: false,
         error: 'Test record not found',
       });
     }
 
-    const scores = testRecord.scores as any;
+    const scores = testResult.answers as any;
     const personalityType = calculatePersonalityType(scores);
     const goldenQuote = getGoldenQuote(personalityType);
 
@@ -379,13 +379,13 @@ export async function generateStabilityCard(req: Request, res: Response) {
     }
 
     // Get user's stability data
-    const testRecords = await prisma.testRecord.findMany({
+    const testResults = await prisma.testResult.findMany({
       where: { userId },
-      orderBy: { completedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 10,
     });
 
-    const stabilityIndex = calculateStabilityIndex(testRecords);
+    const stabilityIndex = calculateStabilityIndex(testResults);
 
     const cardUrl = `/api/v1/growth/share-cards/render/stability?userId=${userId}`;
 
@@ -617,11 +617,11 @@ export async function getKOCDashboard(req: Request, res: Response) {
     });
 
     const totalEarned = commissions
-      .filter(c => c.amount > 0)
+      .filter(c => Number(c.amount) > 0)
       .reduce((sum, c) => sum + Number(c.amount), 0);
 
     const totalWithdrawn = commissions
-      .filter(c => c.amount < 0)
+      .filter(c => Number(c.amount) < 0)
       .reduce((sum, c) => sum + Math.abs(Number(c.amount)), 0);
 
     res.json({

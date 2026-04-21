@@ -4,7 +4,7 @@
  */
 
 import { Router } from 'express';
-import { getCurrentUser } from '../controllers/auth';
+import { getUserInfo } from '../controllers/auth';
 import { authMiddleware } from '../security/auth';
 
 const router = Router();
@@ -14,6 +14,6 @@ const router = Router();
  * @desc    Get current user info
  * @access  Private
  */
-router.get('/me', authMiddleware, getCurrentUser);
+router.get('/me', authMiddleware, getUserInfo);
 
 export default router;

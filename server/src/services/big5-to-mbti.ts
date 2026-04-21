@@ -4,7 +4,7 @@
  * 使用统计学方法计算各维度倾向和置信度
  */
 
-import { MBTIResult, Big5Scores } from '../types';
+import { MBTIResult } from '../types';
 
 /**
  * MBTI 类型描述数据库
@@ -99,21 +99,12 @@ export function mapBig5ToMBTI(
   return {
     type,
     dimensions: {
-      E_I: E_I,
-      N_S: N_S,
-      T_F: T_F,
-      J_P: J_P
+      E: { score: E, label: getLetter(E_I) },
+      N: { score: O, label: getLetter(N_S) },
+      T: { score: A_reversed, label: getLetter(T_F) },
+      J: { score: C, label: getLetter(J_P) }
     },
-    confidence: {
-      overall: Math.round(adjustedOverallConfidence * 100) / 100,
-      perDimension: {
-        E_I: Math.round(E_I_confidence * 100) / 100,
-        N_S: Math.round(N_S_confidence * 100) / 100,
-        T_F: Math.round(T_F_confidence * 100) / 100,
-        J_P: Math.round(J_P_confidence * 100) / 100
-      }
-    },
-    description: MBTI_DESCRIPTIONS[type] || '未知类型'
+    confidence: adjustedOverallConfidence
   };
 }
 

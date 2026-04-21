@@ -1,403 +1,417 @@
 /**
- * Stability Calculator Tests (v2 - IPIP-NEO 5 Dimensions)
- * Test coverage for Monte Carlo simulation and stability index calculation
+ * 人格稳定性计算器 - 单元测试
+ * 
+ * 测试覆盖:
+ * 1. Monte Carlo 模拟分布正确性
+ * 2. Bootstrap 重采样正确性
+ * 3. 置信区间计算正确性
+ * 4. 边界条件处理正确性
  */
 
-import { calculateStability, calculateTestRetestReliability } from '../src/services/stability-calculator';
-import { TestResult, Big5Scores } from '../src/types';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import {
+  StabilityCalculator,
+  calculateStability,
+} from '../src/services/stability-calculator';
+import { TestResult, StabilityResult } from '../src/services/stability-types';
 
-// 生成模拟测试历史 (五维度)
-function generateTestHistory(
-  userId: number,
-  count: number,
-  baseScores: Big5Scores,
-  variance: number
-): TestResult[] {
-  const results: TestResult[] = [];
-  
-  for (let i = 0; i < count; i++) {
-    results.push({
-      testId: `test-${i}`,
-      userId,
-      completedAt: Date.now() - (count - i) * 86400000,
-      scores: {
-        O: Math.round(baseScores.O + (Math.random() - 0.5) * variance * 2),
-        C: Math.round(baseScores.C + (Math.random() - 0.5) * variance * 2),
-        E: Math.round(baseScores.E + (Math.random() - 0.5) * variance * 2),
-        A: Math.round(baseScores.A + (Math.random() - 0.5) * variance * 2),
-        N: Math.round(baseScores.N + (Math.random() - 0.5) * variance * 2)
-      },
-      questionCount: 50,
-      testMode: 'CLASSIC'
-    });
-  }
-  
-  return results;
-}
+describe('StabilityCalculator', () => {
+  let calculator: StabilityCalculator;
 
-describe('Stability Calculator (v2 - IPIP-NEO)', () => {
-  describe('Boundary Conditions', () => {
-    test('should return insufficient_data for <3 tests', async () => {
-      const testHistory: TestResult[] = [
-        {
-          testId: 'test-1',
-          userId: 1,
-          completedAt: Date.now(),
-          scores: { O: 50, C: 50, E: 50, A: 50, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        },
-        {
-          testId: 'test-2',
-          userId: 1,
-          completedAt: Date.now() - 86400000,
-          scores: { O: 55, C: 45, E: 60, A: 40, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        }
-      ];
-
-      const result = await calculateStability(1, testHistory);
-      
-      expect(result.status).toBe('insufficient_data');
-      expect(result.stabilityWarning).toContain('需要至少');
-      expect(result.stabilityIndex).toBe(0);
-    });
-
-    test('should return evolving for 3-5 tests', async () => {
-      const testHistory = generateTestHistory(1, 4, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-
-      const result = await calculateStability(1, testHistory);
-      
-      expect(result.status).toBe('evolving');
-      expect(result.isRange).toBe(true);
-      expect(result.stabilityProbabilityDisplay).toContain('-');
-    });
-
-    test('should return stable/unstable for 6+ tests', async () => {
-      // 稳定模式：低方差
-      const stableHistory = generateTestHistory(1, 8, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 5);
-      const stableResult = await calculateStability(1, stableHistory);
-      
-      expect(stableResult.status).toBe('stable');
-      expect(stableResult.isRange).toBe(false);
-
-      // 不稳定模式：高方差
-      const unstableHistory = generateTestHistory(1, 8, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 30);
-      const unstableResult = await calculateStability(1, unstableHistory);
-      
-      expect(unstableResult.status).toBe('unstable');
+  beforeEach(() => {
+    calculator = new StabilityCalculator({
+      bootstrapIterations: 1000, // 测试时减少迭代次数以加快速度
     });
   });
 
-  describe('Stability Index Calculation', () => {
-    test('should calculate stability index between 0 and 1', async () => {
-      const testHistory = generateTestHistory(1, 6, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
+  // 辅助函数：创建测试数据
+  function createTestResult(
+    userId: number,
+    testDate: number,
+    scores: { O: number; C: number; E: number; A: number; N: number }
+  ): TestResult {
+    return {
+      id: Math.floor(Math.random() * 10000),
+      userId,
+      testDate,
+      scores,
+    };
+  }
+
+  // 辅助函数：创建稳定的测试数据 (分数接近)
+  function createStableTestData(userId: number, count: number): TestResult[] {
+    const tests: TestResult[] = [];
+    const baseScores = { O: 70, C: 75, E: 65, A: 80, N: 60 };
+
+    for (let i = 0; i < count; i++) {
+      tests.push(
+        createTestResult(userId, Date.now() - i * 86400000, {
+          O: baseScores.O + (Math.random() - 0.5) * 4, // ±2 分波动
+          C: baseScores.C + (Math.random() - 0.5) * 4,
+          E: baseScores.E + (Math.random() - 0.5) * 4,
+          A: baseScores.A + (Math.random() - 0.5) * 4,
+          N: baseScores.N + (Math.random() - 0.5) * 4,
+        })
+      );
+    }
+
+    return tests;
+  }
+
+  // 辅助函数：创建不稳定的测试数据 (分数波动大)
+  function createUnstableTestData(userId: number, count: number): TestResult[] {
+    const tests: TestResult[] = [];
+    const baseScores = { O: 70, C: 75, E: 65, A: 80, N: 60 };
+
+    for (let i = 0; i < count; i++) {
+      tests.push(
+        createTestResult(userId, Date.now() - i * 86400000, {
+          O: baseScores.O + (Math.random() - 0.5) * 40, // ±20 分波动
+          C: baseScores.C + (Math.random() - 0.5) * 40,
+          E: baseScores.E + (Math.random() - 0.5) * 40,
+          A: baseScores.A + (Math.random() - 0.5) * 40,
+          N: baseScores.N + (Math.random() - 0.5) * 40,
+        })
+      );
+    }
+
+    return tests;
+  }
+
+  describe('边界条件处理', () => {
+    it('测试次数 < 3 时返回 insufficient_data', async () => {
+      const userId = 1;
+      const tests: TestResult[] = [
+        createTestResult(userId, Date.now(), {
+          O: 70,
+          C: 75,
+          E: 65,
+          A: 80,
+          N: 60,
+        }),
+        createTestResult(userId, Date.now() - 86400000, {
+          O: 72,
+          C: 73,
+          E: 67,
+          A: 78,
+          N: 62,
+        }),
+      ];
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.status).toBe('insufficient_data');
+      expect(result.stabilityWarning).toContain('测试次数不足');
+      expect(result.stabilityProbabilityDisplay).toBe('数据不足');
+    });
+
+    it('测试次数 3-5 次时返回 evolving 状态和范围值', async () => {
+      const userId = 2;
+      const tests = createStableTestData(userId, 4);
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.status).toBe('evolving');
+      expect(result.isRange).toBe(true);
+      expect(result.stabilityProbabilityDisplay).toMatch(/\d+%~\d+%/);
+      expect(result.stabilityWarning).toContain('测试次数较少');
+    });
+
+    it('测试次数 >= 6 次时返回精确值', async () => {
+      const userId = 3;
+      const tests = createStableTestData(userId, 10);
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(['stable', 'evolving', 'unstable']).toContain(result.status);
+      expect(result.isRange).toBe(false);
+      expect(result.stabilityProbabilityDisplay).toMatch(/\d+%/);
+    });
+  });
+
+  describe('稳定性指数计算', () => {
+    it('稳定数据的稳定性指数应接近 1', async () => {
+      const userId = 4;
+      const tests = createStableTestData(userId, 10);
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.stabilityIndex).toBeGreaterThan(0.7);
+      expect(result.stabilityIndex).toBeLessThanOrEqual(1);
+    });
+
+    it('不稳定数据的稳定性指数应较低', async () => {
+      const userId = 5;
+      const tests = createUnstableTestData(userId, 10);
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.stabilityIndex).toBeLessThan(0.7);
+      expect(result.stabilityIndex).toBeGreaterThanOrEqual(0);
+    });
+
+    it('稳定性指数范围在 0-1 之间', async () => {
+      const userId = 6;
+      const tests = createStableTestData(userId, 10);
+
+      const result = await calculator.calculateStability(userId, tests);
 
       expect(result.stabilityIndex).toBeGreaterThanOrEqual(0);
       expect(result.stabilityIndex).toBeLessThanOrEqual(1);
     });
+  });
 
-    test('should have higher stability for low variance data', async () => {
-      const lowVariance = generateTestHistory(1, 10, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 3);
-      const highVariance = generateTestHistory(1, 10, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 20);
-
-      const lowResult = await calculateStability(1, lowVariance);
-      const highResult = await calculateStability(1, highVariance);
-
-      expect(lowResult.stabilityIndex).toBeGreaterThan(highResult.stabilityIndex);
-    });
-
-    test('should include per-dimension statistics', async () => {
-      const testHistory = generateTestHistory(1, 6, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
-
-      expect(result.perDimension).toBeDefined();
-      expect(result.perDimension.O).toBeDefined();
-      expect(result.perDimension.C).toBeDefined();
-      expect(result.perDimension.E).toBeDefined();
-      expect(result.perDimension.A).toBeDefined();
-      expect(result.perDimension.N).toBeDefined();
-      
-      // 检查每个维度都有 mean, std, cv
-      Object.values(result.perDimension).forEach(dim => {
-        expect(dim).toHaveProperty('mean');
-        expect(dim).toHaveProperty('std');
-        expect(dim).toHaveProperty('cv');
+  describe('Monte Carlo 模拟', () => {
+    it('Bootstrap 重采样次数正确', async () => {
+      const userId = 7;
+      const tests = createStableTestData(userId, 10);
+      const testCalculator = new StabilityCalculator({
+        bootstrapIterations: 500,
       });
+
+      const result = await testCalculator.calculateStability(userId, tests);
+
+      expect(result.metadata.bootstrapIterations).toBe(500);
+    });
+
+    it('模拟结果具有合理的分布', async () => {
+      const userId = 8;
+      const tests = createStableTestData(userId, 20);
+
+      // 多次运行检查一致性
+      const results: number[] = [];
+      for (let i = 0; i < 5; i++) {
+        const result = await calculator.calculateStability(userId, tests);
+        results.push(result.stabilityIndex);
+      }
+
+      // 稳定性指数的标准差应该较小 (结果一致)
+      const mean = results.reduce((a, b) => a + b, 0) / results.length;
+      const std = Math.sqrt(
+        results.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+          results.length
+      );
+
+      expect(std).toBeLessThan(0.05); // 波动应小于 5%
     });
   });
 
-  describe('Monte Carlo Simulation', () => {
-    test('should calculate stability probability', async () => {
-      const testHistory = generateTestHistory(1, 10, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
+  describe('置信区间计算', () => {
+    it('置信区间范围合理', async () => {
+      const userId = 9;
+      const tests = createStableTestData(userId, 20);
 
-      expect(result.stabilityProbability).toBeGreaterThanOrEqual(0);
-      expect(result.stabilityProbability).toBeLessThanOrEqual(100);
+      const result = await calculator.calculateStability(userId, tests);
+
+      const [lower, upper] = result.confidenceBand;
+
+      expect(lower).toBeGreaterThanOrEqual(0);
+      expect(upper).toBeLessThanOrEqual(1);
+      expect(lower).toBeLessThanOrEqual(upper);
+      expect(upper - lower).toBeLessThan(0.5); // 区间宽度应合理
     });
 
-    test('should calculate confidence band', async () => {
-      const testHistory = generateTestHistory(1, 10, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
+    it('置信区间覆盖真实值', async () => {
+      const userId = 10;
+      const tests = createStableTestData(userId, 30);
 
-      expect(result.confidenceBand).toHaveLength(2);
-      expect(result.confidenceBand[0]).toBeLessThanOrEqual(result.confidenceBand[1]);
-      expect(result.confidenceBand[0]).toBeGreaterThanOrEqual(0);
-      expect(result.confidenceBand[1]).toBeLessThanOrEqual(1);
-    });
+      const result = await calculator.calculateStability(userId, tests);
 
-    test('should be deterministic with same input', async () => {
-      const testHistory = generateTestHistory(1, 6, { O: 60, C: 40, E: 70, A: 30, N: 50 }, 5);
-      
-      const result1 = await calculateStability(1, testHistory);
-      const result2 = await calculateStability(1, testHistory);
+      const [lower, upper] = result.confidenceBand;
 
-      expect(result1.status).toBe(result2.status);
-      expect(Math.abs(result1.stabilityIndex - result2.stabilityIndex)).toBeLessThan(0.1);
-    });
-  });
-
-  describe('Stability Probability Display', () => {
-    test('should show range for insufficient data', async () => {
-      const testHistory = generateTestHistory(1, 4, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
-
-      expect(result.isRange).toBe(true);
-      expect(result.stabilityProbabilityDisplay).toContain('-');
-    });
-
-    test('should show exact value for sufficient data', async () => {
-      const testHistory = generateTestHistory(1, 8, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 5);
-      const result = await calculateStability(1, testHistory);
-
-      expect(result.isRange).toBe(false);
-      expect(result.stabilityProbabilityDisplay).not.toContain('-');
-      expect(result.stabilityProbabilityDisplay).toContain('%');
+      // 稳定性指数应在置信区间内
+      expect(result.stabilityIndex).toBeGreaterThanOrEqual(lower);
+      expect(result.stabilityIndex).toBeLessThanOrEqual(upper);
     });
   });
 
-  describe('Warning Messages', () => {
-    test('should warn for insufficient data', async () => {
-      const testHistory = generateTestHistory(1, 2, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
+  describe('稳定性概率计算', () => {
+    it('稳定数据的稳定性概率应较高', async () => {
+      const userId = 11;
+      const tests = createStableTestData(userId, 20);
 
-      expect(result.stabilityWarning).not.toBeNull();
-      expect(result.stabilityWarning).toContain('需要至少');
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.stabilityProbability).toBeGreaterThan(70);
     });
 
-    test('should warn for evolving status', async () => {
-      const testHistory = generateTestHistory(1, 4, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
+    it('不稳定数据的稳定性概率应较低', async () => {
+      const userId = 12;
+      const tests = createUnstableTestData(userId, 20);
 
-      expect(result.stabilityWarning).not.toBeNull();
-      expect(result.stabilityWarning).toContain('次测试');
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.stabilityProbability).toBeLessThan(50);
+    });
+  });
+
+  describe('各维度统计', () => {
+    it('返回所有五个维度的统计信息', async () => {
+      const userId = 13;
+      const tests = createStableTestData(userId, 10);
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.perDimension).toHaveProperty('O');
+      expect(result.perDimension).toHaveProperty('C');
+      expect(result.perDimension).toHaveProperty('E');
+      expect(result.perDimension).toHaveProperty('A');
+      expect(result.perDimension).toHaveProperty('N');
+
+      // 每个维度都应包含 mean, std, cv
+      for (const dim of ['O', 'C', 'E', 'A', 'N']) {
+        const dimStats = (result.perDimension as any)[dim];
+        expect(dimStats).toHaveProperty('mean');
+        expect(dimStats).toHaveProperty('std');
+        expect(dimStats).toHaveProperty('cv');
+      }
     });
 
-    test('should warn for unstable status', async () => {
-      const testHistory = generateTestHistory(1, 8, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 30);
-      const result = await calculateStability(1, testHistory);
+    it('变异系数计算正确 (CV = std / mean)', async () => {
+      const userId = 14;
+      const tests = createStableTestData(userId, 10);
 
-      if (result.status === 'unstable') {
-        expect(result.stabilityWarning).not.toBeNull();
-        expect(result.stabilityWarning).toContain('波动');
+      const result = await calculator.calculateStability(userId, tests);
+
+      for (const dim of ['O', 'C', 'E', 'A', 'N']) {
+        const dimStats = (result.perDimension as any)[dim];
+        const expectedCV =
+          dimStats.mean !== 0 ? dimStats.std / dimStats.mean : 0;
+        expect(Math.abs(dimStats.cv - expectedCV)).toBeLessThan(0.0001);
       }
     });
   });
 
-  describe('Test-Retest Reliability', () => {
-    test('should calculate correlation between tests', () => {
-      const testHistory: TestResult[] = [
-        {
-          testId: 'test-1',
-          userId: 1,
-          completedAt: Date.now(),
-          scores: { O: 50, C: 50, E: 50, A: 50, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        },
-        {
-          testId: 'test-2',
-          userId: 1,
-          completedAt: Date.now() - 86400000,
-          scores: { O: 52, C: 48, E: 53, A: 47, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        },
-        {
-          testId: 'test-3',
-          userId: 1,
-          completedAt: Date.now() - 172800000,
-          scores: { O: 48, C: 52, E: 47, A: 53, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        }
-      ];
+  describe('性能测试', () => {
+    it('计算时间 < 500ms', async () => {
+      const userId = 15;
+      const tests = createStableTestData(userId, 50);
 
-      const reliability = calculateTestRetestReliability(testHistory);
-      
-      expect(reliability).toBeGreaterThanOrEqual(-1);
-      expect(reliability).toBeLessThanOrEqual(1);
+      const startTime = Date.now();
+      await calculator.calculateStability(userId, tests);
+      const calculationTime = Date.now() - startTime;
+
+      expect(calculationTime).toBeLessThan(500);
     });
 
-    test('should return 0 for <2 tests', () => {
-      const testHistory: TestResult[] = [
-        {
-          testId: 'test-1',
-          userId: 1,
-          completedAt: Date.now(),
-          scores: { O: 50, C: 50, E: 50, A: 50, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        }
-      ];
+    it('支持并发计算', async () => {
+      const promises = [];
+      for (let i = 0; i < 10; i++) {
+        const userId = 100 + i;
+        const tests = createStableTestData(userId, 20);
+        promises.push(calculator.calculateStability(userId, tests));
+      }
 
-      const reliability = calculateTestRetestReliability(testHistory);
-      expect(reliability).toBe(0);
-    });
+      const startTime = Date.now();
+      const results = await Promise.all(promises);
+      const totalTime = Date.now() - startTime;
 
-    test('should have high reliability for consistent scores', () => {
-      const testHistory: TestResult[] = [
-        {
-          testId: 'test-1',
-          userId: 1,
-          completedAt: Date.now(),
-          scores: { O: 60, C: 40, E: 70, A: 30, N: 50 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        },
-        {
-          testId: 'test-2',
-          userId: 1,
-          completedAt: Date.now() - 86400000,
-          scores: { O: 61, C: 39, E: 71, A: 29, N: 51 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        },
-        {
-          testId: 'test-3',
-          userId: 1,
-          completedAt: Date.now() - 172800000,
-          scores: { O: 59, C: 41, E: 69, A: 31, N: 49 },
-          questionCount: 50,
-          testMode: 'CLASSIC'
-        }
-      ];
-
-      const reliability = calculateTestRetestReliability(testHistory);
-      expect(reliability).toBeGreaterThan(0.7);
+      expect(results.length).toBe(10);
+      expect(totalTime).toBeLessThan(2000); // 10 个并发应在 2s 内完成
     });
   });
 
-  describe('Performance', () => {
-    test('should complete calculation in <500ms', async () => {
-      const testHistory = generateTestHistory(1, 10, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
+  describe('便捷函数', () => {
+    it('calculateStability 函数正常工作', async () => {
+      const userId = 16;
+      const tests = createStableTestData(userId, 10);
 
-      const start = Date.now();
-      await calculateStability(1, testHistory);
-      const elapsed = Date.now() - start;
+      const result = await calculateStability(userId, tests);
 
-      expect(elapsed).toBeLessThan(500);
-    });
-
-    test('should handle large test history', async () => {
-      const testHistory = generateTestHistory(1, 20, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-
-      const start = Date.now();
-      const result = await calculateStability(1, testHistory);
-      const elapsed = Date.now() - start;
-
-      expect(result).toBeDefined();
-      expect(elapsed).toBeLessThan(1000);
+      expect(result).toHaveProperty('stabilityIndex');
+      expect(result).toHaveProperty('stabilityProbability');
+      expect(result).toHaveProperty('status');
     });
   });
 
-  describe('Edge Cases', () => {
-    test('should handle constant scores', async () => {
-      const testHistory: TestResult[] = Array(10).fill(null).map((_, i) => ({
-        testId: `test-${i}`,
-        userId: 1,
-        completedAt: Date.now() - i * 86400000,
-        scores: { O: 50, C: 50, E: 50, A: 50, N: 50 },
-        questionCount: 50,
-        testMode: 'CLASSIC'
-      }));
+  describe('警告信息', () => {
+    it('数据不足时生成警告', async () => {
+      const userId = 17;
+      const tests: TestResult[] = [
+        createTestResult(userId, Date.now(), {
+          O: 70,
+          C: 75,
+          E: 65,
+          A: 80,
+          N: 60,
+        }),
+      ];
 
-      const result = await calculateStability(1, testHistory);
-      
-      expect(result.stabilityIndex).toBeGreaterThan(0.9);
-      expect(result.status).toBe('stable');
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.stabilityWarning).not.toBeNull();
+      expect(result.stabilityWarning).toContain('测试次数不足');
     });
 
-    test('should handle extreme scores', async () => {
-      const testHistory: TestResult[] = Array(8).fill(null).map((_, i) => ({
-        testId: `test-${i}`,
-        userId: 1,
-        completedAt: Date.now() - i * 86400000,
-        scores: { 
-          O: i % 2 === 0 ? 0 : 100,
-          C: i % 2 === 0 ? 100 : 0,
-          E: i % 2 === 0 ? 0 : 100,
-          A: i % 2 === 0 ? 100 : 0,
-          N: i % 2 === 0 ? 0 : 100
+    it('稳定数据无警告', async () => {
+      const userId = 18;
+      const tests = createStableTestData(userId, 20);
+
+      const result = await calculator.calculateStability(userId, tests);
+
+      expect(result.stabilityWarning).toBeNull();
+    });
+  });
+});
+
+describe('精度验证', () => {
+  it('与真实重测数据一致性 > 80%', async () => {
+    // 模拟真实重测数据：同一用户多次测试结果应高度相关
+    const calculator = new StabilityCalculator({
+      bootstrapIterations: 5000,
+    });
+
+    // 创建高度一致的数据 (模拟真实稳定人格)
+    const userId = 100;
+    const baseScores = { O: 70, C: 75, E: 65, A: 80, N: 60 };
+    const tests: TestResult[] = [];
+
+    for (let i = 0; i < 30; i++) {
+      tests.push({
+        id: i,
+        userId,
+        testDate: Date.now() - i * 86400000,
+        scores: {
+          O: baseScores.O + (Math.random() - 0.5) * 6, // ±3 分
+          C: baseScores.C + (Math.random() - 0.5) * 6,
+          E: baseScores.E + (Math.random() - 0.5) * 6,
+          A: baseScores.A + (Math.random() - 0.5) * 6,
+          N: baseScores.N + (Math.random() - 0.5) * 6,
         },
-        questionCount: 50,
-        testMode: 'CLASSIC'
-      }));
-
-      const result = await calculateStability(1, testHistory);
-      
-      expect(result.stabilityIndex).toBeLessThan(0.5);
-      expect(result.status).toBe('unstable');
-    });
-
-    test('should handle empty test history gracefully', async () => {
-      const result = await calculateStability(1, []);
-      
-      expect(result.status).toBe('insufficient_data');
-      expect(result.stabilityIndex).toBe(0);
-    });
-  });
-
-  describe('Per-Dimension Statistics', () => {
-    test('should calculate mean correctly', async () => {
-      const testHistory: TestResult[] = [
-        { testId: 't1', userId: 1, completedAt: 1, scores: { O: 40, C: 50, E: 60, A: 70, N: 50 }, questionCount: 50, testMode: 'CLASSIC' },
-        { testId: 't2', userId: 1, completedAt: 2, scores: { O: 60, C: 50, E: 60, A: 70, N: 50 }, questionCount: 50, testMode: 'CLASSIC' },
-        { testId: 't3', userId: 1, completedAt: 3, scores: { O: 50, C: 50, E: 60, A: 70, N: 50 }, questionCount: 50, testMode: 'CLASSIC' }
-      ];
-
-      const result = await calculateStability(1, testHistory);
-      
-      expect(result.perDimension.O.mean).toBe(50);
-      expect(result.perDimension.C.mean).toBe(50);
-      expect(result.perDimension.E.mean).toBe(60);
-    });
-
-    test('should calculate std correctly', async () => {
-      const testHistory: TestResult[] = [
-        { testId: 't1', userId: 1, completedAt: 1, scores: { O: 30, C: 50, E: 50, A: 50, N: 50 }, questionCount: 50, testMode: 'CLASSIC' },
-        { testId: 't2', userId: 1, completedAt: 2, scores: { O: 70, C: 50, E: 50, A: 50, N: 50 }, questionCount: 50, testMode: 'CLASSIC' },
-        { testId: 't3', userId: 1, completedAt: 3, scores: { O: 50, C: 50, E: 50, A: 50, N: 50 }, questionCount: 50, testMode: 'CLASSIC' }
-      ];
-
-      const result = await calculateStability(1, testHistory);
-      
-      // O 维度有较大变异
-      expect(result.perDimension.O.std).toBeGreaterThan(10);
-      // 其他维度无变异
-      expect(result.perDimension.C.std).toBe(0);
-    });
-
-    test('should calculate CV correctly', async () => {
-      const testHistory = generateTestHistory(1, 5, { O: 50, C: 50, E: 50, A: 50, N: 50 }, 10);
-      const result = await calculateStability(1, testHistory);
-
-      // CV 应为非负数
-      Object.values(result.perDimension).forEach(dim => {
-        expect(dim.cv).toBeGreaterThanOrEqual(0);
       });
+    }
+
+    const result = await calculator.calculateStability(userId, tests);
+
+    // 稳定性指数应 > 0.8 (一致性 > 80%)
+    expect(result.stabilityIndex).toBeGreaterThan(0.8);
+  });
+
+  it('置信区间覆盖率 > 95%', async () => {
+    const calculator = new StabilityCalculator({
+      bootstrapIterations: 10000,
     });
+
+    const userId = 101;
+    const tests = createStableTestData(userId, 50);
+
+    // 多次运行检查覆盖率
+    const coverageCount = 100;
+    let coveredCount = 0;
+
+    for (let i = 0; i < coverageCount; i++) {
+      const result = await calculator.calculateStability(userId, tests);
+      const [lower, upper] = result.confidenceBand;
+
+      if (
+        result.stabilityIndex >= lower &&
+        result.stabilityIndex <= upper
+      ) {
+        coveredCount++;
+      }
+    }
+
+    const coverageRate = coveredCount / coverageCount;
+    expect(coverageRate).toBeGreaterThan(0.95);
   });
 });

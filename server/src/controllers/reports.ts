@@ -22,7 +22,7 @@ declare global {
     interface Request {
       user?: {
         id: number;
-        email?: string;
+        email: string;
         deviceId?: string;
       };
     }
@@ -417,6 +417,7 @@ export async function generateReportHandler(
     // 8. 创建待处理的报告记录
     const report = await prisma.report.create({
       data: {
+        userId,
         testResultId: result_id,
         reportType: report_type,
         content: '', // 初始为空

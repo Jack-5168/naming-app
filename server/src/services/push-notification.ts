@@ -30,7 +30,7 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 // ==================== Types ====================
 
 export interface PushStrategy {
-  type: 'report_ready' | 'retest_reminder' | 'membership_expiring' | 'personalized';
+  type: PushNotificationType;
   trigger: 'immediate' | 'scheduled' | 'behavioral';
   delay: number; // seconds
   template: string;
@@ -107,6 +107,7 @@ export async function createPushNotification(payload: PushNotificationPayload) {
         userId,
         type,
         title,
+        body: content,
         content,
         deepLink,
         status: scheduledAt ? 'pending' : 'pending',
@@ -129,7 +130,7 @@ export async function createPushNotification(payload: PushNotificationPayload) {
 /**
  * Send a notification to user's devices
  */
-export async function sendNotification(notificationId: string) {
+export async function sendNotification(notificationId: number) {
   try {
     const notification = await prisma.pushNotification.findUnique({
       where: { id: notificationId },
@@ -166,7 +167,7 @@ export async function sendNotification(notificationId: string) {
     });
 
     // Send to all user devices
-    const sendPromises = subscriptions.map(async (sub) => {
+    const sendPromises = subscriptions.map(async (sub: any) => {
       try {
         await webpush.sendNotification(
           {
@@ -253,19 +254,17 @@ export async function scheduleNotifications() {
       }
     }
 
-    // Schedule retest reminders (30 days after last test)
-    const usersNeedingRetest = await prisma.testRecord.groupBy({
-      by: ['userId'],
-      _max: { completedAt: true },
+    // Schedule retest reminders (30 days after last test) - simplified version
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const usersNeedingRetest = await prisma.testResult.groupBy({
+      by: ['userId', 'createdAt'],
       having: {
-        completedAt: {
-          lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
-        },
+        createdAt: { gte: thirtyDaysAgo },
       },
     });
 
     for (const record of usersNeedingRetest) {
-      const userId = record.userId;
+      const userId = typeof record === 'string' ? record : (record as any).userId;
       
       // Check if reminder already sent
       const existingReminder = await prisma.pushNotification.findFirst({

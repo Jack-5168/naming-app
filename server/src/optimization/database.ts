@@ -33,7 +33,7 @@ export async function getUsersWithMemberships(userIds: number[]) {
   return prisma.user.findMany({
     where: { id: { in: userIds } },
     include: {
-      membership: true,
+      memberships: true,
     },
   });
 }
@@ -42,33 +42,32 @@ export async function getUsersWithMemberships(userIds: number[]) {
  * Optimize test records with stability calculation
  * Use raw query for complex aggregations
  */
-export async function getUserStabilityStats(userId: number) {
+export async function getUserStabilityStats(userId: number): Promise<any> {
   const result = await prisma.$queryRaw`
     SELECT 
       COUNT(*) as test_count,
-      AVG(stability_index) as avg_stability,
-      MAX(completed_at) as last_test,
-      MIN(completed_at) as first_test
-    FROM "TestRecord"
+      AVG("stabilityIndex") as avg_stability,
+      MAX("createdAt") as last_test,
+      MIN("createdAt") as first_test
+    FROM "TestResult"
     WHERE "userId" = ${userId}
-      AND stability_index IS NOT NULL
   `;
   
-  return result[0];
+  return (result as any[])[0];
 }
 
 /**
- * Batch insert test answers (avoid multiple INSERTs)
+ * Batch insert test responses (avoid multiple INSERTs)
  */
-export async function batchInsertAnswers(answers: Array<{
-  testId: string;
-  questionId: string;
-  response: number;
-  responseTime: number;
+export async function batchInsertResponses(responses: Array<{
+  sessionId: number;
+  questionId: number;
+  optionId: number;
+  timeSpent: number;
 }>) {
   // Using Prisma's createMany for batch insert
-  return prisma.answer.createMany({
-    data: answers,
+  return prisma.response.createMany({
+    data: responses,
     skipDuplicates: true,
   });
 }
@@ -82,11 +81,11 @@ export async function getTestRecordsPaginated(
   limit: number = 20,
   cursor?: string
 ) {
-  return prisma.testRecord.findMany({
+  return prisma.testResult.findMany({
     where: { userId },
     take: limit + 1, // Get one extra to check if there's more
-    cursor: cursor ? { id: cursor } : undefined,
-    orderBy: { completedAt: 'desc' },
+    cursor: cursor ? { id: Number(cursor) } : undefined,
+    orderBy: { createdAt: 'desc' },
   });
 }
 
@@ -165,14 +164,7 @@ export function enableSlowQueryLogging() {
       
       console.warn(`Slow query detected: ${slowQuery.query} (${duration}ms)`);
       
-      // Log to database
-      prisma.queryLog.create({
-        data: {
-          query: slowQuery.query,
-          duration: slowQuery.duration,
-          timestamp: slowQuery.timestamp,
-        },
-      }).catch(() => {}); // Ignore errors
+      // Log to console (no database logging in this version)
     }
     
     return result;
@@ -333,7 +325,7 @@ export default {
   CONNECTION_POOL_CONFIG,
   getUsersWithMemberships,
   getUserStabilityStats,
-  batchInsertAnswers,
+  batchInsertResponses,
   getTestRecordsPaginated,
   createOptimizedIndexes,
   enableSlowQueryLogging,

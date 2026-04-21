@@ -9,9 +9,7 @@ import { Router } from 'express';
 import {
   login,
   refreshToken,
-  getUserInfo,
 } from '../controllers/auth';
-import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -34,16 +32,6 @@ router.post('/wechat/login', login);
  * @returns { token, refresh_token, expires_in, refresh_expires_in }
  */
 router.post('/refresh', refreshToken);
-
-/**
- * @route   GET /api/v1/users/me
- * @desc    Get current authenticated user information
- * @access  Private
- * 
- * @headers { Authorization: Bearer <token> }
- * @returns { user: { id, openid, nickname, avatar_url, test_count, last_test_at } }
- */
-router.get('/me', authMiddleware, getUserInfo);
 
 export default router;
 export { router as authRoutes };
