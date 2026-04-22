@@ -8,8 +8,19 @@
     "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
+    "noImplicitThis": false,
+    "strictBindCallApply": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "useUnknownInCatchVariables": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "forceConsistentCasingInFileNames": false,
     "resolveJsonModule": true,
     "declaration": false,
@@ -20,11 +31,8 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": false,
-    "noFallthroughCasesInSwitch": false,
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "ignoreDeprecations": "5.0"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]

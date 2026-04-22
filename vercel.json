@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd server && npm install && npm run build && cd ../miniapp && npm install && npm run build:h5",
+  "buildCommand": "cd server && npm install && npx prisma generate && npm run build && cd ../miniapp && npm install && npm run build:h5",
   "outputDirectory": "miniapp/dist",
   "devCommand": "cd server && npm run dev",
   "installCommand": "cd server && npm install && cd ../miniapp && npm install",
