@@ -1,0 +1,311 @@
+/* Share Page Styles */
+
+.share-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.share-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 40px;
+}
+
+/* Header */
+.share-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 30px 20px 20px;
+  text-align: center;
+}
+
+.share-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.share-subtitle {
+  font-size: 14px;
+  color: #ffffff;
+  opacity: 0.9;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.stats-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.stats-icon {
+  font-size: 16px;
+}
+
+.stats-text {
+  font-size: 13px;
+  color: #ffffff;
+}
+
+/* Share Stats */
+.share-stats {
+  background: #ffffff;
+  margin: 16px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.stats-detail {
+  margin-top: 16px;
+}
+
+.stats-detail-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.channel-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.channel-stat:last-child {
+  border-bottom: none;
+}
+
+.channel-name {
+  font-size: 13px;
+  color: #666;
+}
+
+.channel-count {
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Share Card Scroll */
+.share-card-scroll {
+  max-height: 60vh;
+  margin: 16px;
+}
+
+/* Share Channels */
+.share-channels {
+  background: #ffffff;
+  margin: 16px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.channels-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.channel-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.channel-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.channel-option.selected {
+  border-color: #667eea;
+  background: #f0f0ff;
+}
+
+.channel-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.channel-icon.wechat {
+  background: #07c160;
+}
+
+.channel-icon.moment {
+  background: #667eea;
+}
+
+.channel-icon.qq {
+  background: #12b7f5;
+}
+
+.channel-icon.link {
+  background: #ff6b6b;
+}
+
+.channel-label {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+}
+
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Referral Section */
+.referral-section {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  margin: 16px;
+  border-radius: 12px;
+  padding: 20px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.referral-title {
+  font-size: 18px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.referral-desc {
+  font-size: 13px;
+  opacity: 0.9;
+  display: block;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.referral-stats {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.referral-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.referral-stat-value {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.referral-stat-label {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.action-btn.referral {
+  background: #ffffff;
+  color: #f5576c;
+  font-weight: bold;
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  transition: all 0.3s;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+}
+
+.action-btn.secondary {
+  background: #ffffff;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.action-btn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 375px) {
+  .channel-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .share-title {
+    font-size: 24px;
+  }
+
+  .stat-value,
+  .referral-stat-value {
+    font-size: 20px;
+  }
+}

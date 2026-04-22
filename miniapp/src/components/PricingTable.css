@@ -1,0 +1,269 @@
+/* PricingTable Component Styles */
+
+.pricing-table {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-table.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/* Header */
+.table-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.table-title {
+  display: block;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.table-subtitle {
+  display: block;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Scroll Container */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-container {
+  min-width: 600px;
+}
+
+/* Table Rows */
+.table-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row.header-row {
+  background: #f8f9fa;
+  border-bottom: 2px solid #667eea;
+}
+
+.table-row.section-row {
+  background: #fafafa;
+  border-top: 2px solid #e0e0e0;
+}
+
+.table-row.action-row {
+  border-top: 2px solid #667eea;
+  padding-top: 15px;
+}
+
+/* Table Cells */
+.table-cell {
+  padding: 15px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.feature-cell {
+  flex: 0 0 120px;
+  text-align: left;
+  align-items: flex-start;
+  background: #f8f9fa;
+}
+
+.tier-cell {
+  flex: 1;
+  position: relative;
+  min-width: 100px;
+}
+
+.tier-cell.popular {
+  background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+}
+
+.tier-cell.current {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.value-cell {
+  flex: 1;
+  min-width: 100px;
+}
+
+.features-cell {
+  flex: 1;
+  min-width: 100px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.action-cell {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* Tier Info */
+.tier-name {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.tier-price {
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.cycle {
+  font-size: 12px;
+  color: #666;
+  margin-left: 2px;
+}
+
+.popular-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.current-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #667eea;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+/* Feature Info */
+.feature-icon {
+  font-size: 18px;
+  margin-right: 6px;
+}
+
+.feature-label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.value-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.section-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.feature-item {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.feature-item::before {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+/* Upgrade Button */
+.upgrade-btn {
+  width: 100%;
+  height: 36px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: bold;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.upgrade-btn:not(.current):not([disabled]) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.upgrade-btn.popular {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.upgrade-btn.current {
+  background: #e0e0e0;
+  color: #999;
+}
+
+.upgrade-btn[disabled] {
+  opacity: 0.6;
+}
+
+/* Footer */
+.table-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer-note {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pricing-table {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .table-container {
+    min-width: 500px;
+  }
+
+  .feature-cell {
+    flex: 0 0 100px;
+  }
+
+  .tier-name {
+    font-size: 14px;
+  }
+
+  .tier-price {
+    font-size: 16px;
+  }
+}

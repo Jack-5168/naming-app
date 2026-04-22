@@ -1,0 +1,192 @@
+{
+  "version": "4.5",
+  "createdAt": "2026-04-22",
+  "tiers": [
+    {
+      "tier": "FREE",
+      "name": "免费版",
+      "nameEn": "Free",
+      "price": 0,
+      "priceDisplay": "¥0",
+      "durationDays": 0,
+      "billingCycle": "once",
+      "benefits": {
+        "report_basic": 1,
+        "report_pro": 0,
+        "life_event": 5,
+        "dual_test": 0,
+        "priority_support": false
+      },
+      "features": [
+        "1 次基础报告",
+        "5 次生活事件",
+        "基础人格分析",
+        "四维得分详情"
+      ],
+      "sortOrder": 0,
+      "isPopular": false
+    },
+    {
+      "tier": "BASIC",
+      "name": "基础报告",
+      "nameEn": "Basic Report",
+      "price": 990,
+      "priceDisplay": "¥9.9",
+      "durationDays": 0,
+      "billingCycle": "once",
+      "benefits": {
+        "report_basic": 1,
+        "report_pro": 0,
+        "life_event": 5,
+        "dual_test": 0,
+        "priority_support": false
+      },
+      "features": [
+        "解锁完整人格报告",
+        "查看四维得分详情",
+        "基础发展建议",
+        "5 次生活事件"
+      ],
+      "sortOrder": 1,
+      "isPopular": false
+    },
+    {
+      "tier": "PRO_REPORT",
+      "name": "专业报告",
+      "nameEn": "Pro Report",
+      "price": 2900,
+      "priceDisplay": "¥29",
+      "durationDays": 0,
+      "billingCycle": "once",
+      "benefits": {
+        "report_basic": "unlimited",
+        "report_pro": 1,
+        "life_event": 10,
+        "dual_test": 0,
+        "priority_support": false
+      },
+      "features": [
+        "无限次基础报告",
+        "1 次专业报告",
+        "10 次生活事件",
+        "职业匹配分析",
+        "人际关系指南",
+        "压力管理建议"
+      ],
+      "sortOrder": 2,
+      "isPopular": true
+    },
+    {
+      "tier": "PRO_MONTHLY",
+      "name": "月会员",
+      "nameEn": "Pro Monthly",
+      "price": 4900,
+      "priceDisplay": "¥49/月",
+      "durationDays": 30,
+      "billingCycle": "monthly",
+      "benefits": {
+        "report_basic": "unlimited",
+        "report_pro": 3,
+        "life_event": "unlimited",
+        "dual_test": 1,
+        "priority_support": false
+      },
+      "features": [
+        "无限次基础报告",
+        "3 次专业报告/月",
+        "无限次生活事件",
+        "1 次双人合测/月",
+        "成长任务系统",
+        "月度专属报告"
+      ],
+      "sortOrder": 3,
+      "isPopular": false
+    },
+    {
+      "tier": "PRO_YEARLY",
+      "name": "年会员",
+      "nameEn": "Pro Yearly",
+      "price": 19900,
+      "priceDisplay": "¥199/年",
+      "durationDays": 365,
+      "billingCycle": "yearly",
+      "benefits": {
+        "report_basic": "unlimited",
+        "report_pro": "unlimited",
+        "life_event": "unlimited",
+        "dual_test": 3,
+        "priority_support": true
+      },
+      "features": [
+        "无限次基础报告",
+        "无限次专业报告",
+        "无限次生活事件",
+        "3 次双人合测/年",
+        "优先客户支持",
+        "专属成长顾问",
+        "年度深度报告",
+        "最早体验新功能"
+      ],
+      "sortOrder": 4,
+      "isPopular": true
+    },
+    {
+      "tier": "DUAL_TEST",
+      "name": "双人合测",
+      "nameEn": "Dual Test",
+      "price": 9900,
+      "priceDisplay": "¥99",
+      "durationDays": 0,
+      "billingCycle": "once",
+      "benefits": {
+        "report_basic": "unlimited",
+        "report_pro": 2,
+        "life_event": "unlimited",
+        "dual_test": 1,
+        "priority_support": false
+      },
+      "features": [
+        "无限次基础报告",
+        "2 次专业报告",
+        "无限次生活事件",
+        "1 次双人合测",
+        "关系匹配分析",
+        "相处建议报告"
+      ],
+      "sortOrder": 5,
+      "isPopular": false
+    }
+  ],
+  "benefitTypes": {
+    "report_basic": {
+      "label": "基础报告",
+      "icon": "📄",
+      "description": "完整人格测试报告"
+    },
+    "report_pro": {
+      "label": "专业报告",
+      "icon": "📊",
+      "description": "职业匹配 + 人际关系 + 压力管理"
+    },
+    "life_event": {
+      "label": "生活事件",
+      "icon": "🎉",
+      "description": "人格与生活事件关联分析"
+    },
+    "dual_test": {
+      "label": "双人合测",
+      "icon": "👥",
+      "description": "关系匹配度分析"
+    },
+    "priority_support": {
+      "label": "优先支持",
+      "icon": "⭐",
+      "description": "专属客服通道"
+    }
+  },
+  "resetRules": {
+    "once": "永久有效，不重置",
+    "monthly": "每 30 天重置一次",
+    "yearly": "每 365 天重置一次"
+  }
+}
