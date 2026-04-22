@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人格探索局 - MBTI 测试</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 人格探索局</h1>
+            <p class="subtitle">探索你的 MBTI 人格类型</p>
+        </header>
+        
+        <div id="quiz-container">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <p class="progress-text">第 <span id="current">1</span> / <span id="total">65</span> 题</p>
+            
+            <div class="question-card" id="question-card">
+                <h2 id="question-text">加载中...</h2>
+            </div>
+            
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('A')">
+                    <span class="option-label">A</span>
+                    <span id="option-a-text">选项 A</span>
+                </button>
+                <button class="option-btn" onclick="selectOption('B')">
+                    <span class="option-label">B</span>
+                    <span id="option-b-text">选项 B</span>
+                </button>
+            </div>
+            
+            <div class="nav-buttons">
+                <button id="prev-btn" onclick="prevQuestion()" disabled>上一题</button>
+                <button id="next-btn" onclick="nextQuestion()" disabled>下一题</button>
+            </div>
+        </div>
+        
+        <div id="result-container" style="display:none;">
+            <h2>🎉 测试完成！</h2>
+            <div class="result-card">
+                <h3>你的 MBTI 类型是：<span id="mbti-type" class="mbti-result">----</span></h3>
+                <div id="dimensions"></div>
+            </div>
+            <button onclick="restartQuiz()" class="restart-btn">重新测试</button>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
