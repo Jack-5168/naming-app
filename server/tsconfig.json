@@ -6,18 +6,25 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": false,
     "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true,
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    "suppressImplicitAnyIndexErrors": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]

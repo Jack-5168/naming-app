@@ -99,10 +99,10 @@ export function mapBig5ToMBTI(
   return {
     type,
     dimensions: {
-      E: { score: E, label: getLetter(E_I) },
-      N: { score: O, label: getLetter(N_S) },
-      T: { score: A_reversed, label: getLetter(T_F) },
-      J: { score: C, label: getLetter(J_P) }
+      E: { score: E, label: getLetter(E_I) as string },
+      N: { score: O, label: getLetter(N_S) as string },
+      T: { score: A_reversed, label: getLetter(T_F) as string },
+      J: { score: C, label: getLetter(J_P) as string }
     },
     confidence: adjustedOverallConfidence
   };
