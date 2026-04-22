@@ -1,0 +1,230 @@
+/* Membership Page Styles */
+
+.membership-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.membership-page.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Header */
+.membership-header {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #fff;
+}
+
+.page-title {
+  display: block;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  display: block;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Current Membership Section */
+.current-membership-section {
+  margin-bottom: 30px;
+}
+
+/* Tiers Section */
+.tiers-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.tiers-scroll {
+  max-height: 60vh;
+}
+
+.tier-item {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.tier-item:last-child {
+  margin-bottom: 0;
+}
+
+.tier-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.tier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.tier-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.popular-badge {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.tier-price {
+  font-size: 32px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.billing-cycle {
+  font-size: 14px;
+  color: #666;
+  margin-left: 4px;
+}
+
+.tier-duration {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Benefits */
+.tier-benefits {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.benefit-item {
+  display: block;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.benefit-item:last-child {
+  margin-bottom: 0;
+}
+
+.benefit-item.highlight {
+  color: #f5576c;
+  font-weight: bold;
+}
+
+/* Features */
+.tier-features {
+  margin: 15px 0;
+}
+
+.feature-item {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 6px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.feature-item::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+/* Upgrade Button */
+.upgrade-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.upgrade-btn:not(.current):not([disabled]) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.upgrade-btn:not(.current):not([disabled]):active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.upgrade-btn.popular {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.upgrade-btn.current {
+  background: #e0e0e0;
+  color: #999;
+}
+
+.upgrade-btn[disabled] {
+  opacity: 0.6;
+}
+
+/* Pricing Table Section */
+.pricing-table-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pricing-table-btn {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 24px;
+  padding: 12px 40px;
+  font-size: 14px;
+}
+
+.pricing-table-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 375px) {
+  .page-title {
+    font-size: 28px;
+  }
+
+  .tier-price {
+    font-size: 28px;
+  }
+
+  .tier-item {
+    padding: 15px;
+  }
+}
