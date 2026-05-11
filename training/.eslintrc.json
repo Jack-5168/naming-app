@@ -1,0 +1,108 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "webextensions": true
+  },
+  "extends": "airbnb-base",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "off",
+    "import/no-unresolved": "off",
+    "import/extensions": "off",
+    "max-classes-per-file": "off",
+    "no-underscore-dangle": ["error", { "allowAfterThis": true, "allowAfterThisConstructor": true }],
+    "no-plusplus": "off",
+    "no-restricted-syntax": ["error", {
+      "selector": "ForInStatement",
+      "message": "for..in loops should be avoided"
+    }, {
+      "selector": "WithStatement",
+      "message": "with statements are not allowed"
+    }],
+    "no-param-reassign": ["error", { "props": false }],
+    "no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }],
+    "consistent-return": "off",
+    "no-alert": "off",
+    "no-restricted-globals": "off",
+    "no-await-in-loop": "off",
+    "no-promise-executor-return": "off",
+    "prefer-template": "off",
+    "max-len": "off",
+    "implicit-arrow-linebreak": "off",
+    "operator-linebreak": "off",
+    "comma-dangle": "off",
+    "no-nested-ternary": "off",
+    "arrow-parens": "off",
+    "arrow-body-style": "off",
+    "no-new": "off",
+    "object-curly-newline": "off",
+    "class-methods-use-this": "off",
+    "no-multi-spaces": "off",
+    "quotes": "off",
+    "no-confusing-arrow": "off"
+  },
+  "overrides": [
+    {
+      "files": ["pwa-offline-tasks-1900/sw.js"],
+      "env": { "webextensions": true, "browser": true, "es2021": true },
+      "globals": { "self": "readonly", "caches": "readonly", "fetch": "readonly" }
+    },
+    {
+      "files": ["pwa-offline-tasks-1900/app.js", "pwa-offline-tasks-1900/db.js"],
+      "globals": {
+        "indexedDB": "readonly",
+        "navigator": "readonly",
+        "localStorage": "readonly",
+        "window": "readonly",
+        "document": "readonly",
+        "PerformanceObserver": "readonly",
+        "IntersectionObserver": "readonly",
+        "Request": "readonly",
+        "Response": "readonly",
+        "fetch": "readonly",
+        "caches": "readonly",
+        "useState": "readonly",
+        "useEffect": "readonly",
+        "OfflineDB": "readonly",
+        "confirm": "readonly"
+      }
+    },
+    {
+      "files": ["pwa-offline-1900/sw.js"],
+      "env": { "webextensions": true, "browser": true, "es2021": true },
+      "globals": { "self": "readonly", "caches": "readonly", "fetch": "readonly" }
+    },
+    {
+      "files": ["pwa-offline-1900/app.js", "pwa-offline-1900/db.js"],
+      "globals": { "indexedDB": "readonly", "navigator": "readonly", "localStorage": "readonly", "window": "readonly", "document": "readonly", "PerformanceObserver": "readonly", "IntersectionObserver": "readonly", "Request": "readonly", "Response": "readonly", "fetch": "readonly", "caches": "readonly", "useState": "readonly", "useEffect": "readonly" }
+    },
+    {
+      "files": ["tdd-todolist-1500/tests/*.js"],
+      "env": { "browser": true, "es2021": true },
+      "globals": { "document": "readonly", "window": "readonly" }
+    },
+    {
+      "files": ["tdd-form-validation-1500/tests/*.js"],
+      "env": { "browser": false, "node": true, "es2021": true },
+      "globals": {
+        "describe": "readonly",
+        "test": "readonly",
+        "expect": "readonly",
+        "beforeEach": "readonly"
+      }
+    },
+    {
+      "files": ["examples/mini-zustand.js"],
+      "globals": { "window": "readonly", "localStorage": "readonly" }
+    },
+    {
+      "files": ["examples/performance-utils.js"],
+      "globals": { "document": "readonly", "window": "readonly", "PerformanceObserver": "readonly", "Performance": "readonly", "IntersectionObserver": "readonly", "fetch": "readonly", "useState": "readonly", "useEffect": "readonly" }
+    }
+  ]
+}

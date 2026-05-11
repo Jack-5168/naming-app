@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM 操作专项训练 - 10+ 示例</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+    .example { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .example h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+    .example h4 { color: #666; font-size: 14px; }
+    .btn { padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+    .btn:hover { background: #0056b3; }
+    .btn-danger { background: #dc3545; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-success { background: #28a745; }
+    .item { padding: 10px; margin: 5px; background: #e9ecef; border-radius: 4px; cursor: pointer; }
+    .item:hover { background: #dee2e6; }
+    .item.deleted { background: #f8d7da; text-decoration: line-through; }
+    .item.added { background: #d4edda; }
+    .item.modified { background: #fff3cd; }
+    #delegation-list { list-style: none; padding: 0; }
+    #delegation-list li { padding: 10px; margin: 5px 0; background: #e9ecef; border-radius: 4px; }
+    #diff-output { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+    .performance-stats { background: #d1ecf1; padding: 10px; border-radius: 4px; margin-top: 10px; }
+    .highlight { background: yellow; }
+    input, textarea { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; margin: 5px 0; }
+    .virtual-list { height: 400px; overflow-y: auto; border: 1px solid #ddd; }
+    .virtual-item { height: 50px; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h1>🎯 DOM 操作专项训练 - 原生 DOM API 深度练习</h1>
+  <p>包含 12 个示例：事件委托、DOM diff、性能优化等核心技术</p>
+
+  <!-- 示例 1: 基础 DOM 操作 -->
+  <div class="example" id="ex1">
+    <h3>示例 1: 基础 DOM 创建与操作</h3>
+    <h4>createElement, appendChild, innerHTML vs textContent</h4>
+    <div id="basic-container"></div>
+    <button class="btn" onclick="ex1_addElement()">添加元素</button>
+    <button class="btn btn-danger" onclick="ex1_clear()">清空</button>
+  </div>
+
+  <!-- 示例 2: 事件委托 -->
+  <div class="example" id="ex2">
+    <h3>示例 2: 事件委托 (Event Delegation)</h3>
+    <h4>利用事件冒泡，在父元素上处理子元素事件</h4>
+    <ul id="delegation-list">
+      <li data-id="1">项目 1 - 点击我</li>
+      <li data-id="2">项目 2 - 点击我</li>
+      <li data-id="3">项目 3 - 点击我</li>
+    </ul>
+    <button class="btn" onclick="ex2_addItem()">添加项目</button>
+    <p id="delegation-log">等待操作...</p>
+  </div>
+
+  <!-- 示例 3: DOM Diff 基础 -->
+  <div class="example" id="ex3">
+    <h3>示例 3: DOM Diff 算法基础</h3>
+    <h4>比较虚拟 DOM 树，最小化实际 DOM 操作</h4>
+    <div id="diff-container">
+      <div data-key="a">A</div>
+      <div data-key="b">B</div>
+      <div data-key="c">C</div>
+    </div>
+    <button class="btn" onclick="ex3_shuffle()">打乱顺序</button>
+    <button class="btn" onclick="ex3_add()">添加元素</button>
+    <button class="btn btn-danger" onclick="ex3_remove()">删除元素</button>
+    <pre id="diff-output">等待操作...</pre>
+  </div>
+
+  <!-- 示例 4: 批量 DOM 更新 (DocumentFragment) -->
+  <div class="example" id="ex4">
+    <h3>示例 4: 批量更新 - DocumentFragment</h3>
+    <h4>减少重排重绘，提升性能</h4>
+    <div id="fragment-container"></div>
+    <button class="btn" onclick="ex4_slowAdd()">慢速添加 (逐个)</button>
+    <button class="btn btn-success" onclick="ex4_fastAdd()">快速添加 (Fragment)</button>
+    <div class="performance-stats" id="fragment-stats"></div>
+  </div>
+
+  <!-- 示例 5: 防抖与节流 -->
+  <div class="example" id="ex5">
+    <h3>示例 5: 防抖 (Debounce) 与节流 (Throttle)</h3>
+    <h4>优化高频事件处理</h4>
+    <input type="text" id="debounce-input" placeholder="输入搜索内容 (防抖 500ms)">
+    <p id="debounce-result">等待输入...</p>
+    <div id="scroll-container" style="height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+      <p style="height: 800px;">滚动我来测试节流 (向下滚动)</p>
+    </div>
+    <p id="scroll-result">滚动位置：0</p>
+  </div>
+
+  <!-- 示例 6: 虚拟滚动 -->
+  <div class="example" id="ex6">
+    <h3>示例 6: 虚拟滚动 (Virtual Scrolling)</h3>
+    <h4>只渲染可见区域，处理大数据列表</h4>
+    <div id="virtual-list" class="virtual-list"></div>
+    <div class="performance-stats" id="virtual-stats">渲染了 0 个元素 (总共 10000 个)</div>
+  </div>
+
+  <!-- 示例 7: MutationObserver -->
+  <div class="example" id="ex7">
+    <h3>示例 7: MutationObserver 监听 DOM 变化</h3>
+    <h4>高效监听 DOM 变更</h4>
+    <div id="mutation-target" style="padding: 10px; background: #e9ecef; border-radius: 4px;">
+      原始内容
+    </div>
+    <button class="btn" onclick="ex7_modify()">修改内容</button>
+    <button class="btn" onclick="ex7_addAttr()">添加属性</button>
+    <pre id="mutation-log" style="background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; height: 100px; overflow-y: auto;"></pre>
+  </div>
+
+  <!-- 示例 8: 请求动画帧 (requestAnimationFrame) -->
+  <div class="example" id="ex8">
+    <h3>示例 8: requestAnimationFrame 动画优化</h3>
+    <h4>比 setInterval 更流畅的动画</h4>
+    <div id="animation-box" style="width: 50px; height: 50px; background: #007bff; border-radius: 4px; position: relative;"></div>
+    <button class="btn" onclick="ex8_startRAF()">开始 (RAF)</button>
+    <button class="btn" onclick="ex8_startInterval()">开始 (setInterval)</button>
+    <button class="btn btn-danger" onclick="ex8_stop()">停止</button>
+  </div>
+
+  <!-- 示例 9: 事件监听器管理 -->
+  <div class="example" id="ex9">
+    <h3>示例 9: 事件监听器添加/移除</h3>
+    <h4>避免内存泄漏</h4>
+    <button id="event-btn" class="btn">点击我</button>
+    <p id="event-count">点击次数：0</p>
+    <button class="btn btn-success" onclick="ex9_addListener()">添加监听器</button>
+    <button class="btn btn-danger" onclick="ex9_removeListener()">移除监听器</button>
+  </div>
+
+  <!-- 示例 10: CSS 类操作优化 -->
+  <div class="example" id="ex10">
+    <h3>示例 10: classList API 高效操作</h3>
+    <h4>比 className 更优的类名管理</h4>
+    <div id="class-target" class="item">使用 classList 操作我</div>
+    <button class="btn" onclick="ex10_add()">添加类</button>
+    <button class="btn btn-danger" onclick="ex10_remove()">移除类</button>
+    <button class="btn" onclick="ex10_toggle()">切换类</button>
+    <code id="class-display">class: item</code>
+  </div>
+
+  <!-- 示例 11: 模板克隆优化 -->
+  <div class="example" id="ex11">
+    <h3>示例 11: template 元素克隆优化</h3>
+    <h4>使用 template 标签高效创建重复结构</h4>
+    <template id="card-template">
+      <div class="item">
+        <h4></h4>
+        <p></p>
+      </div>
+    </template>
+    <div id="template-container"></div>
+    <button class="btn" onclick="ex11_addCard()">添加卡片</button>
+    <button class="btn btn-success" onclick="ex11_addMultiple()">批量添加</button>
+  </div>
+
+  <!-- 示例 12: 属性操作与数据属性 -->
+  <div class="example" id="ex12">
+    <h3>示例 12: dataset 与属性操作</h3>
+    <h4>高效读写 data-* 属性</h4>
+    <div id="data-element" 
+         data-user-id="123" 
+         data-user-name="张三" 
+         data-config='{"theme":"dark"}'
+         class="item">
+      悬停查看数据属性
+    </div>
+    <button class="btn" onclick="ex12_read()">读取数据</button>
+    <button class="btn" onclick="ex12_write()">写入数据</button>
+    <pre id="data-output"></pre>
+  </div>
+
+  <script>
+    // ==================== 示例 1: 基础 DOM 操作 ====================
+    function ex1_addElement() {
+      const container = document.getElementById('basic-container');
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.textContent = `元素 ${container.children.length + 1}`;
+      div.onclick = function() {
+        this.classList.toggle('highlight');
+      };
+      container.appendChild(div);
+    }
+    function ex1_clear() {
+      document.getElementById('basic-container').innerHTML = '';
+    }
+
+    // ==================== 示例 2: 事件委托 ====================
+    document.getElementById('delegation-list').addEventListener('click', function(e) {
+      if (e.target.tagName === 'LI') {
+        const id = e.target.dataset.id;
+        document.getElementById('delegation-log').textContent = `点击了项目 ${id}: ${e.target.textContent}`;
+        e.target.classList.toggle('deleted');
+      }
+    });
+    function ex2_addItem() {
+      const list = document.getElementById('delegation-list');
+      const li = document.createElement('li');
+      li.dataset.id = list.children.length + 1;
+      li.textContent = `项目 ${li.dataset.id} - 点击我`;
+      list.appendChild(li);
+    }
+
+    // ==================== 示例 3: DOM Diff 基础 ====================
+    let ex3_oldVDom = null;
+    function ex3_getVDom() {
+      return Array.from(document.querySelectorAll('#diff-container > div')).map(el => ({
+        key: el.dataset.key,
+        text: el.textContent,
+        id: el
+      }));
+    }
+    function ex3_diff(oldVDom, newVDom) {
+      const logs = [];
+      const oldMap = new Map(oldVDom.map((n, i) => [n.key, { ...n, index: i }]));
+      const newMap = new Map(newVDom.map((n, i) => [n.key, { ...n, index: i }]));
+      
+      // 检测删除
+      for (const [key, node] of oldMap) {
+        if (!newMap.has(key)) {
+          logs.push(`❌ 删除: key=${key} "${node.text}"`);
+        }
+      }
+      // 检测添加
+      for (const [key, node] of newMap) {
+        if (!oldMap.has(key)) {
+          logs.push(`✅ 添加: key=${key} "${node.text}"`);
+        }
+      }
+      // 检测移动
+      for (const [key, node] of newMap) {
+        if (oldMap.has(key) && oldMap.get(key).index !== node.index) {
+          logs.push(`🔄 移动: key=${key} 从 ${oldMap.get(key).index} 到 ${node.index}`);
+        }
+      }
+      return logs;
+    }
+    function ex3_shuffle() {
+      ex3_oldVDom = ex3_getVDom();
+      const container = document.getElementById('diff-container');
+      const children = Array.from(container.children);
+      for (let i = children.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        container.appendChild(children[j]);
+      }
+      const newVDom = ex3_getVDom();
+      const logs = ex3_diff(ex3_oldVDom, newVDom);
+      document.getElementById('diff-output').textContent = logs.join('\n') || '无变化';
+    }
+    function ex3_add() {
+      ex3_oldVDom = ex3_getVDom();
+      const container = document.getElementById('diff-container');
+      const div = document.createElement('div');
+      const key = String.fromCharCode(97 + container.children.length);
+      div.dataset.key = key;
+      div.textContent = key.toUpperCase();
+      container.appendChild(div);
+      const logs = ex3_diff(ex3_oldVDom, ex3_getVDom());
+      document.getElementById('diff-output').textContent = logs.join('\n');
+    }
+    function ex3_remove() {
+      ex3_oldVDom = ex3_getVDom();
+      const container = document.getElementById('diff-container');
+      if (container.lastChild) {
+        container.removeChild(container.lastChild);
+      }
+      const logs = ex3_diff(ex3_oldVDom, ex3_getVDom());
+      document.getElementById('diff-output').textContent = logs.join('\n');
+    }
+
+    // ==================== 示例 4: DocumentFragment ====================
+    function ex4_slowAdd() {
+      const container = document.getElementById('fragment-container');
+      container.innerHTML = '';
+      const start = performance.now();
+      for (let i = 0; i < 100; i++) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = `项目 ${i}`;
+        container.appendChild(div); // 每次都触发重排
+      }
+      const end = performance.now();
+      document.getElementById('fragment-stats').textContent = `逐个添加耗时: ${(end - start).toFixed(2)}ms`;
+    }
+    function ex4_fastAdd() {
+      const container = document.getElementById('fragment-container');
+      container.innerHTML = '';
+      const start = performance.now();
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < 100; i++) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = `项目 ${i}`;
+        fragment.appendChild(div);
+      }
+      container.appendChild(fragment); // 只触发一次重排
+      const end = performance.now();
+      document.getElementById('fragment-stats').textContent = `Fragment 添加耗时: ${(end - start).toFixed(2)}ms (快约 ${(ex4_lastSlow / ((end - start)) || 0).toFixed(1)}x)`;
+    }
+    let ex4_lastSlow = 0;
+
+    // ==================== 示例 5: 防抖与节流 ====================
+    function debounce(fn, delay) {
+      let timer = null;
+      return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+      };
+    }
+    function throttle(fn, limit) {
+      let inThrottle = false;
+      return function(...args) {
+        if (!inThrottle) {
+          fn.apply(this, args);
+          inThrottle = true;
+          setTimeout(() => inThrottle = false, limit);
+        }
+      };
+    }
+    const debouncedSearch = debounce(function(value) {
+      document.getElementById('debounce-result').textContent = `搜索: ${value} (防抖后执行)`;
+    }, 500);
+    document.getElementById('debounce-input').addEventListener('input', function(e) {
+      document.getElementById('debounce-result').textContent = `输入中: ${e.target.value}`;
+      debouncedSearch(e.target.value);
+    });
+    const throttledScroll = throttle(function() {
+      document.getElementById('scroll-result').textContent = `滚动位置：${this.scrollTop}px (节流执行)`;
+    }, 100);
+    document.getElementById('scroll-container').addEventListener('scroll', throttledScroll);
+
+    // ==================== 示例 6: 虚拟滚动 ====================
+    const ex6_totalItems = 10000;
+    const ex6_itemHeight = 50;
+    const ex6_visibleCount = 10;
+    function ex6_renderVirtualList() {
+      const container = document.getElementById('virtual-list');
+      const scrollTop = container.scrollTop;
+      const startIndex = Math.floor(scrollTop / ex6_itemHeight);
+      const endIndex = Math.min(startIndex + ex6_visibleCount + 2, ex6_totalItems);
+      
+      container.innerHTML = '';
+      container.style.position = 'relative';
+      
+      // 占位高度
+      const spacerTop = document.createElement('div');
+      spacerTop.style.height = `${startIndex * ex6_itemHeight}px`;
+      container.appendChild(spacerTop);
+      
+      // 可见项
+      for (let i = startIndex; i < endIndex; i++) {
+        const item = document.createElement('div');
+        item.className = 'virtual-item';
+        item.textContent = `项目 ${i}`;
+        item.style.position = 'absolute';
+        item.style.top = `${i * ex6_itemHeight}px`;
+        item.style.left = '0';
+        item.style.right = '0';
+        container.appendChild(item);
+      }
+      
+      document.getElementById('virtual-stats').textContent = `渲染了 ${endIndex - startIndex} 个元素 (总共 ${ex6_totalItems} 个)`;
+    }
+    document.getElementById('virtual-list').addEventListener('scroll', ex6_renderVirtualList);
+    ex6_renderVirtualList(); // 初始渲染
+
+    // ==================== 示例 7: MutationObserver ====================
+    const ex7_observer = new MutationObserver(function(mutations) {
+      const log = document.getElementById('mutation-log');
+      mutations.forEach(mutation => {
+        const entry = `[${new Date().toLocaleTimeString()}] `;
+        if (mutation.type === 'childList') {
+          entry += `子节点变化: +${mutation.addedNodes.length} -${mutation.removedNodes.length}`;
+        } else if (mutation.type === 'attributes') {
+          entry += `属性变化: ${mutation.attributeName}`;
+        } else if (mutation.type === 'characterData') {
+          entry += `文本变化: "${mutation.target.textContent}"`;
+        }
+        log.textContent = entry + '\n' + log.textContent;
+      });
+    });
+    ex7_observer.observe(document.getElementById('mutation-target'), {
+      childList: true,
+      attributes: true,
+      characterData: true,
+      subtree: true
+    });
+    function ex7_modify() {
+      const target = document.getElementById('mutation-target');
+      target.textContent = `修改于 ${new Date().toLocaleTimeString()}`;
+    }
+    function ex7_addAttr() {
+      const target = document.getElementById('mutation-target');
+      target.dataset.timestamp = Date.now();
+    }
+
+    // ==================== 示例 8: requestAnimationFrame ====================
+    let ex8_animationId = null;
+    let ex8_intervalId = null;
+    let ex8_pos = 0;
+    let ex8_direction = 1;
+    function ex8_animateRAF() {
+      const box = document.getElementById('animation-box');
+      ex8_pos += ex8_direction * 2;
+      if (ex8_pos > 300 || ex8_pos < 0) ex8_direction *= -1;
+      box.style.transform = `translateX(${ex8_pos}px)`;
+      ex8_animationId = requestAnimationFrame(ex8_animateRAF);
+    }
+    function ex8_animateInterval() {
+      const box = document.getElementById('animation-box');
+      ex8_pos += ex8_direction * 2;
+      if (ex8_pos > 300 || ex8_pos < 0) ex8_direction *= -1;
+      box.style.transform = `translateX(${ex8_pos}px)`;
+    }
+    function ex8_startRAF() {
+      ex8_stop();
+      ex8_animationId = requestAnimationFrame(ex8_animateRAF);
+    }
+    function ex8_startInterval() {
+      ex8_stop();
+      ex8_intervalId = setInterval(ex8_animateInterval, 16);
+    }
+    function ex8_stop() {
+      if (ex8_animationId) cancelAnimationFrame(ex8_animationId);
+      if (ex8_intervalId) clearInterval(ex8_intervalId);
+      ex8_animationId = ex8_intervalId = null;
+    }
+
+    // ==================== 示例 9: 事件监听器管理 ====================
+    let ex9_clickCount = 0;
+    let ex9_hasListener = false;
+    function ex9_handler() {
+      ex9_clickCount++;
+      document.getElementById('event-count').textContent = `点击次数：${ex9_clickCount}`;
+    }
+    function ex9_addListener() {
+      if (!ex9_hasListener) {
+        document.getElementById('event-btn').addEventListener('click', ex9_handler);
+        ex9_hasListener = true;
+      }
+    }
+    function ex9_removeListener() {
+      if (ex9_hasListener) {
+        document.getElementById('event-btn').removeEventListener('click', ex9_handler);
+        ex9_hasListener = false;
+      }
+    }
+    ex9_addListener(); // 默认添加
+
+    // ==================== 示例 10: classList API ====================
+    function ex10_add() {
+      const el = document.getElementById('class-target');
+      el.classList.add('added', 'modified');
+      ex10_updateDisplay();
+    }
+    function ex10_remove() {
+      const el = document.getElementById('class-target');
+      el.classList.remove('added', 'modified');
+      ex10_updateDisplay();
+    }
+    function ex10_toggle() {
+      const el = document.getElementById('class-target');
+      el.classList.toggle('deleted');
+      ex10_updateDisplay();
+    }
+    function ex10_updateDisplay() {
+      const el = document.getElementById('class-target');
+      document.getElementById('class-display').textContent = `class: ${el.className}`;
+    }
+
+    // ==================== 示例 11: template 克隆 ====================
+    function ex11_addCard() {
+      const template = document.getElementById('card-template');
+      const clone = template.content.cloneNode(true);
+      clone.querySelector('h4').textContent = `卡片 ${document.querySelectorAll('#template-container .item').length + 1}`;
+      clone.querySelector('p').textContent = '这是一个使用 template 创建的卡片';
+      document.getElementById('template-container').appendChild(clone);
+    }
+    function ex11_addMultiple() {
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < 5; i++) {
+        const template = document.getElementById('card-template');
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('h4').textContent = `卡片 ${document.querySelectorAll('#template-container .item').length + 1}`;
+        clone.querySelector('p').textContent = '批量创建的卡片';
+        fragment.appendChild(clone);
+      }
+      document.getElementById('template-container').appendChild(fragment);
+    }
+
+    // ==================== 示例 12: dataset 属性操作 ====================
+    function ex12_read() {
+      const el = document.getElementById('data-element');
+      const output = {
+        userId: el.dataset.userId,
+        userName: el.dataset.userName,
+        config: JSON.parse(el.dataset.config || '{}'),
+        all: { ...el.dataset }
+      };
+      document.getElementById('data-output').textContent = JSON.stringify(output, null, 2);
+    }
+    function ex12_write() {
+      const el = document.getElementById('data-element');
+      el.dataset.lastModified = new Date().toISOString();
+      el.dataset.clickCount = (parseInt(el.dataset.clickCount || '0') + 1).toString();
+      ex12_read();
+    }
+    document.getElementById('data-element').addEventListener('click', ex12_write);
+  </script>
+</body>
+</html>

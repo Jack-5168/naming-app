@@ -1,0 +1,14 @@
+{
+  "name": "tdd-form-validation",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0"
+  }
+}

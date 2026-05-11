@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>CSS Grid 基础与进阶</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 2rem; }
+  h1 { text-align: center; margin-bottom: 2rem; color: #38bdf8; }
+  h2 { color: #38bdf8; margin: 2rem 0 1rem; }
+  .section { margin-bottom: 3rem; }
+
+  /* ===== 示例 11: 基础 Grid 布局 ===== */
+  .grid-basic {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 120px);
+    gap: 12px;
+  }
+  .grid-basic .cell {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-weight: 600; font-size: 1.1rem;
+    transition: all 0.3s;
+  }
+  .grid-basic .cell:hover { background: #334155; transform: scale(1.03); }
+  .grid-basic .cell:nth-child(1) { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+  .grid-basic .cell:nth-child(4) { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+  /* ===== 示例 12: 命名网格区域 ===== */
+  .grid-named {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    grid-template-rows: 60px 1fr 50px;
+    grid-template-areas:
+      "header  header  header"
+      "sidebar main    aside"
+      "footer  footer  footer";
+    gap: 8px; height: 400px;
+  }
+  .grid-named .header  { grid-area: header;  background: #1e3a5f; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .grid-named .sidebar { grid-area: sidebar; background: #1a2332; border-radius: 8px; }
+  .grid-named .main    { grid-area: main;    background: #1e293b; border-radius: 8px; }
+  .grid-named .aside   { grid-area: aside;   background: #2e1065; border-radius: 8px; }
+  .grid-named .footer  { grid-area: footer;  background: #1a2332; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+
+  /* ===== 示例 13: 不等宽 Grid ===== */
+  .grid-uneven {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: 12px;
+  }
+  .grid-uneven .cell {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; padding: 1.5rem; min-height: 100px;
+  }
+  .grid-uneven .cell h3 { color: #7dd3fc; margin-bottom: 0.5rem; font-size: 0.9rem; }
+  .grid-uneven .cell p { color: #94a3b8; font-size: 0.8rem; line-height: 1.6; }
+
+  /* ===== 示例 14: 自动填充网格 ===== */
+  .grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .grid-auto .cell {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; padding: 1.5rem; text-align: center;
+    transition: all 0.3s;
+  }
+  .grid-auto .cell:hover { background: #334155; transform: translateY(-4px); }
+  .grid-auto .cell .num { font-size: 1.5rem; font-weight: 700; color: #38bdf8; }
+  .grid-auto .cell .label { font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; }
+
+  /* ===== 示例 15: Grid 跨列跨行 ===== */
+  .grid-span {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 100px);
+    gap: 12px;
+  }
+  .grid-span .cell {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-weight: 600;
+  }
+  .grid-span .wide   { grid-column: span 2; background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .grid-span .tall   { grid-row: span 2; background: linear-gradient(135deg, #ec4899, #be185d); }
+  .grid-span .big    { grid-column: span 2; grid-row: span 2; background: linear-gradient(135deg, #14b8a6, #0d9488); }
+
+  /* ===== 示例 16: 瀑布流 Grid ===== */
+  .grid-masonry {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 10px;
+    gap: 12px;
+  }
+  .grid-masonry .card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; padding: 1rem;
+  }
+  .grid-masonry .card:nth-child(1) { grid-row: span 8; }
+  .grid-masonry .card:nth-child(2) { grid-row: span 12; }
+  .grid-masonry .card:nth-child(3) { grid-row: span 6; }
+  .grid-masonry .card:nth-child(4) { grid-row: span 10; }
+  .grid-masonry .card:nth-child(5) { grid-row: span 7; }
+  .grid-masonry .card:nth-child(6) { grid-row: span 9; }
+  .grid-masonry .card .title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: #f1f5f9; }
+  .grid-masonry .card .text { font-size: 0.75rem; color: #64748b; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>🔲 CSS Grid 基础与进阶 (示例 11-16)</h1>
+
+<div class="section">
+  <h2>示例 11: 基础 3×2 Grid</h2>
+  <div class="grid-basic">
+    <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+    <div class="cell">4</div><div class="cell">5</div><div class="cell">6</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>示例 12: 命名区域 (grid-template-areas)</h2>
+  <div class="grid-named">
+    <div class="header">Header</div>
+    <div class="sidebar">Sidebar</div>
+    <div class="main">Main</div>
+    <div class="aside">Aside</div>
+    <div class="footer">Footer</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>示例 13: 不等宽列 (fr 单位)</h2>
+  <div class="grid-uneven">
+    <div class="cell"><h3>2fr 宽列</h3><p>占据 2 份空间，适合主内容区</p></div>
+    <div class="cell"><h3>1fr 标准列</h3><p>占据 1 份空间，适合辅助信息</p></div>
+    <div class="cell"><h3>1.5fr 中等列</h3><p>占据 1.5 份空间，平衡主辅内容</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>示例 14: 自动填充 (auto-fill + minmax)</h2>
+  <div class="grid-auto">
+    <div class="cell"><div class="num">128</div><div class="label">用户</div></div>
+    <div class="cell"><div class="num">4.2K</div><div class="label">访问量</div></div>
+    <div class="cell"><div class="num">89%</div><div class="label">转化率</div></div>
+    <div class="cell"><div class="num">23</div><div class="label">订单</div></div>
+    <div class="cell"><div class="num">¥12K</div><div class="label">收入</div></div>
+    <div class="cell"><div class="num">5.0</div><div class="label">评分</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>示例 15: 跨列跨行 (span)</h2>
+  <div class="grid-span">
+    <div class="cell wide">span 2 cols</div>
+    <div class="cell tall">span 2 rows</div>
+    <div class="cell">normal</div>
+    <div class="cell big">span 2×2</div>
+    <div class="cell">normal</div>
+    <div class="cell">normal</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>示例 16: 伪瀑布流 (grid-auto-rows)</h2>
+  <div class="grid-masonry">
+    <div class="card"><div class="title">📱 移动端优先</div><div class="text">先设计小屏，再逐步增强到大屏体验。</div></div>
+    <div class="card"><div class="title">🎨 设计系统</div><div class="text">统一的色彩、间距、字体规范让设计可复用。</div></div>
+    <div class="card"><div class="title">⚡ 性能优化</div><div class="text">减少重排重绘，使用 transform 和 opacity。</div></div>
+    <div class="card"><div class="title">🔲 Grid vs Flex</div><div class="text">Grid 适合二维布局，Flex 适合一维排列。</div></div>
+    <div class="card"><div class="title">🌊 响应式</div><div class="text">media query + clamp() 实现流体排版。</div></div>
+    <div class="card"><div class="title">✨ 动画</div><div class="text">GPU 加速的 transform 动画流畅不卡顿。</div></div>
+  </div>
+</div>
+</body>
+</html>

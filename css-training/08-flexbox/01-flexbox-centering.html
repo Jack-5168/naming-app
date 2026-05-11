@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Flexbox 居中方案大全</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 2rem; }
+  h1 { text-align: center; margin-bottom: 2rem; color: #38bdf8; }
+  .demo { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  .card {
+    width: 260px; height: 200px;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: attr(data-label);
+    position: absolute; top: 8px; left: 12px;
+    font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .box {
+    width: 60px; height: 60px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 14px;
+  }
+
+  /* 1. 经典居中 */
+  .c1 { display: flex; align-items: center; justify-content: center; }
+  .c1 .box { background: #3b82f6; }
+
+  /* 2. margin: auto 居中 */
+  .c2 { display: flex; }
+  .c2 .box { background: #8b5cf6; margin: auto; }
+
+  /* 3. 垂直居中（主轴） */
+  .c3 { display: flex; justify-content: center; align-items: center; }
+  .c3 .box { background: #ec4899; }
+
+  /* 4. 多元素均匀分布 */
+  .c4 { display: flex; justify-content: space-evenly; align-items: center; }
+  .c4 .box { background: #14b8a6; width: 50px; height: 50px; }
+
+  /* 5. 两端对齐 + 垂直居中 */
+  .c5 { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+  .c5 .box { background: #f59e0b; width: 50px; height: 50px; }
+
+  /* 6. 反向排列居中 */
+  .c6 { display: flex; flex-direction: row-reverse; justify-content: center; align-items: center; gap: 10px; }
+  .c6 .box { background: #ef4444; }
+</style>
+</head>
+<body>
+<h1>🎯 Flexbox 居中方案大全</h1>
+<div class="demo">
+  <div class="card c1" data-label="justify + align"><div class="box">1</div></div>
+  <div class="card c2" data-label="margin auto"><div class="box">2</div></div>
+  <div class="card c3" data-label="经典居中"><div class="box">3</div></div>
+  <div class="card c4" data-label="space-evenly"><div class="box">A</div><div class="box">B</div><div class="box">C</div></div>
+  <div class="card c5" data-label="space-between"><div class="box">L</div><div class="box">R</div></div>
+  <div class="card c6" data-label="row-reverse"><div class="box">1</div><div class="box">2</div></div>
+</div>
+</body>
+</html>

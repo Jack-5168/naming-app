@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="description" content="CollabPad — 离线优先协作编辑器，支持 OT 冲突解决 / BroadcastChannel 多标签同步 / Push Notification">
+  <title>CollabPad — 离线协作编辑器</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Preload critical resources -->
+  <link rel="preload" href="app.js" as="script" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+</head>
+<body>
+  <div id="app" class="app-container">
+
+    <!-- 顶部栏 -->
+    <header class="app-bar">
+      <div class="app-bar-left">
+        <h1 class="app-title">🤝 CollabPad</h1>
+        <span id="docTitle" class="doc-title" contenteditable="true" spellcheck="false">未命名文档</span>
+      </div>
+      <div class="app-bar-center">
+        <span id="connectionBadge" class="badge badge-online" title="连接状态">🟢 在线</span>
+        <span id="syncBadge" class="badge badge-synced" title="同步状态">✓ 已同步</span>
+        <span id="collabCount" class="badge badge-collab" title="协作者数量">👤 1</span>
+      </div>
+      <div class="app-bar-right">
+        <button id="shareBtn" class="icon-btn" aria-label="分享" title="分享文档">📤</button>
+        <button id="notifBtn" class="icon-btn" aria-label="通知" title="通知设置">🔔</button>
+        <button id="conflictBtn" class="icon-btn" aria-label="冲突" title="冲突记录">⚡</button>
+        <button id="diagBtn" class="icon-btn" aria-label="诊断" title="PWA 诊断">🔧</button>
+      </div>
+    </header>
+
+    <!-- 协作者面板 -->
+    <div id="collabPanel" class="collab-panel hidden">
+      <h3>在线协作者</h3>
+      <div id="collabList" class="collab-list"></div>
+    </div>
+
+    <!-- 冲突面板 -->
+    <div id="conflictPanel" class="conflict-panel hidden">
+      <h3>冲突记录</h3>
+      <div id="conflictList" class="conflict-list"></div>
+    </div>
+
+    <!-- 主编辑区 -->
+    <div class="main-layout">
+      <!-- 左侧：文档列表 -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <h2>文档</h2>
+          <button id="newDocBtn" class="btn btn-primary" title="新建文档">+ 新建</button>
+        </div>
+        <div id="docList" class="doc-list"></div>
+      </aside>
+
+      <!-- 中间：编辑器 -->
+      <main class="editor-area">
+        <div class="editor-toolbar">
+          <button data-cmd="bold" title="加粗">B</button>
+          <button data-cmd="italic" title="斜体">I</button>
+          <button data-cmd="code" title="代码">{ }</button>
+          <button data-cmd="heading" title="标题">H</button>
+          <button data-cmd="list" title="列表">☰</button>
+          <button data-cmd="quote" title="引用">❝</button>
+          <button data-cmd="link" title="链接">🔗</button>
+          <button data-cmd="image" title="图片">🖼️</button>
+          <span class="toolbar-sep"></span>
+          <span id="wordCount" class="word-count">0 字</span>
+          <span id="cursorPos" class="cursor-pos">Ln 1, Col 1</span>
+        </div>
+        <div class="editor-split">
+          <textarea id="editor" class="editor" placeholder="开始编辑... 支持 Markdown 语法" spellcheck="true"></textarea>
+          <div id="preview" class="preview"></div>
+        </div>
+      </main>
+
+      <!-- 右侧：变更日志 -->
+      <aside id="changeLog" class="change-log">
+        <h3>变更历史</h3>
+        <div id="changeList" class="change-list"></div>
+      </aside>
+    </div>
+
+    <!-- 诊断面板 -->
+    <div id="diagPanel" class="diag-panel hidden">
+      <h3>PWA 诊断</h3>
+      <div id="diagContent" class="diag-content"></div>
+    </div>
+
+    <!-- 通知设置面板 -->
+    <div id="notifPanel" class="notif-panel hidden">
+      <h3>通知设置</h3>
+      <div class="notif-settings">
+        <label>
+          <input type="checkbox" id="notifToggle">
+          启用推送通知
+        </label>
+        <p class="notif-hint">协作事件（新文档/编辑/冲突）将通过 Push Notification 通知</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 离线提示 -->
+  <div id="offlineToast" class="toast toast-hidden">
+    <span>📡 您已离线，更改将在恢复连接后自动同步</span>
+    <button id="toastClose" class="toast-close">✕</button>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

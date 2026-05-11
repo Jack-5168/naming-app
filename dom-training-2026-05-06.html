@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOM 专项训练 — 原生 DOM API 深度练习</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+  h1 { text-align: center; padding: 20px; color: #38bdf8; font-size: 1.6em; }
+  h2 { color: #38bdf8; margin: 20px 0 10px; font-size: 1.2em; }
+  .demo { background: #1e293b; border-radius: 8px; padding: 16px; margin: 12px 0; border-left: 3px solid #38bdf8; }
+  .demo h3 { color: #7dd3fc; margin-bottom: 8px; }
+  .demo p.desc { color: #94a3b8; font-size: 0.9em; margin-bottom: 10px; }
+  .demo .output { background: #0f172a; border-radius: 4px; padding: 10px; margin-top: 8px; min-height: 30px; font-family: monospace; font-size: 0.85em; }
+  .demo .controls { margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  button { background: #38bdf8; color: #0f172a; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+  button:hover { background: #7dd3fc; }
+  button.danger { background: #f87171; }
+  .item { padding: 6px 10px; margin: 3px 0; background: #334155; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+  .item:hover { background: #475569; }
+  .item.active { background: #1d4ed8; color: white; }
+  .item.removing { animation: fadeOut 0.3s forwards; }
+  @keyframes fadeOut { to { opacity: 0; transform: translateX(20px); } }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 4px; }
+  .grid-cell { width: 60px; height: 60px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75em; }
+  .grid-cell.highlight { background: #1d4ed8; }
+  .log { font-size: 0.8em; color: #94a3b8; max-height: 120px; overflow-y: auto; }
+  .log div { padding: 2px 0; border-bottom: 1px solid #1e293b; }
+  .diff-old { color: #f87171; }
+  .diff-new { color: #4ade80; }
+  .diff-same { color: #94a3b8; }
+  .perf-bar { height: 20px; background: #334155; border-radius: 4px; margin: 4px 0; position: relative; }
+  .perf-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .perf-bar-fill.fast { background: #4ade80; }
+  .perf-bar-fill.medium { background: #fbbf24; }
+  .perf-bar-fill.slow { background: #f87171; }
+  .perf-label { position: absolute; right: 8px; top: 2px; font-size: 0.75em; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #334155; }
+  th { color: #38bdf8; font-size: 0.85em; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; }
+  .badge-green { background: #065f46; color: #4ade80; }
+  .badge-red { background: #7f1d1d; color: #f87171; }
+  .badge-yellow { background: #713f12; color: #fbbf24; }
+  .tree-node { margin-left: 20px; padding: 3px 0; }
+  .tree-node::before { content: '├─ '; color: #475569; }
+  .tree-node:last-child::before { content: '└─ '; }
+  .tree-root::before { content: ''; }
+  .observer-box { width: 100px; height: 100px; background: #334155; border-radius: 8px; transition: all 0.3s; }
+  .observer-box.visible { background: #1d4ed8; }
+  #virtual-scroll-container { height: 300px; overflow-y: auto; border: 1px solid #334155; border-radius: 4px; position: relative; }
+  .virtual-item { position: absolute; width: 100%; height: 40px; display: flex; align-items: center; padding: 0 10px; background: #1e293b; border-bottom: 1px solid #334155; }
+  input[type="text"] { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 6px 10px; border-radius: 4px; }
+  input[type="text"]:focus { outline: none; border-color: #38bdf8; }
+  .drag-item { display: inline-block; padding: 8px 16px; background: #334155; border-radius: 4px; margin: 4px; cursor: grab; }
+  .drag-item.dragging { opacity: 0.5; }
+  .drop-zone { min-height: 60px; border: 2px dashed #475569; border-radius: 8px; padding: 8px; margin: 8px 0; }
+  .drop-zone.over { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+</style>
+</head>
+<body>
+
+<h1>🎯 DOM 专项训练 — 原生 DOM API 深度练习</h1>
+
+<!-- ==================== 示例 1: 事件委托 ==================== -->
+<div class="demo">
+  <h3>示例 1: 事件委托 — 动态列表</h3>
+  <p class="desc">利用事件冒泡，在父元素上统一处理子元素点击，避免为每个子元素绑定事件</p>
+  <div class="controls">
+    <button onclick="addListItem()">添加项目</button>
+    <button onclick="clearList()">清空列表</button>
+  </div>
+  <ul id="delegation-list" style="list-style:none; padding-left: 0;">
+    <li class="item" data-id="1">📌 项目 1 — 点击我</li>
+    <li class="item" data-id="2">📌 项目 2 — 点击我</li>
+    <li class="item" data-id="3">📌 项目 3 — 点击我</li>
+  </ul>
+  <div class="output" id="delegation-output">等待点击...</div>
+</div>
+
+<!-- ==================== 示例 2: 事件委托 — 表格行操作 ==================== -->
+<div class="demo">
+  <h3>示例 2: 事件委托 — 表格行操作</h3>
+  <p class="desc">在 table 上监听点击，根据按钮的 data-action 分发不同操作</p>
+  <table id="delegation-table">
+    <thead><tr><th>名称</th><th>状态</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td>任务 A</td><td><span class="badge badge-yellow">待处理</span></td><td><button data-action="complete" style="background:#4ade80;color:#0f172a;padding:2px 8px;font-size:0.8em">完成</button> <button data-action="delete" class="danger" style="padding:2px 8px;font-size:0.8em">删除</button></td></tr>
+      <tr><td>任务 B</td><td><span class="badge badge-yellow">待处理</span></td><td><button data-action="complete" style="background:#4ade80;color:#0f172a;padding:2px 8px;font-size:0.8em">完成</button> <button data-action="delete" class="danger" style="padding:2px 8px;font-size:0.8em">删除</button></td></tr>
+      <tr><td>任务 C</td><td><span class="badge badge-yellow">待处理</span></td><td><button data-action="complete" style="background:#4ade80;color:#0f172a;padding:2px 8px;font-size:0.8em">完成</button> <button data-action="delete" class="danger" style="padding:2px 8px;font-size:0.8em">删除</button></td></tr>
+    </tbody>
+  </table>
+  <div class="output" id="table-output">等待操作...</div>
+</div>
+
+<!-- ==================== 示例 3: 事件委托 — 多级菜单 ==================== -->
+<div class="demo">
+  <h3>示例 3: 事件委托 — 多级菜单</h3>
+  <p class="desc">通过 event.target.closest() 精准定位触发元素，处理嵌套菜单点击</p>
+  <div id="menu-container">
+    <div class="menu-group" data-group="file">
+      <strong>📁 文件</strong>
+      <div class="menu-item" data-action="new">新建</div>
+      <div class="menu-item" data-action="open">打开</div>
+      <div class="menu-item" data-action="save">保存</div>
+    </div>
+    <div class="menu-group" data-group="edit">
+      <strong>✏️ 编辑</strong>
+      <div class="menu-item" data-action="copy">复制</div>
+      <div class="menu-item" data-action="paste">粘贴</div>
+      <div class="menu-item" data-action="cut">剪切</div>
+    </div>
+  </div>
+  <div class="output" id="menu-output">点击菜单项...</div>
+</div>
+
+<!-- ==================== 示例 4: DOM Diff 算法 ==================== -->
+<div class="demo">
+  <h3>示例 4: DOM Diff 算法 — 虚拟 DOM 对比</h3>
+  <p class="desc">实现简易的虚拟 DOM diff，只更新变化的节点，而非全量重渲染</p>
+  <div class="controls">
+    <button onclick="applyDiffV1()">版本 1 (初始)</button>
+    <button onclick="applyDiffV2()">版本 2 (修改)</button>
+    <button onclick="applyDiffV3()">版本 3 (大量变更)</button>
+  </div>
+  <div id="diff-render" class="output"></div>
+  <div id="diff-log" class="log"></div>
+</div>
+
+<!-- ==================== 示例 5: DOM Diff — 列表 diff ==================== -->
+<div class="demo">
+  <h3>示例 5: DOM Diff — 列表对比与最小更新</h3>
+  <p class="desc">对比新旧列表，计算插入、删除、移动操作，只执行最小 DOM 变更</p>
+  <div class="controls">
+    <button onclick="listDiffStep()">下一步变更</button>
+    <button onclick="resetListDiff()">重置</button>
+  </div>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div><strong>旧列表</strong><div id="old-list" class="output"></div></div>
+    <div><strong>新列表</strong><div id="new-list" class="output"></div></div>
+  </div>
+  <div id="list-diff-log" class="log" style="margin-top:8px"></div>
+</div>
+
+<!-- ==================== 示例 6: 性能优化 — DocumentFragment ==================== -->
+<div class="demo">
+  <h3>示例 6: 性能优化 — DocumentFragment 批量插入</h3>
+  <p class="desc">使用 DocumentFragment 减少重排次数，对比直接 appendChild 的性能差异</p>
+  <div class="controls">
+    <button onclick="perfFragment(1000)">插入 1000 项 (Fragment)</button>
+    <button onclick="perfDirect(1000)">插入 1000 项 (直接)</button>
+    <button onclick="perfFragment(10000)">插入 10000 项 (Fragment)</button>
+    <button onclick="perfDirect(10000)">插入 10000 项 (直接)</button>
+    <button onclick="clearPerf()">清空</button>
+  </div>
+  <div id="perf-results"></div>
+  <div id="perf-list" style="max-height:200px; overflow-y:auto; margin-top:8px;"></div>
+</div>
+
+<!-- ==================== 示例 7: 性能优化 — requestAnimationFrame ==================== -->
+<div class="demo">
+  <h3>示例 7: 性能优化 — requestAnimationFrame 动画</h3>
+  <p class="desc">使用 rAF 替代 setInterval 实现流畅动画，避免帧率抖动和内存泄漏</p>
+  <div class="controls">
+    <button onclick="startRAFAnimation()">开始动画</button>
+    <button onclick="stopRAFAnimation()">停止</button>
+    <button onclick="startSetIntervalAnimation()">setInterval 对比</button>
+  </div>
+  <div id="raf-canvas" style="height:100px; background:#0f172a; border-radius:4px; position:relative; overflow:hidden;">
+    <div id="raf-ball" style="width:30px; height:30px; background:#38bdf8; border-radius:50%; position:absolute; top:35px;"></div>
+  </div>
+  <div class="output" id="raf-output">FPS: --</div>
+</div>
+
+<!-- ==================== 示例 8: 性能优化 — 虚拟滚动 ==================== -->
+<div class="demo">
+  <h3>示例 8: 性能优化 — 虚拟滚动 (Virtual Scroll)</h3>
+  <p class="desc">只渲染可视区域内的 DOM 节点，10000 条数据也只需渲染约 10 个元素</p>
+  <div id="virtual-scroll-container"></div>
+  <div class="output" id="virtual-output">渲染节点数: 0 / 总数据: 10000</div>
+</div>
+
+<!-- ==================== 示例 9: 性能优化 — 防抖与节流 ==================== -->
+<div class="demo">
+  <h3>示例 9: 性能优化 — 防抖 (Debounce) 与节流 (Throttle)</h3>
+  <p class="desc">搜索框防抖避免频繁请求，滚动事件节流降低处理频率</p>
+  <div class="controls">
+    <input type="text" id="debounce-input" placeholder="输入搜索关键词..." style="width:200px;">
+    <span id="debounce-count" class="badge badge-green">触发次数: 0</span>
+    <span id="debounce-real" class="badge badge-yellow">实际请求: 0</span>
+  </div>
+  <div id="throttle-scroll-container" style="height:150px; overflow-y:auto; border:1px solid #334155; border-radius:4px; margin:8px 0;">
+    <div style="height:2000px; padding:10px;">
+      <p>↓ 滚动此区域测试节流 ↓</p>
+      <span id="throttle-count" class="badge badge-green">触发次数: 0</span>
+      <span id="throttle-real" class="badge badge-yellow">实际处理: 0</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 示例 10: IntersectionObserver ==================== -->
+<div class="demo">
+  <h3>示例 10: IntersectionObserver — 元素可见性检测</h3>
+  <p class="desc">替代 scroll 事件监听，高效检测元素是否进入视口，用于懒加载/动画触发</p>
+  <div class="controls">
+    <button onclick="addObserverBoxes()">添加观察框</button>
+    <button onclick="disconnectObserver()">断开观察</button>
+  </div>
+  <div id="observer-container" style="height:200px; overflow-y:auto; border:1px solid #334155; border-radius:4px; padding:10px;">
+    <p style="color:#94a3b8;">点击"添加观察框"，然后滚动查看可见性变化</p>
+  </div>
+  <div class="output" id="observer-output">等待观察...</div>
+</div>
+
+<!-- ==================== 示例 11: MutationObserver ==================== -->
+<div class="demo">
+  <h3>示例 11: MutationObserver — DOM 变更监听</h3>
+  <p class="desc">监听 DOM 树变化（子节点增删、属性变更、文本修改），替代 DOMNodeInserted 等废弃事件</p>
+  <div class="controls">
+    <button onclick="startMutationWatch()">开始监听</button>
+    <button onclick="stopMutationWatch()">停止监听</button>
+    <button onclick="mutateDOM()">触发变更</button>
+  </div>
+  <div id="mutation-target" style="padding:10px; background:#0f172a; border-radius:4px; margin:8px 0;">
+    我是被观察的目标元素
+  </div>
+  <div class="log" id="mutation-log"></div>
+</div>
+
+<!-- ==================== 示例 12: 性能优化 — 回流与重绘优化 ==================== -->
+<div class="demo">
+  <h3>示例 12: 性能优化 — 减少回流 (Reflow) 与重绘 (Repaint)</h3>
+  <p class="desc">对比"逐个修改样式"和"批量修改（使用 class/DocumentFragment）"的性能差异</p>
+  <div class="controls">
+    <button onclick="badStyleUpdate()">逐个修改 (差)</button>
+    <button onclick="goodStyleUpdate()">批量修改 (好)</button>
+    <button onclick="resetStyleBoxes()">重置</button>
+  </div>
+  <div id="style-boxes" class="grid"></div>
+  <div class="output" id="style-output">点击按钮测试...</div>
+</div>
+
+<!-- ==================== 示例 13: 拖拽排序 ==================== -->
+<div class="demo">
+  <h3>示例 13: 拖拽排序 — HTML5 Drag & Drop API</h3>
+  <p class="desc">实现拖拽排序，利用事件委托优化 dragover/drop 处理</p>
+  <div class="drop-zone" id="drop-zone">
+    <div class="drag-item" draggable="true" data-order="1">📦 项目 1</div>
+    <div class="drag-item" draggable="true" data-order="2">📦 项目 2</div>
+    <div class="drag-item" draggable="true" data-order="3">📦 项目 3</div>
+    <div class="drag-item" draggable="true" data-order="4">📦 项目 4</div>
+    <div class="drag-item" draggable="true" data-order="5">📦 项目 5</div>
+  </div>
+  <div class="output" id="drag-output">拖拽项目调整顺序...</div>
+</div>
+
+<!-- ==================== 示例 14: DOM 查询性能对比 ==================== -->
+<div class="demo">
+  <h3>示例 14: DOM 查询性能 — querySelector vs getElementById vs getElementsByClassName</h3>
+  <p class="desc">对比不同 DOM 查询方法的性能差异，理解何时使用何种 API</p>
+  <div class="controls">
+    <button onclick="runQueryBench()">运行基准测试</button>
+    <button onclick="generateBenchDOM()">生成测试 DOM</button>
+  </div>
+  <div id="bench-results"></div>
+  <div id="bench-dom" style="display:none;"></div>
+</div>
+
+<!-- ==================== 示例 15: 事件流 — 捕获与冒泡 ==================== -->
+<div class="demo">
+  <h3>示例 15: 事件流 — 捕获阶段 vs 冒泡阶段</h3>
+  <p class="desc">可视化事件传播路径：捕获阶段（外→内）→ 目标 → 冒泡阶段（内→外）</p>
+  <div class="controls">
+    <button onclick="resetEventFlow()">重置</button>
+  </div>
+  <div id="event-flow-outer" style="padding:30px; background:#1e40af; border-radius:8px; text-align:center;">
+    Outer (捕获+冒泡)
+    <div id="event-flow-middle" style="padding:30px; background:#2563eb; border-radius:8px; margin:10px; text-align:center;">
+      Middle (捕获+冒泡)
+      <div id="event-flow-inner" style="padding:30px; background:#3b82f6; border-radius:8px; margin:10px; text-align:center; cursor:pointer;">
+        Inner (点击我!)
+      </div>
+    </div>
+  </div>
+  <div class="log" id="event-flow-log"></div>
+</div>
+
+<script>
+// ============================================================
+//  工具函数
+// ============================================================
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+const log = (el, msg) => { const d = document.createElement('div'); d.textContent = msg; el.appendChild(d); el.scrollTop = el.scrollHeight; };
+
+// ============================================================
+//  示例 1: 事件委托 — 动态列表
+// ============================================================
+let listId = 3;
+const delegationList = $('#delegation-list');
+const delegationOutput = $('#delegation-output');
+
+// 在父元素 ul 上绑定一个事件监听器，处理所有 li 的点击
+delegationList.addEventListener('click', (e) => {
+  const item = e.target.closest('.item');
+  if (!item) return;
+
+  // 如果点击的是删除按钮（未来可扩展）
+  if (e.target.matches('.delete-btn')) {
+    item.classList.add('removing');
+    setTimeout(() => item.remove(), 300);
+    delegationOutput.textContent = `🗑️ 删除了: ${item.textContent.trim()}`;
+    return;
+  }
+
+  // 切换 active 状态
+  $$('.item', delegationList).forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  delegationOutput.textContent = `✅ 选中: [${item.dataset.id}] ${item.textContent.trim()}`;
+});
+
+function addListItem() {
+  listId++;
+  const li = document.createElement('li');
+  li.className = 'item';
+  li.dataset.id = listId;
+  li.innerHTML = `📌 项目 ${listId} — 点击我 <span class="delete-btn" style="float:right;color:#f87171;">✕</span>`;
+  delegationList.appendChild(li);
+  delegationOutput.textContent = `➕ 添加了项目 ${listId}（无需绑定新事件）`;
+}
+
+function clearList() {
+  delegationList.innerHTML = '';
+  listId = 0;
+  delegationOutput.textContent = '🗑️ 列表已清空';
+}
+
+// ============================================================
+//  示例 2: 事件委托 — 表格行操作
+// ============================================================
+const table = $('#delegation-table');
+const tableOutput = $('#table-output');
+
+table.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  const action = btn.dataset.action;
+  const row = btn.closest('tr');
+  const name = row.querySelector('td:first-child').textContent;
+
+  if (action === 'complete') {
+    row.querySelector('.badge').className = 'badge badge-green';
+    row.querySelector('.badge').textContent = '已完成';
+    tableOutput.textContent = `✅ ${name} 已标记为完成`;
+  } else if (action === 'delete') {
+    row.style.animation = 'fadeOut 0.3s forwards';
+    setTimeout(() => row.remove(), 300);
+    tableOutput.textContent = `🗑️ ${name} 已删除`;
+  }
+});
+
+// ============================================================
+//  示例 3: 事件委托 — 多级菜单
+// ============================================================
+const menuContainer = $('#menu-container');
+const menuOutput = $('#menu-output');
+
+menuContainer.addEventListener('click', (e) => {
+  const menuItem = e.target.closest('.menu-item');
+  if (!menuItem) return;
+
+  const group = menuItem.closest('.menu-group').dataset.group;
+  const action = menuItem.dataset.action;
+  const icon = menuItem.closest('.menu-group').querySelector('strong').textContent;
+
+  menuOutput.textContent = `${icon} [${group}] → ${action} (${menuItem.textContent})`;
+  menuItem.style.background = '#1d4ed8';
+  menuItem.style.color = 'white';
+  setTimeout(() => { menuItem.style.background = ''; menuItem.style.color = ''; }, 300);
+});
+
+// ============================================================
+//  示例 4: DOM Diff 算法 — 虚拟 DOM 对比
+// ============================================================
+let currentVTree = null;
+let diffLogEl = $('#diff-log');
+
+// 简易虚拟 DOM 节点
+function h(tag, props, ...children) {
+  return { tag, props: props || {}, children };
+}
+
+// 计算两个虚拟 DOM 树的差异
+function diff(oldNode, newNode) {
+  const patches = [];
+
+  function walk(old, newNode, index) {
+    if (!old && newNode) {
+      patches.push({ type: 'ADD', node: newNode, index });
+      return;
+    }
+    if (old && !newNode) {
+      patches.push({ type: 'REMOVE', index });
+      return;
+    }
+    if (typeof old === 'string' && typeof newNode === 'string') {
+      if (old !== newNode) {
+        patches.push({ type: 'TEXT', text: newNode, index });
+      }
+      return;
+    }
+    if (old.tag !== newNode.tag) {
+      patches.push({ type: 'REPLACE', node: newNode, index });
+      return;
+    }
+
+    // 对比属性
+    const oldProps = old.props || {};
+    const newProps = newNode.props || {};
+    const propPatches = [];
+    for (const key in { ...oldProps, ...newProps }) {
+      if (oldProps[key] !== newProps[key]) {
+        propPatches.push({ key, value: newProps[key] });
+      }
+    }
+    if (propPatches.length) {
+      patches.push({ type: 'PROPS', patches: propPatches, index });
+    }
+
+    // 递归对比子节点
+    const oldChildren = Array.isArray(old.children) ? old.children : [old.children];
+    const newChildren = Array.isArray(newNode.children) ? newNode.children : [newNode.children];
+    const maxLen = Math.max(oldChildren.length, newChildren.length);
+    for (let i = 0; i < maxLen; i++) {
+      walk(oldChildren[i], newChildren[i], index + '-' + i);
+    }
+  }
+
+  walk(oldNode, newNode, 0);
+  return patches;
+}
+
+// 应用差异到真实 DOM
+function applyPatches(root, patches) {
+  let count = 0;
+  patches.forEach(patch => {
+    count++;
+    if (patch.type === 'TEXT') {
+      root.textContent = patch.text;
+    } else if (patch.type === 'PROPS') {
+      patch.patches.forEach(p => {
+        if (p.value) root.setAttribute(p.key, p.value);
+        else root.removeAttribute(p.key);
+      });
+    }
+  });
+  return count;
+}
+
+// 渲染虚拟 DOM 到真实 DOM
+function renderVNode(vNode, container) {
+  if (typeof vNode === 'string') {
+    return document.createTextNode(vNode);
+  }
+  const el = document.createElement(vNode.tag);
+  for (const [key, val] of Object.entries(vNode.props || {})) {
+    el.setAttribute(key, val);
+  }
+  (vNode.children || []).forEach(child => {
+    el.appendChild(renderVNode(child, el));
+  });
+  return el;
+}
+
+function applyDiffV1() {
+  const renderEl = $('#diff-render');
+  renderEl.innerHTML = '';
+  const vTree = h('div', { class: 'card' },
+    h('h3', null, '用户信息'),
+    h('p', null, '姓名: Alice'),
+    h('p', null, '年龄: 25')
+  );
+  currentVTree = vTree;
+  renderEl.appendChild(renderVNode(vTree, renderEl));
+  diffLogEl.innerHTML = '<div class="diff-new">🆕 初始渲染: 创建完整 DOM 树</div>';
+}
+
+function applyDiffV2() {
+  const renderEl = $('#diff-render');
+  const newVTree = h('div', { class: 'card active' },
+    h('h3', null, '用户信息'),
+    h('p', null, '姓名: Alice'),
+    h('p', null, '年龄: 26')  // 只有年龄变了
+  );
+
+  const patches = diff(currentVTree, newVTree);
+  log(diffLogEl, `📊 Diff 结果: ${patches.length} 处变更`);
+  patches.forEach(p => {
+    const cls = p.type === 'TEXT' ? 'diff-new' : 'diff-same';
+    log(diffLogEl, `<span class="${cls}">${p.type}: ${JSON.stringify(p).substring(0, 60)}</span>`);
+  });
+
+  // 简化版：实际应遍历 DOM 应用 patches
+  // 这里演示概念：只变更变化的文本节点
+  const paragraphs = renderEl.querySelectorAll('p');
+  paragraphs[1].textContent = '年龄: 26';
+  renderEl.className = 'card active';
+
+  log(diffLogEl, '<span class="diff-new">✅ 应用 Diff: 只更新了 2 处变化</span>');
+  log(diffLogEl, '<span class="diff-same">对比全量重渲染: 节省了 3 个节点的创建</span>');
+  currentVTree = newVTree;
+}
+
+function applyDiffV3() {
+  const renderEl = $('#diff-render');
+  const newVTree = h('div', { class: 'card premium' },
+    h('h3', null, '用户信息 (VIP)'),
+    h('p', null, '姓名: Alice Chen'),
+    h('p', null, '年龄: 26'),
+    h('p', null, '邮箱: alice@example.com')  // 新增节点
+  );
+
+  const patches = diff(currentVTree, newVTree);
+  log(diffLogEl, `<span class="diff-new">📊 V3 Diff: ${patches.length} 处变更</span>`);
+  patches.forEach(p => log(diffLogEl, `${p.type}: ${JSON.stringify(p).substring(0, 60)}`));
+
+  // 全量重渲染（演示差异）
+  renderEl.innerHTML = '';
+  renderEl.appendChild(renderVNode(newVTree, renderEl));
+  log(diffLogEl, '<span class="diff-same">⚠️ 此例为演示，实际应增量更新</span>');
+  currentVTree = newVTree;
+}
+
+// ============================================================
+//  示例 5: DOM Diff — 列表对比
+// ============================================================
+let listDiffStepNum = 0;
+const listVersions = [
+  ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'],
+  ['Apple', 'Blueberry', 'Cherry', 'Date', 'Fig', 'Grape'],
+  ['Apple', 'Blueberry', 'Dragonfruit', 'Elderberry', 'Fig', 'Grape', 'Honeydew'],
+];
+
+function renderList(container, items, cls) {
+  container.innerHTML = items.map((item, i) =>
+    `<div class="item" data-key="${item}">${item}</div>`
+  ).join('');
+}
+
+function computeListDiff(oldItems, newItems) {
+  const oldSet = new Set(oldItems);
+  const newSet = new Set(newItems);
+  const added = newItems.filter(i => !oldSet.has(i));
+  const removed = oldItems.filter(i => !newSet.has(i));
+  const moved = [];
+
+  // 简化版：检测位置变化
+  oldItems.forEach((item, i) => {
+    const newIndex = newItems.indexOf(item);
+    if (newIndex !== -1 && newIndex !== i) moved.push(item);
+  });
+
+  return { added, removed, moved, same: oldItems.filter(i => newSet.has(i) && !moved.includes(i)) };
+}
+
+function listDiffStep() {
+  if (listDiffStepNum >= listVersions.length - 1) {
+    listDiffStepNum = 0;
+  }
+  listDiffStepNum++;
+
+  const oldItems = listVersions[listDiffStepNum - 1];
+  const newItems = listVersions[listDiffStepNum];
+  const diff = computeListDiff(oldItems, newItems);
+
+  renderList($('#old-list'), oldItems);
+  renderList($('#new-list'), newItems);
+
+  const logEl = $('#list-diff-log');
+  logEl.innerHTML = '';
+  log(logEl, `📊 版本 ${listDiffStepNum} 变更分析:`);
+  if (diff.added.length) log(logEl, `<span class="diff-new">➕ 新增 (${diff.added.length}): ${diff.added.join(', ')}</span>`);
+  if (diff.removed.length) log(logEl, `<span class="diff-old">➖ 删除 (${diff.removed.length}): ${diff.removed.join(', ')}</span>`);
+  if (diff.moved.length) log(logEl, `<span class="diff-same">🔄 移动 (${diff.moved.length}): ${diff.moved.join(', ')}</span>`);
+  log(logEl, `<span class="diff-same">✅ 不变 (${diff.same.length}): 跳过 DOM 更新</span>`);
+}
+
+function resetListDiff() {
+  listDiffStepNum = 0;
+  $('#old-list').innerHTML = '';
+  $('#new-list').innerHTML = '';
+  $('#list-diff-log').innerHTML = '';
+}
+
+// ============================================================
+//  示例 6: 性能优化 — DocumentFragment
+// ============================================================
+function perfFragment(count) {
+  const list = $('#perf-list');
+  list.innerHTML = '';
+  const start = performance.now();
+
+  const fragment = document.createDocumentFragment();
+  for (let i = 0; i < count; i++) {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.textContent = `Item #${i + 1}`;
+    fragment.appendChild(div);
+  }
+  list.appendChild(fragment);
+
+  const elapsed = performance.now() - start;
+  addPerfResult(`DocumentFragment × ${count}`, elapsed);
+}
+
+function perfDirect(count) {
+  const list = $('#perf-list');
+  list.innerHTML = '';
+  const start = performance.now();
+
+  for (let i = 0; i < count; i++) {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.textContent = `Item #${i + 1}`;
+    list.appendChild(div); // 每次触发重排
+  }
+
+  const elapsed = performance.now() - start;
+  addPerfResult(`直接 append × ${count}`, elapsed);
+}
+
+function addPerfResult(label, ms) {
+  const results = $('#perf-results');
+  const bar = document.createElement('div');
+  const cls = ms < 50 ? 'fast' : ms < 200 ? 'medium' : 'slow';
+  const width = Math.min(ms / 5, 100);
+  bar.innerHTML = `
+    <div class="perf-bar">
+      <div class="perf-bar-fill ${cls}" style="width:${width}%"></div>
+      <span class="perf-label">${label}: ${ms.toFixed(2)}ms</span>
+    </div>`;
+  results.appendChild(bar);
+}
+
+function clearPerf() {
+  $('#perf-list').innerHTML = '';
+  $('#perf-results').innerHTML = '';
+}
+
+// ============================================================
+//  示例 7: 性能优化 — requestAnimationFrame
+// ============================================================
+let rafId = null;
+let intervalId = null;
+let ballX = 0;
+let frameCount = 0;
+let lastFpsTime = performance.now();
+const rafOutput = $('#raf-output');
+
+function startRAFAnimation() {
+  stopRAFAnimation();
+  stopSetIntervalAnimation();
+  ballX = 0;
+  frameCount = 0;
+  lastFpsTime = performance.now();
+
+  function animate() {
+    ballX += 2;
+    if (ballX > 400) ballX = -30;
+    $('#raf-ball').style.left = ballX + 'px';
+
+    frameCount++;
+    const now = performance.now();
+    if (now - lastFpsTime >= 1000) {
+      rafOutput.textContent = `rAF FPS: ${frameCount} | 位置: ${ballX}`;
+      frameCount = 0;
+      lastFpsTime = now;
+    }
+    rafId = requestAnimationFrame(animate);
+  }
+  rafId = requestAnimationFrame(animate);
+}
+
+function stopRAFAnimation() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+}
+
+function startSetIntervalAnimation() {
+  stopRAFAnimation();
+  stopSetIntervalAnimation();
+  ballX = 0;
+  frameCount = 0;
+  lastFpsTime = performance.now();
+
+  intervalId = setInterval(() => {
+    ballX += 2;
+    if (ballX > 400) ballX = -30;
+    $('#raf-ball').style.left = ballX + 'px';
+
+    frameCount++;
+    const now = performance.now();
+    if (now - lastFpsTime >= 1000) {
+      rafOutput.textContent = `setInterval FPS: ${frameCount} | 位置: ${ballX} (可能卡顿)`;
+      frameCount = 0;
+      lastFpsTime = now;
+    }
+  }, 16);
+}
+
+function stopSetIntervalAnimation() {
+  if (intervalId) { clearInterval(intervalId); intervalId = null; }
+}
+
+// ============================================================
+//  示例 8: 性能优化 — 虚拟滚动
+// ============================================================
+const virtualData = Array.from({ length: 10000 }, (_, i) => `数据项 #${i + 1}`);
+const ITEM_HEIGHT = 40;
+const CONTAINER_HEIGHT = 300;
+
+function initVirtualScroll() {
+  const container = $('#virtual-scroll-container');
+  const totalHeight = virtualData.length * ITEM_HEIGHT;
+  container.style.height = CONTAINER_HEIGHT + 'px';
+  container.innerHTML = `<div style="height:${totalHeight}px; position:relative;"></div>`;
+  const inner = container.querySelector('div');
+
+  function renderVisible() {
+    const scrollTop = container.scrollTop;
+    const startIndex = Math.floor(scrollTop / ITEM_HEIGHT);
+    const endIndex = Math.min(startIndex + Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT) + 1, virtualData.length);
+
+    // 清除旧节点
+    inner.querySelectorAll('.virtual-item').forEach(el => el.remove());
+
+    let renderedCount = 0;
+    for (let i = startIndex; i < endIndex; i++) {
+      const el = document.createElement('div');
+      el.className = 'virtual-item';
+      el.style.top = (i * ITEM_HEIGHT) + 'px';
+      el.textContent = `${virtualData[i]} (DOM 节点 ${renderedCount + 1})`;
+      inner.appendChild(el);
+      renderedCount++;
+    }
+
+    $('#virtual-output').textContent = `渲染节点: ${renderedCount} / 总数据: ${virtualData.length} | 可视范围: ${startIndex}~${endIndex}`;
+  }
+
+  container.addEventListener('scroll', () => {
+    requestAnimationFrame(renderVisible);
+  });
+  renderVisible();
+}
+
+// ============================================================
+//  示例 9: 防抖与节流
+// ============================================================
+function debounce(fn, delay) {
+  let timer = null;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+function throttle(fn, delay) {
+  let lastTime = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastTime >= delay) {
+      lastTime = now;
+      fn.apply(this, args);
+    }
+  };
+}
+
+let debounceTriggerCount = 0;
+let debounceActualCount = 0;
+const debounceInput = $('#debounce-input');
+
+debounceInput.addEventListener('input', () => {
+  debounceTriggerCount++;
+  $('#debounce-count').textContent = `触发次数: ${debounceTriggerCount}`;
+});
+
+const debouncedSearch = debounce((value) => {
+  debounceActualCount++;
+  $('#debounce-real').textContent = `实际请求: ${debounceActualCount} | 搜索: "${value}"`;
+}, 500);
+
+debounceInput.addEventListener('input', (e) => debouncedSearch(e.target.value));
+
+let throttleTriggerCount = 0;
+let throttleActualCount = 0;
+const throttleContainer = $('#throttle-scroll-container');
+
+const throttledScroll = throttle(() => {
+  throttleActualCount++;
+  $('#throttle-real').textContent = `实际处理: ${throttleActualCount}`;
+}, 200);
+
+throttleContainer.addEventListener('scroll', () => {
+  throttleTriggerCount++;
+  $('#throttle-count').textContent = `触发次数: ${throttleTriggerCount}`;
+  throttledScroll();
+});
+
+// ============================================================
+//  示例 10: IntersectionObserver
+// ============================================================
+let observerInstance = null;
+let observerBoxCount = 0;
+
+function initObserver() {
+  observerInstance = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const output = $('#observer-output');
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        log(output, `👁️ ${entry.target.dataset.label} 进入视口 (ratio: ${entry.intersectionRatio.toFixed(2)})`);
+      } else {
+        entry.target.classList.remove('visible');
+        log(output, `🚫 ${entry.target.dataset.label} 离开视口`);
+      }
+    });
+  }, {
+    root: $('#observer-container'),
+    threshold: [0, 0.25, 0.5, 0.75, 1]
+  });
+}
+
+function addObserverBoxes() {
+  const container = $('#observer-container');
+  for (let i = 0; i < 10; i++) {
+    observerBoxCount++;
+    const box = document.createElement('div');
+    box.className = 'observer-box';
+    box.dataset.label = `观察框 #${observerBoxCount}`;
+    box.style.margin = '10px 0';
+    box.textContent = box.dataset.label;
+    box.style.display = 'flex';
+    box.style.alignItems = 'center';
+    box.style.justifyContent = 'center';
+    box.style.color = '#94a3b8';
+    container.appendChild(box);
+    observerInstance.observe(box);
+  }
+}
+
+function disconnectObserver() {
+  if (observerInstance) {
+    observerInstance.disconnect();
+    $('#observer-output').innerHTML = '<div>🔌 观察器已断开</div>';
+  }
+}
+
+// ============================================================
+//  示例 11: MutationObserver
+// ============================================================
+let mutationObserver = null;
+let mutationWatchCount = 0;
+
+function startMutationWatch() {
+  if (mutationObserver) mutationObserver.disconnect();
+
+  const target = $('#mutation-target');
+  mutationObserver = new MutationObserver((mutations) => {
+    mutations.forEach(m => {
+      mutationWatchCount++;
+      const logEl = $('#mutation-log');
+      let msg = `#${mutationWatchCount} [${m.type}]`;
+      if (m.type === 'childList') {
+        msg += ` 新增:${m.addedNodes.length} 删除:${m.removedNodes.length}`;
+      } else if (m.type === 'attributes') {
+        msg += ` 属性:${m.attributeName}`;
+      } else if (m.type === 'characterData') {
+        msg += ' 文本变更';
+      }
+      log(logEl, msg);
+    });
+  });
+
+  mutationObserver.observe(target, {
+    childList: true,
+    attributes: true,
+    characterData: true,
+    subtree: true
+  });
+
+  $('#mutation-log').innerHTML = '<div>👁️ 开始监听 DOM 变更...</div>';
+}
+
+function stopMutationWatch() {
+  if (mutationObserver) {
+    mutationObserver.disconnect();
+    mutationObserver = null;
+    log($('#mutation-log'), '🛑 停止监听');
+  }
+}
+
+function mutateDOM() {
+  const target = $('#mutation-target');
+  const mutations = [
+    () => { target.textContent = '文本被修改了! ' + Date.now(); },
+    () => { target.setAttribute('data-changed', 'true'); },
+    () => { const span = document.createElement('span'); span.textContent = ' [新子节点]'; target.appendChild(span); },
+    () => { target.style.background = '#1e40af'; },
+    () => { target.removeAttribute('data-changed'); },
+  ];
+  mutations[mutationWatchCount % mutations.length]();
+}
+
+// ============================================================
+//  示例 12: 减少回流与重绘
+// ============================================================
+function generateStyleBoxes() {
+  const container = $('#style-boxes');
+  container.innerHTML = '';
+  for (let i = 0; i < 36; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    cell.textContent = i + 1;
+    cell.dataset.index = i;
+    container.appendChild(cell);
+  }
+}
+generateStyleBoxes();
+
+function badStyleUpdate() {
+  const start = performance.now();
+  const cells = $$('.grid-cell');
+
+  // 每次都读写 DOM，强制回流
+  cells.forEach((cell, i) => {
+    const currentHeight = cell.offsetHeight; // 读取 → 强制回流
+    cell.style.height = (currentHeight + 5) + 'px'; // 写入 → 重排
+    cell.style.background = `hsl(${i * 10}, 70%, 50%)`; // 再次写入
+    cell.textContent = cell.offsetHeight; // 再次读取 → 再次回流!
+  });
+
+  const elapsed = performance.now() - start;
+  $('#style-output').textContent = `❌ 逐个修改: ${elapsed.toFixed(2)}ms (${cells.length} 次强制回流)`;
+}
+
+function goodStyleUpdate() {
+  const start = performance.now();
+  const container = $('#style-boxes');
+
+  // 方案1: 使用 class 批量切换
+  // container.className = 'grid updated';
+
+  // 方案2: 使用 DocumentFragment 批量构建
+  const fragment = document.createDocumentFragment();
+  const cells = $$('.grid-cell');
+  cells.forEach((cell, i) => {
+    cell.style.height = '70px';
+    cell.style.background = `hsl(${i * 10}, 70%, 50%)`;
+    cell.textContent = i + 1;
+    fragment.appendChild(cell);
+  });
+
+  // 一次性插入，只触发一次回流
+  container.innerHTML = '';
+  container.appendChild(fragment);
+
+  const elapsed = performance.now() - start;
+  $('#style-output').textContent = `✅ 批量修改: ${elapsed.toFixed(2)}ms (仅 1 次回流)`;
+}
+
+function resetStyleBoxes() {
+  generateStyleBoxes();
+  $('#style-output').textContent = '已重置';
+}
+
+// ============================================================
+//  示例 13: 拖拽排序
+// ============================================================
+const dropZone = $('#drop-zone');
+let draggedItem = null;
+
+dropZone.addEventListener('dragstart', (e) => {
+  draggedItem = e.target.closest('.drag-item');
+  if (draggedItem) {
+    draggedItem.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedItem.dataset.order);
+  }
+});
+
+dropZone.addEventListener('dragend', (e) => {
+  if (draggedItem) draggedItem.classList.remove('dragging');
+  draggedItem = null;
+  $$('.drag-item', dropZone).forEach(item => item.style.borderTop = '');
+});
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+
+  const afterElement = getDragAfterElement(dropZone, e.clientY);
+  $$('.drag-item', dropZone).forEach(item => item.style.borderTop = '');
+
+  if (afterElement) {
+    afterElement.style.borderTop = '2px solid #38bdf8';
+  }
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const afterElement = getDragAfterElement(dropZone, e.clientY);
+  if (draggedItem && afterElement) {
+    dropZone.insertBefore(draggedItem, afterElement);
+  } else if (draggedItem) {
+    dropZone.appendChild(draggedItem);
+  }
+
+  const order = [...$$('.drag-item', dropZone)].map(el => el.dataset.order).join(' → ');
+  $('#drag-output').textContent = `📋 当前顺序: ${order}`;
+});
+
+function getDragAfterElement(container, y) {
+  const items = [...container.querySelectorAll('.drag-item:not(.dragging)')];
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// ============================================================
+//  示例 14: DOM 查询性能基准测试
+// ============================================================
+function generateBenchDOM() {
+  const container = $('#bench-dom');
+  container.style.display = 'block';
+  container.innerHTML = '';
+
+  // 生成 5000 个元素
+  for (let i = 0; i < 5000; i++) {
+    const div = document.createElement('div');
+    div.className = `bench-item bench-category-${i % 5}`;
+    div.id = `bench-${i}`;
+    div.dataset.type = i % 3 === 0 ? 'active' : 'inactive';
+    div.textContent = `Item ${i}`;
+    container.appendChild(div);
+  }
+
+  $('#bench-results').innerHTML = '<div>✅ 已生成 5000 个测试元素</div>';
+}
+
+function runQueryBench() {
+  const container = $('#bench-dom');
+  if (!container.children.length) {
+    generateBenchDOM();
+  }
+
+  const results = [];
+  const iterations = 1000;
+
+  // getElementById
+  let start = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    document.getElementById('bench-2500');
+  }
+  results.push({ name: 'getElementById', time: performance.now() - start });
+
+  // getElementsByClassName
+  start = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    document.getElementsByClassName('bench-item');
+  }
+  results.push({ name: 'getElementsByClassName', time: performance.now() - start });
+
+  // querySelector
+  start = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    document.querySelector('#bench-2500');
+  }
+  results.push({ name: 'querySelector', time: performance.now() - start });
+
+  // querySelectorAll
+  start = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    document.querySelectorAll('.bench-item');
+  }
+  results.push({ name: 'querySelectorAll', time: performance.now() - start });
+
+  // getElementsByTagName
+  start = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    document.getElementsByTagName('div');
+  }
+  results.push({ name: 'getElementsByTagName', time: performance.now() - start });
+
+  // 渲染结果
+  const maxTime = Math.max(...results.map(r => r.time));
+  const benchResults = $('#bench-results');
+  benchResults.innerHTML = '<h4 style="color:#38bdf8; margin:10px 0;">查询 1000 次性能对比</h4>';
+  results.forEach(r => {
+    const cls = r.time < maxTime * 0.3 ? 'fast' : r.time < maxTime * 0.7 ? 'medium' : 'slow';
+    const width = (r.time / maxTime) * 100;
+    benchResults.innerHTML += `
+      <div class="perf-bar">
+        <div class="perf-bar-fill ${cls}" style="width:${width}%"></div>
+        <span class="perf-label">${r.name}: ${r.time.toFixed(2)}ms</span>
+      </div>`;
+  });
+}
+
+// ============================================================
+//  示例 15: 事件流 — 捕获与冒泡
+// ============================================================
+const eventFlowLog = $('#event-flow-log');
+
+function resetEventFlow() {
+  eventFlowLog.innerHTML = '';
+  log(eventFlowLog, '🔄 事件流已重置，点击 Inner 查看传播过程');
+}
+
+function addFlowListener(el, name, phase) {
+  el.addEventListener('click', (e) => {
+    const phaseStr = phase === true ? '🔽 捕获' : '🔼 冒泡';
+    log(eventFlowLog, `${phaseStr} | ${name} | target: ${e.target.id || 'body'}`);
+  }, phase);
+}
+
+const outer = $('#event-flow-outer');
+const middle = $('#event-flow-middle');
+const inner = $('#event-flow-inner');
+
+// 捕获阶段 (true)
+addFlowListener(outer, 'Outer', true);
+addFlowListener(middle, 'Middle', true);
+// inner 不设置捕获，只冒泡
+
+// 冒泡阶段 (false)
+addFlowListener(inner, 'Inner', false);
+addFlowListener(middle, 'Middle', false);
+addFlowListener(outer, 'Outer', false);
+
+resetEventFlow();
+
+// ============================================================
+//  初始化
+// ============================================================
+initObserver();
+initVirtualScroll();
+
+// 扩展 $$ 支持上下文
+function $$(sel, ctx = document) {
+  return ctx.querySelectorAll(sel);
+}
+</script>
+
+</body>
+</html>

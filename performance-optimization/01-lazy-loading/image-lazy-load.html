@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片懒加载示例</title>
+  <style>
+    .image-container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    .lazy-image {
+      width: 100%;
+      height: 300px;
+      background: #f0f0f0;
+      margin: 20px 0;
+      display: block;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+    .lazy-image.loaded {
+      opacity: 1;
+    }
+    .placeholder {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="image-container">
+    <h1>图片懒加载示例</h1>
+    <p>向下滚动查看图片加载效果</p>
+    
+    <!-- 方法 1: 原生 loading="lazy" (最简单) -->
+    <img class="lazy-image" loading="lazy" 
+         src="https://picsum.photos/800/300?random=1" 
+         alt="原生懒加载示例">
+    
+    <!-- 方法 2: Intersection Observer (推荐) -->
+    <img class="lazy-image observer-lazy" 
+         data-src="https://picsum.photos/800/300?random=2" 
+         alt="Intersection Observer 懒加载">
+    
+    <!-- 方法 3: 滚动事件 (传统方法) -->
+    <img class="lazy-image scroll-lazy" 
+         data-src="https://picsum.photos/800/300?random=3" 
+         alt="滚动事件懒加载">
+    
+    <!-- 占位内容让页面可滚动 -->
+    <div style="height: 1500px;"></div>
+  </div>
+
+  <script>
+    // ============================================
+    // 方法 1: 原生 loading="lazy"
+    // 优点：浏览器原生支持，无需 JS
+    // 缺点：旧浏览器不支持，自定义能力有限
+    // ============================================
+    // 已在 HTML 中使用 loading="lazy" 属性
+
+    // ============================================
+    // 方法 2: Intersection Observer API (推荐)
+    // 优点：性能好，API 简洁，支持自定义
+    // 缺点：需要 polyfill 支持旧浏览器
+    // ============================================
+    
+    const observerImages = document.querySelectorAll('.observer-lazy');
+    
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          const src = img.dataset.src;
+          
+          // 创建新图片预加载
+          const tempImg = new Image();
+          tempImg.onload = () => {
+            img.src = src;
+            img.classList.add('loaded');
+            img.classList.remove('placeholder');
+          };
+          tempImg.src = src;
+          
+          // 停止观察
+          observer.unobserve(img);
+        }
+      });
+    }, {
+      rootMargin: '50px 0px', // 提前 50px 开始加载
+      threshold: 0.01
+    });
+    
+    observerImages.forEach(img => {
+      imageObserver.observe(img);
+    });
+
+    // ============================================
+    // 方法 3: 滚动事件 + 节流 (传统方法)
+    // 优点：兼容性好
+    // 缺点：性能较差，需要手动管理
+    // ============================================
+    
+    function throttle(fn, delay) {
+      let lastCall = 0;
+      return function(...args) {
+        const now = Date.now();
+        if (now - lastCall >= delay) {
+          lastCall = now;
+          fn.apply(this, args);
+        }
+      };
+    }
+    
+    const scrollLazyImages = document.querySelectorAll('.scroll-lazy');
+    
+    function checkScrollLazy() {
+      const viewportHeight = window.innerHeight;
+      
+      scrollLazyImages.forEach(img => {
+        const rect = img.getBoundingClientRect();
+        
+        // 如果图片进入视口
+        if (rect.top < viewportHeight && rect.bottom > 0) {
+          const src = img.dataset.src;
+          const tempImg = new Image();
+          tempImg.onload = () => {
+            img.src = src;
+            img.classList.add('loaded');
+          };
+          tempImg.src = src;
+        }
+      });
+    }
+    
+    window.addEventListener('scroll', throttle(checkScrollLazy, 200));
+    checkScrollLazy(); // 初始检查
+  </script>
+</body>
+</html>

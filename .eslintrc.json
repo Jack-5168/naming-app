@@ -1,0 +1,92 @@
+{
+  "extends": ["airbnb-base"],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "rules": {
+    "no-console": "off",
+    "no-alert": "off",
+    "no-param-reassign": "off",
+    "prefer-template": "off",
+    "prefer-destructuring": "off",
+    "object-shorthand": "off",
+    "prefer-arrow-callback": "off",
+    "func-names": "off",
+    "vars-on-top": "off",
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-plusplus": "off",
+    "no-continue": "off",
+    "no-underscore-dangle": "off",
+    "import/prefer-default-export": "off",
+    "no-nested-ternary": "off",
+    "no-restricted-syntax": "off",
+    "guard-for-in": "off",
+    "no-use-before-define": "off",
+    "consistent-return": "off",
+    "default-case": "off",
+    "no-unused-expressions": "error",
+    "max-classes-per-file": "off",
+    "import/extensions": ["error", "ignorePackages"],
+    "default-param-last": "off"
+  },
+  "overrides": [
+    {
+      "files": ["training/pwa-offline-1900/sw.js"],
+      "globals": {
+        "self": "readonly",
+        "clients": "readonly",
+        "caches": "readonly",
+        "indexedDB": "readonly",
+        "Request": "readonly",
+        "Response": "readonly",
+        "fetch": "readonly"
+      },
+      "rules": {
+        "no-restricted-globals": "off"
+      }
+    },
+    {
+      "files": ["training/pwa-offline-1900/app.js"],
+      "globals": {
+        "db": "readonly",
+        "confirm": "readonly"
+      }
+    },
+    {
+      "files": ["training/pwa-offline-1900/db.js"],
+      "globals": {
+        "indexedDB": "readonly"
+      }
+    },
+    {
+      "files": ["training/examples/performance-utils.js"],
+      "globals": {
+        "useState": "readonly",
+        "useEffect": "readonly",
+        "useCallback": "readonly",
+        "useRef": "readonly",
+        "useMemo": "readonly"
+      }
+    },
+    {
+      "files": ["training/tdd-training/tests/*.js"],
+      "env": {
+        "browser": false
+      },
+      "globals": {
+        "describe": "readonly",
+        "it": "readonly",
+        "expect": "readonly",
+        "beforeEach": "readonly"
+      }
+    }
+  ],
+  "ignorePatterns": ["node_modules/", "backup-v29/"]
+}

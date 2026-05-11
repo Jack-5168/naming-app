@@ -1,0 +1,21 @@
+{
+  "name": "wenchang-naming",
+  "version": "30.0.0",
+  "description": "文昌赐名 - 专业起名机构",
+  "scripts": {
+    "lint": "eslint js/ web-v2/js/",
+    "lint:fix": "eslint js/ web-v2/js/ --fix"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "vercel": "^52.0.0"
+  },
+  "dependencies": {
+    "pdf-parse": "^2.4.5"
+  }
+}

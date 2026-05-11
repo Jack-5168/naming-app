@@ -1,0 +1,13 @@
+{
+  "name": "tdd-v7-testing-library",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0"
+  }
+}

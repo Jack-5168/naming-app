@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#3b82f6">
+  <meta name="description" content="WikiBase — 离线优先的 Markdown 知识库">
+  <title>WikiBase — 离线知识库</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+  <!-- App Shell 架构：壳与内容分离 -->
+  <div id="app">
+    <!-- 顶部导航栏 -->
+    <header class="app-bar">
+      <button class="menu-btn" id="menuBtn" aria-label="菜单">☰</button>
+      <h1 class="app-title">WikiBase</h1>
+      <div class="app-actions">
+        <span id="syncStatus" class="sync-badge" title="同步状态">🟢 在线</span>
+        <button id="searchBtn" class="icon-btn" aria-label="搜索">🔍</button>
+        <button id="newDocBtn" class="icon-btn" aria-label="新建文档">📝</button>
+        <button id="settingsBtn" class="icon-btn" aria-label="设置">⚙️</button>
+      </div>
+    </header>
+
+    <!-- 搜索栏（默认隐藏） -->
+    <div id="searchBar" class="search-bar hidden">
+      <input type="search" id="searchInput" placeholder="全文搜索...（支持中文/英文）" autocomplete="off">
+      <button id="searchClose" class="icon-btn" aria-label="关闭搜索">✕</button>
+    </div>
+
+    <!-- 主布局 -->
+    <div class="main-layout">
+      <!-- 侧边栏 -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <h2>文档</h2>
+          <span id="docCount" class="count-badge">0</span>
+        </div>
+        <nav id="docList" class="doc-list">
+          <!-- 动态生成 -->
+        </nav>
+        <div class="sidebar-footer">
+          <button id="exportBtn" class="sidebar-btn">📦 导出数据</button>
+          <button id="importBtn" class="sidebar-btn">📂 导入数据</button>
+          <button id="storageBtn" class="sidebar-btn">💾 存储信息</button>
+        </div>
+      </aside>
+
+      <!-- 标签过滤 -->
+      <div id="tagFilter" class="tag-filter">
+        <span class="tag-filter-label">标签:</span>
+        <div id="tagList" class="tag-list">
+          <!-- 动态生成 -->
+        </div>
+      </div>
+
+      <!-- 内容区 -->
+      <main id="contentArea" class="content-area">
+        <!-- 欢迎页（无文档时显示） -->
+        <div id="welcomePage" class="welcome-page">
+          <div class="welcome-icon">📚</div>
+          <h2>欢迎使用 WikiBase</h2>
+          <p>离线优先的 Markdown 知识库</p>
+          <div class="feature-list">
+            <div class="feature">🔍 全文搜索</div>
+            <div class="feature">📷 图片附件</div>
+            <div class="feature">📜 版本历史</div>
+            <div class="feature">📤 系统分享</div>
+            <div class="feature">📦 数据导出</div>
+            <div class="feature">🔌 完全离线</div>
+          </div>
+          <button id="welcomeNewDoc" class="primary-btn">创建第一篇文档</button>
+        </div>
+
+        <!-- 编辑器 -->
+        <div id="editorView" class="editor-view hidden">
+          <div class="editor-header">
+            <input type="text" id="docTitle" class="doc-title-input" placeholder="文档标题...">
+            <div class="editor-actions">
+              <button id="addTagBtn" class="editor-btn" title="添加标签">🏷️</button>
+              <button id="attachImgBtn" class="editor-btn" title="插入图片">📷</button>
+              <button id="previewBtn" class="editor-btn" title="预览">👁️</button>
+              <button id="historyBtn" class="editor-btn" title="版本历史">📜</button>
+              <button id="saveBtn" class="primary-btn">保存</button>
+            </div>
+          </div>
+          <div id="tagContainer" class="tag-container">
+            <!-- 标签标签 -->
+          </div>
+          <div class="editor-body">
+            <textarea id="editor" class="markdown-editor" placeholder="开始编写 Markdown...&#10;&#10;支持标题、列表、代码块、表格等常见语法"></textarea>
+            <div id="preview" class="markdown-preview hidden"></div>
+          </div>
+        </div>
+
+        <!-- 阅读模式 -->
+        <div id="readerView" class="reader-view hidden">
+          <div class="reader-header">
+            <h2 id="readerTitle"></h2>
+            <div class="reader-actions">
+              <span id="readerMeta" class="reader-meta"></span>
+              <button id="editBtn" class="editor-btn">✏️ 编辑</button>
+              <button id="deleteBtn" class="danger-btn">🗑️ 删除</button>
+            </div>
+          </div>
+          <div id="readerTags" class="reader-tags"></div>
+          <article id="readerContent" class="reader-content"></article>
+        </div>
+
+        <!-- 版本历史面板 -->
+        <div id="historyPanel" class="history-panel hidden">
+          <div class="history-header">
+            <h3>版本历史</h3>
+            <button id="historyClose" class="icon-btn">✕</button>
+          </div>
+          <div id="versionList" class="version-list"></div>
+          <div id="diffView" class="diff-view hidden">
+            <div class="diff-header">
+              <span>变更差异</span>
+              <button id="restoreBtn" class="primary-btn">恢复此版本</button>
+            </div>
+            <pre id="diffContent"></pre>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 设置面板 -->
+    <div id="settingsPanel" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>设置</h3>
+          <button id="settingsClose" class="icon-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-group">
+            <label>
+              <input type="checkbox" id="autoSave" checked>
+              自动保存（每 30 秒）
+            </label>
+          </div>
+          <div class="setting-group">
+            <label>编辑器字体大小</label>
+            <select id="editorFontSize">
+              <option value="14">14px</option>
+              <option value="16" selected>16px</option>
+              <option value="18">18px</option>
+              <option value="20">20px</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label>主题</label>
+            <select id="themeSelect">
+              <option value="dark" selected>深色</option>
+              <option value="light">浅色</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <button id="clearCacheBtn" class="danger-btn">清除缓存</button>
+          </div>
+          <div class="setting-group">
+            <button id="registerPushBtn" class="secondary-btn">启用推送通知</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 存储信息面板 -->
+    <div id="storagePanel" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>存储信息</h3>
+          <button id="storageClose" class="icon-btn">✕</button>
+        </div>
+        <div class="modal-body" id="storageInfo">
+          <!-- 动态填充 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 标签输入弹窗 -->
+    <div id="tagModal" class="modal hidden">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>添加标签</h3>
+          <button id="tagModalClose" class="icon-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="tagInput" class="text-input" placeholder="输入标签名，回车添加">
+          <div id="existingTags" class="existing-tags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- 离线指示器 -->
+    <div id="offlineBanner" class="offline-banner hidden">
+      ⚠️ 离线模式 — 更改将在联网后自动同步
+    </div>
+
+    <!-- 安装提示 -->
+    <div id="installBanner" class="install-banner hidden">
+      <span>📲 安装 WikiBase 到桌面</span>
+      <button id="installBtn" class="primary-btn">安装</button>
+      <button id="installDismiss" class="icon-btn">✕</button>
+    </div>
+
+    <!-- 隐藏的文件输入 -->
+    <input type="file" id="fileInput" class="hidden" accept=".json">
+    <input type="file" id="imageInput" class="hidden" accept="image/*">
+  </div>
+
+  <!-- 离线兜底页面（由 SW 提供） -->
+  <template id="offlineTemplate">
+    <div class="offline-page">
+      <div class="offline-icon">📡</div>
+      <h2>网络连接已断开</h2>
+      <p>WikiBase 的核心功能仍可离线使用。</p>
+      <p>您可以浏览、编辑文档，搜索内容。</p>
+      <button onclick="location.reload()">重新连接</button>
+    </div>
+  </template>
+
+  <!-- Markdown 渲染引擎（离线缓存） -->
+  <script src="https://unpkg.com/marked/marked.min.js" defer></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

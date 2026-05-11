@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4F46E5">
+  <meta name="description" content="OfflineNotes - 离线可用的笔记应用">
+  <title>OfflineNotes - 离线笔记</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+</head>
+<body>
+  <!-- 离线状态提示 -->
+  <div id="online-status" class="status-bar offline">
+    <span id="status-icon">⚠️</span>
+    <span id="status-text">当前离线，数据将在恢复后同步</span>
+  </div>
+
+  <div class="app-container">
+    <!-- 头部 -->
+    <header class="app-header">
+      <h1>📝 OfflineNotes</h1>
+      <p class="subtitle">离线优先 · 数据永存</p>
+      <div class="header-actions">
+        <button id="btn-sync" class="btn btn-secondary" title="手动同步">
+          🔄 同步
+        </button>
+        <button id="btn-install" class="btn btn-primary" style="display:none;">
+          📲 安装应用
+        </button>
+      </div>
+    </header>
+
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="🔍 搜索笔记..." autocomplete="off">
+    </div>
+
+    <!-- 新建笔记按钮 -->
+    <button id="btn-new-note" class="btn btn-primary btn-large">
+      ✏️ 新建笔记
+    </button>
+
+    <!-- 笔记列表 -->
+    <div id="notes-list" class="notes-list">
+      <!-- 动态渲染 -->
+    </div>
+
+    <!-- 笔记编辑器模态框 -->
+    <div id="editor-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="editor-title">新建笔记</h2>
+          <button id="btn-close-editor" class="btn-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="note-title-input" placeholder="笔记标题" class="input-large">
+          <textarea id="note-content-input" placeholder="开始书写..." rows="10"></textarea>
+          <div class="editor-footer">
+            <span id="note-meta" class="note-meta"></span>
+            <div class="editor-actions">
+              <button id="btn-delete-note" class="btn btn-danger" style="display:none;">
+                🗑️ 删除
+              </button>
+              <button id="btn-save-note" class="btn btn-primary">
+                💾 保存
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 同步队列指示器 -->
+    <div id="sync-queue" class="sync-queue" style="display:none;">
+      <span>📤</span>
+      <span id="sync-count">0</span> 条待同步
+    </div>
+  </div>
+
+  <!-- 脚标 -->
+  <footer class="app-footer">
+    <p>Powered by Service Worker + Cache API + IndexedDB</p>
+    <p id="sw-status">Service Worker: 检测中...</p>
+  </footer>
+
+  <!-- 核心脚本 -->
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
