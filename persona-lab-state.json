@@ -51,7 +51,9 @@
       "chore: 夜间审计 + 新增测试 + 代码提取",
       "feat: Day 2 - 支付前端 (支付页/结果页/失败处理)",
       "feat: Step 1 - 错误处理统一工具 (sendSuccess/sendError/sendNotFound 等)",
-      "feat: Step 2-3 - 错误处理统一 (262 处迁移完成)"
+      "feat: Step 2-3 - 错误处理统一 (262 处迁移完成)",
+      "docs: 产品审查报告 - 交互体验/用户体验/商业化",
+      "feat: 产品优化 - 交互体验/用户体验/商业化"
     ]
   },
   "phase6Plan": {
