@@ -209,7 +209,7 @@ Form.Actions = Actions;
 
 // ============ useForm Hook ============
 
-export function useForm<T extends Record<string, any>>(options?: {
+export function useForm<T extends Record<string, unknown>>(options?: {
   initialValues?: T;
   onSubmit?: (values: T) => void | Promise<void>;
   validate?: (values: T) => Record<string, string>;
@@ -219,14 +219,13 @@ export function useForm<T extends Record<string, any>>(options?: {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = useCallback((name: keyof T, value: any) => {
+  const handleChange = useCallback((name: keyof T, value: unknown) => {
     setValues(prev => ({ ...prev, [name]: value }));
     // 清除错误
     if (errors[name]) {
       setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[name as string];
-        return newErrors;
+        const { [name]: _, ...rest } = prev;
+        return rest;
       });
     }
   }, [errors]);

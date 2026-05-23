@@ -2,7 +2,6 @@
  * 报告可视化组件
  * 负责 16 页报告的分页展示、导航、保存和分享
  */
-
 import React, { useState, useEffect, useRef, memo } from 'react';
 
 interface ReportSection {
