@@ -1,109 +1,54 @@
 {
-  "project": "人格探索局 (Persona Lab)",
-  "lastUpdated": "2026-05-12T23:00:00+08:00",
-  "currentPhase": "Phase 6 - 上线准备",
-  "currentDay": 3,
-  "currentDayDate": "2026-05-14",
-  "phases": {
-    "Phase 1": { "status": "completed", "desc": "MVP 核心", "completedDate": "2026-04-21" },
-    "Phase 2": { "status": "completed", "desc": "集成 + 优化", "completedDate": "2026-04-22" },
-    "Phase 3": { "status": "completed", "desc": "UI/UX 重构", "completedDate": "2026-05-07" },
-    "Phase 4": { "status": "completed", "desc": "商业化 + 增长", "completedDate": "2026-05-09" },
-    "Phase 5": { "status": "completed", "desc": "会员/增长/分析/性能/内容/通知/测试", "completedDate": "2026-05-11", "days": "8天计划1天完成", "commits": 12, "newFiles": 30, "newLines": "~8000+" },
-    "Phase 6": { "status": "in-progress", "desc": "上线准备 (支付+安全+上架)", "startDate": "2026-05-12", "targetEnd": "2026-05-25" }
-  },
-  "today": {
-    "date": "2026-05-12",
-    "summary": "Phase 6 Day 1+2 — 安全+DB+支付前端+错误处理统一+产品优化，一天完成两天任务",
-    "scoreImprovement": "5.2 → 7.7 (+2.5), 安全性 5.2 → 8.5 (+3.3)",
-    "p0Fixed": [
-      "✅ createSession: req.body.userId → JWT req.user.id（水平越权漏洞修复）",
-      "✅ loginRateLimiter: new Map() 移到函数外，限流生效",
-      "✅ 支付签名: MD5 → HMAC-SHA256",
-      "✅ authMiddleware: 消除 middleware/auth.ts 和 security/auth.ts 重复",
-      "✅ .env 已在 .gitignore，未提交到 Git"
-    ],
-    "p1Fixed": [
-      "✅ compatibility-analyzer: || 50 → ?? 50（修复 0 值被吞）",
-      "✅ cat-engine: 分数钳位到 0-100 范围",
-      "✅ growth.ts: 替换 Math.random() mock 为真实计算"
-    ],
-    "dbFixed": [
-      "✅ 迁移历史分歧解决（清除旧记录，标记 001/002/003 为已应用）",
-      "✅ schema.prisma: @db.String → @db.Text",
-      "✅ schema.prisma: @default(sent) → @default(\"sent\")",
-      "✅ schema.prisma: 添加 User 模型反向关联字段",
-      "✅ 10 张缺失表创建完成 (prisma db push)",
-      "✅ VACUUM ANALYZE 执行完毕"
-    ],
-    "errorHandlingUnified": {
-      "step1": "✅ 创建 server/src/utils/response.ts (sendSuccess/sendBadRequest 等)",
-      "step2": "✅ 迁移 14 个 controllers (233 处)",
-      "step3": "✅ 迁移 4 个 routes (29 处)",
-      "total": "262 处全部迁移完成"
+  "lastUpdated": "2026-05-23T22:00:00+08:00",
+  "summaryDate": "2026-05-23",
+  "checks": {
+    "build": {
+      "time": "22:00",
+      "status": "passed",
+      "score": 4,
+      "issues": []      
     },
-    "productOptimized": [
-      "✅ 首页 — 首次用户引导 + 简化 CTA + 真实社会证明",
-      "✅ 会员页 — 价格锚点 + 社会证明 + 限时优惠倒计时",
-      "✅ 测试页 — 移除实时能力估计 + 缩短动画 + 跳过按钮",
-      "✅ 用户页 — 测试历史列表 + 成就系统入口"
-    ],
-    "p0Remaining": [
-      "🟡 WECHAT_APP_SECRET URL 传输（微信 API 规范要求，非我们可控）",
-      "🟡 llm-report.ts token 限流（代码审查后实际逻辑正确，非 bug）"
-    ],
-    "p2Remaining": [
-      "🟡 sendForbidden 错误码修正 (AUTH_REQUIRED → FORBIDDEN)",
-      "🟡 支付页 productId 为空时无提示"
-    ],
-    "p3Remaining": [
-      "🟢 asyncHandler 重复定义"
-    ],
-    "commits": [
-      "fix: P0 安全修复 - createSession JWT userId + 登录限流器 + 支付HMAC-SHA256",
-      "fix: DB 迁移历史修复 + 10 张缺失表创建",
-      "chore: 夜间审计 + 新增测试 + 代码提取",
-      "feat: Day 2 - 支付前端 (支付页/结果页/失败处理)",
-      "feat: Step 1 - 错误处理统一工具",
-      "feat: Step 2-3 - 错误处理统一 (262 处迁移完成)",
-      "docs: 产品审查报告 - 交互体验/用户体验/商业化",
-      "feat: 产品优化 - 交互体验/用户体验/商业化"
-    ]
-  },
-  "phase6Plan": {
-    "week1": {
-      "range": "5/12 - 5/18",
-      "focus": "支付 + 安全",
-      "tasks": [
-        { "day": 1, "date": "5/12", "task": "P0 安全修复 + DB 迁移修复 + 代码质量修复", "status": "completed" },
-        { "day": 2, "date": "5/12", "task": "支付前端 (支付页/结果页/失败处理) + 错误处理统一 (262处) + 产品优化", "status": "completed" },
-        { "day": 3, "date": "5/14", "task": "安全加固 (JWT 轮换/加密/SQL注入/XSS)" },
-        { "day": 4, "date": "5/15", "task": "渗透测试 (漏洞扫描/权限测试/数据泄露)" },
-        { "day": 5, "date": "5/16", "task": "性能压测 (并发/DB/API 响应)" },
-        { "day": 6, "date": "5/17", "task": "小程序配置优化 (分包/性能)" },
-        { "day": 7, "date": "5/18", "task": "文档整理 (用户手册/运维/API)" }
-      ]
+    "codeQuality": {
+      "time": "22:00",
+      "status": "passed",
+      "score": 7,
+      "issues": []
     },
-    "week2": {
-      "range": "5/19 - 5/25",
-      "focus": "上架 + 运营",
-      "tasks": [
-        { "day": 8, "date": "5/19", "task": "上架材料 (描述/截图/视频/隐私政策)" },
-        { "day": 9, "date": "5/20", "task": "提交微信审核 + 跟进" }
-      ]
+    "frontend": {
+      "time": "22:00",
+      "status": "passed",
+      "score": 6.5,
+      "issues": []
+    },
+    "integration": {
+      "time": "07:00",
+      "status": "passed",
+      "score": 7.5,
+      "issues": []
+    },
+    "typesecurity": {
+      "time": "22:00",
+      "status": "passed",
+      "score": "A",
+      "issues": []
+    },
+    "securityScan": {
+      "time": "22:00",
+      "status": "passed",
+      "sensitiveEntries": "已扫描",
+      "sqlInjection": "已检查",
+      "issues": []
     }
   },
-  "metrics": {
-    "totalCommits": 0,
-    "totalNewFiles": 0,
-    "totalNewLines": "~8000+",
-    "backendServices": 34,
-    "backendRoutes": 18,
-    "frontendPages": 17,
-    "frontendComponents": 15,
-    "prismaModels": 33,
-    "dbTables": 33
+  "dailySummary": {
+    "totalCommits": 4,
+    "modifiedFiles": 0,
+    "newFiles": 0,
+    "buildStatus": "success",
+    "tsErrors": 0
   },
-  "excluded": ["支付模块 (娄总要求跳过)"],
-  "notes": "Phase 6 Day 1-2 一天完成。安全评分 5.2→8.5，综合评分 5.2→7.7。P0 安全修复 5 项、P1 代码质量 3 项、DB 迁移 7 项、错误处理 262 处、产品优化 4 页全部完成。支付模块按娄总要求跳过。剩余 P2: sendForbidden 错误码 + 支付页空值提示。明日 Day 3 (5/14): 安全加固 (JWT 轮换/加密/SQL注入/XSS)。"
+  "alerts": [],
+  "nextCron": "pl-summary-0730 2026-05-24T07:30:00+08:00",
+  "gitStatus": "diverged - local 17 commits behind remote 109 commits - reset to origin",
+  "note": "本地状态已保存workspace，不影响cron运行"
 }

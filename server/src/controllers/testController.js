@@ -1,5 +1,5 @@
-const { prisma } = require('../index');
 const { v4: uuidv4 } = require('uuid');
+const { prisma } = require('../index');
 
 /**
  * POST /api/v1/tests/sessions
@@ -79,7 +79,7 @@ exports.getNextQuestion = async (req, res) => {
     }
 
     // Get answered question IDs
-    const answeredIds = testResult.responses.map(r => r.questionId);
+    const answeredIds = testResult.responses.map((r) => r.questionId);
 
     // Get next unanswered question
     const nextQuestion = await prisma.question.findFirst({
@@ -115,7 +115,7 @@ exports.getNextQuestion = async (req, res) => {
         code: nextQuestion.code,
         dimension: nextQuestion.dimension,
         text: nextQuestion.text,
-        options: nextQuestion.options.map(opt => ({
+        options: nextQuestion.options.map((opt) => ({
           id: opt.id,
           code: opt.code,
           text: opt.text,
@@ -160,7 +160,7 @@ exports.submitAnswer = async (req, res) => {
       return res.status(404).json({ error: 'Question not found' });
     }
 
-    const option = question.options.find(o => o.id === optionId);
+    const option = question.options.find((o) => o.id === optionId);
     if (!option) {
       return res.status(400).json({ error: 'Invalid option' });
     }
@@ -262,7 +262,7 @@ exports.getTestResults = async (req, res) => {
       neuroticism: 0,
     };
 
-    testResult.responses.forEach(response => {
+    testResult.responses.forEach((response) => {
       const dimension = response.question.dimension;
       if (dimensionScores[dimension] !== undefined) {
         dimensionScores[dimension] += response.option.score;
@@ -272,9 +272,9 @@ exports.getTestResults = async (req, res) => {
 
     // Normalize scores to 0-100
     const normalizedScores = {};
-    Object.keys(dimensionScores).forEach(dim => {
+    Object.keys(dimensionScores).forEach((dim) => {
       const maxScore = dimensionCounts[dim] * 4; // max 4 points per question
-      normalizedScores[dim] = maxScore > 0 
+      normalizedScores[dim] = maxScore > 0
         ? Math.round((dimensionScores[dim] / maxScore) * 100)
         : 50;
     });
@@ -310,7 +310,7 @@ function determinePersonalityType(scores) {
   const type2 = scores.openness >= 50 ? 'N' : 'S';
   const type3 = scores.conscientiousness >= 50 ? 'J' : 'P';
   const type4 = scores.neuroticism < 50 ? 'F' : 'T'; // Lower neuroticism = more feeling-oriented
-  
+
   return type1 + type2 + type3 + type4;
 }
 

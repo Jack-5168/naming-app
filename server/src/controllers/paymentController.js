@@ -1,6 +1,6 @@
-const { prisma } = require('../index');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const { prisma } = require('../index');
 
 // WeChat Pay configuration
 const WECHAT_MCH_ID = process.env.WECHAT_MCH_ID;
@@ -22,9 +22,15 @@ exports.createOrder = async (req, res) => {
 
     // Get product info
     const products = {
-      basic: { name: '基础版', price: 990, level: 1, duration: 30 },
-      standard: { name: '标准版', price: 2900, level: 2, duration: 90 },
-      premium: { name: '尊享版', price: 4900, level: 3, duration: 365 },
+      basic: {
+        name: '基础版', price: 990, level: 1, duration: 30,
+      },
+      standard: {
+        name: '标准版', price: 2900, level: 2, duration: 90,
+      },
+      premium: {
+        name: '尊享版', price: 4900, level: 3, duration: 365,
+      },
     };
 
     const product = products[productId];
@@ -104,7 +110,7 @@ exports.createOrder = async (req, res) => {
 exports.wechatCallback = async (req, res) => {
   try {
     const xmlData = req.body;
-    
+
     // Parse XML (in production, use xml2js library)
     const result = parseXml(xmlData);
 
@@ -177,10 +183,10 @@ exports.wechatCallback = async (req, res) => {
 function generateWeChatSign(params) {
   const sortedKeys = Object.keys(params).sort();
   const stringA = sortedKeys
-    .map(key => `${key}=${params[key]}`)
+    .map((key) => `${key}=${params[key]}`)
     .join('&');
   const stringSignTemp = `${stringA}&key=${WECHAT_API_KEY}`;
-  
+
   return crypto
     .createHash('md5')
     .update(stringSignTemp)
@@ -193,7 +199,7 @@ function verifyWeChatSign(result) {
   const receivedSign = result.sign;
   const { sign, ...params } = result;
   const calculatedSign = generateWeChatSign(params);
-  
+
   return receivedSign === calculatedSign;
 }
 
@@ -202,7 +208,7 @@ function parseXml(xml) {
   const result = {};
   const matches = xml.match(/<([^>]+)>([^<]*)<\/\1>/g);
   if (matches) {
-    matches.forEach(match => {
+    matches.forEach((match) => {
       const [, key, value] = match.match(/<([^>]+)>([^<]*)<\/\1>/);
       result[key] = value;
     });

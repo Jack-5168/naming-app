@@ -1,7 +1,7 @@
-const { prisma } = require('../index');
-const { generateTokens, storeRefreshToken } = require('../middleware/auth');
 const axios = require('axios');
 const crypto = require('crypto');
+const { prisma } = require('../index');
+const { generateTokens, storeRefreshToken } = require('../middleware/auth');
 
 // WeChat OAuth2 credentials
 const WECHAT_APP_ID = process.env.WECHAT_APP_ID;
@@ -14,7 +14,7 @@ const WECHAT_APP_SECRET = process.env.WECHAT_APP_SECRET;
 exports.wechatLogin = async (req, res) => {
   try {
     const { code } = req.body;
-    
+
     if (!code) {
       return res.status(400).json({ error: 'Login code required' });
     }
@@ -29,10 +29,12 @@ exports.wechatLogin = async (req, res) => {
           js_code: code,
           grant_type: 'authorization_code',
         },
-      }
+      },
     );
 
-    const { openid, unionid, errcode, errmsg } = wechatResponse.data;
+    const {
+      openid, unionid, errcode, errmsg,
+    } = wechatResponse.data;
 
     if (errcode) {
       return res.status(400).json({ error: `WeChat API error: ${errmsg}` });
@@ -100,9 +102,9 @@ exports.refreshToken = async (req, res) => {
     // Verify refresh token
     const jwt = require('jsonwebtoken');
     const { JWT_REFRESH_SECRET } = require('../middleware/auth');
-    
+
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    
+
     // Check if token exists and is not revoked
     const storedToken = await prisma.refreshToken.findUnique({
       where: { token: refreshToken },
@@ -146,7 +148,9 @@ exports.refreshToken = async (req, res) => {
  */
 exports.updateUserInfo = async (req, res) => {
   try {
-    const { nickname, avatarUrl, gender, city, province, country, language } = req.body;
+    const {
+      nickname, avatarUrl, gender, city, province, country, language,
+    } = req.body;
     const userId = req.user.id;
 
     await prisma.user.update({

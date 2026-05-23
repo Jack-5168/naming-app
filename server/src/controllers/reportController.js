@@ -125,8 +125,8 @@ exports.getReport = async (req, res) => {
     });
 
     // Return full content if unlocked, otherwise only free sections
-    const content = report.isUnlocked 
-      ? report.content 
+    const content = report.isUnlocked
+      ? report.content
       : { ...report.content, sections: report.freeSections };
 
     res.json({
@@ -175,7 +175,7 @@ exports.getReportHistory = async (req, res) => {
     });
 
     res.json({
-      reports: reports.map(r => ({
+      reports: reports.map((r) => ({
         id: r.id,
         title: r.title,
         summary: r.summary,
@@ -202,8 +202,8 @@ exports.getReportHistory = async (req, res) => {
 // Helper function to generate report content
 function generateReportContent(testResult) {
   const { dimensionScores, personalityType } = testResult;
-  const scores = typeof dimensionScores === 'string' 
-    ? JSON.parse(dimensionScores) 
+  const scores = typeof dimensionScores === 'string'
+    ? JSON.parse(dimensionScores)
     : dimensionScores;
 
   return {

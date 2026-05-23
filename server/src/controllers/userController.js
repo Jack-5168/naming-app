@@ -49,7 +49,9 @@ exports.getMe = async (req, res) => {
 exports.updateMe = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { nickname, phone, city, province, country } = req.body;
+    const {
+      nickname, phone, city, province, country,
+    } = req.body;
 
     const updateData = {};
     if (nickname) updateData.nickname = nickname;
