@@ -3,7 +3,7 @@
  * 负责 16 页报告的分页展示、导航、保存和分享
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 
 interface ReportSection {
   id: string;
@@ -420,9 +420,9 @@ const TableOfContents: React.FC<{
 };
 
 /**
- * 主报告查看器组件
+ * 主报告查看器组件 - 使用memo包装
  */
-const ReportViewer: React.FC<ReportViewerProps> = ({
+const ReportViewer = memo<ReportViewerProps>(({
   reportContent,
   reportType,
   userName = '用户',
@@ -686,5 +686,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
     </div>
   );
 };
+
+ReportViewer.displayName = 'ReportViewer';
 
 export default ReportViewer;

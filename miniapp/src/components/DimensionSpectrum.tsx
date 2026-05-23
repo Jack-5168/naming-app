@@ -3,7 +3,7 @@
  * 展示五大人格维度的连续谱分布
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { DimensionSpectrumData, StabilityResult, Big5Dimension } from '../../types';
 
 interface DimensionSpectrumProps {
@@ -351,7 +351,7 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
 /**
  * 主组件
  */
-export const DimensionSpectrum: React.FC<DimensionSpectrumProps> = ({
+export const DimensionSpectrum = memo<DimensionSpectrumProps>(({
   dimensions,
   overallStability,
   onDimensionClick,
@@ -400,6 +400,8 @@ export const DimensionSpectrum: React.FC<DimensionSpectrumProps> = ({
       `}</style>
     </div>
   );
-};
+});
+
+DimensionSpectrum.displayName = 'DimensionSpectrum';
 
 export default DimensionSpectrum;
