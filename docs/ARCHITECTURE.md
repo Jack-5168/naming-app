@@ -145,6 +145,26 @@ Inviter creates → Generates code → Invitee enters → Both take test → Com
 Share link → Friend signs up → Makes payment → Commission earned → Withdraw
 ```
 
+### 7. Life Events Module (`/api/v1/life-events`)
+
+**Features:**
+- Life event tracking
+- Personality dimension correlation
+- Impact analysis
+
+**Life Event Types:**
+- Career (职业发展)
+- Relationship (人际关系)
+- Health (健康状况)
+- Finance (财务状况)
+- Education (教育学习)
+- Other (其他)
+
+**Correlation Analysis:**
+```
+Record event → Link to personality result → Analyze correlation → Generate insights
+```
+
 ## Data Models
 
 ### Core Entities

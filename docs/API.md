@@ -16,6 +16,7 @@
 - [Payment Module](#payment-module)
 - [Membership Module](#membership-module)
 - [Growth Module](#growth-module)
+- [Life Events Module](#life-events-module)
 - [Health Check](#health-check)
 - [Error Handling](#error-handling)
 - [Rate Limiting](#rate-limiting)
@@ -887,6 +888,182 @@ Get detailed benefits for all membership levels.
       "分享卡片",
       "KOC 推广"
     ]
+  }
+}
+```
+
+---
+
+## Life Events Module
+
+**Base Path:** `/api/v1/life-events`
+
+### POST /life-events
+
+Create a new life event record.
+
+**Access:** Private
+
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "eventType": "career",
+  "title": "新工作入职",
+  "description": "加入新公司",
+  "eventDate": "2026-05-01",
+  "expectedImpact": "positive",
+  "relatedDimension": "E"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "userId": 1,
+    "eventType": "career",
+    "title": "新工作入职",
+    "description": "加入新公司",
+    "eventDate": "2026-05-01T00:00:00.000Z",
+    "expectedImpact": "positive",
+    "relatedDimension": "E",
+    "correlationAnalyzed": false,
+    "createdAt": "2026-05-25T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### GET /life-events
+
+Get all life events for the current user.
+
+**Access:** Private
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `eventType` | string | Filter by event type |
+| `startDate` | string | Filter by start date (YYYY-MM-DD) |
+| `endDate` | string | Filter by end date (YYYY-MM-DD) |
+| `page` | number | Page number (default: 1) |
+| `pageSize` | number | Page size (default: 20) |
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "events": [...],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "total": 50,
+      "totalPages": 3
+    }
+  }
+}
+```
+
+---
+
+### GET /life-events/:id
+
+Get a specific life event by ID.
+
+**Access:** Private
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "userId": 1,
+    "eventType": "career",
+    "title": "新工作入职",
+    "description": "加入新公司",
+    "eventDate": "2026-05-01T00:00:00.000Z",
+    "expectedImpact": "positive",
+    "actualImpactScore": 85,
+    "relatedDimension": "E",
+    "correlationAnalyzed": true,
+    "correlationNote": "外倾性显著提升",
+    "createdAt": "2026-05-25T10:00:00.000Z",
+    "updatedAt": "2026-05-25T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+### PUT /life-events/:id
+
+Update a life event.
+
+**Access:** Private
+
+**Request Body:**
+```json
+{
+  "title": "新工作入职 (更新)",
+  "actualImpactScore": 90
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {...}
+}
+```
+
+---
+
+### DELETE /life-events/:id
+
+Delete a life event.
+
+**Access:** Private
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Life event deleted successfully"
+}
+```
+
+---
+
+### POST /life-events/:id/analyze
+
+Analyze the impact of a life event on personality dimensions.
+
+**Access:** Private
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "eventId": 1,
+    "correlationAnalyzed": true,
+    "analysis": {
+      "dimension": "E",
+      "direction": "increase",
+      "confidence": 0.78,
+      "note": "生活事件分析显示此次职业变动对外倾性有显著正向影响"
+    }
   }
 }
 ```
