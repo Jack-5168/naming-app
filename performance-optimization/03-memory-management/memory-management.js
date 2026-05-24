@@ -133,7 +133,7 @@ function safeClosure() {
 /**
  * ❌ 错误示例：分离的 DOM 节点
  */
-let leakedNodes = [];
+const leakedNodes = [];
 
 function leakyDOM() {
   const div = document.createElement('div');

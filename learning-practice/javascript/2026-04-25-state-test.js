@@ -8,12 +8,14 @@ console.log('=== 状态管理专项测试 ===\n');
 // ========== 示例 2: EventEmitter ==========
 class EventEmitter {
   constructor() { this._events = new Map(); }
+
   on(event, listener) {
     if (!this._events.has(event)) this._events.set(event, new Set());
     this._events.get(event).add(listener);
     return () => this._events.get(event)?.delete(listener);
   }
-  emit(event, ...args) { this._events.get(event)?.forEach(l => l(...args)); }
+
+  emit(event, ...args) { this._events.get(event)?.forEach((l) => l(...args)); }
 }
 
 console.log('--- 示例 2: EventEmitter ---');
@@ -30,11 +32,14 @@ class Store {
     this._state = initialState;
     this._listeners = new Set();
   }
+
   getState() { return this._state; }
+
   setState(partial) {
     this._state = { ...this._state, ...partial };
-    this._listeners.forEach(l => l(this._state));
+    this._listeners.forEach((l) => l(this._state));
   }
+
   subscribe(listener) {
     this._listeners.add(listener);
     return () => this._listeners.delete(listener);
@@ -44,7 +49,7 @@ class Store {
 console.log('--- 示例 3: Store ---');
 const store = new Store({ count: 0 });
 let storeCount = 0;
-store.subscribe(s => storeCount++);
+store.subscribe((s) => storeCount++);
 store.setState({ count: 1 });
 store.setState({ count: 2 });
 console.assert(storeCount === 2, 'Store 应触发 2 次');
@@ -71,7 +76,7 @@ console.log('  ✅ Reducer 通过\n');
 function createStore(reducer, preloadedState) {
   let currentState = preloadedState;
   let currentListeners = new Set();
-  let nextListeners = new Set(currentListeners);
+  const nextListeners = new Set(currentListeners);
 
   function ensureListeners() {
     if (currentListeners !== nextListeners) {
@@ -87,7 +92,7 @@ function createStore(reducer, preloadedState) {
   function dispatch(action) {
     currentState = reducer(currentState, action);
     ensureListeners();
-    currentListeners.forEach(l => l());
+    currentListeners.forEach((l) => l());
     return action;
   }
   dispatch({ type: '@@redux/INIT' });
@@ -107,17 +112,17 @@ console.assert(c5 === 3, '取消后只剩一个监听器');
 console.log('  ✅ createStore 通过\n');
 
 // ========== 示例 6: 中间件 ==========
-const loggerMiddleware = store => next => action => {
+const loggerMiddleware = (store) => (next) => (action) => {
   const result = next(action);
   return result;
 };
 
 function applyMiddleware(...middlewares) {
-  return createStore => (reducer, preloadedState) => {
+  return (createStore) => (reducer, preloadedState) => {
     const store = createStore(reducer, preloadedState);
     let dispatch = store.dispatch;
     const middlewareAPI = { getState: store.getState, dispatch: (a) => dispatch(a) };
-    const chain = middlewares.map(mw => mw(middlewareAPI));
+    const chain = middlewares.map((mw) => mw(middlewareAPI));
     dispatch = chain.reduceRight((a, b) => b(a), store.dispatch);
     return { ...store, dispatch };
   };
@@ -131,7 +136,7 @@ console.assert(s6.getState().count === 1);
 console.log('  ✅ 中间件通过\n');
 
 // ========== 示例 7: Thunk ==========
-const thunkMiddleware = store => next => action => {
+const thunkMiddleware = (store) => (next) => (action) => {
   if (typeof action === 'function') return action(store.dispatch, store.getState);
   return next(action);
 };
@@ -181,7 +186,7 @@ function createZustand(fn) {
     const nextState = typeof partial === 'function' ? partial(state) : (replace ? partial : { ...state, ...partial });
     if (nextState === state) return;
     state = nextState;
-    listeners.forEach(l => l(state));
+    listeners.forEach((l) => l(state));
   };
 
   const getState = () => state;
@@ -189,7 +194,7 @@ function createZustand(fn) {
 
   state = fn(setState, getState);
 
-  const useStore = (selector = s => s) => selector(state);
+  const useStore = (selector = (s) => s) => selector(state);
   useStore.getState = getState;
   useStore.setState = setState;
   useStore.subscribe = subscribe;
@@ -199,7 +204,7 @@ function createZustand(fn) {
 console.log('--- 示例 9: Zustand ---');
 const useCounter = createZustand((set, get) => ({
   count: 0,
-  increment: () => set(s => ({ count: s.count + 1 })),
+  increment: () => set((s) => ({ count: s.count + 1 })),
   incrementBy: (n) => set({ count: get().count + n }),
 }));
 let zCount = 0;
@@ -212,11 +217,12 @@ console.log('  ✅ Zustand 通过\n');
 
 // ========== 示例 12: 选择器 ==========
 function createSelector(selectorFn) {
-  let lastResult, lastArgs;
+  let lastResult; let
+    lastArgs;
   return (...args) => {
     const result = selectorFn(...args);
-    if (lastArgs && args.length === lastArgs.length &&
-        args.every((a, i) => a === lastArgs[i]) && result === lastResult) {
+    if (lastArgs && args.length === lastArgs.length
+        && args.every((a, i) => a === lastArgs[i]) && result === lastResult) {
       return lastResult;
     }
     lastResult = result;
@@ -226,9 +232,9 @@ function createSelector(selectorFn) {
 }
 
 console.log('--- 示例 12: 选择器 ---');
-const selectCount = s => s.counter.count;
-const selectUser = s => s.user;
-const selectDisplayName = createSelector(s => `${selectUser(s).name} (${selectCount(s)})`);
+const selectCount = (s) => s.counter.count;
+const selectUser = (s) => s.user;
+const selectDisplayName = createSelector((s) => `${selectUser(s).name} (${selectCount(s)})`);
 
 const s12 = createStore(rootReducer, { counter: { count: 0 }, user: { name: 'Alice' } });
 console.assert(selectDisplayName(s12.getState()) === 'Alice (0)');
@@ -262,7 +268,7 @@ function withUndoRedo(reducer, initialState) {
 console.log('--- 示例 13: 时间旅行 ---');
 const undoStore = createStore(
   withUndoRedo(counterReducer, { count: 0 }),
-  { past: [], present: { count: 0 }, future: [] }
+  { past: [], present: { count: 0 }, future: [] },
 );
 undoStore.dispatch({ type: 'INCREMENT' });
 undoStore.dispatch({ type: 'INCREMENT' });
@@ -291,10 +297,10 @@ function createReactiveState(initialState) {
     set(target, prop, value) {
       const old = target[prop];
       target[prop] = value;
-      listeners.get(prop)?.forEach(fn => fn(value, old));
-      globalListeners.forEach(fn => fn(target, prop));
+      listeners.get(prop)?.forEach((fn) => fn(value, old));
+      globalListeners.forEach((fn) => fn(target, prop));
       return true;
-    }
+    },
   };
 
   const state = new Proxy(initialState, handler);
@@ -308,12 +314,13 @@ function createReactiveState(initialState) {
     subscribe(fn) {
       globalListeners.add(fn);
       return () => globalListeners.delete(fn);
-    }
+    },
   };
 }
 
 console.log('--- 示例 15: Proxy 响应式 ---');
-let proxyCount = 0, proxyGlobal = 0;
+let proxyCount = 0; let
+  proxyGlobal = 0;
 const { state: rState, watch } = createReactiveState({ count: 0, name: 'Alice' });
 watch('count', () => proxyCount++);
 const { subscribe } = createReactiveState({ count: 0 });
@@ -336,16 +343,16 @@ function createMachine(config) {
     const t = sc.on?.[event.type];
     if (!t) return;
     const next = typeof t === 'string' ? t : t.target;
-    sc.onExit?.forEach(fn => fn(currentState, next, event));
+    sc.onExit?.forEach((fn) => fn(currentState, next, event));
     currentState = next;
-    config.states[next]?.onEntry?.forEach(fn => fn(currentState, event));
-    listeners.forEach(fn => fn(currentState));
+    config.states[next]?.onEntry?.forEach((fn) => fn(currentState, event));
+    listeners.forEach((fn) => fn(currentState));
   }
 
   return {
     send,
     getState: () => currentState,
-    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
   };
 }
 
@@ -356,7 +363,7 @@ const machine = createMachine({
     idle: { on: { START: 'running' }, onEntry: [() => {}] },
     running: { on: { STOP: 'idle', PAUSE: 'paused' } },
     paused: { on: { RESUME: 'running', STOP: 'idle' } },
-  }
+  },
 });
 console.assert(machine.getState() === 'idle');
 machine.send({ type: 'START' });
@@ -372,23 +379,29 @@ console.log('  ✅ 状态机通过\n');
 // ========== 示例 17: 原子状态 ==========
 class Atom {
   constructor(key, value) { this.key = key; this._value = value; this._listeners = new Set(); this._dependents = new Set(); }
+
   get value() { return this._value; }
+
   set value(v) {
     if (Object.is(this._value, v)) return;
     this._value = v;
-    this._listeners.forEach(fn => fn(v));
-    this._dependents.forEach(s => s._invalidate());
+    this._listeners.forEach((fn) => fn(v));
+    this._dependents.forEach((s) => s._invalidate());
   }
+
   subscribe(fn) { this._listeners.add(fn); return () => this._listeners.delete(fn); }
 }
 
 class Selector {
   constructor(key, { get }) { this.key = key; this._get = get; this._value = undefined; this._listeners = new Set(); this._dirty = true; }
+
   get value() {
     if (this._dirty) { this._value = this._get({ get: (a) => { a._dependents.add(this); return a.value; } }); this._dirty = false; }
     return this._value;
   }
-  _invalidate() { this._dirty = true; this._listeners.forEach(fn => fn(this.value)); }
+
+  _invalidate() { this._dirty = true; this._listeners.forEach((fn) => fn(this.value)); }
+
   subscribe(fn) { this._listeners.add(fn); return () => this._listeners.delete(fn); }
 }
 
@@ -396,7 +409,7 @@ console.log('--- 示例 17: 原子状态 ---');
 const countAtom = new Atom('count', 0);
 const doubleSel = new Selector('double', { get: ({ get }) => get(countAtom) * 2 });
 let selValue = 0;
-doubleSel.subscribe(v => { selValue = v; });
+doubleSel.subscribe((v) => { selValue = v; });
 countAtom.value = 5;
 console.assert(selValue === 10, 'Selector 应自动更新');
 countAtom.value = 10;
@@ -409,13 +422,13 @@ function todoReducer(state = { todos: [], filter: 'all', nextId: 1 }, action) {
     case 'ADD_TODO':
       return { ...state, todos: [...state.todos, { ...action.payload, id: state.nextId }], nextId: state.nextId + 1 };
     case 'TOGGLE_TODO':
-      return { ...state, todos: state.todos.map(t => t.id === action.payload ? { ...t, done: !t.done } : t) };
+      return { ...state, todos: state.todos.map((t) => (t.id === action.payload ? { ...t, done: !t.done } : t)) };
     case 'DELETE_TODO':
-      return { ...state, todos: state.todos.filter(t => t.id !== action.payload) };
+      return { ...state, todos: state.todos.filter((t) => t.id !== action.payload) };
     case 'SET_FILTER':
       return { ...state, filter: action.payload };
     case 'CLEAR_COMPLETED':
-      return { ...state, todos: state.todos.filter(t => !t.done) };
+      return { ...state, todos: state.todos.filter((t) => !t.done) };
     default: return state;
   }
 }
@@ -436,12 +449,12 @@ console.log('  ✅ Todo 应用通过\n');
 // ========== 示例 19: Zustand 购物车 ==========
 const useCart = createZustand((set, get) => ({
   items: [],
-  addItem: (item) => set(state => {
-    const existing = state.items.find(i => i.id === item.id);
-    if (existing) return { items: state.items.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) };
+  addItem: (item) => set((state) => {
+    const existing = state.items.find((i) => i.id === item.id);
+    if (existing) return { items: state.items.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i)) };
     return { items: [...state.items, { ...item, qty: 1 }] };
   }),
-  removeItem: (id) => set(state => ({ items: state.items.filter(i => i.id !== id) })),
+  removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
   get subtotal() { return get().items.reduce((sum, i) => sum + i.price * i.qty, 0); },
   get itemCount() { return get().items.reduce((sum, i) => sum + i.qty, 0); },
 }));
@@ -459,7 +472,7 @@ console.log('  ✅ Zustand 购物车通过\n');
 
 // ========== 示例 20: 多模块 ==========
 function createModernStore(modules) {
-  let state = {};
+  const state = {};
   const listeners = new Map();
   const globalListeners = new Set();
   for (const [name, config] of Object.entries(modules)) state[name] = config.initialState;
@@ -471,8 +484,8 @@ function createModernStore(modules) {
     const prev = state[module];
     state[module] = mod.reducer(prev, action);
     if (state[module] !== prev) {
-      globalListeners.forEach(fn => fn(state));
-      listeners.get(module)?.forEach(fn => fn(state[module]));
+      globalListeners.forEach((fn) => fn(state));
+      listeners.get(module)?.forEach((fn) => fn(state[module]));
     }
   }
 
@@ -497,18 +510,19 @@ const app = createModernStore({
       if (action.type === 'auth/LOGIN') return { user: action.payload.user, token: action.payload.token };
       if (action.type === 'auth/LOGOUT') return { user: null, token: null };
       return state;
-    }
+    },
   },
   ui: {
     initialState: { theme: 'light' },
     reducer(state, action) {
       if (action.type === 'ui/TOGGLE_THEME') return { theme: state.theme === 'light' ? 'dark' : 'light' };
       return state;
-    }
-  }
+    },
+  },
 });
 
-let authChanged = 0, globalChanged = 0;
+let authChanged = 0; let
+  globalChanged = 0;
 app.subscribe('auth', () => authChanged++);
 app.subscribe(() => globalChanged++);
 

@@ -2,7 +2,9 @@
  * useClickOutside 测试套件
  * TDD 实战 — 红绿黄循环
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+  describe, it, expect, beforeEach, vi,
+} from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRef } from 'react';
 import { useClickOutside, useClickOutsideRef } from '../src/useClickOutside.js';
@@ -70,9 +72,7 @@ describe('useClickOutside', () => {
 
     it('应支持自定义事件类型', () => {
       const callback = vi.fn();
-      const { result } = renderHook(() =>
-        useClickOutsideRef(callback, { event: 'click' })
-      );
+      const { result } = renderHook(() => useClickOutsideRef(callback, { event: 'click' }));
       const ref = result.current;
 
       const div = document.createElement('div');
@@ -92,9 +92,7 @@ describe('useClickOutside', () => {
       const callback = vi.fn();
       const excludeRef = { current: null };
 
-      const { result } = renderHook(() =>
-        useClickOutsideRef(callback, { excludeRef })
-      );
+      const { result } = renderHook(() => useClickOutsideRef(callback, { excludeRef }));
       const ref = result.current;
 
       const inside = document.createElement('div');
@@ -160,9 +158,7 @@ describe('useClickOutside', () => {
       const callback = vi.fn();
       const excludeRef = { current: null };
 
-      const { result } = renderHook(() =>
-        useClickOutside(callback, { exclude: [excludeRef] })
-      );
+      const { result } = renderHook(() => useClickOutside(callback, { exclude: [excludeRef] }));
       const registerRef = result.current;
 
       const inside = document.createElement('div');
@@ -182,9 +178,7 @@ describe('useClickOutside', () => {
 
     it('应支持自定义事件类型', () => {
       const callback = vi.fn();
-      const { result } = renderHook(() =>
-        useClickOutside(callback, { event: 'mouseup' })
-      );
+      const { result } = renderHook(() => useClickOutside(callback, { event: 'mouseup' }));
 
       act(() => {
         const outside = document.createElement('div');

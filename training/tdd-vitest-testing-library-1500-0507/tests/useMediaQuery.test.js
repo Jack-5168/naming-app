@@ -47,8 +47,7 @@ describe('useMediaQuery', () => {
       delete globalThis.matchMedia;
 
       const { result } = renderHook(() =>
-        useMediaQuery('(min-width: 768px)', { initialValue: true })
-      );
+        useMediaQuery('(min-width: 768px)', { initialValue: true }));
       expect(result.current).toBe(true);
 
       globalThis.matchMedia = origMatchMedia;
@@ -72,8 +71,7 @@ describe('useMediaQuery', () => {
     it('onChange 回调应在变化时触发', () => {
       const onChange = vi.fn();
       renderHook(() =>
-        useMediaQuery('(min-width: 768px)', { onChange })
-      );
+        useMediaQuery('(min-width: 768px)', { onChange }));
 
       act(() => {
         listeners[0].cb({ matches: true });
@@ -169,8 +167,7 @@ describe('useMediaQueries', () => {
         mobile: '(max-width: 767px)',
         tablet: '(min-width: 768px) and (max-width: 1023px)',
         desktop: '(min-width: 1024px)',
-      })
-    );
+      }));
 
     expect(result.current).toHaveProperty('mobile');
     expect(result.current).toHaveProperty('tablet');
@@ -183,8 +180,7 @@ describe('useMediaQueries', () => {
         a: '(min-width: 100px)',
         b: '(min-width: 200px)',
         c: '(min-width: 300px)',
-      })
-    );
+      }));
 
     expect(globalThis.matchMedia).toHaveBeenCalledTimes(3);
   });
@@ -212,8 +208,7 @@ describe('useMatchedMediaNames', () => {
       useMatchedMediaNames({
         mobile: '(max-width: 767px)',
         desktop: '(min-width: 768px)',
-      })
-    );
+      }));
 
     expect(result.current).toContain('mobile');
     expect(result.current).not.toContain('desktop');
@@ -224,8 +219,7 @@ describe('useMatchedMediaNames', () => {
       useMatchedMediaNames({
         a: '(min-width: 100px)',
         b: '(min-width: 200px)',
-      })
-    );
+      }));
 
     expect(result.current).toEqual([]);
   });

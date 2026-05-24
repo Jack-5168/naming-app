@@ -141,8 +141,8 @@ export class LazyImageLoader {
   }
 
   loadImage(img) {
-    const src = img.dataset.src;
-    const srcset = img.dataset.srcset;
+    const { src } = img.dataset;
+    const { srcset } = img.dataset;
 
     img.onload = () => {
       img.classList.add('lazy-loaded');

@@ -21,7 +21,7 @@ export class RetryManager {
    * @returns {number} 延迟毫秒数
    */
   _calculateDelay(attempt) {
-    let delay = this.baseDelay * Math.pow(this.factor, attempt);
+    let delay = this.baseDelay * this.factor ** attempt;
     delay = Math.min(delay, this.maxDelay);
 
     if (this.jitter) {

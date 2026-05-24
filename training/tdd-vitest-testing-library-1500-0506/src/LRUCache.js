@@ -231,7 +231,7 @@ export class LRUCache {
   /**
    * 支持 for...of 迭代
    */
-  *[Symbol.iterator]() {
+  * [Symbol.iterator]() {
     let node = this.head.next;
     while (node !== this.tail) {
       yield [node.key, node.value];

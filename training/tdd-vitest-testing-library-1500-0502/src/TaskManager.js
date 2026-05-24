@@ -50,7 +50,7 @@ class TaskManager {
    * @returns {Object|undefined}
    */
   getTask(id) {
-    const task = this.tasks.find(t => t.id === id);
+    const task = this.tasks.find((t) => t.id === id);
     return task ? { ...task } : undefined;
   }
 
@@ -61,7 +61,7 @@ class TaskManager {
    * @returns {Object} 更新后的任务
    */
   updateTask(id, updates) {
-    const index = this.tasks.findIndex(t => t.id === id);
+    const index = this.tasks.findIndex((t) => t.id === id);
     if (index === -1) {
       throw new Error(`Task with id ${id} not found`);
     }
@@ -112,7 +112,7 @@ class TaskManager {
    * @returns {boolean}
    */
   deleteTask(id) {
-    const index = this.tasks.findIndex(t => t.id === id);
+    const index = this.tasks.findIndex((t) => t.id === id);
     if (index === -1) {
       return false;
     }
@@ -125,7 +125,7 @@ class TaskManager {
    * @returns {Object[]}
    */
   getAllTasks() {
-    return this.tasks.map(t => ({ ...t }));
+    return this.tasks.map((t) => ({ ...t }));
   }
 
   /**
@@ -137,26 +137,24 @@ class TaskManager {
     let result = [...this.tasks];
 
     if (filters.status) {
-      result = result.filter(t => t.status === filters.status);
+      result = result.filter((t) => t.status === filters.status);
     }
 
     if (filters.priority) {
-      result = result.filter(t => t.priority === filters.priority);
+      result = result.filter((t) => t.priority === filters.priority);
     }
 
     if (filters.tags && Array.isArray(filters.tags)) {
-      result = result.filter(t =>
-        filters.tags.some(tag => t.tags.includes(tag))
-      );
+      result = result.filter((t) => filters.tags.some((tag) => t.tags.includes(tag)));
     }
 
     if (filters.minPriority) {
       const priorityOrder = { low: 1, medium: 2, high: 3 };
       const minLevel = priorityOrder[filters.minPriority] || 0;
-      result = result.filter(t => (priorityOrder[t.priority] || 0) >= minLevel);
+      result = result.filter((t) => (priorityOrder[t.priority] || 0) >= minLevel);
     }
 
-    return result.map(t => ({ ...t }));
+    return result.map((t) => ({ ...t }));
   }
 
   /**
@@ -193,7 +191,7 @@ class TaskManager {
       return 0;
     });
 
-    return sorted.map(t => ({ ...t }));
+    return sorted.map((t) => ({ ...t }));
   }
 
   /**
@@ -212,12 +210,10 @@ class TaskManager {
     }
 
     return this.tasks
-      .filter(t =>
-        t.title.toLowerCase().includes(normalizedQuery) ||
-        t.description.toLowerCase().includes(normalizedQuery) ||
-        t.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
-      )
-      .map(t => ({ ...t }));
+      .filter((t) => t.title.toLowerCase().includes(normalizedQuery)
+        || t.description.toLowerCase().includes(normalizedQuery)
+        || t.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery)))
+      .map((t) => ({ ...t }));
   }
 
   /**
@@ -236,7 +232,7 @@ class TaskManager {
     const totalPages = Math.ceil(total / currentPageSize);
     const startIndex = (currentPage - 1) * currentPageSize;
     const endIndex = startIndex + currentPageSize;
-    const items = this.tasks.slice(startIndex, endIndex).map(t => ({ ...t }));
+    const items = this.tasks.slice(startIndex, endIndex).map((t) => ({ ...t }));
 
     return {
       items,
@@ -266,7 +262,7 @@ class TaskManager {
       high: 0,
     };
 
-    this.tasks.forEach(t => {
+    this.tasks.forEach((t) => {
       if (Object.prototype.hasOwnProperty.call(byStatus, t.status)) {
         byStatus[t.status] += 1;
       }
@@ -300,7 +296,7 @@ class TaskManager {
     if (!Array.isArray(taskDataArray)) {
       throw new Error('Expected an array of task data');
     }
-    return taskDataArray.map(data => this.addTask(data));
+    return taskDataArray.map((data) => this.addTask(data));
   }
 }
 

@@ -181,7 +181,6 @@ const lightFactory = createUIFactory('light');
 console.log('暗色主题:', darkFactory.createButton().render());
 console.log('亮色主题:', lightFactory.createButton().render());
 
-
 // ============================================================
 // 模式二：策略模式 (Strategy Pattern)
 // ============================================================
@@ -295,10 +294,14 @@ const discountStrategies = {
 
   // 会员折扣
   member(price, level) {
-    const rates = { bronze: 0.95, silver: 0.9, gold: 0.8, platinum: 0.7 };
+    const rates = {
+      bronze: 0.95, silver: 0.9, gold: 0.8, platinum: 0.7,
+    };
     const rate = rates[level] ?? 1;
     const discount = price * (1 - rate);
-    return { original: price, discount, final: price * rate, level };
+    return {
+      original: price, discount, final: price * rate, level,
+    };
   },
 
   // 促销活动
@@ -402,7 +405,6 @@ const staticRouter = createRouter('static', routes);
 console.log('\n--- 路由策略 ---');
 console.log(spaRouter.navigate('/'));
 console.log(staticRouter.navigate('/about'));
-
 
 // ============================================================
 // 模式组合：工厂 + 策略 = 可插拔的支付系统

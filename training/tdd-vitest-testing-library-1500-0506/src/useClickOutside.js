@@ -46,7 +46,7 @@ export function useClickOutside(callback, options = {}) {
 
   useEffect(() => {
     const handler = (e) => {
-      const target = e.target;
+      const { target } = e;
 
       // 检查是否点击在注册的 ref 内部
       const isInside = refs.current.some((ref) => {

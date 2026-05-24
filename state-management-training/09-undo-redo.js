@@ -7,7 +7,7 @@ function createUndoableReducer(reducer) {
   const initialState = {
     past: [],
     present: reducer(undefined, { type: '@@INIT' }),
-    future: []
+    future: [],
   };
 
   return (state = initialState, action = {}) => {
@@ -21,7 +21,7 @@ function createUndoableReducer(reducer) {
         return {
           past: newPast,
           present: previous,
-          future: [present, ...future]
+          future: [present, ...future],
         };
 
       case 'REDO':
@@ -31,7 +31,7 @@ function createUndoableReducer(reducer) {
         return {
           past: [...past, present],
           present: next,
-          future: newFuture
+          future: newFuture,
         };
 
       default:
@@ -40,7 +40,7 @@ function createUndoableReducer(reducer) {
         return {
           past: [...past, present],
           present: newPresent,
-          future: []
+          future: [],
         };
     }
   };
@@ -51,7 +51,7 @@ function createUndoableReducerWithLimit(reducer, limit = 10) {
   const initialState = {
     past: [],
     present: reducer(undefined, { type: '@@INIT' }),
-    future: []
+    future: [],
   };
 
   return (state = initialState, action = {}) => {
@@ -62,7 +62,7 @@ function createUndoableReducerWithLimit(reducer, limit = 10) {
       return {
         past: past.slice(0, -1),
         present: past[past.length - 1],
-        future: [present, ...future]
+        future: [present, ...future],
       };
     }
 
@@ -71,7 +71,7 @@ function createUndoableReducerWithLimit(reducer, limit = 10) {
       return {
         past: [...past, present],
         present: future[0],
-        future: future.slice(1)
+        future: future.slice(1),
       };
     }
 
@@ -80,11 +80,11 @@ function createUndoableReducerWithLimit(reducer, limit = 10) {
 
     // 限制历史长度
     const newPast = past.length >= limit ? past.slice(1) : past;
-    
+
     return {
       past: [...newPast, present],
       present: newPresent,
-      future: []
+      future: [],
     };
   };
 }
@@ -105,10 +105,10 @@ function createStore(reducer) {
   let state = reducer();
   return {
     getState: () => state,
-    dispatch: action => {
+    dispatch: (action) => {
       state = reducer(state, action);
       return action;
-    }
+    },
   };
 }
 

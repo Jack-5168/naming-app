@@ -63,7 +63,7 @@ function combineReducers(reducers) {
 function applyMiddleware(...middlewares) {
   return (createStoreFn) => (reducer, preloadedState) => {
     const store = createStoreFn(reducer, preloadedState);
-    let dispatch = store.dispatch;
+    let { dispatch } = store;
     const { getState: storeGetState } = store;
     const middlewareAPI = { getState: storeGetState, dispatch: (action) => dispatch(action) }; // eslint-disable-line no-use-before-define
     const chain = middlewares.map((mw) => mw(middlewareAPI));

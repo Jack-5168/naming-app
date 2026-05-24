@@ -7,16 +7,16 @@
 function createUseReducer() {
   let state = null;
   let dispatch = null;
-  let listeners = [];
+  const listeners = [];
 
   function useReducer(reducer, initialState) {
     if (state === null) {
       state = initialState;
     }
 
-    const newDispatch = action => {
+    const newDispatch = (action) => {
       state = reducer(state, action);
-      listeners.forEach(l => l(state));
+      listeners.forEach((l) => l(state));
     };
 
     dispatch = newDispatch;
@@ -35,39 +35,39 @@ function createUseReducer() {
     };
   }
 
-  return { useReducer, useSelector, subscribe, getDispatch: () => dispatch };
+  return {
+    useReducer, useSelector, subscribe, getDispatch: () => dispatch,
+  };
 }
 
-const { useReducer, useSelector, subscribe, getDispatch } = createUseReducer();
+const {
+  useReducer, useSelector, subscribe, getDispatch,
+} = createUseReducer();
 
 // ========== Reducer ==========
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_ITEM':
-      const existing = state.items.find(i => i.id === action.item.id);
+      const existing = state.items.find((i) => i.id === action.item.id);
       if (existing) {
         return {
           ...state,
-          items: state.items.map(i =>
-            i.id === action.item.id ? { ...i, qty: i.qty + 1 } : i
-          )
+          items: state.items.map((i) => (i.id === action.item.id ? { ...i, qty: i.qty + 1 } : i)),
         };
       }
       return {
         ...state,
-        items: [...state.items, { ...action.item, qty: 1 }]
+        items: [...state.items, { ...action.item, qty: 1 }],
       };
     case 'REMOVE_ITEM':
       return {
         ...state,
-        items: state.items.filter(i => i.id !== action.id)
+        items: state.items.filter((i) => i.id !== action.id),
       };
     case 'UPDATE_QTY':
       return {
         ...state,
-        items: state.items.map(i =>
-          i.id === action.id ? { ...i, qty: action.qty } : i
-        )
+        items: state.items.map((i) => (i.id === action.id ? { ...i, qty: action.qty } : i)),
       };
     case 'CLEAR_CART':
       return { ...state, items: [] };
@@ -78,13 +78,12 @@ const cartReducer = (state, action) => {
 
 // ========== 模拟组件 ==========
 const initialState = { items: [], total: 0 };
-let [cartState, cartDispatch] = useReducer(cartReducer, initialState);
+const [cartState, cartDispatch] = useReducer(cartReducer, initialState);
 
 // Selectors
-const getItemCount = state => state.items.length;
-const getTotalPrice = state => 
-  state.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-const getCartItems = state => state.items;
+const getItemCount = (state) => state.items.length;
+const getTotalPrice = (state) => state.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+const getCartItems = (state) => state.items;
 
 // ========== 使用示例 ==========
 console.log('=== 购物车状态管理 ===\n');
@@ -95,17 +94,17 @@ cartDispatch({ type: 'ADD_ITEM', item: { id: 2, name: 'AirPods', price: 1299 } }
 cartDispatch({ type: 'ADD_ITEM', item: { id: 3, name: 'MacBook', price: 9999 } });
 
 console.log('商品数量:', getItemCount(cartState));
-console.log('商品列表:', getCartItems(cartState).map(i => `${i.name} x${i.qty}`));
+console.log('商品列表:', getCartItems(cartState).map((i) => `${i.name} x${i.qty}`));
 console.log('总价:', getTotalPrice(cartState));
 
 // 增加数量
 cartDispatch({ type: 'ADD_ITEM', item: { id: 1, name: 'iPhone', price: 5999 } });
 console.log('\n再添加一个 iPhone 后:');
-console.log('商品列表:', getCartItems(cartState).map(i => `${i.name} x${i.qty}`));
+console.log('商品列表:', getCartItems(cartState).map((i) => `${i.name} x${i.qty}`));
 console.log('总价:', getTotalPrice(cartState));
 
 // 订阅更新
-subscribe(state => {
+subscribe((state) => {
   console.log('🛒 购物车更新:', getItemCount(state), '件商品，总计 ¥' + getTotalPrice(state));
 });
 

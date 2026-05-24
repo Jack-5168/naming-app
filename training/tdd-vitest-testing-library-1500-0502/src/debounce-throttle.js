@@ -28,7 +28,7 @@ function debounce(fn, delay = 300, options = {}) {
   let lastArgs = null;
   let lastThis = null;
   let lastCallTime = 0;
-  let result = undefined;
+  let result;
 
   function execute() {
     fn.apply(lastThis, lastArgs);
@@ -43,9 +43,9 @@ function debounce(fn, delay = 300, options = {}) {
   function shouldInvoke(time) {
     const timeSinceLastCall = time - lastCallTime;
     return (
-      lastCallTime === 0 ||
-      timeSinceLastCall >= delay ||
-      (maxWait !== undefined && timeSinceLastCall >= maxWait)
+      lastCallTime === 0
+      || timeSinceLastCall >= delay
+      || (maxWait !== undefined && timeSinceLastCall >= maxWait)
     );
   }
 
@@ -66,7 +66,7 @@ function debounce(fn, delay = 300, options = {}) {
     } else {
       timer = setTimeout(timerExpired, Math.min(
         delay - (time - lastCallTime),
-        maxWait !== undefined ? maxWait - (time - lastCallTime) : delay
+        maxWait !== undefined ? maxWait - (time - lastCallTime) : delay,
       ));
     }
   }
@@ -147,7 +147,7 @@ function throttle(fn, interval = 300, options = {}) {
   let lastArgs = null;
   let lastThis = null;
   let lastCallTime = 0;
-  let result = undefined;
+  let result;
 
   function invoke() {
     lastCallTime = Date.now();

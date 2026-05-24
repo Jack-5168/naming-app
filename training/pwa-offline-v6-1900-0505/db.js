@@ -80,7 +80,7 @@ function openDB() {
 
     request.onupgradeneeded = (event) => {
       const database = event.target.result;
-      const oldVersion = event.oldVersion;
+      const { oldVersion } = event;
 
       console.log(`[DB] 升级: ${oldVersion} → ${DB_VERSION}`);
 
@@ -402,7 +402,8 @@ const DocDB = {
       const request = index.openCursor(IDBKeyRange.bound(
         [docId, 0],
         [docId, Infinity],
-        false, false
+        false,
+        false
       ), 'prev');
 
       request.onsuccess = (event) => {
@@ -766,7 +767,8 @@ async function generateThumbnail(data, mimeType) {
         URL.revokeObjectURL(img.src);
         const canvas = document.createElement('canvas');
         const MAX = 150;
-        let w = img.width, h = img.height;
+        let w = img.width; let
+          h = img.height;
         if (w > MAX || h > MAX) {
           const ratio = Math.min(MAX / w, MAX / h);
           w = Math.round(w * ratio);

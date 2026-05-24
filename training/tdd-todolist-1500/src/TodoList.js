@@ -238,8 +238,7 @@ export class TodoList {
     const lowerQuery = query.toLowerCase().trim();
     return this.todos.filter(t =>
       t.text.toLowerCase().includes(lowerQuery) ||
-      t.tags.some(tag => tag.includes(lowerQuery))
-    );
+      t.tags.some(tag => tag.includes(lowerQuery)));
   }
 
   /**

@@ -14,7 +14,7 @@ function createStore(reducer, preloadedState) {
 
   function dispatch(action) {
     state = reducer(state, action);
-    listeners.forEach(listener => listener());
+    listeners.forEach((listener) => listener());
     return action;
   }
 

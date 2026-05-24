@@ -19,7 +19,7 @@ describe('Phase 2 Integration Tests', () => {
     test('should select next question based on ability estimate', () => {
       const answers: Answer[] = [];
       const question = catEngine.selectNextQuestion(answers);
-      
+
       expect(question).toBeDefined();
       expect(question.id).toMatch(/^q_\d+/);
       expect(['E', 'N', 'T', 'J']).toContain(question.dimension);
@@ -34,7 +34,7 @@ describe('Phase 2 Integration Tests', () => {
       ];
 
       const ability = catEngine.estimateAbility(answers);
-      
+
       expect(ability).toHaveLength(4);
       expect(ability[0]).toBeGreaterThan(0); // E dimension should be positive
       expect(ability[1]).toBeLessThan(0); // N dimension should be negative
@@ -42,6 +42,7 @@ describe('Phase 2 Integration Tests', () => {
 
     test('should return initial ability when no answers', () => {
       const ability = catEngine.estimateAbility([]);
+
       expect(ability).toEqual([0, 0, 0, 0]);
     });
 
@@ -53,17 +54,20 @@ describe('Phase 2 Integration Tests', () => {
 
     test('should not terminate before minimum questions', () => {
       const answers = Array(5).fill({ questionId: 'q', dimension: 'E', selectedOption: 'c', timestamp: Date.now() });
+
       expect(catEngine.shouldTerminate(answers)).toBe(false);
     });
 
     test('should terminate when SEM threshold reached', () => {
       // Create enough answers to reduce SEM below threshold
       const answers = Array(15).fill({ questionId: 'q', dimension: 'E', selectedOption: 'c', timestamp: Date.now() });
+
       expect(catEngine.shouldTerminate(answers)).toBe(true);
     });
 
     test('should terminate at maximum questions', () => {
       const answers = Array(20).fill({ questionId: 'q', dimension: 'E', selectedOption: 'c', timestamp: Date.now() });
+
       expect(catEngine.shouldTerminate(answers)).toBe(true);
     });
   });
@@ -72,7 +76,7 @@ describe('Phase 2 Integration Tests', () => {
     test('should return new status for first test', async () => {
       const history: TestHistory[] = [];
       const result = await calculateStability('user1', history);
-      
+
       expect(result.stabilityIndex).toBe(0);
       expect(result.status).toBe('new');
       expect(result.stabilityProbability).toBe(0.5);
@@ -86,7 +90,7 @@ describe('Phase 2 Integration Tests', () => {
       ];
 
       const result = await calculateStability('user1', history);
-      
+
       expect(result.stabilityIndex).toBeGreaterThan(70);
       expect(result.status).toBe('stable');
       expect(result.stabilityProbability).toBeGreaterThan(0.9);
@@ -100,7 +104,7 @@ describe('Phase 2 Integration Tests', () => {
       ];
 
       const result = await calculateStability('user1', history);
-      
+
       expect(result.stabilityIndex).toBeLessThan(60);
       expect(['moderate', 'unstable']).toContain(result.status);
     });
@@ -112,7 +116,7 @@ describe('Phase 2 Integration Tests', () => {
       ];
 
       const result = await calculateStability('user1', history);
-      
+
       expect(result.confidenceBand.lower).toBeLessThanOrEqual(result.stabilityIndex);
       expect(result.confidenceBand.upper).toBeGreaterThanOrEqual(result.stabilityIndex);
       expect(result.confidenceBand.upper - result.confidenceBand.lower).toBeLessThanOrEqual(20);
@@ -123,7 +127,7 @@ describe('Phase 2 Integration Tests', () => {
     test('should calculate MBTI type from ability estimates', () => {
       const ability = [3, 2, -2, 3]; // High E, N, J; Low T
       const result = calculateMBTIType(ability);
-      
+
       expect(result.type).toBe('ENTJ');
       expect(result.dimensions.E.score).toBeGreaterThan(50);
       expect(result.dimensions.N.score).toBeGreaterThan(50);
@@ -134,7 +138,7 @@ describe('Phase 2 Integration Tests', () => {
     test('should handle neutral ability estimates', () => {
       const ability = [0, 0, 0, 0];
       const result = calculateMBTIType(ability);
-      
+
       expect(result.type).toBe('ISFP'); // All scores at 50, defaults to negative pole
       expect(result.dimensions.E.score).toBe(50);
     });
@@ -142,7 +146,7 @@ describe('Phase 2 Integration Tests', () => {
     test('should calculate complete test result', () => {
       const ability = [2, -2, 2, -2];
       const result = calculateResult(ability);
-      
+
       expect(result.mbtiType).toBe('ETFP');
       expect(result.dimensionScores).toBeDefined();
       expect(result.confidence).toBeGreaterThan(0);
@@ -152,10 +156,10 @@ describe('Phase 2 Integration Tests', () => {
     test('should calculate confidence based on score extremity', () => {
       const extremeAbility = [3, 3, 3, 3];
       const neutralAbility = [0, 0, 0, 0];
-      
+
       const extremeResult = calculateMBTIType(extremeAbility);
       const neutralResult = calculateMBTIType(neutralAbility);
-      
+
       expect(extremeResult.confidence).toBeGreaterThan(neutralResult.confidence);
     });
   });
@@ -168,15 +172,15 @@ describe('Phase 2 Integration Tests', () => {
       // Simulate test session
       for (let i = 0; i < 15; i++) {
         const question = catEngine.selectNextQuestion(answers);
-        
+
         // Simulate answer
         const answer: Answer = {
           questionId: question.id,
           dimension: question.dimension,
           selectedOption: ['a', 'b', 'c', 'd', 'e'][Math.floor(Math.random() * 5)],
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
-        
+
         answers.push(answer);
 
         // Check if should terminate
@@ -204,13 +208,13 @@ describe('Phase 2 Integration Tests', () => {
     test('should integrate stability calculation with test results', async () => {
       const catEngine = new CATEngine();
       const userId = 'test-user';
-      
+
       // Simulate multiple test sessions
       const testHistory: TestHistory[] = [];
-      
+
       for (let session = 0; session < 3; session++) {
         const answers: Answer[] = [];
-        
+
         // Complete a test session
         for (let i = 0; i < 12; i++) {
           const question = catEngine.selectNextQuestion(answers);
@@ -218,19 +222,20 @@ describe('Phase 2 Integration Tests', () => {
             questionId: question.id,
             dimension: question.dimension,
             selectedOption: 'c',
-            timestamp: Date.now()
+            timestamp: Date.now(),
           };
+
           answers.push(answer);
         }
-        
+
         const ability = catEngine.estimateAbility(answers);
         const result = calculateResult(ability);
-        
+
         testHistory.push({
           testId: `test-${session}`,
           mbtiType: result.mbtiType,
           dimensionScores: result.dimensionScores,
-          completedAt: Date.now() - (2 - session) * 86400000
+          completedAt: Date.now() - (2 - session) * 86400000,
         });
       }
 
@@ -252,13 +257,15 @@ describe('Phase 2 Integration Tests', () => {
         questionId: 'q',
         dimension: 'E',
         selectedOption: 'c',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       const start = Date.now();
+
       for (let i = 0; i < 100; i++) {
         catEngine.selectNextQuestion(answers);
       }
+
       const duration = Date.now() - start;
 
       expect(duration / 100).toBeLessThan(50);
@@ -269,10 +276,11 @@ describe('Phase 2 Integration Tests', () => {
         testId: 't',
         mbtiType: 'INTJ',
         dimensionScores: { E: 30, N: 70, T: 70, J: 70 },
-        completedAt: Date.now()
+        completedAt: Date.now(),
       });
 
       const start = Date.now();
+
       await calculateStability('user1', history);
       const duration = Date.now() - start;
 

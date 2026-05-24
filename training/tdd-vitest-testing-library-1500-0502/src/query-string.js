@@ -125,7 +125,7 @@ function stringify(obj, options = {}) {
     if (value === null || value === undefined) {
       pairs.push(encodedKey);
     } else if (Array.isArray(value)) {
-      value.forEach(item => {
+      value.forEach((item) => {
         if (encode) {
           pairs.push(`${encodedKey}[]=${encodeURIComponent(String(item))}`);
         } else {
@@ -136,12 +136,10 @@ function stringify(obj, options = {}) {
       Object.entries(value).forEach(([subKey, subValue]) => {
         processValue(`${key}[${subKey}]`, subValue);
       });
+    } else if (encode) {
+      pairs.push(`${encodedKey}=${encodeURIComponent(String(value))}`);
     } else {
-      if (encode) {
-        pairs.push(`${encodedKey}=${encodeURIComponent(String(value))}`);
-      } else {
-        pairs.push(`${encodedKey}=${String(value)}`);
-      }
+      pairs.push(`${encodedKey}=${String(value)}`);
     }
   }
 

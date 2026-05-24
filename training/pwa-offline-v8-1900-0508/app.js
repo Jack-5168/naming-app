@@ -428,7 +428,7 @@ function applyOps(text, ops) {
  */
 function transform(opA, opB) {
   // opA 先应用，opB 需要转换
-  let opBPrime = { ...opB };
+  const opBPrime = { ...opB };
 
   switch (opA.type) {
     case 'insert':
@@ -533,7 +533,7 @@ function setupEventListeners() {
   // 工具栏按钮
   $$('.editor-toolbar button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const cmd = btn.dataset.cmd;
+      const { cmd } = btn.dataset;
       if (cmd) insertMarkdown(cmd);
     });
   });

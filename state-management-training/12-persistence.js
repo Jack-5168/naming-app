@@ -5,9 +5,9 @@
 
 // 持久化中间件
 function createPersistMiddleware(storageKey, storage = localStorage) {
-  return store => next => action => {
+  return (store) => (next) => (action) => {
     const result = next(action);
-    
+
     // 每次 action 后保存状态
     try {
       const state = store.getState();
@@ -16,7 +16,7 @@ function createPersistMiddleware(storageKey, storage = localStorage) {
     } catch (err) {
       console.warn('保存状态失败:', err);
     }
-    
+
     return result;
   };
 }
@@ -55,28 +55,28 @@ function createMigrator(migrations) {
 // ========== 迁移示例 ==========
 const migrations = [
   // v0 → v1: 添加新字段
-  state => ({
+  (state) => ({
     ...state,
-    settings: { theme: 'light', ...state.settings }
+    settings: { theme: 'light', ...state.settings },
   }),
-  
+
   // v1 → v2: 重命名字段
-  state => ({
+  (state) => ({
     ...state,
     userName: state.user?.name,
-    user: undefined
+    user: undefined,
   }),
-  
+
   // v2 → v3: 数据结构变化
-  state => ({
+  (state) => ({
     ...state,
-    todos: state.items?.map(item => ({
+    todos: state.items?.map((item) => ({
       id: item.id,
       text: item.title,
       done: item.completed,
-      createdAt: Date.now()
-    })) || []
-  })
+      createdAt: Date.now(),
+    })) || [],
+  }),
 ];
 
 const migrator = createMigrator(migrations);
@@ -87,14 +87,14 @@ const mockStorage = {
   data: {},
   getItem(key) { return this.data[key] || null; },
   setItem(key, value) { this.data[key] = value; },
-  removeItem(key) { delete this.data[key]; }
+  removeItem(key) { delete this.data[key]; },
 };
 
 // 初始状态
 const initialState = {
   _version: 0,
   todos: [],
-  settings: {}
+  settings: {},
 };
 
 // 创建带持久化的 store
@@ -102,22 +102,22 @@ function createPersistedStore(reducer, storageKey, initialState) {
   // 尝试加载已保存的状态
   const savedState = loadFromStorage(storageKey, mockStorage);
   let preloadedState = initialState;
-  
+
   if (savedState) {
     console.log('找到已保存的状态，版本:', savedState._version);
     // 执行迁移
     preloadedState = migrator(savedState, savedState._version || 0);
   }
-  
+
   let state = reducer(preloadedState, { type: '@@INIT' });
   const listeners = [];
 
   return {
     getState: () => state,
-    dispatch: action => {
+    dispatch: (action) => {
       state = reducer(state, action);
-      listeners.forEach(l => l());
-      
+      listeners.forEach((l) => l());
+
       // 持久化
       try {
         mockStorage.setItem(storageKey, JSON.stringify(state));
@@ -125,15 +125,15 @@ function createPersistedStore(reducer, storageKey, initialState) {
       } catch (err) {
         console.warn('保存失败:', err);
       }
-      
+
       return action;
     },
-    subscribe: listener => {
+    subscribe: (listener) => {
       listeners.push(listener);
       return () => listeners.splice(listeners.indexOf(listener), 1);
     },
     // 调试用
-    getStorage: () => mockStorage.data
+    getStorage: () => mockStorage.data,
   };
 }
 
@@ -142,7 +142,7 @@ const reducer = (state = initialState, action) => {
     case 'ADD_TODO':
       return { ...state, todos: [...state.todos, { id: Date.now(), text: action.text, done: false }] };
     case 'TOGGLE_TODO':
-      return { ...state, todos: state.todos.map(t => t.id === action.id ? { ...t, done: !t.done } : t) };
+      return { ...state, todos: state.todos.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t)) };
     case 'SET_THEME':
       return { ...state, settings: { ...state.settings, theme: action.theme } };
     default:

@@ -12,9 +12,9 @@ function combineReducers(reducers) {
       const reducer = reducers[key];
       const previousState = state[key];
       const nextState = reducer(previousState, action);
-      
+
       newState[key] = nextState;
-      
+
       if (nextState !== previousState) {
         hasChanged = true;
       }
@@ -36,10 +36,8 @@ const userReducer = (state = { name: '', age: 0 }, action = {}) => {
 const todosReducer = (state = [], action = {}) => {
   switch (action.type) {
     case 'ADD_TODO': return [...state, action.payload];
-    case 'REMOVE_TODO': return state.filter(t => t.id !== action.payload);
-    case 'TOGGLE_TODO': return state.map(t => 
-      t.id === action.payload ? { ...t, done: !t.done } : t
-    );
+    case 'REMOVE_TODO': return state.filter((t) => t.id !== action.payload);
+    case 'TOGGLE_TODO': return state.map((t) => (t.id === action.payload ? { ...t, done: !t.done } : t));
     default: return state;
   }
 };
@@ -55,27 +53,27 @@ const themeReducer = (state = 'light', action = {}) => {
 const rootReducer = combineReducers({
   user: userReducer,
   todos: todosReducer,
-  theme: themeReducer
+  theme: themeReducer,
 });
 
 // 创建 store
 function createStore(reducer) {
   let state = reducer();
   const listeners = [];
-  
+
   return {
     getState: () => state,
-    dispatch: action => {
+    dispatch: (action) => {
       state = reducer(state, action);
-      listeners.forEach(l => l());
+      listeners.forEach((l) => l());
     },
-    subscribe: listener => {
+    subscribe: (listener) => {
       listeners.push(listener);
       return () => {
         const i = listeners.indexOf(listener);
         listeners.splice(i, 1);
       };
-    }
+    },
   };
 }
 

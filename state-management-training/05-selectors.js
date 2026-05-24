@@ -4,38 +4,36 @@
  */
 
 // 基础 selector
-const getCount = state => state.count;
-const getUser = state => state.user;
-const getTodos = state => state.todos;
+const getCount = (state) => state.count;
+const getUser = (state) => state.user;
+const getTodos = (state) => state.todos;
 
 // 派生 selector
-const getCompletedTodos = state => 
-  state.todos.filter(todo => todo.done);
+const getCompletedTodos = (state) => state.todos.filter((todo) => todo.done);
 
-const getPendingTodos = state => 
-  state.todos.filter(todo => !todo.done);
+const getPendingTodos = (state) => state.todos.filter((todo) => !todo.done);
 
-const getTodoCount = state => state.todos.length;
+const getTodoCount = (state) => state.todos.length;
 
 // ========== Memoized Selector (类似 Reselect) ==========
 function createSelector(...args) {
   const selectors = args.slice(0, -1);
   const resultFunc = args[args.length - 1];
-  
+
   let lastArgs = null;
   let lastResult = null;
 
   return function memoizedSelector(state) {
-    const selectorArgs = selectors.map(sel => sel(state));
-    
+    const selectorArgs = selectors.map((sel) => sel(state));
+
     // 简单浅比较检查参数是否变化
     const hasChanged = !lastArgs || selectorArgs.some((arg, i) => arg !== lastArgs[i]);
-    
+
     if (hasChanged) {
       lastArgs = selectorArgs;
       lastResult = resultFunc(...selectorArgs);
     }
-    
+
     return lastResult;
   };
 }
@@ -43,14 +41,14 @@ function createSelector(...args) {
 // 使用 createSelector
 const getFilteredTodos = createSelector(
   getTodos,
-  state => state.filter,
+  (state) => state.filter,
   (todos, filter) => {
     console.log('🔄 重新计算过滤器（状态变化了）');
     if (filter === 'all') return todos;
-    if (filter === 'completed') return todos.filter(t => t.done);
-    if (filter === 'pending') return todos.filter(t => !t.done);
+    if (filter === 'completed') return todos.filter((t) => t.done);
+    if (filter === 'pending') return todos.filter((t) => !t.done);
     return todos;
-  }
+  },
 );
 
 // ========== 使用示例 ==========
@@ -63,7 +61,7 @@ const state = {
     { id: 3, text: '任务 3', done: true },
     { id: 4, text: '任务 4', done: false },
   ],
-  filter: 'all'
+  filter: 'all',
 };
 
 console.log('Count:', getCount(state));

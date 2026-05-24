@@ -14,7 +14,7 @@ import {
   lifeEventEvents,
   EVENT_TYPES,
   IMPACT_TYPES,
-  DIMENSIONS
+  DIMENSIONS,
 } from '../src/controllers/life-events';
 
 describe('Life Events Controller', () => {
@@ -64,7 +64,7 @@ describe('Life Events Controller', () => {
         description: '从初级工程师晋升为高级工程师',
         eventDate: new Date().toISOString(),
         expectedImpact: 'positive',
-        actualImpactScore: 80
+        actualImpactScore: 80,
       });
 
       expect(event.id).toBeDefined();
@@ -87,7 +87,7 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'personal',
         title: '测试事件',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
     });
 
@@ -98,7 +98,7 @@ describe('Life Events Controller', () => {
         title: '完成学位',
         eventDate: new Date(),
         eventCategory: 'academic',
-        relatedDimension: 'N'
+        relatedDimension: 'N',
       });
 
       expect(event.eventCategory).toBe('academic');
@@ -112,11 +112,11 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'health',
         title: '开始健身',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
 
       const event = await getLifeEvent(created.id);
-      
+
       expect(event).toBeDefined();
       expect(event?.id).toBe(created.id);
       expect(event?.title).toBe('开始健身');
@@ -124,6 +124,7 @@ describe('Life Events Controller', () => {
 
     it('不存在的事件应该返回 null', async () => {
       const event = await getLifeEvent(99999);
+
       expect(event).toBeNull();
     });
 
@@ -133,36 +134,37 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'career',
         title: '事件 1',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
 
       await createLifeEvent({
         userId: testUserId,
         eventType: 'relationship',
         title: '事件 2',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
 
       const events = await getUserLifeEvents(testUserId);
-      
+
       expect(events.length).toBeGreaterThanOrEqual(2);
     });
 
     it('应该支持日期范围过滤', async () => {
       const pastDate = new Date('2020-01-01');
-      
+
       await createLifeEvent({
         userId: testUserId,
         eventType: 'travel',
         title: '过去的事件',
-        eventDate: pastDate
+        eventDate: pastDate,
       });
 
       const events = await getUserLifeEvents(testUserId, {
-        startDate: new Date('2023-01-01')
+        startDate: new Date('2023-01-01'),
       });
 
-      const pastEvents = events.filter(e => e.title === '过去的事件');
+      const pastEvents = events.filter((e) => e.title === '过去的事件');
+
       expect(pastEvents.length).toBe(0);
     });
 
@@ -171,20 +173,20 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'financial',
         title: '财务事件',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
 
       const events = await getUserLifeEvents(testUserId, {
-        eventType: 'financial'
+        eventType: 'financial',
       });
 
-      expect(events.every(e => e.eventType === 'financial')).toBe(true);
+      expect(events.every((e) => e.eventType === 'financial')).toBe(true);
     });
 
     it('应该支持分页', async () => {
       const events = await getUserLifeEvents(testUserId, {
         limit: 5,
-        offset: 0
+        offset: 0,
       });
 
       expect(events.length).toBeLessThanOrEqual(5);
@@ -197,12 +199,12 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'personal',
         title: '原始标题',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
 
       const updated = await updateLifeEvent(created.id, {
         title: '更新后的标题',
-        actualImpactScore: 75
+        actualImpactScore: 75,
       });
 
       expect(updated?.title).toBe('更新后的标题');
@@ -211,7 +213,7 @@ describe('Life Events Controller', () => {
 
     it('更新不存在的事件应该返回 null', async () => {
       const updated = await updateLifeEvent(99999, {
-        title: '新标题'
+        title: '新标题',
       });
 
       expect(updated).toBeNull();
@@ -222,7 +224,7 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'personal',
         title: '待更新',
-        eventDate: new Date()
+        eventDate: new Date(),
       }).then(async (created) => {
         lifeEventEvents.once('eventUpdated', (data) => {
           expect(data.event).toBeDefined();
@@ -230,7 +232,7 @@ describe('Life Events Controller', () => {
         });
 
         await updateLifeEvent(created.id, {
-          title: '已更新'
+          title: '已更新',
         });
       });
     });
@@ -242,18 +244,21 @@ describe('Life Events Controller', () => {
         userId: testUserId,
         eventType: 'other',
         title: '待删除',
-        eventDate: new Date()
+        eventDate: new Date(),
       });
 
       const deleted = await deleteLifeEvent(created.id);
+
       expect(deleted).toBe(true);
 
       const event = await getLifeEvent(created.id);
+
       expect(event).toBeNull();
     });
 
     it('删除不存在的事件应该返回 false', async () => {
       const deleted = await deleteLifeEvent(99999);
+
       expect(deleted).toBe(false);
     });
   });
@@ -267,7 +272,7 @@ describe('Life Events Controller', () => {
         title: '职业发展',
         eventDate: new Date(),
         expectedImpact: 'positive',
-        actualImpactScore: 80
+        actualImpactScore: 80,
       });
 
       await createLifeEvent({
@@ -277,7 +282,7 @@ describe('Life Events Controller', () => {
         eventDate: new Date(),
         expectedImpact: 'positive',
         actualImpactScore: 70,
-        relatedDimension: 'E'
+        relatedDimension: 'E',
       });
 
       const analysis = await analyzeLifeEvents(testUserId);
@@ -295,7 +300,7 @@ describe('Life Events Controller', () => {
         eventType: 'personal',
         title: '维度相关事件',
         eventDate: new Date(),
-        relatedDimension: 'T'
+        relatedDimension: 'T',
       });
 
       const analysis = await analyzeLifeEvents(testUserId);
@@ -320,14 +325,14 @@ describe('Life Events Controller', () => {
           userId: testUserId,
           eventType: 'career',
           title: '批量事件 1',
-          eventDate: new Date()
+          eventDate: new Date(),
         },
         {
           userId: testUserId,
           eventType: 'education',
           title: '批量事件 2',
-          eventDate: new Date()
-        }
+          eventDate: new Date(),
+        },
       ]);
 
       expect(events.length).toBe(2);
@@ -337,6 +342,7 @@ describe('Life Events Controller', () => {
 
     it('应该导出用户事件', async () => {
       const events = await exportLifeEvents(testUserId);
+
       expect(Array.isArray(events)).toBe(true);
     });
   });
@@ -348,20 +354,16 @@ describe('Life Events Controller', () => {
         eventType: 'personal',
         title: '测试',
         eventDate: new Date(),
-        relatedDimension: 'J'
+        relatedDimension: 'J',
       });
 
       const analysis = await analyzeLifeEvents(testUserId);
-      
+
       // 检查洞察中是否包含非因果声明
-      const hasDisclaimer = analysis.keyInsights.some(insight => 
-        insight.includes('非因果') || insight.includes('探索性') || insight.includes('仅供参考')
-      );
-      
+      const hasDisclaimer = analysis.keyInsights.some((insight) => insight.includes('非因果') || insight.includes('探索性') || insight.includes('仅供参考'));
+
       // 至少应该有相关说明
-      expect(analysis.dimensionCorrelations.some(c => 
-        c.note.includes('探索性') || c.note.includes('仅供参考')
-      )).toBe(true);
+      expect(analysis.dimensionCorrelations.some((c) => c.note.includes('探索性') || c.note.includes('仅供参考'))).toBe(true);
     });
   });
 });

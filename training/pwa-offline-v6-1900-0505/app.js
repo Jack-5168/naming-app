@@ -295,7 +295,7 @@ function bindEvents() {
   DOM.editor.addEventListener('drop', async (e) => {
     e.preventDefault();
     DOM.editor.classList.remove('drag-over');
-    const files = e.dataTransfer.files;
+    const { files } = e.dataTransfer;
     for (const file of files) {
       if (file.type.startsWith('image/')) {
         await insertImageAsMarkdown(file);
@@ -875,7 +875,7 @@ async function insertImageAsMarkdown(file) {
     const markdown = `![${image.name}](img://${image.id})`;
 
     // 插入到编辑器光标位置
-    const editor = DOM.editor;
+    const { editor } = DOM;
     const start = editor.selectionStart;
     const end = editor.selectionEnd;
     const text = editor.value;

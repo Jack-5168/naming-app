@@ -1,6 +1,6 @@
 /**
  * 组件懒加载示例
- * 
+ *
  * 适用于 React/Vue 等现代框架
  * 减少初始包体积，按需加载组件
  */
@@ -108,7 +108,7 @@ class ModuleLoader {
   // 预加载多个模块
   async preload(modulePaths) {
     return Promise.all(
-      modulePaths.map(path => this.load(path))
+      modulePaths.map((path) => this.load(path)),
     );
   }
 
@@ -136,7 +136,7 @@ async function preloadUserActions() {
   await loader.preload([
     './analytics.js',
     './export.js',
-    './print.js'
+    './print.js',
   ]);
 }
 
@@ -157,17 +157,15 @@ class ImageLoader {
   // 预加载关键图片
   preload(sources) {
     return Promise.all(
-      sources.map(src => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            this.loaded.add(src);
-            resolve(img);
-          };
-          img.onerror = reject;
-          img.src = src;
-        });
-      })
+      sources.map((src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          this.loaded.add(src);
+          resolve(img);
+        };
+        img.onerror = reject;
+        img.src = src;
+      })),
     );
   }
 
@@ -182,7 +180,7 @@ class ImageLoader {
     if (!this.observer) {
       this.observer = new IntersectionObserver(
         (entries) => {
-          entries.forEach(entry => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting) {
               const img = entry.target;
               this.loadImage(img);
@@ -190,7 +188,7 @@ class ImageLoader {
             }
           });
         },
-        { rootMargin: '100px 0px' }
+        { rootMargin: '100px 0px' },
       );
     }
 
@@ -225,11 +223,11 @@ const imageLoader = new ImageLoader();
 // 预加载首屏关键图片
 imageLoader.preload([
   '/images/hero.jpg',
-  '/images/logo.png'
+  '/images/logo.png',
 ]);
 
 // 懒加载其他图片
-document.querySelectorAll('img[data-src]').forEach(img => {
+document.querySelectorAll('img[data-src]').forEach((img) => {
   imageLoader.lazyLoad(img);
 });
 
@@ -244,17 +242,17 @@ document.querySelectorAll('img[data-src]').forEach(img => {
  */
 class VirtualList {
   constructor(container, options = {}) {
-    this.container = typeof container === 'string' 
-      ? document.querySelector(container) 
+    this.container = typeof container === 'string'
+      ? document.querySelector(container)
       : container;
-    
+
     this.itemHeight = options.itemHeight || 50;
     this.overscan = options.overscan || 5; // 额外渲染的项数
     this.items = options.items || [];
-    
+
     this.container.style.overflow = 'auto';
     this.container.style.position = 'relative';
-    
+
     // 创建滚动容器和可见区域
     this.spacer = document.createElement('div');
     this.spacer.style.position = 'absolute';
@@ -262,14 +260,14 @@ class VirtualList {
     this.spacer.style.left = 0;
     this.spacer.style.right = 0;
     this.container.appendChild(this.spacer);
-    
+
     this.viewport = document.createElement('div');
     this.viewport.style.position = 'absolute';
     this.viewport.style.top = 0;
     this.viewport.style.left = 0;
     this.viewport.style.right = 0;
     this.container.appendChild(this.viewport);
-    
+
     this.updateSize();
     this.container.addEventListener('scroll', () => this.render());
   }
@@ -288,20 +286,20 @@ class VirtualList {
   render() {
     const scrollTop = this.container.scrollTop;
     const viewportHeight = this.container.clientHeight;
-    
+
     // 计算可见范围
     const startIndex = Math.max(
       0,
-      Math.floor(scrollTop / this.itemHeight) - this.overscan
+      Math.floor(scrollTop / this.itemHeight) - this.overscan,
     );
     const endIndex = Math.min(
       this.items.length,
-      Math.ceil((scrollTop + viewportHeight) / this.itemHeight) + this.overscan
+      Math.ceil((scrollTop + viewportHeight) / this.itemHeight) + this.overscan,
     );
-    
+
     // 更新可见区域位置
     this.viewport.style.transform = `translateY(${startIndex * this.itemHeight}px)`;
-    
+
     // 渲染可见项
     this.viewport.innerHTML = '';
     for (let i = startIndex; i < endIndex; i++) {
@@ -317,8 +315,10 @@ class VirtualList {
 // 使用示例
 const virtualList = new VirtualList('#list-container', {
   itemHeight: 50,
-  items: Array.from({ length: 10000 }, (_, i) => `Item ${i + 1}`)
+  items: Array.from({ length: 10000 }, (_, i) => `Item ${i + 1}`),
 });
 
 // 导出
-export { ModuleLoader, ImageLoader, VirtualList, loadModule };
+export {
+  ModuleLoader, ImageLoader, VirtualList, loadModule,
+};

@@ -106,7 +106,7 @@ http.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const status = response.status;
+    const { status } = response;
 
     switch (status) {
       case 401:

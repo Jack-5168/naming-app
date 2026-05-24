@@ -75,14 +75,13 @@ const ConfigManager = (function () {
       return instance;
     },
   };
-})();
+}());
 
 const cfg1 = ConfigManager.getInstance();
 const cfg2 = ConfigManager.getInstance();
 console.log(cfg1 === cfg2); // true
 cfg1.set('debug', true);
 console.log(cfg2.get('debug')); // true — 共享同一份配置
-
 
 // ============================================================
 // 模式二：观察者模式 (Observer Pattern)
@@ -183,7 +182,6 @@ cart.emit('cart:checkout', 428);
 
 console.log(`\n当前 item:add 监听器数量: ${cart.listenerCount('item:add')}`);
 
-
 // ============================================================
 // 模式组合：单例 + 观察者 = 全局事件总线
 // ============================================================
@@ -202,7 +200,9 @@ class EventBus {
   }
 
   on(event, cb) { return this._emitter.on(event, cb); }
+
   off(event, cb) { return this._emitter.off(event, cb); }
+
   emit(event, ...args) { return this._emitter.emit(event, ...args); }
 }
 

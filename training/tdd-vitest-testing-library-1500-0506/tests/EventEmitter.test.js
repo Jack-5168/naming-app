@@ -2,7 +2,9 @@
  * EventEmitter 测试套件
  * TDD 实战 — 红绿黄循环
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+  describe, it, expect, beforeEach, vi,
+} from 'vitest';
 import { EventEmitter } from '../src/EventEmitter.js';
 
 describe('EventEmitter', () => {
@@ -237,7 +239,7 @@ describe('EventEmitter', () => {
       emitter.on('test', () => {});
       emitter.on('test', () => {});
       expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Possible memory leak')
+        expect.stringContaining('Possible memory leak'),
       );
       warnSpy.mockRestore();
     });

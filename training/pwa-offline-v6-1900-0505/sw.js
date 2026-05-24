@@ -1,6 +1,6 @@
 /**
  * WikiBase — Service Worker v6
- * 
+ *
  * 第六轮迭代核心改进：
  * 1. App Shell 架构 — 分离静态壳与动态内容
  * 2. 智能路由 — 按资源类型自动选择缓存策略
@@ -127,7 +127,7 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAMES.shell).then(c => c.addAll(externalUrls).catch(() => {}));
       }
     })
-    .catch(err => console.error(`[SW ${VERSION}] Shell 缓存失败:`, err))
+      .catch(err => console.error(`[SW ${VERSION}] Shell 缓存失败:`, err))
   );
 
   // 跳过 waiting，立即激活
@@ -234,8 +234,7 @@ async function networkFirst(request, cacheName, options = {}) {
     const response = await Promise.race([
       fetch(request),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('network-timeout')), timeout)
-      ),
+        setTimeout(() => reject(new Error('network-timeout')), timeout)),
     ]);
 
     if (response.ok) {
@@ -455,10 +454,8 @@ self.addEventListener('message', (event) => {
         caches.open(CACHE_NAMES.content).then(cache =>
           Promise.all(
             payload.urls.map(url =>
-              fetch(url).then(resp => cache.put(url, resp)).catch(() => {})
-            )
-          )
-        )
+              fetch(url).then(resp => cache.put(url, resp)).catch(() => {}))
+          ))
       );
       break;
 
@@ -482,12 +479,10 @@ self.addEventListener('message', (event) => {
         caches.keys().then(keys =>
           Promise.all(
             keys.filter(k => k.startsWith(PREFIX)).map(k => caches.delete(k))
-          )
-        ).then(() => {
+          )).then(() => {
           // 重新缓存 Shell
           return caches.open(CACHE_NAMES.shell).then(cache =>
-            cache.addAll(SHELL_URLS.filter(u => !u.startsWith('http')))
-          );
+            cache.addAll(SHELL_URLS.filter(u => !u.startsWith('http'))));
         })
       );
       break;

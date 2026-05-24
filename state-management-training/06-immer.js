@@ -7,10 +7,10 @@
 function produce(baseState, recipe) {
   // 深拷贝创建 draft
   const draft = JSON.parse(JSON.stringify(baseState));
-  
+
   // 执行可变操作
   recipe(draft);
-  
+
   // 返回新状态
   return draft;
 }
@@ -20,9 +20,9 @@ const stateWithoutImmer = {
   user: { name: 'Alice', profile: { age: 25, city: 'Shanghai' } },
   todos: [
     { id: 1, text: '任务 1', done: false },
-    { id: 2, text: '任务 2', done: true }
+    { id: 2, text: '任务 2', done: true },
   ],
-  settings: { theme: 'light', notifications: true }
+  settings: { theme: 'light', notifications: true },
 };
 
 // 深层嵌套更新 - 需要多层展开
@@ -32,27 +32,25 @@ const newState1 = {
     ...stateWithoutImmer.user,
     profile: {
       ...stateWithoutImmer.user.profile,
-      age: 26
-    }
-  }
+      age: 26,
+    },
+  },
 };
 
 // 数组中对象更新
 const newState2 = {
   ...stateWithoutImmer,
-  todos: stateWithoutImmer.todos.map(todo =>
-    todo.id === 1 ? { ...todo, done: true } : todo
-  )
+  todos: stateWithoutImmer.todos.map((todo) => (todo.id === 1 ? { ...todo, done: true } : todo)),
 };
 
 // ========== 使用 Immer 的更新（简洁） ==========
-const newStateWithImmer = produce(stateWithoutImmer, draft => {
+const newStateWithImmer = produce(stateWithoutImmer, (draft) => {
   draft.user.profile.age = 26;
   draft.user.profile.city = 'Beijing';
-  
-  const todo = draft.todos.find(t => t.id === 1);
+
+  const todo = draft.todos.find((t) => t.id === 1);
   if (todo) todo.done = true;
-  
+
   draft.settings.theme = 'dark';
   draft.todos.push({ id: 3, text: '任务 3', done: false });
 });
@@ -62,30 +60,28 @@ console.log('\n使用 Immer 更新后:', JSON.stringify(newStateWithImmer, null,
 console.log('\n原始状态未变:', JSON.stringify(stateWithoutImmer, null, 2));
 
 // ========== 在 Redux Reducer 中使用 ==========
-const todoReducer = (state = { todos: [] }, action) => {
-  return produce(state, draft => {
-    switch (action.type) {
-      case 'ADD_TODO':
-        draft.todos.push({
-          id: Date.now(),
-          text: action.text,
-          done: false
-        });
-        break;
-      case 'TOGGLE_TODO':
-        const todo = draft.todos.find(t => t.id === action.id);
-        if (todo) todo.done = !todo.done;
-        break;
-      case 'DELETE_TODO':
-        draft.todos = draft.todos.filter(t => t.id !== action.id);
-        break;
-      case 'EDIT_TODO':
-        const editTodo = draft.todos.find(t => t.id === action.id);
-        if (editTodo) editTodo.text = action.text;
-        break;
-    }
-  });
-};
+const todoReducer = (state = { todos: [] }, action) => produce(state, (draft) => {
+  switch (action.type) {
+    case 'ADD_TODO':
+      draft.todos.push({
+        id: Date.now(),
+        text: action.text,
+        done: false,
+      });
+      break;
+    case 'TOGGLE_TODO':
+      const todo = draft.todos.find((t) => t.id === action.id);
+      if (todo) todo.done = !todo.done;
+      break;
+    case 'DELETE_TODO':
+      draft.todos = draft.todos.filter((t) => t.id !== action.id);
+      break;
+    case 'EDIT_TODO':
+      const editTodo = draft.todos.find((t) => t.id === action.id);
+      if (editTodo) editTodo.text = action.text;
+      break;
+  }
+});
 
 console.log('\nReducer 测试:');
 let state = { todos: [] };

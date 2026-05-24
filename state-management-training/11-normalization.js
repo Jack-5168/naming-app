@@ -8,7 +8,7 @@ function normalize(array, key = 'id') {
   const byId = {};
   const allIds = [];
 
-  array.forEach(item => {
+  array.forEach((item) => {
     byId[item[key]] = { ...item };
     allIds.push(item[key]);
   });
@@ -18,7 +18,7 @@ function normalize(array, key = 'id') {
 
 // 反规范化 - 从扁平结构重建嵌套数据
 function denormalize(byId, allIds) {
-  return allIds.map(id => byId[id]);
+  return allIds.map((id) => byId[id]);
 }
 
 // ========== 示例数据 ==========
@@ -30,18 +30,18 @@ const nestedData = {
       author: { id: 1, name: 'Alice' },
       comments: [
         { id: 1, text: 'Comment 1', author: { id: 2, name: 'Bob' } },
-        { id: 2, text: 'Comment 2', author: { id: 1, name: 'Alice' } }
-      ]
+        { id: 2, text: 'Comment 2', author: { id: 1, name: 'Alice' } },
+      ],
     },
     {
       id: 2,
       title: 'Post 2',
       author: { id: 2, name: 'Bob' },
       comments: [
-        { id: 3, text: 'Comment 3', author: { id: 1, name: 'Alice' } }
-      ]
-    }
-  ]
+        { id: 3, text: 'Comment 3', author: { id: 1, name: 'Alice' } },
+      ],
+    },
+  ],
 };
 
 console.log('=== 原始嵌套数据 ===');
@@ -52,10 +52,10 @@ function normalizePosts(posts) {
   const result = {
     posts: { byId: {}, allIds: [] },
     users: { byId: {}, allIds: [] },
-    comments: { byId: {}, allIds: [] }
+    comments: { byId: {}, allIds: [] },
   };
 
-  posts.forEach(post => {
+  posts.forEach((post) => {
     // 规范化作者
     if (!result.users.byId[post.author.id]) {
       result.users.byId[post.author.id] = { ...post.author };
@@ -66,12 +66,12 @@ function normalizePosts(posts) {
     result.posts.byId[post.id] = {
       ...post,
       author: post.author.id,
-      comments: post.comments.map(c => c.id)
+      comments: post.comments.map((c) => c.id),
     };
     result.posts.allIds.push(post.id);
 
     // 规范化评论
-    post.comments.forEach(comment => {
+    post.comments.forEach((comment) => {
       if (!result.users.byId[comment.author.id]) {
         result.users.byId[comment.author.id] = { ...comment.author };
         result.users.allIds.push(comment.author.id);
@@ -79,7 +79,7 @@ function normalizePosts(posts) {
 
       result.comments.byId[comment.id] = {
         ...comment,
-        author: comment.author.id
+        author: comment.author.id,
       };
       result.comments.allIds.push(comment.id);
     });
@@ -105,10 +105,10 @@ const normalizedReducer = (state = normalized, action) => {
             ...state.users.byId,
             [action.userId]: {
               ...state.users.byId[action.userId],
-              name: action.name
-            }
-          }
-        }
+              name: action.name,
+            },
+          },
+        },
       };
     }
 
@@ -116,13 +116,13 @@ const normalizedReducer = (state = normalized, action) => {
       const newComment = {
         id: action.comment.id,
         text: action.comment.text,
-        author: action.comment.authorId
+        author: action.comment.authorId,
       };
       return {
         ...state,
         comments: {
           byId: { ...state.comments.byId, [action.comment.id]: newComment },
-          allIds: [...state.comments.allIds, action.comment.id]
+          allIds: [...state.comments.allIds, action.comment.id],
         },
         posts: {
           ...state.posts,
@@ -130,10 +130,10 @@ const normalizedReducer = (state = normalized, action) => {
             ...state.posts.byId,
             [action.postId]: {
               ...state.posts.byId[action.postId],
-              comments: [...state.posts.byId[action.postId].comments, action.comment.id]
-            }
-          }
-        }
+              comments: [...state.posts.byId[action.postId].comments, action.comment.id],
+            },
+          },
+        },
       };
     }
 
@@ -156,7 +156,7 @@ console.log('Users:', state.users.byId[1]);
 state = normalizedReducer(state, {
   type: 'ADD_COMMENT',
   postId: 1,
-  comment: { id: 4, text: 'New Comment', authorId: 2 }
+  comment: { id: 4, text: 'New Comment', authorId: 2 },
 });
 console.log('\n添加评论后:');
 console.log('Comments allIds:', state.comments.allIds);

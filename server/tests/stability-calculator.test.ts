@@ -1,6 +1,6 @@
 /**
  * 人格稳定性计算器 - 单元测试
- * 
+ *
  * 测试覆盖:
  * 1. Monte Carlo 模拟分布正确性
  * 2. Bootstrap 重采样正确性
@@ -28,7 +28,7 @@ describe('StabilityCalculator', () => {
   function createTestResult(
     userId: number,
     testDate: number,
-    scores: { O: number; C: number; E: number; A: number; N: number }
+    scores: { O: number; C: number; E: number; A: number; N: number },
   ): TestResult {
     return {
       id: Math.floor(Math.random() * 10000),
@@ -51,7 +51,7 @@ describe('StabilityCalculator', () => {
           E: baseScores.E + (Math.random() - 0.5) * 4,
           A: baseScores.A + (Math.random() - 0.5) * 4,
           N: baseScores.N + (Math.random() - 0.5) * 4,
-        })
+        }),
       );
     }
 
@@ -71,7 +71,7 @@ describe('StabilityCalculator', () => {
           E: baseScores.E + (Math.random() - 0.5) * 40,
           A: baseScores.A + (Math.random() - 0.5) * 40,
           N: baseScores.N + (Math.random() - 0.5) * 40,
-        })
+        }),
       );
     }
 
@@ -180,16 +180,18 @@ describe('StabilityCalculator', () => {
 
       // 多次运行检查一致性
       const results: number[] = [];
+
       for (let i = 0; i < 5; i++) {
         const result = await calculator.calculateStability(userId, tests);
+
         results.push(result.stabilityIndex);
       }
 
       // 稳定性指数的标准差应该较小 (结果一致)
       const mean = results.reduce((a, b) => a + b, 0) / results.length;
       const std = Math.sqrt(
-        results.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
-          results.length
+        results.reduce((sum, val) => sum + (val - mean) ** 2, 0)
+          / results.length,
       );
 
       expect(std).toBeLessThan(0.05); // 波动应小于 5%
@@ -261,6 +263,7 @@ describe('StabilityCalculator', () => {
       // 每个维度都应包含 mean, std, cv
       for (const dim of ['O', 'C', 'E', 'A', 'N']) {
         const dimStats = (result.perDimension as any)[dim];
+
         expect(dimStats).toHaveProperty('mean');
         expect(dimStats).toHaveProperty('std');
         expect(dimStats).toHaveProperty('cv');
@@ -275,8 +278,8 @@ describe('StabilityCalculator', () => {
 
       for (const dim of ['O', 'C', 'E', 'A', 'N']) {
         const dimStats = (result.perDimension as any)[dim];
-        const expectedCV =
-          dimStats.mean !== 0 ? dimStats.std / dimStats.mean : 0;
+        const expectedCV = dimStats.mean !== 0 ? dimStats.std / dimStats.mean : 0;
+
         expect(Math.abs(dimStats.cv - expectedCV)).toBeLessThan(0.0001);
       }
     });
@@ -288,6 +291,7 @@ describe('StabilityCalculator', () => {
       const tests = createStableTestData(userId, 50);
 
       const startTime = Date.now();
+
       await calculator.calculateStability(userId, tests);
       const calculationTime = Date.now() - startTime;
 
@@ -296,9 +300,11 @@ describe('StabilityCalculator', () => {
 
     it('支持并发计算', async () => {
       const promises = [];
+
       for (let i = 0; i < 10; i++) {
         const userId = 100 + i;
         const tests = createStableTestData(userId, 20);
+
         promises.push(calculator.calculateStability(userId, tests));
       }
 
@@ -404,14 +410,15 @@ describe('精度验证', () => {
       const [lower, upper] = result.confidenceBand;
 
       if (
-        result.stabilityIndex >= lower &&
-        result.stabilityIndex <= upper
+        result.stabilityIndex >= lower
+        && result.stabilityIndex <= upper
       ) {
         coveredCount++;
       }
     }
 
     const coverageRate = coveredCount / coverageCount;
+
     expect(coverageRate).toBeGreaterThan(0.95);
   });
 });

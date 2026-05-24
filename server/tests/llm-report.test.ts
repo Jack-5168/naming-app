@@ -9,7 +9,7 @@ import {
   reportEvents,
   BASIC_REPORT_TEMPLATE,
   PRO_REPORT_TEMPLATE,
-  MASTER_REPORT_TEMPLATE
+  MASTER_REPORT_TEMPLATE,
 } from '../src/services/llm-report';
 
 describe('LLM Report Service', () => {
@@ -41,6 +41,7 @@ describe('LLM Report Service', () => {
   describe('限流控制', () => {
     it('应该允许首次请求', () => {
       const status = getRateLimitStatus('user-1', '192.168.1.1');
+
       expect(status.userRemaining).toBe(3);
       expect(status.ipRemaining).toBe(50);
     });
@@ -57,7 +58,7 @@ describe('LLM Report Service', () => {
             clientIp,
             resultId: 1,
             reportType: 'basic',
-            includeSections: []
+            includeSections: [],
           });
         } catch (error) {
           // 忽略错误
@@ -65,6 +66,7 @@ describe('LLM Report Service', () => {
       }
 
       const status = getRateLimitStatus(userId, clientIp);
+
       expect(status.userRemaining).toBe(0);
     });
 
@@ -79,7 +81,7 @@ describe('LLM Report Service', () => {
             clientIp,
             resultId: i,
             reportType: 'basic',
-            includeSections: []
+            includeSections: [],
           });
         } catch (error) {
           // 忽略错误
@@ -87,19 +89,21 @@ describe('LLM Report Service', () => {
       }
 
       const status = getRateLimitStatus('new-user', clientIp);
+
       expect(status.ipRemaining).toBe(0);
     });
 
     it('重置限流后应该恢复额度', () => {
       const userId = 'user-reset-test';
-      
+
       // 先消耗一些额度
       getRateLimitStatus(userId, '192.168.1.1');
-      
+
       // 重置
       resetRateLimit(userId);
-      
+
       const status = getRateLimitStatus(userId, '192.168.1.1');
+
       expect(status.userRemaining).toBe(3);
     });
   });
@@ -111,7 +115,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.1',
         resultId: 1,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
 
       expect(result).toBeDefined();
@@ -128,7 +132,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.2',
         resultId: 2,
         reportType: 'pro',
-        includeSections: []
+        includeSections: [],
       });
 
       expect(result).toBeDefined();
@@ -141,7 +145,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.3',
         resultId: 3,
         reportType: 'master',
-        includeSections: []
+        includeSections: [],
       });
 
       expect(result).toBeDefined();
@@ -154,7 +158,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.4',
         resultId: 4,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
 
       expect(result.content).toContain('免责声明');
@@ -174,7 +178,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.5',
         resultId: 5,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
     });
 
@@ -191,7 +195,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.6',
         resultId: 6,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
     });
   });
@@ -203,7 +207,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.7',
         resultId: 7,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
 
       // 基础报告应该至少有内容
@@ -218,7 +222,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.8',
         resultId: 8,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
 
       expect(result.cost).toBeLessThan(0.5);
@@ -232,7 +236,7 @@ describe('LLM Report Service', () => {
         clientIp: '192.168.1.9',
         resultId: 9,
         reportType: 'basic',
-        includeSections: []
+        includeSections: [],
       });
 
       expect(result.generationTime).toBeLessThan(15000);

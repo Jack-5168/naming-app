@@ -2,7 +2,9 @@
  * LRUCache 测试套件
  * TDD 实战 — 红绿黄循环
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+  describe, it, expect, beforeEach, vi,
+} from 'vitest';
 import { LRUCache } from '../src/LRUCache.js';
 
 describe('LRUCache', () => {

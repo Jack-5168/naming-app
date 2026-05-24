@@ -12,7 +12,7 @@ import {
   getMaxRetries,
   cleanupOldRecords,
   exportUsageRecords,
-  costEvents
+  costEvents,
 } from '../src/services/cost-control';
 
 describe('CostControl', () => {
@@ -31,15 +31,15 @@ describe('CostControl', () => {
     it('应该有正确的模型策略', () => {
       expect(COST_CONTROL.modelStrategy.basic_report).toEqual({
         model: 'gpt-4o-mini',
-        maxTokens: 1500
+        maxTokens: 1500,
       });
       expect(COST_CONTROL.modelStrategy.pro_report).toEqual({
         model: 'gpt-4o-mini',
-        maxTokens: 3500
+        maxTokens: 3500,
       });
       expect(COST_CONTROL.modelStrategy.master_report).toEqual({
         model: 'gpt-4o-mini',
-        maxTokens: 5000
+        maxTokens: 5000,
       });
     });
 
@@ -53,24 +53,28 @@ describe('CostControl', () => {
   describe('getModelStrategy', () => {
     it('应该返回基础报告策略', () => {
       const strategy = getModelStrategy('basic');
+
       expect(strategy.model).toBe('gpt-4o-mini');
       expect(strategy.maxTokens).toBe(1500);
     });
 
     it('应该返回专业报告策略', () => {
       const strategy = getModelStrategy('pro');
+
       expect(strategy.model).toBe('gpt-4o-mini');
       expect(strategy.maxTokens).toBe(3500);
     });
 
     it('应该返回大师报告策略', () => {
       const strategy = getModelStrategy('master');
+
       expect(strategy.model).toBe('gpt-4o-mini');
       expect(strategy.maxTokens).toBe(5000);
     });
 
     it('未知类型应该返回默认策略', () => {
       const strategy = getModelStrategy('unknown');
+
       expect(strategy.model).toBe('gpt-4o-mini');
       expect(strategy.maxTokens).toBe(1500);
     });
@@ -79,6 +83,7 @@ describe('CostControl', () => {
   describe('getFallbackModel', () => {
     it('应该返回降级模型', () => {
       const fallback = getFallbackModel();
+
       expect(fallback).toBe('claude-haiku');
     });
   });
@@ -86,6 +91,7 @@ describe('CostControl', () => {
   describe('getMaxRetries', () => {
     it('应该返回最大重试次数', () => {
       const retries = getMaxRetries();
+
       expect(retries).toBe(2);
     });
   });
@@ -93,6 +99,7 @@ describe('CostControl', () => {
   describe('getBudgetStatus', () => {
     it('初始状态应该为零', () => {
       const status = getBudgetStatus();
+
       expect(status.dailyUsed).toBe(0);
       expect(status.monthlyUsed).toBe(0);
       expect(status.dailyRemaining).toBe(100);
@@ -109,10 +116,11 @@ describe('CostControl', () => {
         cost: 0.05,
         model: 'gpt-4o-mini',
         reportType: 'basic',
-        userId: 'test-user'
+        userId: 'test-user',
       });
 
       const status = getBudgetStatus();
+
       expect(status.dailyUsed).toBeGreaterThan(0);
       expect(status.dailyRemaining).toBeLessThan(100);
     });
@@ -121,6 +129,7 @@ describe('CostControl', () => {
   describe('isWithinBudget', () => {
     it('小额度应该在预算内', () => {
       const within = isWithinBudget(0.1);
+
       expect(within).toBe(true);
     });
 
@@ -129,6 +138,7 @@ describe('CostControl', () => {
       const status = getBudgetStatus();
       const overAmount = status.dailyRemaining + 1;
       const within = isWithinBudget(overAmount);
+
       expect(within).toBe(false);
     });
   });
@@ -150,7 +160,7 @@ describe('CostControl', () => {
           cost: 1,
           model: 'gpt-4o-mini',
           reportType: 'basic',
-          userId: 'test-user'
+          userId: 'test-user',
         });
       }
     });
@@ -159,14 +169,16 @@ describe('CostControl', () => {
   describe('exportUsageRecords', () => {
     it('应该导出使用记录', () => {
       const records = exportUsageRecords();
+
       expect(Array.isArray(records)).toBe(true);
     });
 
     it('应该支持日期范围过滤', () => {
       const now = Date.now();
       const yesterday = now - 24 * 60 * 60 * 1000;
-      
+
       const records = exportUsageRecords(yesterday, now);
+
       expect(Array.isArray(records)).toBe(true);
     });
   });

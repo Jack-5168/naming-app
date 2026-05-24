@@ -13,9 +13,9 @@ function createZustand(reducer) {
     set(target, prop, value) {
       target[prop] = value;
       // 状态变化时通知所有订阅者
-      listeners.forEach(listener => listener(proxyState));
+      listeners.forEach((listener) => listener(proxyState));
       return true;
-    }
+    },
   });
 
   return {
@@ -30,7 +30,7 @@ function createZustand(reducer) {
     subscribe: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
-    }
+    },
   };
 }
 
@@ -38,7 +38,7 @@ function createZustand(reducer) {
 const useStore = createZustand(() => ({
   count: 0,
   name: 'Zustand',
-  items: []
+  items: [],
 }));
 
 console.log('初始状态:', useStore.getState());
@@ -48,14 +48,14 @@ useStore.setState({ count: 1 });
 console.log('设置 count=1:', useStore.getState());
 
 // 函数式更新
-useStore.setState(state => {
+useStore.setState((state) => {
   state.count += 5;
   state.name = 'Updated';
 });
 console.log('函数式更新后:', useStore.getState());
 
 // 添加订阅
-useStore.subscribe(state => {
+useStore.subscribe((state) => {
   console.log('🔔 状态变化:', JSON.stringify(state));
 });
 

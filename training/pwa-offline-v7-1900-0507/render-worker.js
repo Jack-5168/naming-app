@@ -281,7 +281,7 @@ const parser = new MarkdownParser();
 let renderCount = 0;
 let totalRenderTime = 0;
 
-self.onmessage = function(e) {
+self.onmessage = function (e) {
   const { type, markdown, id } = e.data;
 
   switch (type) {
