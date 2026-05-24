@@ -1,12 +1,12 @@
 {
-  "lastUpdated": "2026-05-23T22:00:00+08:00",
-  "summaryDate": "2026-05-23",
+  "lastUpdated": "2026-05-24T23:00:00+08:00",
+  "summaryDate": "2026-05-24",
   "checks": {
     "build": {
       "time": "22:00",
       "status": "passed",
       "score": 4,
-      "issues": []      
+      "issues": []
     },
     "codeQuality": {
       "time": "22:00",
@@ -41,14 +41,15 @@
     }
   },
   "dailySummary": {
-    "totalCommits": 4,
-    "modifiedFiles": 0,
-    "newFiles": 0,
+    "totalCommits": 6,
+    "modifiedFiles": "~5 docs + README.md",
+    "newFiles": "~5 文档 + 1 binary",
     "buildStatus": "success",
-    "tsErrors": 0
+    "tsErrors": 0,
+    "securityScore": 8.5
   },
   "alerts": [],
-  "nextCron": "pl-summary-0730 2026-05-24T07:30:00+08:00",
-  "gitStatus": "diverged - local 17 commits behind remote 109 commits - reset to origin",
+  "nextCron": "pl-summary-0730 2026-05-25T07:30:00+08:00",
+  "gitStatus": "clean",
   "note": "本地状态已保存workspace，不影响cron运行"
 }
