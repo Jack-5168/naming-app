@@ -10,6 +10,7 @@
 
 - [Authentication](#authentication)
 - [Auth Module](#auth-module)
+- [Users Module](#users-module)
 - [Test Module](#test-module)
 - [Report Module](#report-module)
 - [Payment Module](#payment-module)
@@ -152,6 +153,46 @@ Authorization: Bearer <token>
 
 ---
 
+## Users Module
+
+**Base Path:** `/api/v1/users`
+
+### GET /users/me
+
+Get current authenticated user information.
+
+**Access:** Private
+
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "nickname": "探索者",
+    "avatarUrl": "https://...",
+    "gender": 1,
+    "city": "上海",
+    "province": "上海",
+    "country": "中国",
+    "phone": "+86 138****8888",
+    "isMember": true,
+    "membershipLevel": "standard",
+    "membershipExpiry": "2025-12-31T23:59:59.000Z",
+    "testCount": 5,
+    "createdAt": "2026-05-01T10:00:00.000Z",
+    "lastLoginAt": "2026-05-10T15:30:00.000Z"
+  }
+}
+```
+
+---
+
 ## Test Module
 
 **Base Path:** `/api/v1/tests`
@@ -203,7 +244,7 @@ Authorization: Bearer <token>
     "questionNumber": 3,
     "totalQuestions": 15,
     "progress": 20,
-    "startedAt": "2024-01-01T10:00:00Z"
+    "startedAt": "2026-05-01T10:00:00Z"
   }
 }
 ```
@@ -303,7 +344,7 @@ Authorization: Bearer <token>
       "J": 45
     },
     "stabilityIndex": 0.85,
-    "completedAt": "2024-01-01T10:08:00Z"
+    "completedAt": "2026-05-01T10:08:00Z"
   }
 }
 ```
@@ -335,7 +376,7 @@ Authorization: Bearer <token>
       "J": 45
     },
     "stabilityIndex": 0.85,
-    "createdAt": "2024-01-01T10:08:00Z"
+    "createdAt": "2026-05-01T10:08:00Z"
   }
 }
 ```
@@ -437,7 +478,7 @@ Authorization: Bearer <token>
         "reportType": "basic",
         "title": "ENFP 人格分析报告",
         "isUnlocked": true,
-        "createdAt": "2024-01-01T10:10:00Z"
+        "createdAt": "2026-05-01T10:10:00Z"
       }
     ],
     "total": 5,
@@ -515,7 +556,7 @@ Authorization: Bearer <token>
   "success": true,
   "data": {
     "isUnlocked": true,
-    "unlockedAt": "2024-01-01T10:15:00Z"
+    "unlockedAt": "2026-05-01T10:15:00Z"
   }
 }
 ```
@@ -580,7 +621,7 @@ WeChat payment webhook callback.
   "orderId": 789,
   "transactionId": "wx20240101100001",
   "status": "SUCCESS",
-  "timestamp": "2024-01-01T10:00:00Z",
+  "timestamp": "2026-05-01T10:00:00Z",
   "sign": "..."
 }
 ```
@@ -621,7 +662,7 @@ Authorization: Bearer <token>
         "orderNo": "ORD20240101100001",
         "amount": 990,
         "status": "success",
-        "paymentTime": "2024-01-01T10:00:00Z",
+        "paymentTime": "2026-05-01T10:00:00Z",
         "productInfo": {
           "name": "标准会员",
           "type": "membership"
@@ -658,7 +699,7 @@ Authorization: Bearer <token>
     "amount": 990,
     "currency": "CNY",
     "status": "success",
-    "paymentTime": "2024-01-01T10:00:00Z",
+    "paymentTime": "2026-05-01T10:00:00Z",
     "productInfo": {
       "id": 2,
       "name": "标准会员",
@@ -881,7 +922,7 @@ Authorization: Bearer <token>
   "data": {
     "dualTestId": "dt_xxx",
     "inviteCode": "ABC123",
-    "expiresAt": "2024-01-08T10:00:00Z"
+    "expiresAt": "2026-05-08T10:00:00Z"
   }
 }
 ```
@@ -966,7 +1007,7 @@ Authorization: Bearer <token>
     "status": "pending",
     "inviter": { "id": 1, "nickname": "探索者" },
     "invitee": null,
-    "expiresAt": "2024-01-08T10:00:00Z"
+    "expiresAt": "2026-05-08T10:00:00Z"
   }
 }
 ```
@@ -1069,7 +1110,7 @@ Authorization: Bearer <token>
         "amount": 29.00,
         "referralUserId": 456,
         "status": "completed",
-        "createdAt": "2024-01-01T10:00:00Z"
+        "createdAt": "2026-05-01T10:00:00Z"
       }
     ]
   }
@@ -1151,7 +1192,7 @@ Health check endpoint for monitoring.
 ```json
 {
   "status": "ok",
-  "timestamp": "2024-01-01T10:00:00.000Z",
+  "timestamp": "2026-05-01T10:00:00.000Z",
   "uptime": 3600.5
 }
 ```
@@ -1256,4 +1297,4 @@ Future versions will follow the pattern: `/api/v2/...`
 
 ---
 
-*Last updated: 2024-01-01*
+*Last updated: 2026-05-01*

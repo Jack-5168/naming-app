@@ -148,6 +148,46 @@ docker-compose exec api npx prisma migrate deploy
 | POST | `/upgrade` | 升级会员 |
 | GET | `/benefits` | 获取会员权益 |
 
+### 双重测试模块 `/api/v1/dual-test`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/invite/:code` | 通过邀请码获取测试 |
+| POST | `/create` | 创建双人合测邀请 |
+| POST | `/accept` | 接受邀请 |
+| POST | `/complete` | 完成双人测试 |
+| GET | `/:id` | 获取合测详情 |
+| GET | `/:id/report` | 获取对比报告 |
+
+### 分享模块 `/api/v1/share`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/invite-code/:code` | 验证邀请码 |
+| POST | `/invite-code` | 创建邀请码 |
+| GET | `/card/personality` | 生成人格分享卡片 |
+| GET | `/card/stability` | 生成稳定性分享卡片 |
+
+### 成长模块 `/api/v1/growth`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/dual-test/create` | 创建双人合测邀请 |
+| POST | `/dual-test/accept` | 接受合测邀请 |
+| POST | `/dual-test/complete` | 完成双人测试 |
+| GET | `/share-card/personality` | 人格分享卡片 |
+| GET | `/share-card/stability` | 稳定性卡片 |
+| GET | `/koc/referral-link` | 获取推广链接 |
+| GET | `/koc/commissions` | 佣金记录 |
+| POST | `/koc/withdraw` | 提现申请 |
+| GET | `/koc/dashboard` | KOC 数据面板 |
+
+### 用户模块 `/api/v1/users`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/me` | 获取当前用户信息 |
+
 ### 健康检查
 
 ```bash
@@ -204,21 +244,36 @@ persona-lab/
 │   │   │   ├── tests.ts
 │   │   │   ├── reports.ts
 │   │   │   ├── payments.ts
-│   │   │   └── memberships.ts
+│   │   │   ├── memberships.ts
+│   │   │   ├── growth.ts
+│   │   │   ├── dual-test.ts
+│   │   │   ├── share.ts
+│   │   │   └── life-events.ts
 │   │   ├── routes/          # 路由
 │   │   │   ├── index.ts
 │   │   │   ├── auth.ts
 │   │   │   ├── tests.ts
 │   │   │   ├── reports.ts
 │   │   │   ├── payments.ts
-│   │   │   └── memberships.ts
-│   │   ├── middleware/      # 中间件
-│   │   ├── services/        # 业务服务
+│   │   │   ├── memberships.ts
+│   │   │   ├── growth.ts
+│   │   │   ├── dual-test.ts
+│   │   │   └── share.ts
+│   │   ├── middleware/      # 中间件 (auth, validation)
+│   │   ├── services/        # 业务逻辑
+│   │   │   ├── cat-engine.ts      # 自适应测试引擎
+│   │   │   ├── big5-to-mbti.ts  # 大五转MBTI
+│   │   │   ├── stability*.ts  # 稳定性计算
+│   │   │   └── llm-report.ts # AI报告生成
 │   │   ├── security/        # 安全相关
-│   │   └── types/           # 类型定义
+│   │   ├── models/         # 数据模型
+│   │   ├── types/          # 类型定义
+│   │   └── utils/          # 工具函数
+│   ├── prisma/             # 数据库schema
 │   ├── .env.example
 │   └── package.json
-├── miniapp/                 # 微信小程序
+├── docs/                   # 文档
+├── miniapp/                # 微信小程序
 ├── docker-compose.yml
 └── README.md
 ```
