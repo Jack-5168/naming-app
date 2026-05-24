@@ -12,6 +12,7 @@ import { PrismaClient } from '@prisma/client';
 import path from 'path';
 
 // Import routes
+import fs from 'fs';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import testRoutes from './routes/tests';
@@ -19,6 +20,8 @@ import reportRoutes from './routes/reports';
 import membershipRoutes from './routes/memberships';
 import paymentRoutes from './routes/payments';
 import growthRoutes from './routes/growth';
+
+// Create logs directory if it doesn't exist
 
 // Initialize Prisma
 const prisma = new PrismaClient();
@@ -29,7 +32,7 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
   transports: [
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
@@ -59,6 +62,7 @@ const limiter = rateLimit({
   max: parseInt(process.env.RATE_LIMIT_USER || '100'), // per user
   keyGenerator: (req: Request) => (req as any).user?.id?.toString() || req.ip || 'unknown',
 });
+
 app.use('/api/', limiter);
 
 const ipLimiter = rateLimit({
@@ -66,6 +70,7 @@ const ipLimiter = rateLimit({
   max: parseInt(process.env.RATE_LIMIT_IP || '500'), // per IP
   keyGenerator: (req: Request) => req.ip || 'unknown',
 });
+
 app.use('/api/', ipLimiter);
 
 // Body parsing
@@ -83,8 +88,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '1.0.0',
   });
@@ -119,7 +124,7 @@ app.use('/api/v1/growth', growthRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
     error: 'Not found',
     path: req.path,
@@ -147,10 +152,8 @@ process.on('SIGINT', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
-
-// Create logs directory if it doesn't exist
-import fs from 'fs';
 const logsDir = path.join(__dirname, '../../logs');
+
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }

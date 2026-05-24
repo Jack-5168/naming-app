@@ -1,7 +1,7 @@
 /**
  * Authentication Security Module
  * Phase 1: MVP Implementation
- * 
+ *
  * Features:
  * - JWT token generation and verification
  * - Refresh token management (in-memory for MVP)
@@ -63,7 +63,7 @@ export function generateAccessToken(userId: number, email: string, deviceId?: st
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 7200, // 2 hours
   };
-  
+
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRATION,
   });
@@ -74,7 +74,7 @@ export function generateAccessToken(userId: number, email: string, deviceId?: st
  */
 export async function generateRefreshToken(userId: number, deviceId?: string): Promise<{ token: string; tokenId: string }> {
   const tokenId = crypto.randomBytes(32).toString('hex');
-  
+
   const payload: RefreshTokenPayload = {
     userId,
     tokenId,
@@ -82,11 +82,11 @@ export async function generateRefreshToken(userId: number, deviceId?: string): P
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 2592000, // 30 days
   };
-  
+
   const token = jwt.sign(payload, JWT_REFRESH_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRATION,
   });
-  
+
   // Store refresh token in memory for MVP
   refreshTokensStore.set(tokenId, {
     userId,
@@ -95,7 +95,7 @@ export async function generateRefreshToken(userId: number, deviceId?: string): P
     expiresAt: new Date(payload.exp * 1000),
     revoked: false,
   });
-  
+
   return { token, tokenId };
 }
 
@@ -106,6 +106,7 @@ export async function generateRefreshToken(userId: number, deviceId?: string): P
  */
 export function verifyAccessToken(token: string): JWTPayload {
   const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+
   return decoded;
 }
 
@@ -114,14 +115,14 @@ export function verifyAccessToken(token: string): JWTPayload {
  */
 export async function verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
   const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
-  
+
   // Check if token is revoked or expired
   const storedToken = refreshTokensStore.get(decoded.tokenId);
-  
+
   if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
     throw new Error('Refresh token is invalid or revoked');
   }
-  
+
   return decoded;
 }
 
@@ -132,6 +133,7 @@ export async function verifyRefreshToken(token: string): Promise<RefreshTokenPay
  */
 export async function revokeRefreshToken(tokenId: string): Promise<void> {
   const storedToken = refreshTokensStore.get(tokenId);
+
   if (storedToken) {
     storedToken.revoked = true;
     refreshTokensStore.set(tokenId, storedToken);
@@ -160,7 +162,7 @@ export function generateDeviceFingerprint(userAgent: string, ip: string, headers
     .createHash('sha256')
     .update(`${userAgent}|${ip}|${headers['accept-language'] || ''}`)
     .digest('hex');
-  
+
   return fingerprint;
 }
 
@@ -171,7 +173,7 @@ export function generateDeviceFingerprint(userAgent: string, ip: string, headers
 export async function validateDeviceFingerprint(
   userId: number,
   fingerprint: string,
-  userAgent: string
+  userAgent: string,
 ): Promise<{ valid: boolean; isNew: boolean }> {
   // For MVP, accept all fingerprints
   return { valid: true, isNew: false };
@@ -185,7 +187,7 @@ export async function recordDeviceFingerprint(
   userId: number,
   fingerprint: string,
   userAgent: string,
-  ip: string
+  ip: string,
 ): Promise<void> {
   // No-op for MVP
 }
@@ -200,7 +202,7 @@ export async function detectAnomalousLogin(
   userId: number,
   ip: string,
   userAgent: string,
-  location?: string
+  location?: string,
 ): Promise<{ anomalous: boolean; reasons: string[] }> {
   // For MVP, no anomaly detection
   return { anomalous: false, reasons: [] };
@@ -214,7 +216,7 @@ export async function recordLogin(
   userId: number,
   ip: string,
   userAgent: string,
-  success: boolean
+  success: boolean,
 ): Promise<void> {
   try {
     await prisma.user.update({
@@ -237,23 +239,23 @@ export async function recordLogin(
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
         error: 'No token provided',
       });
     }
-    
+
     const token = authHeader.substring(7);
     const payload = verifyAccessToken(token);
-    
+
     (req as any).user = {
       id: payload.userId,
       email: payload.email,
       deviceId: payload.deviceId,
     };
-    
+
     next();
   } catch (error) {
     return res.status(401).json({

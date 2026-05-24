@@ -1,6 +1,6 @@
 /**
  * 人格稳定性指数计算 - 类型定义
- * 
+ *
  * 定义稳定性计算相关的接口和类型
  */
 
@@ -41,25 +41,25 @@ export interface DimensionStats {
 export interface StabilityResult {
   /** 稳定性指数 (0-1，越接近 1 越稳定) */
   stabilityIndex: number;
-  
+
   /** 稳定性概率 (0-100%，重采样 CV ≤ 0.15 的概率) */
   stabilityProbability: number;
-  
+
   /** 显示用的稳定性概率 (可能是范围值) */
   stabilityProbabilityDisplay: string;
-  
+
   /** 是否为范围值显示 */
   isRange: boolean;
-  
+
   /** 警告信息 */
   stabilityWarning: string | null;
-  
+
   /** 95% 置信区间 [下限，上限] */
   confidenceBand: [number, number];
-  
+
   /** 状态标识 */
   status: 'stable' | 'evolving' | 'unstable' | 'insufficient_data';
-  
+
   /** 各维度统计信息 */
   perDimension: {
     O: DimensionStats;
@@ -68,7 +68,7 @@ export interface StabilityResult {
     A: DimensionStats;
     N: DimensionStats;
   };
-  
+
   /** 元数据 */
   metadata: {
     testCount: number;
@@ -83,10 +83,10 @@ export interface StabilityResult {
 export interface MonteCarloConfig {
   /** Bootstrap 重采样次数 */
   bootstrapIterations: number;
-  
+
   /** 稳定性阈值 (CV ≤ threshold 视为稳定) */
   stabilityThreshold: number;
-  
+
   /** 置信水平 (默认 0.95) */
   confidenceLevel: number;
 }

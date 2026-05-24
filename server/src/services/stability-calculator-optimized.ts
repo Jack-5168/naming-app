@@ -1,6 +1,6 @@
 /**
  * 人格稳定性计算器 - 性能优化版
- * 
+ *
  * 针对高并发场景优化，支持 >50 QPS
  */
 
@@ -18,6 +18,7 @@ import {
  */
 export class StabilityCalculatorOptimized {
   private config: MonteCarloConfig;
+
   private preAllocatedArrays: Map<number, number[]> = new Map();
 
   constructor(config?: Partial<MonteCarloConfig>) {
@@ -29,7 +30,7 @@ export class StabilityCalculatorOptimized {
    */
   async calculateStability(
     userId: number,
-    testHistory: TestResult[]
+    testHistory: TestResult[],
   ): Promise<StabilityResult> {
     const startTime = Date.now();
     const testCount = testHistory.length;
@@ -41,8 +42,7 @@ export class StabilityCalculatorOptimized {
     const perDimension = this.calculateDimensionStatsOptimized(testHistory);
     const stabilityIndex = this.calculateStabilityIndex(perDimension);
     const bootstrapCVs = this.runMonteCarloSimulationOptimized(testHistory);
-    const { stabilityProbability, isRange, stabilityProbabilityDisplay } =
-      this.calculateStabilityProbability(bootstrapCVs, testCount);
+    const { stabilityProbability, isRange, stabilityProbabilityDisplay } = this.calculateStabilityProbability(bootstrapCVs, testCount);
     const confidenceBand = this.calculateConfidenceInterval(bootstrapCVs);
     const status = this.determineStatus(stabilityIndex, testCount);
     const stabilityWarning = this.generateWarning(stabilityIndex, testCount);
@@ -78,7 +78,7 @@ export class StabilityCalculatorOptimized {
   } {
     const n = testHistory.length;
     const dims: MBTIDimension[] = ['O', 'C', 'E', 'A', 'N'];
-    
+
     // 一次性收集所有分数
     const scoresByDim: Record<MBTIDimension, number[]> = {
       O: new Array(n),
@@ -90,6 +90,7 @@ export class StabilityCalculatorOptimized {
 
     for (let i = 0; i < n; i++) {
       const test = testHistory[i];
+
       scoresByDim.O[i] = test.scores.O;
       scoresByDim.C[i] = test.scores.C;
       scoresByDim.E[i] = test.scores.E;
@@ -98,11 +99,13 @@ export class StabilityCalculatorOptimized {
     }
 
     const result: any = {};
+
     for (const dim of dims) {
       const scores = scoresByDim[dim];
       const mean = this.meanOptimized(scores);
       const std = this.stdOptimized(scores, mean);
       const cv = mean !== 0 ? Math.abs(std / mean) : 0;
+
       result[dim] = { mean, std, cv };
     }
 
@@ -139,21 +142,27 @@ export class StabilityCalculatorOptimized {
       for (const dim of dims) {
         // 计算重采样后的均值
         let sum = 0;
+
         for (let j = 0; j < n; j++) {
           sum += testHistory[resampledIndices[j]].scores[dim];
         }
+
         const mean = sum / n;
 
         // 计算重采样后的标准差
         let sumSq = 0;
+
         for (let j = 0; j < n; j++) {
           const val = testHistory[resampledIndices[j]].scores[dim];
+
           sumSq += (val - mean) * (val - mean);
         }
+
         const std = Math.sqrt(sumSq / (n - 1));
 
         // 计算 CV
         const cv = mean !== 0 ? Math.abs(std / mean) : 0;
+
         totalCV += cv;
       }
 
@@ -168,12 +177,17 @@ export class StabilityCalculatorOptimized {
    */
   private meanOptimized(values: number[]): number {
     const n = values.length;
-    if (n === 0) return 0;
-    
+
+    if (n === 0) {
+      return 0;
+    }
+
     let sum = 0;
+
     for (let i = 0; i < n; i++) {
       sum += values[i];
     }
+
     return sum / n;
   }
 
@@ -182,13 +196,19 @@ export class StabilityCalculatorOptimized {
    */
   private stdOptimized(values: number[], mean: number): number {
     const n = values.length;
-    if (n < 2) return 0;
+
+    if (n < 2) {
+      return 0;
+    }
 
     let sumSq = 0;
+
     for (let i = 0; i < n; i++) {
       const diff = values[i] - mean;
+
       sumSq += diff * diff;
     }
+
     return Math.sqrt(sumSq / (n - 1));
   }
 
@@ -201,16 +221,19 @@ export class StabilityCalculatorOptimized {
   }): number {
     const dims: MBTIDimension[] = ['O', 'C', 'E', 'A', 'N'];
     let totalCV = 0;
+
     for (const dim of dims) {
       totalCV += perDimension[dim].cv;
     }
+
     const meanCV = totalCV / dims.length;
+
     return Math.max(0, Math.min(1, 1 - meanCV));
   }
 
   private calculateStabilityProbability(
     bootstrapCVs: number[],
-    testCount: number
+    testCount: number,
   ): {
     stabilityProbability: number;
     isRange: boolean;
@@ -218,9 +241,13 @@ export class StabilityCalculatorOptimized {
   } {
     const threshold = this.config.stabilityThreshold;
     let stableCount = 0;
+
     for (const cv of bootstrapCVs) {
-      if (cv <= threshold) stableCount++;
+      if (cv <= threshold) {
+        stableCount++;
+      }
     }
+
     const probability = (stableCount / bootstrapCVs.length) * 100;
 
     if (testCount < 3) {
@@ -229,22 +256,25 @@ export class StabilityCalculatorOptimized {
         isRange: false,
         stabilityProbabilityDisplay: '数据不足',
       };
-    } else if (testCount <= 5) {
+    }
+
+    if (testCount <= 5) {
       const margin = 5 + (5 - testCount) * 2;
       const lower = Math.max(0, Math.round(probability - margin));
       const upper = Math.min(100, Math.round(probability + margin));
+
       return {
         stabilityProbability: probability,
         isRange: true,
         stabilityProbabilityDisplay: `${lower}%~${upper}%`,
       };
-    } else {
-      return {
-        stabilityProbability: probability,
-        isRange: false,
-        stabilityProbabilityDisplay: `${Math.round(probability)}%`,
-      };
     }
+
+    return {
+      stabilityProbability: probability,
+      isRange: false,
+      stabilityProbabilityDisplay: `${Math.round(probability)}%`,
+    };
   }
 
   private calculateConfidenceInterval(bootstrapCVs: number[]): [number, number] {
@@ -256,40 +286,59 @@ export class StabilityCalculatorOptimized {
     const upperCV = sorted[upperIndex];
     const lowerStability = Math.max(0, Math.min(1, 1 - upperCV));
     const upperStability = Math.max(0, Math.min(1, 1 - lowerCV));
+
     return [lowerStability, upperStability];
   }
 
   private determineStatus(
     stabilityIndex: number,
-    testCount: number
+    testCount: number,
   ): 'stable' | 'evolving' | 'unstable' | 'insufficient_data' {
-    if (testCount < 3) return 'insufficient_data';
-    if (testCount <= 5) return 'evolving';
-    if (stabilityIndex >= 0.8) return 'stable';
-    if (stabilityIndex >= 0.6) return 'evolving';
+    if (testCount < 3) {
+      return 'insufficient_data';
+    }
+
+    if (testCount <= 5) {
+      return 'evolving';
+    }
+
+    if (stabilityIndex >= 0.8) {
+      return 'stable';
+    }
+
+    if (stabilityIndex >= 0.6) {
+      return 'evolving';
+    }
+
     return 'unstable';
   }
 
   private generateWarning(
     stabilityIndex: number,
-    testCount: number
+    testCount: number,
   ): string | null {
     if (testCount < 3) {
       return '测试次数不足，建议完成至少 3 次测试以获得有效评估';
-    } else if (testCount <= 5) {
+    }
+
+    if (testCount <= 5) {
       return '测试次数较少，结果可能存在波动，建议继续测试以提高准确性';
-    } else if (stabilityIndex < 0.6) {
+    }
+
+    if (stabilityIndex < 0.6) {
       return '人格稳定性较低，建议关注情绪和行为的一致性';
     }
+
     return null;
   }
 
   private createInsufficientDataResult(
     userId: number,
     testCount: number,
-    startTime: number
+    startTime: number,
   ): StabilityResult {
     const calculationTime = Date.now() - startTime;
+
     return {
       stabilityIndex: 0,
       stabilityProbability: 0,

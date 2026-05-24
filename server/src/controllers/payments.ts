@@ -1,7 +1,7 @@
 /**
  * Payment Controller
  * Phase 1: MVP Implementation
- * 
+ *
  * API Endpoints:
  * - GET /api/v1/memberships/products - Get membership products
  * - POST /api/v1/payments/create-order - Create payment order
@@ -11,8 +11,8 @@
 
 import { Request, Response } from 'express';
 import { PrismaClient, MembershipLevel, MembershipStatus, OrderStatus, PushNotificationType } from '@prisma/client';
-import { createPushNotification } from '../services/push-notification';
 import * as crypto from 'crypto';
+import { createPushNotification } from '../services/push-notification';
 
 const prisma = new PrismaClient();
 
@@ -38,8 +38,8 @@ const MEMBERSHIP_PRODUCTS = [
     price: 29.00,
     original_price: 29.00,
     features: [
-      { key: 'report_pro', name: '完整报告', unlimited: false, limit: 1 }
-    ]
+      { key: 'report_pro', name: '完整报告', unlimited: false, limit: 1 },
+    ],
   },
   {
     id: 'basic_unlock',
@@ -50,8 +50,8 @@ const MEMBERSHIP_PRODUCTS = [
     original_price: 19.90,
     features: [
       { key: 'report_basic', name: '基础报告', unlimited: false, limit: 5 },
-      { key: 'career', name: '职业建议', unlimited: false, limit: 1 }
-    ]
+      { key: 'career', name: '职业建议', unlimited: false, limit: 1 },
+    ],
   },
   {
     id: 'pro_monthly',
@@ -63,9 +63,9 @@ const MEMBERSHIP_PRODUCTS = [
     features: [
       { key: 'report_basic', name: '基础报告', unlimited: true },
       { key: 'report_pro', name: '深度报告', unlimited: true },
-      { key: 'life_event', name: '生活事件', unlimited: true }
-    ]
-  }
+      { key: 'life_event', name: '生活事件', unlimited: true },
+    ],
+  },
 ];
 
 // ==================== Type Definitions ====================
@@ -99,7 +99,7 @@ interface WechatPaymentParams {
 /**
  * GET /api/v1/memberships/products
  * Get all available membership products
- * 
+ *
  * Response format:
  * {
  *   "code": 0,
@@ -115,15 +115,15 @@ export async function getMembershipProducts(req: Request, res: Response) {
     res.json({
       code: 0,
       data: {
-        products: MEMBERSHIP_PRODUCTS
-      }
+        products: MEMBERSHIP_PRODUCTS,
+      },
     });
   } catch (error) {
     console.error('Error fetching membership products:', error);
     res.status(500).json({
       code: 500,
       message: '获取会员产品失败',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
@@ -131,11 +131,11 @@ export async function getMembershipProducts(req: Request, res: Response) {
 /**
  * POST /api/v1/payments/create-order
  * Create a payment order
- * 
+ *
  * Request:
  * - product_id: Product identifier (e.g., "pro_monthly")
  * - payment_method: Payment method (e.g., "wechat")
- * 
+ *
  * Response:
  * {
  *   "code": 0,
@@ -176,7 +176,8 @@ export async function createOrder(req: Request, res: Response) {
     }
 
     // Find product from predefined list
-    const product = MEMBERSHIP_PRODUCTS.find(p => p.id === product_id);
+    const product = MEMBERSHIP_PRODUCTS.find((p) => p.id === product_id);
+
     if (!product) {
       return res.status(404).json({
         code: 404,
@@ -231,7 +232,7 @@ export async function createOrder(req: Request, res: Response) {
     res.status(500).json({
       code: 500,
       message: '创建订单失败',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
@@ -239,9 +240,9 @@ export async function createOrder(req: Request, res: Response) {
 /**
  * POST /api/v1/payments/wechat/callback
  * WeChat payment callback webhook
- * 
+ *
  * Content-Type: application/xml
- * 
+ *
  * Processing logic:
  * 1. Verify signature
  * 2. Update order status
@@ -256,8 +257,10 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
 
     // Step 1: Verify WeChat signature
     const isValid = verifyWechatSignature(callbackData);
+
     if (!isValid) {
       console.error('Invalid WeChat signature');
+
       return res.status(400).send(`
         <xml>
           <return_code><![CDATA[FAIL]]></return_code>
@@ -267,12 +270,12 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
     }
 
     // Extract callback data
-    const { 
-      out_trade_no,      // Our order number
-      transaction_id,    // WeChat transaction ID
-      trade_state,       // Payment status
-      total_fee,         // Amount in cents
-      openid             // User's WeChat openid
+    const {
+      out_trade_no, // Our order number
+      transaction_id, // WeChat transaction ID
+      trade_state, // Payment status
+      total_fee, // Amount in cents
+      openid, // User's WeChat openid
     } = callbackData;
 
     // Find order by order number
@@ -282,6 +285,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
 
     if (!order) {
       console.error(`Order not found: ${out_trade_no}`);
+
       return res.status(404).send(`
         <xml>
           <return_code><![CDATA[FAIL]]></return_code>
@@ -293,6 +297,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
     // Check if already processed
     if (order.status === 'paid') {
       console.log(`Order already paid: ${out_trade_no}`);
+
       return res.send(`
         <xml>
           <return_code><![CDATA[SUCCESS]]></return_code>
@@ -305,8 +310,10 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
     if (trade_state === 'SUCCESS') {
       // Verify amount matches
       const amountInCents = Math.round(Number(order.amount) * 100);
+
       if (amountInCents !== total_fee) {
         console.error(`Amount mismatch: expected ${amountInCents}, got ${total_fee}`);
+
         return res.status(400).send(`
           <xml>
             <return_code><![CDATA[FAIL]]></return_code>
@@ -333,6 +340,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
       // Step 4: Send push notification to user
       try {
         const userId = order.userId;
+
         await createPushNotification({
           userId,
           type: 'payment_success' as PushNotificationType,
@@ -368,7 +376,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
 /**
  * GET /api/v1/payments/orders/:order_id
  * Get order details by order ID
- * 
+ *
  * Response:
  * {
  *   "code": 0,
@@ -416,7 +424,7 @@ export async function getOrder(req: Request, res: Response) {
     }
 
     // Get product name from predefined list or use product ID
-    const product = MEMBERSHIP_PRODUCTS.find(p => p.id === order.productId);
+    const product = MEMBERSHIP_PRODUCTS.find((p) => p.id === order.productId);
     const productName = product ? product.name : order.productId;
 
     res.json({
@@ -440,7 +448,7 @@ export async function getOrder(req: Request, res: Response) {
     res.status(500).json({
       code: 500,
       message: '获取订单失败',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
@@ -460,13 +468,13 @@ function generateWechatPaymentParams(params: {
   key: string;
 }): WechatPaymentParams {
   const { orderId, orderNo, amount, appId, mchId, key } = params;
-  
+
   const timeStamp = Math.floor(Date.now() / 1000).toString();
   const nonceStr = Math.random().toString(36).substring(2, 16).toUpperCase();
-  
+
   // Create prepay_id (in production, this comes from WeChat Pay API)
   const prepayId = `prepay_id=${orderId}_${timeStamp}`;
-  
+
   // Generate signature for WeChat Pay
   // Signature string format: appId=&nonceStr=&package=&signType=&timeStamp=
   const signString = `appId=${appId}&nonceStr=${nonceStr}&package=prepay_id=${prepayId}&signType=MD5&timeStamp=${timeStamp}&key=${key}`;
@@ -493,10 +501,11 @@ function generateWechatPaymentParams(params: {
 function parseWechatCallbackXml(xmlData: any): Record<string, any> {
   // In production, use a proper XML parser like 'xml2js'
   // For MVP, we'll handle both parsed JSON and raw XML
-  
+
   if (typeof xmlData === 'object' && xmlData.xml) {
     // Already parsed by express-xml middleware
     const data = xmlData.xml;
+
     return {
       return_code: data.return_code?.[0] || '',
       return_msg: data.return_msg?.[0] || '',
@@ -518,7 +527,7 @@ function parseWechatCallbackXml(xmlData: any): Record<string, any> {
       trade_state_desc: data.trade_state_desc?.[0] || '',
     };
   }
-  
+
   // Fallback for testing
   return xmlData;
 }
@@ -529,20 +538,21 @@ function parseWechatCallbackXml(xmlData: any): Record<string, any> {
  */
 function verifyWechatSignature(data: Record<string, any>): boolean {
   const { sign, ...params } = data;
-  
+
   if (!sign) {
     console.error('No signature provided');
+
     return false;
   }
 
   // Sort parameters alphabetically
   const sortedKeys = Object.keys(params).sort();
-  
+
   // Build signature string
-  const signString = sortedKeys
-    .filter(key => params[key] && params[key] !== '')
-    .map(key => `${key}=${params[key]}`)
-    .join('&') + `&key=${WECHAT_PAY_KEY}`;
+  const signString = `${sortedKeys
+    .filter((key) => params[key] && params[key] !== '')
+    .map((key) => `${key}=${params[key]}`)
+    .join('&')}&key=${WECHAT_PAY_KEY}`;
 
   // Calculate MD5 signature
   const calculatedSign = crypto
@@ -553,7 +563,7 @@ function verifyWechatSignature(data: Record<string, any>): boolean {
 
   // Compare signatures
   const isValid = calculatedSign === sign.toUpperCase();
-  
+
   if (!isValid) {
     console.error('Signature mismatch');
     console.error('Expected:', sign);
@@ -569,18 +579,21 @@ function verifyWechatSignature(data: Record<string, any>): boolean {
  */
 async function activateMembershipBenefits(order: any) {
   const { userId, productId, id: orderId } = order;
-  
+
   // Find product configuration
-  const product = MEMBERSHIP_PRODUCTS.find(p => p.id === productId);
+  const product = MEMBERSHIP_PRODUCTS.find((p) => p.id === productId);
+
   if (!product) {
     console.error(`Product not found for order ${orderId}: ${productId}`);
+
     return;
   }
 
   const now = new Date();
-  
+
   // Calculate membership end date based on product period
   let endDate: Date;
+
   switch (product.period) {
     case '月卡':
       endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -608,8 +621,8 @@ async function activateMembershipBenefits(order: any) {
       // Extend existing membership
       const newEndDate = product.period === '永久'
         ? endDate
-        : new Date(Math.max(existingMembership.endDate.getTime(), now.getTime()) + 
-                   (endDate.getTime() - now.getTime()));
+        : new Date(Math.max(existingMembership.endDate.getTime(), now.getTime())
+                   + (endDate.getTime() - now.getTime()));
 
       await prisma.membership.update({
         where: { userId },
@@ -657,7 +670,6 @@ async function activateMembershipBenefits(order: any) {
         membershipLevel: product.level as MembershipLevel,
       },
     });
-
   } catch (error) {
     console.error('Error activating membership benefits:', error);
     throw error;

@@ -1,7 +1,7 @@
 /**
  * Caching Module
  * Phase 4: Performance Optimization
- * 
+ *
  * Features:
  * - Redis caching for hot data
  * - CDN caching for static assets
@@ -21,11 +21,11 @@ const CACHE_CONFIG = {
   PRODUCTS: 3600, // 1 hour
   STABILITY_SCORE: 600, // 10 minutes
   PERSONALITY_PROFILE: 900, // 15 minutes
-  
+
   // Browser cache (in seconds)
   STATIC_ASSETS: 86400 * 30, // 30 days
   REPORT_IMAGES: 86400 * 7, // 7 days
-  
+
   // CDN cache (in seconds)
   CDN_STATIC: 86400 * 365, // 1 year
   CDN_REPORTS: 86400, // 1 day
@@ -38,15 +38,18 @@ let redisClient: any = null;
 export async function initializeRedis(redisUrl: string) {
   try {
     const { createClient } = await import('redis');
+
     redisClient = createClient({ url: redisUrl });
-    
+
     redisClient.on('error', (err: any) => console.error('Redis Client Error:', err));
     redisClient.on('connect', () => console.log('Redis connected'));
-    
+
     await redisClient.connect();
+
     return true;
   } catch (error) {
     console.error('Failed to initialize Redis:', error);
+
     return false;
   }
 }
@@ -76,15 +79,18 @@ export async function getCache<T>(key: string): Promise<T | null> {
   if (!redisClient) {
     return null;
   }
-  
+
   try {
     const value = await redisClient.get(key);
+
     if (!value) {
       return null;
     }
+
     return JSON.parse(value) as T;
   } catch (error) {
     console.error('Cache get error:', error);
+
     return null;
   }
 }
@@ -95,12 +101,12 @@ export async function getCache<T>(key: string): Promise<T | null> {
 export async function setCache<T>(
   key: string,
   value: T,
-  ttl: number = CACHE_CONFIG.USER_MEMBERSHIP
+  ttl: number = CACHE_CONFIG.USER_MEMBERSHIP,
 ): Promise<void> {
   if (!redisClient) {
     return;
   }
-  
+
   try {
     await redisClient.setEx(key, ttl, JSON.stringify(value));
   } catch (error) {
@@ -115,7 +121,7 @@ export async function deleteCache(key: string): Promise<void> {
   if (!redisClient) {
     return;
   }
-  
+
   try {
     await redisClient.del(key);
   } catch (error) {
@@ -130,9 +136,10 @@ export async function deleteCacheByPattern(pattern: string): Promise<void> {
   if (!redisClient) {
     return;
   }
-  
+
   try {
     const keys = await redisClient.keys(pattern);
+
     if (keys.length > 0) {
       await redisClient.del(keys);
     }
@@ -145,11 +152,13 @@ export async function deleteCacheByPattern(pattern: string): Promise<void> {
 
 export async function getCachedMembership(userId: number) {
   const key = CacheKeys.userMembership(userId);
+
   return getCache(key);
 }
 
 export async function setCachedMembership(userId: number, membership: any) {
   const key = CacheKeys.userMembership(userId);
+
   await setCache(key, membership, CACHE_CONFIG.USER_MEMBERSHIP);
 }
 
@@ -161,11 +170,13 @@ export async function invalidateMembershipCache(userId: number) {
 
 export async function getCachedProducts() {
   const key = CacheKeys.products();
+
   return getCache(key);
 }
 
 export async function setCachedProducts(products: any) {
   const key = CacheKeys.products();
+
   await setCache(key, products, CACHE_CONFIG.PRODUCTS);
 }
 
@@ -177,11 +188,13 @@ export async function invalidateProductsCache() {
 
 export async function getCachedStabilityScore(userId: number) {
   const key = CacheKeys.stabilityScore(userId);
+
   return getCache(key);
 }
 
 export async function setCachedStabilityScore(userId: number, score: any) {
   const key = CacheKeys.stabilityScore(userId);
+
   await setCache(key, score, CACHE_CONFIG.STABILITY_SCORE);
 }
 
@@ -197,20 +210,21 @@ export async function invalidateStabilityCache(userId: number) {
 export async function getMembershipWithCache(userId: number) {
   // Try cache first
   const cached = await getCachedMembership(userId);
+
   if (cached) {
     return cached;
   }
-  
+
   // Cache miss - fetch from database
   const membership = await prisma.membership.findUnique({
     where: { userId },
   });
-  
+
   // Update cache
   if (membership) {
     await setCachedMembership(userId, membership);
   }
-  
+
   return membership;
 }
 
@@ -220,19 +234,20 @@ export async function getMembershipWithCache(userId: number) {
 export async function getProductsWithCache() {
   // Try cache first
   const cached = await getCachedProducts();
+
   if (cached) {
     return cached;
   }
-  
+
   // Cache miss - fetch from database
   const products = await prisma.membershipProduct.findMany({
     where: { isActive: true },
     orderBy: { sortOrder: 'asc' },
   });
-  
+
   // Update cache
   await setCachedProducts(products);
-  
+
   return products;
 }
 
@@ -244,7 +259,7 @@ export async function getProductsWithCache() {
 export function getStaticCacheHeaders() {
   return {
     'Cache-Control': `public, max-age=${CACHE_CONFIG.STATIC_ASSETS}`,
-    'ETag': `"static-${CACHE_CONFIG.STATIC_ASSETS}"`,
+    ETag: `"static-${CACHE_CONFIG.STATIC_ASSETS}"`,
   };
 }
 
@@ -254,7 +269,7 @@ export function getStaticCacheHeaders() {
 export function getReportCacheHeaders(reportId: string) {
   return {
     'Cache-Control': `public, max-age=${CACHE_CONFIG.REPORT_IMAGES}`,
-    'ETag': `"report-${reportId}"`,
+    ETag: `"report-${reportId}"`,
   };
 }
 
@@ -264,8 +279,8 @@ export function getReportCacheHeaders(reportId: string) {
 export function getNoCacheHeaders() {
   return {
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 
@@ -289,25 +304,26 @@ export async function uploadToCDN(filePath: string, contentType: string): Promis
   if (!cdnConfig) {
     return filePath; // Return local path if CDN not configured
   }
-  
+
   try {
     const fs = await import('fs');
     const fileContent = fs.readFileSync(filePath);
-    
+
     // In production, use actual CDN API (Cloudflare, AWS CloudFront, etc.)
     // This is a placeholder
     const cdnUrl = `${cdnConfig.baseUrl}/${Date.now()}-${filePath.split('/').pop()}`;
-    
+
     // Set CDN cache headers
     await setCache(`cdn:${cdnUrl}`, {
       url: cdnUrl,
       contentType,
       cachedAt: Date.now(),
     }, CACHE_CONFIG.CDN_STATIC);
-    
+
     return cdnUrl;
   } catch (error) {
     console.error('CDN upload error:', error);
+
     return filePath;
   }
 }
@@ -319,7 +335,7 @@ export async function purgeCDNCache(urls: string[]): Promise<void> {
   if (!cdnConfig) {
     return;
   }
-  
+
   try {
     // In production, call CDN purge API
     console.log('Purging CDN cache for:', urls);
@@ -336,26 +352,27 @@ export async function purgeCDNCache(urls: string[]): Promise<void> {
  */
 export async function warmCache() {
   console.log('Warming cache...');
-  
+
   try {
     // Warm products cache
     const products = await prisma.membershipProduct.findMany({
       where: { isActive: true },
     });
+
     await setCachedProducts(products);
-    
+
     // Warm top users' membership cache
     const topUsers = await prisma.user.findMany({
       take: 100,
       include: { memberships: true },
     });
-    
+
     for (const user of topUsers) {
       if (user.memberships && user.memberships.length > 0) {
         await setCachedMembership(user.id, user.memberships[0]);
       }
     }
-    
+
     console.log('Cache warming completed');
   } catch (error) {
     console.error('Cache warming error:', error);
@@ -374,11 +391,11 @@ export async function getCacheStats() {
       keys: 0,
     };
   }
-  
+
   try {
     const info = await redisClient.info('stats');
     const keys = await redisClient.dbSize();
-    
+
     return {
       connected: true,
       keys,

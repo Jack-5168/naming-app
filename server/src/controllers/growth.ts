@@ -1,7 +1,7 @@
 /**
  * Growth Controller
  * Phase 4: Growth Features
- * 
+ *
  * Features:
  * - Dual Test (双人合测)
  * - Share Cards (分享卡片)
@@ -10,9 +10,9 @@
 
 import { Request, Response } from 'express';
 import { PrismaClient, DualTestStatus, ReferralStatus, CommissionStatus } from '@prisma/client';
-import { createPushNotification } from '../services/push-notification';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
+import { createPushNotification } from '../services/push-notification';
 
 const prisma = new PrismaClient();
 
@@ -25,7 +25,7 @@ const prisma = new PrismaClient();
 export async function createDualTest(req: Request, res: Response) {
   try {
     const userId = req.user?.id;
-    
+
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -36,7 +36,7 @@ export async function createDualTest(req: Request, res: Response) {
     // Check if user has dual test access
     const { checkFeatureAccess } = await import('../controllers/memberships');
     const access = await checkFeatureAccess(userId, 'dual_test');
-    
+
     if (!access.allowed) {
       return res.status(403).json({
         success: false,
@@ -57,7 +57,7 @@ export async function createDualTest(req: Request, res: Response) {
 
     // Generate QR code for mini-program
     const qrCodeDataUrl = await generateQRCode(
-      `https://personaalab.com/miniapp/dual-test/${inviteCode}`
+      `https://personaalab.com/miniapp/dual-test/${inviteCode}`,
     );
 
     res.json({
@@ -181,7 +181,7 @@ export async function completeDualTest(req: Request, res: Response) {
     // Calculate compatibility score
     const compatibilityScore = calculateCompatibility(
       scores,
-      dualTest.initiator.id === userId ? 'initiator' : 'participant'
+      dualTest.initiator.id === userId ? 'initiator' : 'participant',
     );
 
     // Generate conflict warnings
@@ -199,7 +199,9 @@ export async function completeDualTest(req: Request, res: Response) {
 
     // Record feature usage
     const { recordFeatureUsage } = await import('../controllers/memberships');
+
     await recordFeatureUsage(dualTest.initiatorId, 'dual_test', { dualTestId });
+
     if (dualTest.participantId) {
       await recordFeatureUsage(dualTest.participantId, 'dual_test', { dualTestId });
     }
@@ -430,6 +432,7 @@ export async function getReferralLink(req: Request, res: Response) {
 
     if (!referral) {
       const code = uuidv4().substring(0, 8).toLowerCase();
+
       referral = await prisma.referral.create({
         data: {
           referrerId: userId,
@@ -483,11 +486,11 @@ export async function getCommissions(req: Request, res: Response) {
     });
 
     const totalPending = commissions
-      .filter(c => c.status === 'pending' || c.status === 'approved')
+      .filter((c) => c.status === 'pending' || c.status === 'approved')
       .reduce((sum, c) => sum + Number(c.amount), 0);
 
     const totalPaid = commissions
-      .filter(c => c.status === 'paid')
+      .filter((c) => c.status === 'paid')
       .reduce((sum, c) => sum + Number(c.amount), 0);
 
     res.json({
@@ -534,7 +537,7 @@ export async function withdrawCommission(req: Request, res: Response) {
 
     const totalPending = pendingCommissions.reduce(
       (sum, c) => sum + Number(c.amount),
-      0
+      0,
     );
 
     if (totalPending < amount) {
@@ -608,7 +611,7 @@ export async function getKOCDashboard(req: Request, res: Response) {
     });
 
     const totalReferrals = referrals.length;
-    const convertedReferrals = referrals.filter(r => r.status === 'converted').length;
+    const convertedReferrals = referrals.filter((r) => r.status === 'converted').length;
     const conversionRate = totalReferrals > 0 ? convertedReferrals / totalReferrals : 0;
 
     // Get commission stats
@@ -617,11 +620,11 @@ export async function getKOCDashboard(req: Request, res: Response) {
     });
 
     const totalEarned = commissions
-      .filter(c => Number(c.amount) > 0)
+      .filter((c) => Number(c.amount) > 0)
       .reduce((sum, c) => sum + Number(c.amount), 0);
 
     const totalWithdrawn = commissions
-      .filter(c => Number(c.amount) < 0)
+      .filter((c) => Number(c.amount) < 0)
       .reduce((sum, c) => sum + Math.abs(Number(c.amount)), 0);
 
     res.json({
@@ -656,9 +659,11 @@ async function generateQRCode(url: string): Promise<string> {
       margin: 2,
       errorCorrectionLevel: 'M',
     });
+
     return qrCode;
   } catch (error) {
     console.error('Error generating QR code:', error);
+
     return '';
   }
 }
@@ -685,6 +690,7 @@ function getGoldenQuote(type: string): string {
     INFJ: '理想主义者，用洞察力照亮他人',
     // ... add more quotes
   };
+
   return quotes[type] || '探索自我，发现无限可能';
 }
 
@@ -703,7 +709,7 @@ function calculateCompatibility(scores: any, userType: string): number {
 function generateConflictWarnings(scores: any): any[] {
   // Analyze potential conflicts based on dimension differences
   const warnings = [];
-  
+
   if (Math.abs(scores.E - 50) > 30) {
     warnings.push({
       dimension: 'E-I',
@@ -711,7 +717,7 @@ function generateConflictWarnings(scores: any): any[] {
       suggestion: '外向性差异较大，注意沟通方式',
     });
   }
-  
+
   return warnings;
 }
 
@@ -722,7 +728,7 @@ function calculateStabilityIndex(testRecords: any[]): number {
   if (testRecords.length < 2) {
     return 0;
   }
-  
+
   // Simplified stability calculation
   return 0.8 + Math.random() * 0.15;
 }

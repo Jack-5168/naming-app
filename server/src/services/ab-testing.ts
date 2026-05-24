@@ -8,17 +8,17 @@ interface ABTestVariant {
   variantId: string;
   name: string;
   description: string;
-  allocation: number;  // 添加缺失的 allocation 字段
+  allocation: number; // 添加缺失的 allocation 字段
   config?: any;
 }
 
 interface ABTestMetric {
   metricId: string;
   name: string;
-  baseline: number;  // 添加缺失的字段
-  variant: number;   // 添加缺失的字段
-  improvement: number;  // 添加缺失的字段
-  isSignificant: boolean;  // 添加缺失的字段
+  baseline: number; // 添加缺失的字段
+  variant: number; // 添加缺失的字段
+  improvement: number; // 添加缺失的字段
+  isSignificant: boolean; // 添加缺失的字段
 }
 
 interface ABTestResults {
@@ -32,7 +32,7 @@ export async function getABTestResults(testId: string): Promise<ABTestResults> {
   // 简化的实现，避免复杂类型错误
   return {
     success: true,
-    metrics: []
+    metrics: [],
   };
 }
 

@@ -4,15 +4,15 @@
  */
 
 import { EventEmitter } from 'events';
-import { 
-  COST_CONTROL, 
-  recordUsage, 
-  getBudgetStatus, 
+import {
+  COST_CONTROL,
+  recordUsage,
+  getBudgetStatus,
   isWithinBudget,
   getModelStrategy,
   getFallbackModel,
   getMaxRetries,
-  costEvents 
+  costEvents,
 } from './cost-control';
 
 export interface ReportGenerationParams {
@@ -28,7 +28,7 @@ export interface ReportGenerationResult {
   tokens: number;
   generationTime: number;
   requestId: string;
-  cost: number;  // 成本（人民币）
+  cost: number; // 成本（人民币）
 }
 
 export interface RateLimitStatus {
@@ -52,11 +52,11 @@ const ipRateLimits = new Map<string, RateLimitRecord>();
 
 // 成本计算（GPT-4o-mini 定价：$0.15/1M input tokens, $0.60/1M output tokens）
 const PRICING = {
-  'gpt-4o-mini': { input: 0.15, output: 0.60 },  // 美元 per 1M tokens
-  'claude-haiku': { input: 0.25, output: 1.25 }   // 美元 per 1M tokens
+  'gpt-4o-mini': { input: 0.15, output: 0.60 }, // 美元 per 1M tokens
+  'claude-haiku': { input: 0.25, output: 1.25 }, // 美元 per 1M tokens
 };
 
-const USD_TO_CNY = 7.2;  // 美元转人民币汇率
+const USD_TO_CNY = 7.2; // 美元转人民币汇率
 
 // 基础报告模板
 const BASIC_REPORT_TEMPLATE = `你是一位专业的人格心理学分析师。请根据以下 MBTI 测试结果，生成一份简洁易懂的人格分析报告。
@@ -188,26 +188,28 @@ function generateRequestId(): string {
 function checkRateLimit(userId: string, clientIp: string): RateLimitStatus {
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
-  
+
   // 用户限流（3 次/日）
   let userRecord = userRateLimits.get(userId);
+
   if (!userRecord || now > userRecord.resetTime) {
     userRecord = { count: 0, resetTime: now + dayMs };
     userRateLimits.set(userId, userRecord);
   }
-  
+
   // IP 限流（50 次/日）
   let ipRecord = ipRateLimits.get(clientIp);
+
   if (!ipRecord || now > ipRecord.resetTime) {
     ipRecord = { count: 0, resetTime: now + dayMs };
     ipRateLimits.set(clientIp, ipRecord);
   }
-  
+
   return {
     userRemaining: Math.max(0, 3 - userRecord.count),
     ipRemaining: Math.max(0, 50 - ipRecord.count),
     userResetTime: userRecord.resetTime,
-    ipResetTime: ipRecord.resetTime
+    ipResetTime: ipRecord.resetTime,
   };
 }
 
@@ -216,11 +218,13 @@ function checkRateLimit(userId: string, clientIp: string): RateLimitStatus {
  */
 function incrementRateLimit(userId: string, clientIp: string): void {
   const userRecord = userRateLimits.get(userId);
+
   if (userRecord) {
     userRecord.count++;
   }
-  
+
   const ipRecord = ipRateLimits.get(clientIp);
+
   if (ipRecord) {
     ipRecord.count++;
   }
@@ -231,29 +235,25 @@ function incrementRateLimit(userId: string, clientIp: string): void {
  */
 function renderTemplate(template: string, data: any): string {
   let rendered = template;
-  
+
   // 简单变量替换
-  rendered = rendered.replace(/{{(\w+)}}/g, (_, key) => {
-    return data[key] !== undefined ? String(data[key]) : '';
-  });
-  
+  rendered = rendered.replace(/{{(\w+)}}/g, (_, key) => (data[key] !== undefined ? String(data[key]) : ''));
+
   // 数组处理（生活事件）
   if (data.lifeEvents && Array.isArray(data.lifeEvents)) {
     const sectionMatch = rendered.match(/{{#lifeEvents}}([\s\S]*?){{\/lifeEvents}}/);
+
     if (sectionMatch) {
       const itemTemplate = sectionMatch[1];
-      const items = data.lifeEvents.map((event: any) => {
-        return itemTemplate.replace(/{{(\w+)}}/g, (_, key) => {
-          return event[key] !== undefined ? String(event[key]) : '';
-        });
-      }).join('');
+      const items = data.lifeEvents.map((event: any) => itemTemplate.replace(/{{(\w+)}}/g, (_, key) => (event[key] !== undefined ? String(event[key]) : ''))).join('');
+
       rendered = rendered.replace(sectionMatch[0], items);
     }
   } else {
     // 移除未使用的 lifeEvents 块
     rendered = rendered.replace(/{{#lifeEvents}}[\s\S]*?{{\/lifeEvents}}/g, '');
   }
-  
+
   return rendered;
 }
 
@@ -262,54 +262,57 @@ function renderTemplate(template: string, data: any): string {
  */
 function validateQuality(content: string, reportType: string): { valid: boolean; issues: string[] } {
   const issues: string[] = [];
-  
+
   // 字数检查
   const charCount = content.length;
-  const wordCount = Math.floor(charCount / 2);  // 中文字数估算
-  
+  const wordCount = Math.floor(charCount / 2); // 中文字数估算
+
   const wordLimits = {
     basic: { min: 800, max: 1200 },
     pro: { min: 2000, max: 3000 },
-    master: { min: 4000, max: 5000 }
+    master: { min: 4000, max: 5000 },
   };
-  
+
   const limit = wordLimits[reportType as 'basic' | 'pro' | 'master'];
+
   if (wordCount < limit.min) {
     issues.push(`字数不足：${wordCount}/${limit.min}`);
   } else if (wordCount > limit.max) {
     issues.push(`字数超限：${wordCount}/${limit.max}`);
   }
-  
+
   // 禁止词检测
   const forbiddenWords = ['保证', '一定', '绝对', '肯定', '必然', '无疑'];
+
   for (const word of forbiddenWords) {
     if (content.includes(word)) {
       issues.push(`包含禁止词："${word}"`);
     }
   }
-  
+
   // 免责声明检查
   if (!content.includes('免责声明') && !content.includes('仅供参考')) {
     issues.push('缺少免责声明');
   }
-  
+
   // 结构完整性检查（检查关键章节标题）
   const requiredSections = {
     basic: ['核心特质', '优势', '成长建议'],
     pro: ['人格核心', '生活事件', '优势', '挑战', '职业', '人际', '行动建议'],
-    master: ['人格本质', '生命历程', '认知功能', '优势', '阴影', '关系', '职业', '成长']
+    master: ['人格本质', '生命历程', '认知功能', '优势', '阴影', '关系', '职业', '成长'],
   };
-  
+
   const sections = requiredSections[reportType as 'basic' | 'pro' | 'master'];
+
   for (const section of sections) {
     if (!content.includes(section)) {
       issues.push(`缺少章节：${section}`);
     }
   }
-  
+
   return {
     valid: issues.length === 0,
-    issues
+    issues,
   };
 }
 
@@ -319,7 +322,7 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
 async function callLLM(prompt: string, model: string, maxTokens: number): Promise<{ content: string; tokens: number }> {
   // 这里应该调用实际的 OpenAI API
   // 为了演示，我们模拟一个响应
-  
+
   // 实际实现示例：
   /*
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -335,17 +338,17 @@ async function callLLM(prompt: string, model: string, maxTokens: number): Promis
       temperature: 0.7
     })
   });
-  
+
   const data = await response.json();
   return {
     content: data.choices[0].message.content,
     tokens: data.usage.total_tokens
   };
   */
-  
+
   // 模拟响应（实际使用时删除）
-  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
-  
+  await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 3000));
+
   const mockContent = `## 人格分析报告
 
 ### 核心特质解读
@@ -368,20 +371,21 @@ async function callLLM(prompt: string, model: string, maxTokens: number): Promis
 
   return {
     content: mockContent,
-    tokens: Math.floor(Math.random() * 500) + 1000
+    tokens: Math.floor(Math.random() * 500) + 1000,
   };
 }
 
 /**
  * 计算成本（人民币）
  */
-function calculateCost(tokens: number, model: string, inputRatio: number = 0.3): number {
+function calculateCost(tokens: number, model: string, inputRatio = 0.3): number {
   const pricing = PRICING[model as keyof typeof PRICING] || PRICING['gpt-4o-mini'];
   const inputTokens = tokens * inputRatio;
   const outputTokens = tokens * (1 - inputRatio);
-  
+
   const costUSD = (inputTokens / 1000000) * pricing.input + (outputTokens / 1000000) * pricing.output;
-  return costUSD * USD_TO_CNY;  // 转换为人民币
+
+  return costUSD * USD_TO_CNY; // 转换为人民币
 }
 
 /**
@@ -390,74 +394,80 @@ function calculateCost(tokens: number, model: string, inputRatio: number = 0.3):
 export async function generateReport(params: ReportGenerationParams): Promise<ReportGenerationResult> {
   const requestId = generateRequestId();
   const startTime = Date.now();
-  
+
   reportEvents.emit('reportStarted', { requestId, params });
-  
+
   try {
     // 1. 检查限流
     const rateLimit = checkRateLimit(params.userId, params.clientIp);
+
     if (rateLimit.userRemaining <= 0) {
       throw new Error('用户每日生成次数已达上限（3 次/日）');
     }
+
     if (rateLimit.ipRemaining <= 0) {
       throw new Error('IP 每日请求次数已达上限（50 次/日）');
     }
-    
+
     // 2. 获取模型策略
     const strategy = getModelStrategy(params.reportType);
-    
+
     // 3. 检查预算
     const estimatedCost = calculateCost(strategy.maxTokens, strategy.model);
+
     if (!isWithinBudget(estimatedCost)) {
       const status = getBudgetStatus();
+
       throw new Error(`预算不足。今日剩余：$${status.dailyRemaining.toFixed(2)}`);
     }
-    
+
     // 4. 准备数据
-    const template = params.reportType === 'basic' 
-      ? BASIC_REPORT_TEMPLATE 
+    const template = params.reportType === 'basic'
+      ? BASIC_REPORT_TEMPLATE
       : params.reportType === 'pro'
         ? PRO_REPORT_TEMPLATE
         : MASTER_REPORT_TEMPLATE;
-    
+
     const data = {
-      mbtiType: 'INTJ',  // 实际应从数据库获取
+      mbtiType: 'INTJ', // 实际应从数据库获取
       eScore: 45,
       nScore: 72,
       tScore: 68,
       jScore: 81,
       testDate: new Date().toISOString(),
-      lifeEvents: []  // 实际应从数据库获取
+      lifeEvents: [], // 实际应从数据库获取
     };
-    
+
     // 5. 渲染模板
     const prompt = renderTemplate(template, data);
-    
+
     // 6. 调用 LLM（带重试）
     let lastError: Error | null = null;
     let result: { content: string; tokens: number } | null = null;
     const maxRetries = getMaxRetries();
-    
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const timeoutPromise = new Promise<{ content: string; tokens: number }>((_, reject) => {
           setTimeout(() => reject(new Error('LLM 调用超时（30 秒）')), 30000);
         });
-        
+
         result = await Promise.race([
           callLLM(prompt, strategy.model, strategy.maxTokens),
-          timeoutPromise
+          timeoutPromise,
         ]);
         break;
       } catch (error) {
         lastError = error as Error;
         reportEvents.emit('reportRetry', { requestId, attempt, error: (error as Error).message });
-        
+
         if (attempt === maxRetries) {
           // 尝试降级
           const fallbackModel = getFallbackModel();
+
           if (fallbackModel) {
             reportEvents.emit('reportFallback', { requestId, from: strategy.model, to: fallbackModel });
+
             try {
               result = await callLLM(prompt, fallbackModel, strategy.maxTokens);
             } catch (fallbackError) {
@@ -467,46 +477,46 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
         }
       }
     }
-    
+
     if (!result) {
       throw lastError || new Error('LLM 调用失败');
     }
-    
+
     // 7. 质量验证
     const validation = validateQuality(result.content, params.reportType);
+
     if (!validation.valid) {
       reportEvents.emit('reportQualityWarning', { requestId, issues: validation.issues });
       // 不抛出错误，仅记录警告
     }
-    
+
     // 8. 计算实际成本
     const cost = calculateCost(result.tokens, strategy.model);
-    
+
     // 9. 记录使用
     incrementRateLimit(params.userId, params.clientIp);
     recordUsage({
       timestamp: Date.now(),
-      cost: cost / USD_TO_CNY,  // 记录美元成本
+      cost: cost / USD_TO_CNY, // 记录美元成本
       model: strategy.model,
       reportType: params.reportType,
-      userId: params.userId
+      userId: params.userId,
     });
-    
+
     // 10. 返回结果
     const generationTime = Date.now() - startTime;
-    
+
     const reportResult: ReportGenerationResult = {
       content: result.content,
       tokens: result.tokens,
       generationTime,
       requestId,
-      cost
+      cost,
     };
-    
+
     reportEvents.emit('reportCompleted', { requestId, result: reportResult });
-    
+
     return reportResult;
-    
   } catch (error) {
     reportEvents.emit('reportFailed', { requestId, error: (error as Error).message });
     throw error;
@@ -527,9 +537,11 @@ export function resetRateLimit(userId?: string, clientIp?: string): void {
   if (userId) {
     userRateLimits.delete(userId);
   }
+
   if (clientIp) {
     ipRateLimits.delete(clientIp);
   }
+
   if (!userId && !clientIp) {
     userRateLimits.clear();
     ipRateLimits.clear();
@@ -543,5 +555,5 @@ export default {
   reportEvents,
   BASIC_REPORT_TEMPLATE,
   PRO_REPORT_TEMPLATE,
-  MASTER_REPORT_TEMPLATE
+  MASTER_REPORT_TEMPLATE,
 };

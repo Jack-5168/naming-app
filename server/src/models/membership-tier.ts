@@ -1,43 +1,43 @@
 /**
  * Membership Tier Model
  * Phase 4: 会员权益管理系统
- * 
+ *
  * Defines 6 membership tiers with their benefits and pricing
  */
 
 // ==================== Membership Tier Enum ====================
 
 export enum MembershipTier {
-  FREE = 'FREE',              // 免费版
-  BASIC = 'BASIC',            // 基础报告
-  PRO_REPORT = 'PRO_REPORT',  // 专业报告
+  FREE = 'FREE', // 免费版
+  BASIC = 'BASIC', // 基础报告
+  PRO_REPORT = 'PRO_REPORT', // 专业报告
   PRO_MONTHLY = 'PRO_MONTHLY', // 月会员
-  PRO_YEARLY = 'PRO_YEARLY',   // 年会员
-  DUAL_TEST = 'DUAL_TEST',    // 双人合测
+  PRO_YEARLY = 'PRO_YEARLY', // 年会员
+  DUAL_TEST = 'DUAL_TEST', // 双人合测
 }
 
 // ==================== Benefits Configuration ====================
 
 export interface BenefitLimits {
-  report_basic: number | 'unlimited';    // 基础报告次数
-  report_pro: number | 'unlimited';      // 专业报告次数
-  life_event: number | 'unlimited';      // 生活事件次数
-  dual_test: number | 'unlimited';       // 双人合测次数
-  priority_support: boolean;             // 优先支持
+  report_basic: number | 'unlimited'; // 基础报告次数
+  report_pro: number | 'unlimited'; // 专业报告次数
+  life_event: number | 'unlimited'; // 生活事件次数
+  dual_test: number | 'unlimited'; // 双人合测次数
+  priority_support: boolean; // 优先支持
 }
 
 export interface MembershipTierConfig {
   tier: MembershipTier;
   name: string;
   nameEn: string;
-  price: number;              // 价格（分）
-  priceDisplay: string;       // 价格显示
-  durationDays: number;       // 有效期（0 为永久）
+  price: number; // 价格（分）
+  priceDisplay: string; // 价格显示
+  durationDays: number; // 有效期（0 为永久）
   billingCycle?: 'once' | 'monthly' | 'yearly'; // 计费周期
   benefits: BenefitLimits;
-  features: string[];         // 特性列表
-  sortOrder: number;          // 排序顺序
-  isPopular?: boolean;        // 是否热门推荐
+  features: string[]; // 特性列表
+  sortOrder: number; // 排序顺序
+  isPopular?: boolean; // 是否热门推荐
 }
 
 // ==================== 6 档会员权益配置 ====================
@@ -202,7 +202,7 @@ export const MEMBERSHIP_TIERS: Record<MembershipTier, MembershipTierConfig> = {
  */
 export function getAllTiers(): MembershipTierConfig[] {
   return Object.values(MEMBERSHIP_TIERS).sort(
-    (a, b) => a.sortOrder - b.sortOrder
+    (a, b) => a.sortOrder - b.sortOrder,
   );
 }
 
@@ -218,12 +218,16 @@ export function getTierConfig(tier: MembershipTier): MembershipTierConfig {
  */
 export function isUnlimited(
   tier: MembershipTier,
-  benefit: keyof BenefitLimits
+  benefit: keyof BenefitLimits,
 ): boolean {
   const config = MEMBERSHIP_TIERS[tier];
-  if (!config) return false;
-  
+
+  if (!config) {
+    return false;
+  }
+
   const limit = config.benefits[benefit];
+
   return limit === 'unlimited';
 }
 
@@ -232,12 +236,16 @@ export function isUnlimited(
  */
 export function getBenefitLimit(
   tier: MembershipTier,
-  benefit: keyof BenefitLimits
+  benefit: keyof BenefitLimits,
 ): number {
   const config = MEMBERSHIP_TIERS[tier];
-  if (!config) return 0;
-  
+
+  if (!config) {
+    return 0;
+  }
+
   const limit = config.benefits[benefit];
+
   return limit === 'unlimited' ? Number.MAX_SAFE_INTEGER : limit;
 }
 
@@ -246,6 +254,7 @@ export function getBenefitLimit(
  */
 export function hasPrioritySupport(tier: MembershipTier): boolean {
   const config = MEMBERSHIP_TIERS[tier];
+
   return config?.benefits.priority_support ?? false;
 }
 
@@ -254,10 +263,14 @@ export function hasPrioritySupport(tier: MembershipTier): boolean {
  */
 export function getPricePerUse(tier: MembershipTier): number {
   const config = MEMBERSHIP_TIERS[tier];
-  if (!config || config.price === 0) return 0;
-  
+
+  if (!config || config.price === 0) {
+    return 0;
+  }
+
   // Simplified calculation - assumes average usage
   const estimatedUses = 10; // Assume 10 uses on average
+
   return config.price / estimatedUses;
 }
 
@@ -272,10 +285,13 @@ export function getUpgradePath(fromTier: MembershipTier): MembershipTier[] {
     MembershipTier.PRO_MONTHLY,
     MembershipTier.PRO_YEARLY,
   ];
-  
+
   const fromIndex = tierOrder.indexOf(fromTier);
-  if (fromIndex === -1) return [];
-  
+
+  if (fromIndex === -1) {
+    return [];
+  }
+
   return tierOrder.slice(fromIndex + 1);
 }
 
@@ -284,7 +300,7 @@ export function getUpgradePath(fromTier: MembershipTier): MembershipTier[] {
  */
 export function isHigherTier(
   higher: MembershipTier,
-  lower: MembershipTier
+  lower: MembershipTier,
 ): boolean {
   const tierOrder = [
     MembershipTier.FREE,
@@ -293,12 +309,14 @@ export function isHigherTier(
     MembershipTier.PRO_MONTHLY,
     MembershipTier.PRO_YEARLY,
   ];
-  
+
   const higherIndex = tierOrder.indexOf(higher);
   const lowerIndex = tierOrder.indexOf(lower);
-  
-  if (higherIndex === -1 || lowerIndex === -1) return false;
-  
+
+  if (higherIndex === -1 || lowerIndex === -1) {
+    return false;
+  }
+
   return higherIndex > lowerIndex;
 }
 

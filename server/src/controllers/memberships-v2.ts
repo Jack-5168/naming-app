@@ -1,7 +1,7 @@
 /**
  * Membership Controller v2 (v4.5)
  * Phase 4: 会员权益管理系统
- * 
+ *
  * API Endpoints:
  * - GET /api/v1/memberships/tiers - Get all membership tiers
  * - GET /api/v1/memberships/me - Get current user's membership
@@ -92,7 +92,7 @@ export async function getCurrentMembership(req: Request, res: Response) {
     res.json({
       success: true,
       data: {
-        tier: tier,
+        tier,
         tierName: tierConfig?.name || '免费版',
         status: membership?.status || 'none',
         startDate: membership?.startDate || null,
@@ -193,7 +193,7 @@ export async function upgradeMembership(req: Request, res: Response) {
     const paymentResult = await processMockPayment(
       userId,
       productId || 1,
-      selectedTier
+      selectedTier,
     );
 
     if (!paymentResult.success || !paymentResult.orderId) {
@@ -208,7 +208,7 @@ export async function upgradeMembership(req: Request, res: Response) {
       userId,
       selectedTier,
       productId || 1,
-      paymentResult.orderId
+      paymentResult.orderId,
     );
 
     // Send push notification
@@ -267,6 +267,7 @@ export async function checkBenefit(req: Request, res: Response) {
     }
 
     const validBenefits = ['report_basic', 'report_pro', 'life_event', 'dual_test', 'priority_support'];
+
     if (!validBenefits.includes(benefit)) {
       return res.status(400).json({
         success: false,
@@ -276,7 +277,7 @@ export async function checkBenefit(req: Request, res: Response) {
 
     const result = await checkBenefitAccess(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits
+      benefit as keyof import('../models/membership-tier').BenefitLimits,
     );
 
     res.json({
@@ -316,6 +317,7 @@ export async function consumeBenefit(req: Request, res: Response) {
     }
 
     const validBenefits = ['report_basic', 'report_pro', 'life_event', 'dual_test', 'priority_support'];
+
     if (!validBenefits.includes(benefit)) {
       return res.status(400).json({
         success: false,
@@ -326,7 +328,7 @@ export async function consumeBenefit(req: Request, res: Response) {
     // Check access first
     const access = await checkBenefitAccess(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits
+      benefit as keyof import('../models/membership-tier').BenefitLimits,
     );
 
     if (!access.allowed) {
@@ -341,13 +343,13 @@ export async function consumeBenefit(req: Request, res: Response) {
     await recordBenefitUsage(
       userId,
       benefit as keyof import('../models/membership-tier').BenefitLimits,
-      metadata
+      metadata,
     );
 
     // Get updated usage
     const updatedUsage = await checkBenefitAccess(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits
+      benefit as keyof import('../models/membership-tier').BenefitLimits,
     );
 
     res.json({
@@ -448,6 +450,7 @@ export async function downgradeMembership(req: Request, res: Response) {
     }
 
     const membership = await getUserMembership(userId);
+
     if (!membership) {
       return res.status(400).json({
         success: false,
@@ -456,6 +459,7 @@ export async function downgradeMembership(req: Request, res: Response) {
     }
 
     const targetTierValid = targetTier && MEMBERSHIP_TIERS[targetTier as MembershipTier];
+
     if (!targetTierValid) {
       return res.status(400).json({
         success: false,
@@ -465,7 +469,7 @@ export async function downgradeMembership(req: Request, res: Response) {
 
     // Disable auto-renew (downgrade at end of period)
     await import('../services/membership-benefits').then(
-      (m) => m.downgradeMembership(userId, targetTier as MembershipTier)
+      (m) => m.downgradeMembership(userId, targetTier as MembershipTier),
     );
 
     res.json({

@@ -1,21 +1,21 @@
 /**
  * Dual Test Controller - 双人合测功能
  * Phase 4: Growth Features
- * 
+ *
  * Features:
  * - 创建合测邀请
  * - 发送邀请（微信模板消息/邮件）
  * - 兼容性分析算法
  * - 合测结果生成
- * 
+ *
  * Pricing: ¥99
  */
 
 import { Request, Response } from 'express';
 import { PrismaClient, DualTestStatus, InvitationMethod } from '@prisma/client';
-import { createPushNotification } from '../services/push-notification';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
+import { createPushNotification } from '../services/push-notification';
 import { analyzeCompatibility, CompatibilityResult } from '../services/compatibility-analyzer';
 
 const prisma = new PrismaClient();
@@ -25,7 +25,7 @@ const prisma = new PrismaClient();
 /**
  * POST /api/v1/dual-test/create
  * 创建双人合测邀请
- * 
+ *
  * Request Body:
  * - testId: 发起人的测试 ID
  * - invitationMethod: 邀请方式 (wechat/link/qrcode)
@@ -102,6 +102,7 @@ export async function createDualTestInvitation(req: Request, res: Response) {
 
     // Record feature usage
     const { recordFeatureUsage } = await import('./memberships');
+
     await recordFeatureUsage(userId, 'dual_test', { dualTestId: dualTest.id, testId });
 
     res.json({
@@ -130,7 +131,7 @@ export async function createDualTestInvitation(req: Request, res: Response) {
 /**
  * POST /api/v1/dual-test/accept
  * 接受双人合测邀请
- * 
+ *
  * Request Body:
  * - inviteCode: 邀请码
  */
@@ -221,7 +222,7 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
 /**
  * POST /api/v1/dual-test/complete
  * 完成双人合测并生成兼容性报告
- * 
+ *
  * Request Body:
  * - dualTestId: 合测 ID
  * - participantTestId: 参与者的测试 ID
@@ -290,7 +291,7 @@ export async function completeDualTest(req: Request, res: Response) {
       dualTest.initiatorTestResult.answers as any,
       participantTestResult.answers as any,
       dualTest.initiator.mbtiType || '',
-      participantTestResult.mbtiType || ''
+      participantTestResult.mbtiType || '',
     );
 
     // Update dual test with results
@@ -309,13 +310,14 @@ export async function completeDualTest(req: Request, res: Response) {
 
     // Record feature usage for both users
     const { recordFeatureUsage } = await import('./memberships');
-    await recordFeatureUsage(dualTest.initiatorId, 'dual_test', { 
-      dualTestId: dualTest.id, 
-      completed: true 
+
+    await recordFeatureUsage(dualTest.initiatorId, 'dual_test', {
+      dualTestId: dualTest.id,
+      completed: true,
     });
-    await recordFeatureUsage(dualTest.participantId!, 'dual_test', { 
-      dualTestId: dualTest.id, 
-      completed: true 
+    await recordFeatureUsage(dualTest.participantId!, 'dual_test', {
+      dualTestId: dualTest.id,
+      completed: true,
     });
 
     // Notify both users
@@ -423,8 +425,8 @@ export async function getDualTestDetails(req: Request, res: Response) {
     }
 
     // Parse JSON fields
-    const conflictWarnings = dualTest.conflictWarnings 
-      ? JSON.parse(dualTest.conflictWarnings) 
+    const conflictWarnings = dualTest.conflictWarnings
+      ? JSON.parse(dualTest.conflictWarnings)
       : [];
     const relationshipAdvice = dualTest.relationshipAdvice
       ? JSON.parse(dualTest.relationshipAdvice)
@@ -524,8 +526,8 @@ export async function getDualTestReport(req: Request, res: Response) {
     }
 
     // Parse all JSON fields
-    const conflictWarnings = dualTest.conflictWarnings 
-      ? JSON.parse(dualTest.conflictWarnings) 
+    const conflictWarnings = dualTest.conflictWarnings
+      ? JSON.parse(dualTest.conflictWarnings)
       : [];
     const relationshipAdvice = dualTest.relationshipAdvice
       ? JSON.parse(dualTest.relationshipAdvice)
@@ -636,16 +638,18 @@ export async function getDualTestByInviteCode(req: Request, res: Response) {
 /**
  * Generate QR code
  */
-async function generateQRCode(url: string, size: number = 300): Promise<string> {
+async function generateQRCode(url: string, size = 300): Promise<string> {
   try {
     const qrCode = await QRCode.toDataURL(url, {
       width: size,
       margin: 2,
       errorCorrectionLevel: 'M',
     });
+
     return qrCode;
   } catch (error) {
     console.error('Error generating QR code:', error);
+
     return '';
   }
 }
@@ -656,12 +660,12 @@ async function generateQRCode(url: string, size: number = 300): Promise<string> 
 async function sendWechatInvitation(
   wechatId: string,
   inviteCode: string,
-  initiatorId: number
+  initiatorId: number,
 ): Promise<void> {
   try {
     // In production, integrate with WeChat template message API
     console.log(`Sending WeChat invitation to ${wechatId}, code: ${inviteCode}`);
-    
+
     // Placeholder for WeChat integration
     // await wechatService.sendTemplateMessage({
     //   touser: wechatId,
@@ -683,12 +687,12 @@ async function sendWechatInvitation(
 async function sendEmailInvitation(
   email: string,
   inviteCode: string,
-  initiatorId: number
+  initiatorId: number,
 ): Promise<void> {
   try {
     // In production, integrate with email service (SendGrid, SES, etc.)
     console.log(`Sending email invitation to ${email}, code: ${inviteCode}`);
-    
+
     // Placeholder for email integration
     // await emailService.send({
     //   to: email,
@@ -709,9 +713,18 @@ async function sendEmailInvitation(
  * Get compatibility level from score
  */
 function getCompatibilityLevel(score: number): string {
-  if (score >= 0.85) return 'excellent';
-  if (score >= 0.70) return 'good';
-  if (score >= 0.55) return 'moderate';
+  if (score >= 0.85) {
+    return 'excellent';
+  }
+
+  if (score >= 0.70) {
+    return 'good';
+  }
+
+  if (score >= 0.55) {
+    return 'moderate';
+  }
+
   return 'challenging';
 }
 

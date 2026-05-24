@@ -1,12 +1,12 @@
 /**
  * Share Controller - 分享功能
  * Phase 4: Growth Features
- * 
+ *
  * Features:
  * - 分享卡片生成
  * - 邀请码管理
  * - 分享统计
- * 
+ *
  * Supports:
  * - Personality type cards
  * - Stability report cards
@@ -26,7 +26,7 @@ const prisma = new PrismaClient();
 /**
  * GET /api/v1/share/card/personality
  * 生成 MBTI 类型分享卡片
- * 
+ *
  * Query Parameters:
  * - testId: 测试 ID
  * - template: 卡片模板 (default/minimal/detailed)
@@ -69,13 +69,14 @@ export async function generatePersonalityShareCard(req: Request, res: Response) 
     // Get personality type info
     const personalityType = testResult.mbtiType || 'Unknown';
     const typeInfo = getPersonalityTypeInfo(personalityType);
-    
+
     // Calculate stability if user has multiple tests
     const testCount = await prisma.testResult.count({
       where: { userId },
     });
 
     let stabilityIndex = 0;
+
     if (testCount > 1) {
       const { calculateStability } = await import('../services/stability-calculator');
       const testHistory = await prisma.testResult.findMany({
@@ -83,8 +84,9 @@ export async function generatePersonalityShareCard(req: Request, res: Response) 
         orderBy: { createdAt: 'desc' },
         take: 10,
       });
-      
+
       const stabilityResult = await calculateStability(userId.toString(), testHistory as any);
+
       stabilityIndex = stabilityResult.stabilityIndex;
     }
 
@@ -268,7 +270,7 @@ export async function generateDualTestShareCard(req: Request, res: Response) {
 /**
  * POST /api/v1/share/track
  * 记录分享行为
- * 
+ *
  * Request Body:
  * - type: 分享类型
  * - channel: 分享渠道
@@ -382,10 +384,12 @@ export async function getShareStats(req: Request, res: Response) {
         totalShares,
         sharesByType: sharesByType.reduce((acc, item) => {
           acc[item.type] = item._count;
+
           return acc;
         }, {} as { [key: string]: number }),
         sharesByChannel: sharesByChannel.reduce((acc, item) => {
           acc[item.channel] = item._count;
+
           return acc;
         }, {} as { [key: string]: number }),
         recentShares,
@@ -594,16 +598,18 @@ export async function useInviteCode(req: Request, res: Response) {
 /**
  * Generate QR code
  */
-async function generateQRCode(url: string, size: number = 300): Promise<string> {
+async function generateQRCode(url: string, size = 300): Promise<string> {
   try {
     const qrCode = await QRCode.toDataURL(url, {
       width: size,
       margin: 2,
       errorCorrectionLevel: 'M',
     });
+
     return qrCode;
   } catch (error) {
     console.error('Error generating QR code:', error);
+
     return '';
   }
 }
@@ -614,7 +620,7 @@ async function generateQRCode(url: string, size: number = 300): Promise<string> 
 async function recordShareEvent(
   userId: number,
   type: string,
-  action: string
+  action: string,
 ): Promise<void> {
   try {
     await prisma.shareEvent.create({
@@ -717,11 +723,17 @@ function calculateStabilityTrend(testResults: any[]): 'increasing' | 'decreasing
   }
 
   // Simplified trend calculation
-  const recentTypes = testResults.slice(0, 3).map(t => t.mbtiType);
+  const recentTypes = testResults.slice(0, 3).map((t) => t.mbtiType);
   const uniqueTypes = new Set(recentTypes).size;
 
-  if (uniqueTypes === 1) return 'stable';
-  if (uniqueTypes === 2) return 'increasing';
+  if (uniqueTypes === 1) {
+    return 'stable';
+  }
+
+  if (uniqueTypes === 2) {
+    return 'increasing';
+  }
+
   return 'decreasing';
 }
 

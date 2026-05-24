@@ -1,7 +1,7 @@
 /**
  * Data Encryption Module
  * Phase 4: Security Hardening
- * 
+ *
  * Features:
  * - AES-256 encryption for sensitive fields
  * - Field-level encryption
@@ -35,14 +35,15 @@ export function encrypt(data: string): EncryptedData {
   const cipher = crypto.createCipheriv(
     ENCRYPTION_ALGORITHM,
     Buffer.from(ENCRYPTION_KEY, 'hex'),
-    iv
+    iv,
   );
-  
+
   let encrypted = cipher.update(data, 'utf8', 'hex');
+
   encrypted += cipher.final('hex');
-  
+
   const authTag = cipher.getAuthTag().toString('hex');
-  
+
   return {
     encryptedData: encrypted,
     iv: iv.toString('hex'),
@@ -57,14 +58,15 @@ export function decrypt(encryptedData: EncryptedData): string {
   const decipher = crypto.createDecipheriv(
     ENCRYPTION_ALGORITHM,
     Buffer.from(ENCRYPTION_KEY, 'hex'),
-    Buffer.from(encryptedData.iv, 'hex')
+    Buffer.from(encryptedData.iv, 'hex'),
   );
-  
+
   decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
-  
+
   let decrypted = decipher.update(encryptedData.encryptedData, 'hex', 'utf8');
+
   decrypted += decipher.final('utf8');
-  
+
   return decrypted;
 }
 
@@ -73,18 +75,20 @@ export function decrypt(encryptedData: EncryptedData): string {
  */
 export function encryptFields<T extends Record<string, any>>(
   obj: T,
-  fieldsToEncrypt: (keyof T)[]
+  fieldsToEncrypt: (keyof T)[],
 ): T {
   const encrypted = { ...obj };
-  
+
   for (const field of fieldsToEncrypt) {
     const value = obj[field];
+
     if (value !== undefined && value !== null) {
       const encryptedData = encrypt(String(value));
+
       (encrypted as any)[field] = JSON.stringify(encryptedData);
     }
   }
-  
+
   return encrypted;
 }
 
@@ -93,15 +97,17 @@ export function encryptFields<T extends Record<string, any>>(
  */
 export function decryptFields<T extends Record<string, any>>(
   obj: T,
-  fieldsToDecrypt: (keyof T)[]
+  fieldsToDecrypt: (keyof T)[],
 ): T {
   const decrypted = { ...obj };
-  
+
   for (const field of fieldsToDecrypt) {
     const value = obj[field];
+
     if (value !== undefined && value !== null) {
       try {
         const encryptedData = JSON.parse(value as string) as EncryptedData;
+
         (decrypted as any)[field] = decrypt(encryptedData);
       } catch (error) {
         console.error(`Failed to decrypt field ${String(field)}:`, error);
@@ -109,7 +115,7 @@ export function decryptFields<T extends Record<string, any>>(
       }
     }
   }
-  
+
   return decrypted;
 }
 
@@ -135,7 +141,7 @@ export function hashWithSalt(data: string, salt: string): string {
 /**
  * Generate secure random salt
  */
-export function generateSalt(length: number = 32): string {
+export function generateSalt(length = 32): string {
   return crypto.randomBytes(length).toString('hex');
 }
 
@@ -150,17 +156,19 @@ export function encryptPII(data: {
   idNumber?: string;
 }): Record<string, string> {
   const encrypted: Record<string, string> = {};
-  
+
   if (data.phone) {
     encrypted.phone = JSON.stringify(encrypt(data.phone));
   }
+
   if (data.email) {
     encrypted.email = JSON.stringify(encrypt(data.email));
   }
+
   if (data.idNumber) {
     encrypted.idNumber = JSON.stringify(encrypt(data.idNumber));
   }
-  
+
   return encrypted;
 }
 
@@ -173,17 +181,19 @@ export function decryptPII(encrypted: {
   idNumber?: string;
 }): Record<string, string> {
   const decrypted: Record<string, string> = {};
-  
+
   if (encrypted.phone) {
     decrypted.phone = decrypt(JSON.parse(encrypted.phone));
   }
+
   if (encrypted.email) {
     decrypted.email = decrypt(JSON.parse(encrypted.email));
   }
+
   if (encrypted.idNumber) {
     decrypted.idNumber = decrypt(JSON.parse(encrypted.idNumber));
   }
-  
+
   return decrypted;
 }
 
@@ -194,6 +204,7 @@ export function decryptPII(encrypted: {
  */
 export function encryptToken(token: string): string {
   const encrypted = encrypt(token);
+
   return `${encrypted.iv}:${encrypted.authTag}:${encrypted.encryptedData}`;
 }
 
@@ -202,6 +213,7 @@ export function encryptToken(token: string): string {
  */
 export function decryptToken(encryptedToken: string): string {
   const [iv, authTag, encryptedData] = encryptedToken.split(':');
+
   return decrypt({
     iv,
     authTag,
@@ -224,15 +236,16 @@ export function createEncryptionMiddleware() {
           if (params.args.data?.phone) {
             params.args.data.phone = encrypt(params.args.data.phone).encryptedData;
           }
+
           if (params.args.data?.email) {
             // Email is typically not encrypted as it's used for lookup
             // Consider using hash for lookup instead
           }
         }
       }
-      
+
       const result = await query(params);
-      
+
       // Decrypt sensitive fields after read
       if (params.action === 'findUnique' || params.action === 'findFirst' || params.action === 'findMany') {
         if (params.model === 'User' && result) {
@@ -245,12 +258,13 @@ export function createEncryptionMiddleware() {
                   authTag: '',
                 });
               }
+
               return item;
             });
           }
         }
       }
-      
+
       return result;
     },
   };
@@ -265,18 +279,18 @@ export function createEncryptionMiddleware() {
 export async function rotateEncryptionKey(
   oldKey: string,
   newKey: string,
-  reencryptFunction: (data: string, oldKey: string, newKey: string) => Promise<void>
+  reencryptFunction: (data: string, oldKey: string, newKey: string) => Promise<void>,
 ): Promise<void> {
   console.log('Starting encryption key rotation...');
-  
+
   // In production, this would:
   // 1. Fetch all encrypted records
   // 2. Decrypt with old key
   // 3. Re-encrypt with new key
   // 4. Update database
-  
+
   await reencryptFunction('', oldKey, newKey);
-  
+
   console.log('Encryption key rotation completed');
 }
 

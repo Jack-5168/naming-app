@@ -1,7 +1,7 @@
 /**
  * Database Optimization Module
  * Phase 4: Performance Optimization
- * 
+ *
  * Features:
  * - Index optimization
  * - Query optimization (avoid N+1)
@@ -17,7 +17,7 @@ const prisma = new PrismaClient();
 
 const CONNECTION_POOL_CONFIG = {
   max: 20, // Maximum connections
-  min: 5,  // Minimum connections
+  min: 5, // Minimum connections
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 };
@@ -52,7 +52,7 @@ export async function getUserStabilityStats(userId: number): Promise<any> {
     FROM "TestResult"
     WHERE "userId" = ${userId}
   `;
-  
+
   return (result as any[])[0];
 }
 
@@ -78,8 +78,8 @@ export async function batchInsertResponses(responses: Array<{
  */
 export async function getTestRecordsPaginated(
   userId: number,
-  limit: number = 20,
-  cursor?: string
+  limit = 20,
+  cursor?: string,
 ) {
   return prisma.testResult.findMany({
     where: { userId },
@@ -100,26 +100,26 @@ export async function createOptimizedIndexes() {
     // User indexes
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_email ON "User"(email)',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_phone ON "User"(phone)',
-    
+
     // Membership indexes
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_membership_user_id ON "Membership"("userId")',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_membership_level_status ON "Membership"(level, status)',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_membership_end_date ON "Membership"("endDate")',
-    
+
     // Test record indexes
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_test_record_user_id ON "TestRecord"("userId")',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_test_record_completed_at ON "TestRecord"("completedAt")',
-    
+
     // Order indexes
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_order_user_id ON "Order"("userId")',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_order_status ON "Order"(status)',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_order_created_at ON "Order"("createdAt")',
-    
+
     // Notification indexes
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notification_user_status ON "PushNotification"("userId", status)',
     'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_notification_scheduled_at ON "PushNotification"("scheduledAt")',
   ];
-  
+
   for (const query of indexes) {
     try {
       await prisma.$executeRawUnsafe(query);
@@ -150,23 +150,23 @@ export function enableSlowQueryLogging() {
     const before = Date.now();
     const result = await next(params);
     const after = Date.now();
-    
+
     const duration = after - before;
-    
+
     if (duration > slowQueryThreshold) {
       const slowQuery: SlowQuery = {
         query: `${params.model}.${params.action}`,
         duration,
         timestamp: new Date(),
       };
-      
+
       slowQueries.push(slowQuery);
-      
+
       console.warn(`Slow query detected: ${slowQuery.query} (${duration}ms)`);
-      
+
       // Log to console (no database logging in this version)
     }
-    
+
     return result;
   });
 }
@@ -174,7 +174,7 @@ export function enableSlowQueryLogging() {
 /**
  * Get slow query report
  */
-export function getSlowQueryReport(limit: number = 10) {
+export function getSlowQueryReport(limit = 10) {
   return slowQueries
     .sort((a, b) => b.duration - a.duration)
     .slice(0, limit);
@@ -203,22 +203,22 @@ const queryCache = new Map<string, CacheEntry<any>>();
 export async function cachedQuery<T>(
   key: string,
   queryFn: () => Promise<T>,
-  ttl: number = 60000 // 1 minute default
+  ttl = 60000, // 1 minute default
 ): Promise<T> {
   const cached = queryCache.get(key);
-  
+
   if (cached && Date.now() - cached.timestamp < cached.ttl) {
     return cached.data as T;
   }
-  
+
   const data = await queryFn();
-  
+
   queryCache.set(key, {
     data,
     timestamp: Date.now(),
     ttl,
   });
-  
+
   return data;
 }
 
@@ -247,11 +247,11 @@ export function clearCache() {
  */
 export async function checkDatabaseHealth() {
   const startTime = Date.now();
-  
+
   try {
     await prisma.$queryRaw`SELECT 1`;
     const responseTime = Date.now() - startTime;
-    
+
     return {
       healthy: true,
       responseTime,
@@ -278,26 +278,27 @@ export async function bulkUpdate<T extends { id: string | number }>(
   model: any,
   items: T[],
   updateFn: (item: T) => Record<string, any>,
-  chunkSize: number = 100
+  chunkSize = 100,
 ) {
   const chunks = [];
+
   for (let i = 0; i < items.length; i += chunkSize) {
     chunks.push(items.slice(i, i + chunkSize));
   }
-  
+
   const results = [];
+
   for (const chunk of chunks) {
-    const updates = chunk.map(item =>
-      model.update({
-        where: { id: item.id },
-        data: updateFn(item),
-      })
-    );
-    
+    const updates = chunk.map((item) => model.update({
+      where: { id: item.id },
+      data: updateFn(item),
+    }));
+
     const chunkResults = await Promise.all(updates);
+
     results.push(...chunkResults);
   }
-  
+
   return results;
 }
 
@@ -307,13 +308,14 @@ export async function bulkUpdate<T extends { id: string | number }>(
 export async function bulkDelete(
   model: any,
   ids: (string | number)[],
-  chunkSize: number = 100
+  chunkSize = 100,
 ) {
   const chunks = [];
+
   for (let i = 0; i < ids.length; i += chunkSize) {
     chunks.push(ids.slice(i, i + chunkSize));
   }
-  
+
   for (const chunk of chunks) {
     await model.deleteMany({
       where: { id: { in: chunk } },

@@ -1,7 +1,7 @@
 /**
  * Membership Benefits Service
  * Phase 4: 会员权益管理系统
- * 
+ *
  * Handles benefit validation, usage tracking, and expiration logic
  */
 
@@ -59,12 +59,14 @@ export async function getUserMembership(userId: number): Promise<UserMembership 
 
   // Check if expired
   const now = new Date();
+
   if (membership.endDate < now && membership.status === 'active') {
     // Auto-downgrade expired membership
     await prisma.membership.update({
       where: { id: membership.id },
       data: { status: 'expired' },
     });
+
     return null;
   }
 
@@ -95,11 +97,11 @@ export async function getUserMembership(userId: number): Promise<UserMembership 
  */
 export async function getEffectiveTier(userId: number): Promise<MembershipTier> {
   const membership = await getUserMembership(userId);
-  
+
   if (!membership) {
     return MembershipTier.FREE;
   }
-  
+
   return membership.tier;
 }
 
@@ -110,12 +112,13 @@ export async function getEffectiveTier(userId: number): Promise<MembershipTier> 
  */
 export async function checkBenefitAccess(
   userId: number,
-  benefit: keyof BenefitLimits
+  benefit: keyof BenefitLimits,
 ): Promise<CheckBenefitResult> {
   const membership = await getUserMembership(userId);
   const tier = membership?.tier || MembershipTier.FREE;
-  
+
   const tierConfig = getTierConfig(tier);
+
   if (!tierConfig) {
     return {
       allowed: false,
@@ -124,7 +127,7 @@ export async function checkBenefitAccess(
   }
 
   const limit = tierConfig.benefits[benefit];
-  
+
   // Check if unlimited
   if (limit === 'unlimited') {
     return {
@@ -168,30 +171,32 @@ export async function checkBenefitAccess(
 async function getBenefitUsage(
   userId: number,
   benefit: keyof BenefitLimits,
-  membership: UserMembership | null
+  membership: UserMembership | null,
 ): Promise<number> {
   const now = new Date();
-  
+
   // Determine the period start date based on membership type
   let periodStart: Date;
-  
+
   if (!membership) {
     // Free tier - count from beginning
     periodStart = new Date(0);
   } else if (membership.tier === MembershipTier.PRO_MONTHLY) {
     // Monthly - reset every 30 days from start date
     const daysSinceStart = Math.floor(
-      (now.getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24)
+      (now.getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
     const cyclesCompleted = Math.floor(daysSinceStart / 30);
+
     periodStart = new Date(membership.startDate);
     periodStart.setDate(periodStart.getDate() + cyclesCompleted * 30);
   } else if (membership.tier === MembershipTier.PRO_YEARLY) {
     // Yearly - reset every 365 days from start date
     const daysSinceStart = Math.floor(
-      (now.getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24)
+      (now.getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
     const cyclesCompleted = Math.floor(daysSinceStart / 365);
+
     periodStart = new Date(membership.startDate);
     periodStart.setDate(periodStart.getDate() + cyclesCompleted * 365);
   } else {
@@ -227,11 +232,14 @@ async function getBenefitUsage(
 function getResetDate(
   tier: MembershipTier,
   benefit: keyof BenefitLimits,
-  membership: UserMembership | null
+  membership: UserMembership | null,
 ): Date | undefined {
-  if (!membership) return undefined;
+  if (!membership) {
+    return undefined;
+  }
 
   const config = getTierConfig(tier);
+
   if (!config || config.durationDays === 0) {
     // One-time purchase - no reset
     return undefined;
@@ -241,10 +249,12 @@ function getResetDate(
     // Monthly - reset every 30 days
     const nextReset = new Date(membership.startDate);
     const daysSinceStart = Math.floor(
-      (new Date().getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24)
+      (new Date().getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
     const cyclesCompleted = Math.floor(daysSinceStart / 30);
+
     nextReset.setDate(nextReset.getDate() + (cyclesCompleted + 1) * 30);
+
     return nextReset;
   }
 
@@ -252,10 +262,12 @@ function getResetDate(
     // Yearly - reset every 365 days
     const nextReset = new Date(membership.startDate);
     const daysSinceStart = Math.floor(
-      (new Date().getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24)
+      (new Date().getTime() - membership.startDate.getTime()) / (1000 * 60 * 60 * 24),
     );
     const cyclesCompleted = Math.floor(daysSinceStart / 365);
+
     nextReset.setDate(nextReset.getDate() + (cyclesCompleted + 1) * 365);
+
     return nextReset;
   }
 
@@ -270,7 +282,7 @@ function getResetDate(
 export async function recordBenefitUsage(
   userId: number,
   benefit: keyof BenefitLimits,
-  metadata?: any
+  metadata?: any,
 ): Promise<void> {
   const benefitFieldMap: Record<keyof BenefitLimits, string> = {
     report_basic: 'report_basic',
@@ -293,7 +305,7 @@ export async function recordBenefitUsage(
  * Get detailed benefit usage for user
  */
 export async function getBenefitUsageDetails(
-  userId: number
+  userId: number,
 ): Promise<BenefitUsage[]> {
   const membership = await getUserMembership(userId);
   const tier = membership?.tier || MembershipTier.FREE;
@@ -309,8 +321,7 @@ export async function getBenefitUsageDetails(
   for (const benefit of benefitKeys) {
     const limit = tierConfig.benefits[benefit];
     const used = await getBenefitUsage(userId, benefit, membership);
-    const remaining =
-      limit === 'unlimited' ? 'unlimited' : Math.max(0, limit - used);
+    const remaining = limit === 'unlimited' ? 'unlimited' : Math.max(0, limit - used);
 
     benefits.push({
       benefit,
@@ -333,18 +344,18 @@ export async function upgradeMembership(
   userId: number,
   newTier: MembershipTier,
   productId: number,
-  orderId: number
+  orderId: number,
 ): Promise<UserMembership> {
   const tierConfig = getTierConfig(newTier);
+
   if (!tierConfig) {
     throw new Error('Invalid membership tier');
   }
 
   const now = new Date();
-  const endDate =
-    tierConfig.durationDays > 0
-      ? new Date(now.getTime() + tierConfig.durationDays * 24 * 60 * 60 * 1000)
-      : now;
+  const endDate = tierConfig.durationDays > 0
+    ? new Date(now.getTime() + tierConfig.durationDays * 24 * 60 * 60 * 1000)
+    : now;
 
   // Map our tier to Prisma level
   const levelMap: Record<MembershipTier, MembershipLevel> = {
@@ -365,10 +376,9 @@ export async function upgradeMembership(
 
   if (existingMembership && existingMembership.status === 'active') {
     // Extend existing membership
-    const newEndDate =
-      tierConfig.durationDays > 0
-        ? new Date(existingMembership.endDate.getTime() + tierConfig.durationDays * 24 * 60 * 60 * 1000)
-        : existingMembership.endDate;
+    const newEndDate = tierConfig.durationDays > 0
+      ? new Date(existingMembership.endDate.getTime() + tierConfig.durationDays * 24 * 60 * 60 * 1000)
+      : existingMembership.endDate;
 
     const updated = await prisma.membership.update({
       where: { userId },
@@ -424,9 +434,10 @@ export async function upgradeMembership(
  */
 export async function downgradeMembership(
   userId: number,
-  newTier: MembershipTier = MembershipTier.FREE
+  newTier: MembershipTier = MembershipTier.FREE,
 ): Promise<void> {
   const tierConfig = getTierConfig(newTier);
+
   if (!tierConfig) {
     throw new Error('Invalid membership tier');
   }
@@ -487,7 +498,7 @@ export async function processExpiredMemberships(): Promise<number> {
 /**
  * Check if membership is expiring soon
  */
-export async function checkExpiringMemberships(daysThreshold: number = 7): Promise<number[]> {
+export async function checkExpiringMemberships(daysThreshold = 7): Promise<number[]> {
   const now = new Date();
   const thresholdDate = new Date(now.getTime() + daysThreshold * 24 * 60 * 60 * 1000);
 
@@ -504,7 +515,7 @@ export async function checkExpiringMemberships(daysThreshold: number = 7): Promi
     },
   });
 
-  return expiringMemberships.map(m => m.userId);
+  return expiringMemberships.map((m) => m.userId);
 }
 
 // ==================== Mock Payment Integration ====================
@@ -516,7 +527,7 @@ export async function checkExpiringMemberships(daysThreshold: number = 7): Promi
 export async function processMockPayment(
   userId: number,
   productId: number,
-  tier: MembershipTier
+  tier: MembershipTier,
 ): Promise<{ success: boolean; orderId?: number; transactionId?: string }> {
   // Generate mock order
   const orderNo = `ORD${Date.now()}${Math.random().toString(36).substr(2, 6)}`;

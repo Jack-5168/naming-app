@@ -1,7 +1,7 @@
 /**
  * Push Notification Service
  * Phase 4: Notification System
- * 
+ *
  * Supports:
  * - Report ready notifications
  * - Retest reminders (30 days)
@@ -148,13 +148,14 @@ export async function sendNotification(notificationId: number) {
     }
 
     const subscriptions = notification.user.pushSubscriptions;
-    
+
     if (subscriptions.length === 0) {
       console.log(`No push subscriptions for user ${notification.userId}`);
       await prisma.pushNotification.update({
         where: { id: notificationId },
         data: { status: 'failed' },
       });
+
       return;
     }
 
@@ -177,10 +178,11 @@ export async function sendNotification(notificationId: number) {
               auth: sub.auth,
             },
           },
-          payload
+          payload,
         );
       } catch (error) {
         console.error(`Failed to send to endpoint ${sub.endpoint}:`, error);
+
         // Remove invalid subscription
         if ((error as any).statusCode === 410) {
           await prisma.pushSubscription.delete({
@@ -265,7 +267,7 @@ export async function scheduleNotifications() {
 
     for (const record of usersNeedingRetest) {
       const userId = typeof record === 'string' ? record : (record as any).userId;
-      
+
       // Check if reminder already sent
       const existingReminder = await prisma.pushNotification.findFirst({
         where: {
@@ -301,11 +303,11 @@ export async function scheduleNotifications() {
 export async function sendPersonalizedNotification(
   userId: number,
   dimension: string,
-  change: number
+  change: number,
 ) {
   const template = NOTIFICATION_TEMPLATES.personalized.template.replace(
     '{change}',
-    Math.abs(change).toFixed(1)
+    Math.abs(change).toFixed(1),
   );
 
   await createPushNotification({
@@ -325,7 +327,7 @@ export async function subscribeUser(
   endpoint: string,
   p256dh: string,
   auth: string,
-  platform: string
+  platform: string,
 ) {
   try {
     // Check if subscription already exists
@@ -362,6 +364,7 @@ export async function unsubscribeUser(endpoint: string) {
     await prisma.pushSubscription.delete({
       where: { endpoint },
     });
+
     return { success: true };
   } catch (error) {
     console.error('Error unsubscribing user:', error);

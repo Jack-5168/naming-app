@@ -1,7 +1,7 @@
 /**
  * Membership Controller
  * Phase 4: Membership System Implementation
- * 
+ *
  * API Endpoints:
  * - GET /api/v1/memberships/products - Get membership products (6 tiers)
  * - GET /api/v1/memberships/me - Get current user's membership benefits
@@ -168,7 +168,7 @@ export async function getMembershipProducts(req: Request, res: Response) {
 
     res.json({
       success: true,
-      data: products.map(p => ({
+      data: products.map((p) => ({
         id: p.id,
         name: p.name,
         description: p.description,
@@ -177,9 +177,9 @@ export async function getMembershipProducts(req: Request, res: Response) {
         durationDays: p.durationDays,
         level: p.level,
         features: p.features,
-        pricePerUse: p.durationDays === 0 
-          ? Number(p.price) 
-          : p.durationDays === 30 
+        pricePerUse: p.durationDays === 0
+          ? Number(p.price)
+          : p.durationDays === 30
             ? Number(p.price)
             : p.durationDays === 90
               ? Number(p.price) / 3
@@ -202,7 +202,7 @@ export async function getMembershipProducts(req: Request, res: Response) {
 export async function getCurrentMembership(req: Request, res: Response) {
   try {
     const userId = req.user?.id; // Assuming auth middleware sets req.user
-    
+
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -226,6 +226,7 @@ export async function getCurrentMembership(req: Request, res: Response) {
     if (!membership) {
       // Return free tier benefits
       const freeBenefits = await getBenefitsForLevel('free');
+
       return res.json({
         success: true,
         data: {
@@ -240,15 +241,16 @@ export async function getCurrentMembership(req: Request, res: Response) {
     // Check if membership is expired
     const now = new Date();
     const isExpired = membership.endDate < now;
-    
+
     if (isExpired && membership.status === 'active') {
       // Auto-downgrade expired membership
       await prisma.membership.update({
         where: { id: membership.id },
         data: { status: 'expired' },
       });
-      
+
       const freeBenefits = await getBenefitsForLevel('free');
+
       return res.json({
         success: true,
         data: {
@@ -426,6 +428,7 @@ export async function getMembershipBenefits(req: Request, res: Response) {
 
     if (level) {
       const benefits = await getBenefitsForLevel(level as MembershipLevel);
+
       return res.json({
         success: true,
         data: {
@@ -438,7 +441,7 @@ export async function getMembershipBenefits(req: Request, res: Response) {
     // Return benefits for all levels
     const levels: MembershipLevel[] = ['free', 'basic', 'pro', 'premium'];
     const allBenefits = await Promise.all(
-      levels.map(l => getBenefitsForLevel(l))
+      levels.map((l) => getBenefitsForLevel(l)),
     );
 
     res.json({
@@ -516,7 +519,7 @@ export async function checkFeatureAccess(userId: number, feature: string): Promi
     // Free tier
     const freeBenefits = await getBenefitsForLevel('free');
     const featureConfig = freeBenefits.features[feature];
-    
+
     if (!featureConfig) {
       return { allowed: false };
     }
@@ -535,6 +538,7 @@ export async function checkFeatureAccess(userId: number, feature: string): Promi
     });
 
     const limit = featureConfig.limit || 0;
+
     return {
       allowed: usageCount < limit,
       remaining: limit - usageCount,
@@ -564,6 +568,7 @@ export async function checkFeatureAccess(userId: number, feature: string): Promi
   });
 
   const limit = featureConfig.limit || 0;
+
   return {
     allowed: usageCount < limit,
     remaining: limit - usageCount,

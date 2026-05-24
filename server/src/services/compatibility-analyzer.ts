@@ -1,12 +1,12 @@
 /**
  * Compatibility Analyzer Service - 兼容性分析服务
  * Phase 4: Growth Features
- * 
+ *
  * Features:
  * - MBTI 类型兼容性计算
  * - 冲突预警
  * - 关系建议
- * 
+ *
  * Based on psychological research on personality type interactions
  */
 
@@ -51,7 +51,7 @@ export async function analyzeCompatibility(
   initiatorAnswers: any,
   participantAnswers: any,
   initiatorType: string,
-  participantType: string
+  participantType: string,
 ): Promise<CompatibilityResult> {
   // Extract dimension scores (E, N, T, J)
   const initiatorScores = extractDimensionScores(initiatorAnswers);
@@ -60,7 +60,7 @@ export async function analyzeCompatibility(
   // Calculate dimension-level compatibility
   const dimensionAnalysis = calculateDimensionCompatibility(
     initiatorScores,
-    participantScores
+    participantScores,
   );
 
   // Calculate overall compatibility score
@@ -76,7 +76,7 @@ export async function analyzeCompatibility(
   const relationshipAdvice = generateRelationshipAdvice(
     initiatorType,
     participantType,
-    dimensionAnalysis
+    dimensionAnalysis,
   );
 
   return {
@@ -111,7 +111,7 @@ function extractDimensionScores(answers: any): { E: number; N: number; T: number
  */
 function calculateDimensionCompatibility(
   initiator: { E: number; N: number; T: number; J: number },
-  participant: { E: number; N: number; T: number; J: number }
+  participant: { E: number; N: number; T: number; J: number },
 ): DimensionCompatibility[] {
   const dimensions = [
     { key: 'E', name: '外向 - 内向', description: '能量来源与社交方式' },
@@ -120,13 +120,14 @@ function calculateDimensionCompatibility(
     { key: 'J', name: '判断 - 感知', description: '生活方式' },
   ];
 
-  return dimensions.map(dim => {
+  return dimensions.map((dim) => {
     const initiatorScore = initiator[dim.key as keyof typeof initiator];
     const participantScore = participant[dim.key as keyof typeof participant];
     const difference = Math.abs(initiatorScore - participantScore);
 
     // Calculate compatibility for this dimension
     let compatibility: string;
+
     if (difference <= 15) {
       compatibility = 'highly_compatible';
     } else if (difference <= 30) {
@@ -155,10 +156,10 @@ function calculateDimensionCompatibility(
 function calculateOverallScore(
   dimensionAnalysis: DimensionCompatibility[],
   initiatorType: string,
-  participantType: string
+  participantType: string,
 ): number {
   // Base score from dimension compatibility
-  const dimensionScores = dimensionAnalysis.map(d => {
+  const dimensionScores = dimensionAnalysis.map((d) => {
     switch (d.compatibility) {
       case 'highly_compatible': return 1.0;
       case 'compatible': return 0.8;
@@ -208,8 +209,14 @@ function getTypeInteractionBonus(type1: string, type2: string): number {
 
   // Check for opposite types (all dimensions different)
   const oppositeMap: { [key: string]: string } = {
-    'INFJ': 'ESTP', 'ENFP': 'ISTJ', 'INTJ': 'ESFP', 'ENTP': 'ISFJ',
-    'INFP': 'ESTJ', 'ENFJ': 'ISTP', 'INTP': 'ESFJ', 'ENTJ': 'ISFP',
+    INFJ: 'ESTP',
+    ENFP: 'ISTJ',
+    INTJ: 'ESFP',
+    ENTP: 'ISFJ',
+    INFP: 'ESTJ',
+    ENFJ: 'ISTP',
+    INTP: 'ESFJ',
+    ENTJ: 'ISFP',
   };
 
   if (oppositeMap[type1] === type2 || oppositeMap[type2] === type1) {
@@ -224,9 +231,18 @@ function getTypeInteractionBonus(type1: string, type2: string): number {
  * Get compatibility level from score
  */
 function getCompatibilityLevel(score: number): 'excellent' | 'good' | 'moderate' | 'challenging' {
-  if (score >= 0.85) return 'excellent';
-  if (score >= 0.70) return 'good';
-  if (score >= 0.55) return 'moderate';
+  if (score >= 0.85) {
+    return 'excellent';
+  }
+
+  if (score >= 0.70) {
+    return 'good';
+  }
+
+  if (score >= 0.55) {
+    return 'moderate';
+  }
+
   return 'challenging';
 }
 
@@ -236,7 +252,7 @@ function getCompatibilityLevel(score: number): 'excellent' | 'good' | 'moderate'
 function generateConflictWarnings(dimensionAnalysis: DimensionCompatibility[]): ConflictWarning[] {
   const warnings: ConflictWarning[] = [];
 
-  dimensionAnalysis.forEach(dim => {
+  dimensionAnalysis.forEach((dim) => {
     if (dim.difference > 40) {
       warnings.push(createConflictWarning(dim));
     }
@@ -289,7 +305,7 @@ function createConflictWarning(dim: DimensionCompatibility): ConflictWarning {
 function generateRelationshipAdvice(
   initiatorType: string,
   participantType: string,
-  dimensionAnalysis: DimensionCompatibility[]
+  dimensionAnalysis: DimensionCompatibility[],
 ): RelationshipAdvice[] {
   const advice: RelationshipAdvice[] = [];
 
@@ -329,8 +345,8 @@ function generateRelationshipAdvice(
  */
 function getCommunicationAdvice(type1: string, type2: string): string {
   // Check if one is introvert and one is extravert
-  const e1 = ['E', 'N', 'T', 'J'].some(d => type1.includes(d));
-  
+  const e1 = ['E', 'N', 'T', 'J'].some((d) => type1.includes(d));
+
   const adviceMap: { [key: string]: string } = {
     'I-E': '内向者需要时间思考，外向者喜欢即时交流。给彼此适应的空间',
     'N-S': '直觉型关注可能性，感觉型关注现实。沟通时兼顾愿景与细节',
@@ -346,14 +362,14 @@ function getCommunicationAdvice(type1: string, type2: string): string {
  * Get conflict resolution advice
  */
 function getConflictResolutionAdvice(dimensionAnalysis: DimensionCompatibility[]): string {
-  const challengingDimensions = dimensionAnalysis.filter(d => d.compatibility === 'challenging');
+  const challengingDimensions = dimensionAnalysis.filter((d) => d.compatibility === 'challenging');
 
   if (challengingDimensions.length > 2) {
     return '你们在多个维度存在差异，冲突时更容易误解对方。建议建立"暂停机制"，情绪激动时先冷静';
   }
 
   if (challengingDimensions.length > 0) {
-    return `你们在${challengingDimensions.map(d => getDimensionName(d.dimension)).join('、')}方面存在差异，这些可能是冲突的来源。提前讨论这些话题的处理方式`;
+    return `你们在${challengingDimensions.map((d) => getDimensionName(d.dimension)).join('、')}方面存在差异，这些可能是冲突的来源。提前讨论这些话题的处理方式`;
   }
 
   return '你们的兼容性较好，但仍需记住：差异不是对错，而是互补的机会';
@@ -372,7 +388,7 @@ function getGrowthAdvice(type1: string, type2: string): string {
 function getActivityAdvice(type1: string, type2: string): string {
   // Check if both are introverts or extraverts
   const isIntrovert = (type: string) => type[0] === 'I';
-  
+
   if (isIntrovert(type1) && isIntrovert(type2)) {
     return '你们都偏好安静的活动，可以一起读书、看电影、深度交流';
   }
@@ -394,6 +410,7 @@ function getDimensionName(key: string): string {
     T: '思考 - 情感',
     J: '判断 - 感知',
   };
+
   return names[key] || key;
 }
 
@@ -404,12 +421,21 @@ function getDimensionDescription(
   dimension: string,
   score1: number,
   score2: number,
-  baseDescription: string
+  baseDescription: string,
 ): string {
   const getPreference = (score: number): string => {
-    if (score >= 60) return '明显偏好正向';
-    if (score >= 50) return '轻微偏好正向';
-    if (score >= 40) return '轻微偏好反向';
+    if (score >= 60) {
+      return '明显偏好正向';
+    }
+
+    if (score >= 50) {
+      return '轻微偏好正向';
+    }
+
+    if (score >= 40) {
+      return '轻微偏好反向';
+    }
+
     return '明显偏好反向';
   };
 

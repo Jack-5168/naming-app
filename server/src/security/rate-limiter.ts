@@ -1,7 +1,7 @@
 /**
  * Rate Limiting Module
  * Phase 4: Security Hardening
- * 
+ *
  * Features:
  * - User rate limiting (3 times/day for test generation)
  * - IP rate limiting (50 times/day)
@@ -46,6 +46,7 @@ let redisClient: any = null;
 export async function initializeRedisStore(redisUrl: string) {
   try {
     const { createClient } = await import('redis');
+
     redisClient = createClient({ url: redisUrl });
     await redisClient.connect();
     console.log('Redis rate limiter store initialized');
@@ -62,40 +63,45 @@ export async function initializeRedisStore(redisUrl: string) {
 export async function checkUserTestLimit(userId: number): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
   const now = Date.now();
   const userKey = `user:${userId}:test`;
-  
+
   if (redisClient) {
     // Redis implementation
     const record = await redisClient.get(userKey);
-    
+
     if (!record) {
       await redisClient.setEx(userKey, DAY_MS / 1000, '1');
+
       return { allowed: true, remaining: USER_TEST_LIMIT - 1, resetAt: new Date(now + DAY_MS) };
     }
-    
+
     const count = parseInt(record);
+
     if (count >= USER_TEST_LIMIT) {
       const ttl = await redisClient.ttl(userKey);
+
       return { allowed: false, remaining: 0, resetAt: new Date(now + ttl * 1000) };
     }
-    
+
     await redisClient.incr(userKey);
+
     return { allowed: true, remaining: USER_TEST_LIMIT - count - 1, resetAt: new Date(now + DAY_MS) };
-  } else {
-    // In-memory implementation
-    let record = userStore.get(userKey);
-    
-    if (!record || now > record.resetAt) {
-      record = { count: 0, resetAt: now + DAY_MS };
-    }
-    
-    if (record.count >= USER_TEST_LIMIT) {
-      return { allowed: false, remaining: 0, resetAt: new Date(record.resetAt) };
-    }
-    
-    record.count++;
-    userStore.set(userKey, record);
-    return { allowed: true, remaining: USER_TEST_LIMIT - record.count, resetAt: new Date(record.resetAt) };
   }
+
+  // In-memory implementation
+  let record = userStore.get(userKey);
+
+  if (!record || now > record.resetAt) {
+    record = { count: 0, resetAt: now + DAY_MS };
+  }
+
+  if (record.count >= USER_TEST_LIMIT) {
+    return { allowed: false, remaining: 0, resetAt: new Date(record.resetAt) };
+  }
+
+  record.count++;
+  userStore.set(userKey, record);
+
+  return { allowed: true, remaining: USER_TEST_LIMIT - record.count, resetAt: new Date(record.resetAt) };
 }
 
 /**
@@ -109,9 +115,7 @@ export function userRateLimiter(limit: number = USER_TEST_LIMIT, windowMs: numbe
       success: false,
       error: 'Rate limit exceeded. Please try again later.',
     },
-    keyGenerator: (req: Request) => {
-      return `user:${req.user?.id || 'anonymous'}`;
-    },
+    keyGenerator: (req: Request) => `user:${req.user?.id || 'anonymous'}`,
     standardHeaders: true,
     legacyHeaders: false,
   });
@@ -130,9 +134,7 @@ export function ipRateLimiter(limit: number = IP_LIMIT, windowMs: number = DAY_M
       success: false,
       error: 'Too many requests from this IP. Please try again later.',
     },
-    keyGenerator: (req: Request) => {
-      return req.ip || req.socket.remoteAddress || 'unknown';
-    },
+    keyGenerator: (req: Request) => req.ip || req.socket.remoteAddress || 'unknown',
     standardHeaders: true,
     legacyHeaders: false,
     handler: async (req: Request, res: Response) => {
@@ -150,7 +152,7 @@ export function ipRateLimiter(limit: number = IP_LIMIT, windowMs: number = DAY_M
           },
         },
       });
-      
+
       res.status(429).json({
         success: false,
         error: 'Too many requests from this IP',
@@ -191,7 +193,7 @@ export function globalRateLimiter(limit: number = GLOBAL_LIMIT, windowMs: number
 /**
  * Strict rate limiter for sensitive endpoints
  */
-export function strictRateLimiter(limit: number = 5, windowMs: number = 60 * 1000) {
+export function strictRateLimiter(limit = 5, windowMs: number = 60 * 1000) {
   return rateLimit({
     windowMs,
     max: limit,
@@ -207,7 +209,7 @@ export function strictRateLimiter(limit: number = 5, windowMs: number = 60 * 100
 /**
  * Lenient rate limiter for public endpoints
  */
-export function lenientRateLimiter(limit: number = 100, windowMs: number = 60 * 1000) {
+export function lenientRateLimiter(limit = 100, windowMs: number = 60 * 1000) {
   return rateLimit({
     windowMs,
     max: limit,
@@ -228,42 +230,47 @@ export function lenientRateLimiter(limit: number = 100, windowMs: number = 60 * 
 export async function checkRateLimit(
   key: string,
   limit: number,
-  windowMs: number
+  windowMs: number,
 ): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
   const now = Date.now();
-  
+
   if (redisClient) {
     const record = await redisClient.get(`ratelimit:${key}`);
-    
+
     if (!record) {
       await redisClient.setEx(`ratelimit:${key}`, windowMs / 1000, '1');
+
       return { allowed: true, remaining: limit - 1, resetAt: new Date(now + windowMs) };
     }
-    
+
     const count = parseInt(record);
+
     if (count >= limit) {
       const ttl = await redisClient.ttl(`ratelimit:${key}`);
+
       return { allowed: false, remaining: 0, resetAt: new Date(now + ttl * 1000) };
     }
-    
+
     await redisClient.incr(`ratelimit:${key}`);
+
     return { allowed: true, remaining: limit - count - 1, resetAt: new Date(now + windowMs) };
-  } else {
-    const storeKey = `ratelimit:${key}`;
-    let record = userStore.get(storeKey);
-    
-    if (!record || now > record.resetAt) {
-      record = { count: 0, resetAt: now + windowMs };
-    }
-    
-    if (record.count >= limit) {
-      return { allowed: false, remaining: 0, resetAt: new Date(record.resetAt) };
-    }
-    
-    record.count++;
-    userStore.set(storeKey, record);
-    return { allowed: true, remaining: limit - record.count, resetAt: new Date(record.resetAt) };
   }
+
+  const storeKey = `ratelimit:${key}`;
+  let record = userStore.get(storeKey);
+
+  if (!record || now > record.resetAt) {
+    record = { count: 0, resetAt: now + windowMs };
+  }
+
+  if (record.count >= limit) {
+    return { allowed: false, remaining: 0, resetAt: new Date(record.resetAt) };
+  }
+
+  record.count++;
+  userStore.set(storeKey, record);
+
+  return { allowed: true, remaining: limit - record.count, resetAt: new Date(record.resetAt) };
 }
 
 // ==================== Security Log Middleware ====================
@@ -273,10 +280,10 @@ export async function checkRateLimit(
  */
 export async function securityLogMiddleware(req: Request, res: Response, next: NextFunction) {
   const startTime = Date.now();
-  
+
   res.on('finish', async () => {
     const duration = Date.now() - startTime;
-    
+
     // Log slow requests
     if (duration > 5000) {
       await prisma.securityLog.create({
@@ -294,7 +301,7 @@ export async function securityLogMiddleware(req: Request, res: Response, next: N
         },
       });
     }
-    
+
     // Log error responses
     if (res.statusCode >= 400) {
       await prisma.securityLog.create({
@@ -313,7 +320,7 @@ export async function securityLogMiddleware(req: Request, res: Response, next: N
       });
     }
   });
-  
+
   next();
 }
 
@@ -326,17 +333,19 @@ export function rateLimitHeadersMiddleware(req: Request, res: Response, next: Ne
   const limit = res.getHeader('RateLimit-Limit');
   const remaining = res.getHeader('RateLimit-Remaining');
   const reset = res.getHeader('RateLimit-Reset');
-  
+
   if (limit) {
     res.setHeader('X-RateLimit-Limit', limit);
   }
+
   if (remaining) {
     res.setHeader('X-RateLimit-Remaining', remaining);
   }
+
   if (reset) {
     res.setHeader('X-RateLimit-Reset', reset);
   }
-  
+
   next();
 }
 

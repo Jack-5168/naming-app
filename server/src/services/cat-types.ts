@@ -1,7 +1,7 @@
 /**
  * CAT Engine - Type Definitions
  * Computerized Adaptive Testing types for 2PL MIRT model
- * 
+ *
  * This file contains all type definitions specific to the CAT engine.
  * For shared types, see ../types/index.ts
  */
@@ -75,7 +75,7 @@ export interface ItemInformation {
   dimension: Big5Dimension;
   difficulty: number;
   discrimination: number;
-  information: number;  // Fisher 信息量
+  information: number; // Fisher 信息量
 }
 
 /**
@@ -83,9 +83,9 @@ export interface ItemInformation {
  */
 export interface DimensionAbilityEstimate {
   dimension: Big5Dimension;
-  theta: number;           // 能力估计值 [-3, 3]
-  sem: number;             // 标准误
-  score: number;           // 量表分 [0, 100]
+  theta: number; // 能力估计值 [-3, 3]
+  sem: number; // 标准误
+  score: number; // 量表分 [0, 100]
   confidenceInterval: [number, number];
   questionsAnswered: number;
 }
@@ -185,7 +185,7 @@ export const DEFAULT_QUADRATURE_CONFIG: QuadratureConfig = {
   nPoints: 100,
   thetaMin: -3,
   thetaMax: 3,
-  adaptive: false
+  adaptive: false,
 };
 
 export const DEFAULT_CAT_CONFIG: CATEngineConfig = {
@@ -197,15 +197,15 @@ export const DEFAULT_CAT_CONFIG: CATEngineConfig = {
   prior: 'normal',
   enableDimensionBalance: true,
   enableDifficultyMatching: true,
-  maxExposureRate: 0.5
+  maxExposureRate: 0.5,
 };
 
 export const DEFAULT_TERMINATION: TerminationCriteria = {
   maxQuestions: 20,
   minQuestions: 10,
   targetSEM: 0.3,
-  maxTimeMs: 600000,  // 10 分钟
-  thetaChangeThreshold: 0.01
+  maxTimeMs: 600000, // 10 分钟
+  thetaChangeThreshold: 0.01,
 };
 
 /**
@@ -222,5 +222,5 @@ export const SCORE_MAPPING = {
   thetaMin: -3,
   thetaMax: 3,
   scoreMin: 0,
-  scoreMax: 100
+  scoreMax: 100,
 };

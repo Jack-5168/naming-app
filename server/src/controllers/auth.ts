@@ -1,7 +1,7 @@
 /**
  * Authentication Controller
  * Phase 1: MVP Implementation
- * 
+ *
  * API Endpoints:
  * - POST /api/v1/auth/wechat/login - WeChat login
  * - POST /api/v1/auth/refresh - Refresh access token
@@ -30,7 +30,7 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
   transports: [
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
@@ -122,10 +122,10 @@ interface User {
 
 /**
  * POST /api/v1/auth/wechat/login
- * 
+ *
  * WeChat mini-program login
  * Exchanges WeChat login code for user tokens
- * 
+ *
  * @param code - WeChat login code from mini-program
  * @returns JWT tokens and user info
  */
@@ -136,6 +136,7 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
     // Validate request
     if (!code) {
       logger.warn('WeChat login failed: missing code', { ip: req.ip });
+
       return res.status(400).json({
         code: 400,
         error: 'INVALID_CODE',
@@ -143,21 +144,22 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
       });
     }
 
-    logger.info('Processing WeChat login', { code: code.substring(0, 8) + '...' });
+    logger.info('Processing WeChat login', { code: `${code.substring(0, 8)}...` });
 
     // Exchange code for openid and session_key
     const wechatUrl = `${WECHAT_LOGIN_URL}?appid=${WECHAT_APP_ID}&secret=${WECHAT_APP_SECRET}&js_code=${code}&grant_type=authorization_code`;
-    
+
     const wechatResponse = await fetch(wechatUrl);
     const wechatData: any = await wechatResponse.json();
 
     // Handle WeChat API errors
     if (wechatData.errcode) {
-      logger.error('WeChat API error', { 
-        errcode: wechatData.errcode, 
+      logger.error('WeChat API error', {
+        errcode: wechatData.errcode,
         errmsg: wechatData.errmsg,
-        code: code.substring(0, 8) + '...'
+        code: `${code.substring(0, 8)}...`,
       });
+
       return res.status(400).json({
         code: 400,
         error: 'WECHAT_API_ERROR',
@@ -169,6 +171,7 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
 
     if (!openid) {
       logger.error('WeChat login failed: no openid in response', { wechatData });
+
       return res.status(500).json({
         code: 500,
         error: 'WECHAT_INVALID_RESPONSE',
@@ -194,7 +197,7 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
           membershipLevel: 'free',
         } as any,
       }) as any;
-      logger.info('New user created', { userId: (user as User).id, openid: openid.substring(0, 8) + '...' });
+      logger.info('New user created', { userId: (user as User).id, openid: `${openid.substring(0, 8)}...` });
     } else {
       logger.info('Existing user login', { userId: (user as User).id });
     }
@@ -206,21 +209,21 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
     const fingerprint = generateDeviceFingerprint(
       req.headers['user-agent'] || '',
       req.ip || '',
-      req.headers
+      req.headers,
     );
 
     // Check for anomalous login (security check)
     const anomalyCheck = await detectAnomalousLogin(
       u.id,
       req.ip || '',
-      req.headers['user-agent'] || ''
+      req.headers['user-agent'] || '',
     );
 
     if (anomalyCheck.anomalous) {
-      logger.warn('Anomalous login detected', { 
-        userId: u.id, 
+      logger.warn('Anomalous login detected', {
+        userId: u.id,
         reasons: anomalyCheck.reasons,
-        ip: req.ip 
+        ip: req.ip,
       });
     }
 
@@ -241,10 +244,10 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
       } as any,
     });
 
-    logger.info('WeChat login successful', { 
-      userId: u.id, 
+    logger.info('WeChat login successful', {
+      userId: u.id,
       isNewUser,
-      anomalyDetected: anomalyCheck.anomalous 
+      anomalyDetected: anomalyCheck.anomalous,
     });
 
     // Return response in required format
@@ -257,7 +260,7 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
         refresh_expires_in: 2592000, // 30 days
         user: {
           id: u.id,
-          openid: openid,
+          openid,
           nickname: u.nickname || '',
           avatar_url: u.avatar || '',
           membership: {
@@ -278,9 +281,9 @@ export async function login(req: Request, res: Response<WechatLoginResponse | Er
 
 /**
  * POST /api/v1/auth/refresh
- * 
+ *
  * Refresh access token using refresh token
- * 
+ *
  * @param refresh_token - JWT refresh token
  * @returns New access and refresh tokens
  */
@@ -291,6 +294,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     // Validate request
     if (!refresh_token) {
       logger.warn('Token refresh failed: missing refresh_token', { ip: req.ip });
+
       return res.status(400).json({
         code: 400,
         error: 'INVALID_TOKEN',
@@ -302,10 +306,12 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
 
     // Verify refresh token
     let payload: any;
+
     try {
       payload = await verifyRefreshToken(refresh_token);
     } catch (error: any) {
       logger.warn('Invalid refresh token', { error: error.message });
+
       return res.status(401).json({
         code: 401,
         error: 'TOKEN_EXPIRED',
@@ -320,6 +326,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
 
     if (!user) {
       logger.warn('User not found for token refresh', { userId: payload.userId });
+
       return res.status(404).json({
         code: 404,
         error: 'USER_NOT_FOUND',
@@ -334,7 +341,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     const newAccessToken = generateAccessToken(
       user.id,
       user.email || `wechat_${user.wechatOpenid}`,
-      payload.deviceId
+      payload.deviceId,
     );
     const { token: newRefreshToken } = await generateRefreshToken(user.id, payload.deviceId);
 
@@ -352,7 +359,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     });
   } catch (error: any) {
     logger.error('Error in token refresh', { error });
-    
+
     // Handle specific error types
     if (error.message === 'Refresh token is invalid or revoked') {
       return res.status(401).json({
@@ -372,10 +379,10 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
 
 /**
  * GET /api/v1/users/me
- * 
+ *
  * Get current authenticated user information
  * Requires Bearer token in Authorization header
- * 
+ *
  * @returns User profile information
  */
 export async function getUserInfo(req: Request, res: Response<UserInfoResponse | ErrorResponse>) {
@@ -385,6 +392,7 @@ export async function getUserInfo(req: Request, res: Response<UserInfoResponse |
 
     if (!userId) {
       logger.warn('Get user info failed: unauthorized', { ip: req.ip });
+
       return res.status(401).json({
         code: 401,
         error: 'UNAUTHORIZED',
@@ -401,6 +409,7 @@ export async function getUserInfo(req: Request, res: Response<UserInfoResponse |
 
     if (!user) {
       logger.warn('User not found', { userId });
+
       return res.status(404).json({
         code: 404,
         error: 'USER_NOT_FOUND',
