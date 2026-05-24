@@ -1,6 +1,6 @@
 {
-  "lastUpdated": "2026-05-24T23:00:00+08:00",
-  "summaryDate": "2026-05-24",
+  "lastUpdated": "2026-05-25T07:00:00+08:00",
+  "summaryDate": "2026-05-25",
   "checks": {
     "build": {
       "time": "22:00",
@@ -23,7 +23,7 @@
     "integration": {
       "time": "07:00",
       "status": "passed",
-      "score": 7.5,
+      "score": 8,
       "issues": []
     },
     "typesecurity": {
@@ -41,9 +41,9 @@
     }
   },
   "dailySummary": {
-    "totalCommits": 6,
-    "modifiedFiles": "~5 docs + README.md",
-    "newFiles": "~5 文档 + 1 binary",
+    "totalCommits": 1,
+    "modifiedFiles": "INTEGRATION_CHECK_2026-05-25.md",
+    "newFiles": "1 doc",
     "buildStatus": "success",
     "tsErrors": 0,
     "securityScore": 8.5
