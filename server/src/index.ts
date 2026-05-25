@@ -8,11 +8,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import winston from 'winston';
-import { prisma } from './lib/prisma';
 import path from 'path';
 
 // Import routes
 import fs from 'fs';
+import { prisma } from './lib/prisma';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import testRoutes from './routes/tests';

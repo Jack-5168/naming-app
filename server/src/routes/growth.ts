@@ -22,6 +22,9 @@ import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
+// Apply auth middleware to ALL growth routes (SECURITY FIX)
+router.use(authMiddleware);
+
 // ==================== Dual Test Routes ====================
 
 /**

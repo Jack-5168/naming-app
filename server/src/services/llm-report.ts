@@ -322,6 +322,7 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
 async function callLLM(prompt: string, model: string, maxTokens: number): Promise<{ content: string; tokens: number }> {
   // Seed 2.0 Pro (火山引擎)
   const apiKey = process.env.SEED_API_KEY || process.env.VOLCANO_API_KEY;
+
   if (!apiKey) {
     throw new Error('SEED_API_KEY not configured');
   }
@@ -330,25 +331,27 @@ async function callLLM(prompt: string, model: string, maxTokens: number): Promis
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: 'seed-2-0-pro',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: maxTokens,
-      temperature: 0.7
-    })
+      temperature: 0.7,
+    }),
   });
 
   if (!response.ok) {
     const err = await response.text();
+
     throw new Error(`Seed API error: ${err}`);
   }
 
   const data: any = await response.json();
+
   return {
     content: data.choices[0].message.content,
-    tokens: data.usage?.total_tokens || 0
+    tokens: data.usage?.total_tokens || 0,
   };
 }
 

@@ -139,7 +139,7 @@ export async function checkBenefitAccess(
 
   // Check usage count
   const usage = await getBenefitUsage(userId, benefit, membership);
-  
+
   // Handle numeric limits only
   if (typeof limit === 'number' && usage >= limit) {
     return {
@@ -316,9 +316,10 @@ export async function getBenefitUsageDetails(
   for (const benefit of benefitKeys) {
     const limit = tierConfig.benefits[benefit];
     const used = typeof limit === 'number' ? await getBenefitUsage(userId, benefit, membership) : 0;
-    
+
     // Calculate remaining - use type assertion for mixed type handling
     let rem: number | 'unlimited';
+
     if (limit === 'unlimited') {
       rem = 'unlimited';
     } else if (typeof limit === 'number') {
