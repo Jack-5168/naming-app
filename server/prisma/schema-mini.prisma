@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id              String   @id
+  userId          String?  @map("user_id")
+  state           String   @default("in_progress")
+  answers         Json     @default("[]")
+  currentQuestion Int     @default(0) @map("current_question")
+  startedAt       DateTime @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+
+  @@index([userId])
+  @@index([state])
+  @@map("sessions")
+}

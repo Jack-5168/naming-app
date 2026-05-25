@@ -48,9 +48,9 @@ export const COST_CONTROL: CostControlConfig = {
     alertThreshold: 0.8, // 80% 时告警
   },
   modelStrategy: {
-    basic_report: { model: 'gpt-4o-mini', maxTokens: 1500 },
-    pro_report: { model: 'gpt-4o-mini', maxTokens: 3500 },
-    master_report: { model: 'gpt-4o-mini', maxTokens: 5000 },
+    basic_report: { model: 'seed-2-0-pro', maxTokens: 1500 },
+    pro_report: { model: 'seed-2-0-pro', maxTokens: 3500 },
+    master_report: { model: 'seed-2-0-pro', maxTokens: 5000 },
   },
   fallback: {
     enabled: true,

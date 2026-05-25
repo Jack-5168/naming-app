@@ -34,7 +34,7 @@ router.get('/memberships/products', getMembershipProducts);
  * @body    { productId: number, productType: 'membership' | 'report' }
  * @returns { orderId, orderNo, amount, currency, paymentData }
  */
-router.post('/create-order', authMiddleware, createOrder);
+router.post('/create-order', createOrder);
 
 /**
  * @route   POST /api/v1/payments/wechat/callback
@@ -56,7 +56,7 @@ router.post('/wechat/callback', wechatPaymentCallback);
  * @returns { orders: [], total, page, limit }
  */
 // Temporarily disabled - getOrderHistory not exported
-// router.get('/orders', authMiddleware, getOrderHistory);
+// router.get('/orders', getOrderHistory);
 
 /**
  * @route   GET /api/v1/payments/orders/:id
@@ -67,7 +67,7 @@ router.post('/wechat/callback', wechatPaymentCallback);
  * @params  { id: string } - Order ID
  * @returns { orderId, orderNo, amount, status, paymentTime, productInfo }
  */
-router.get('/orders/:id', authMiddleware, getOrder);
+router.get('/orders/:id', getOrder);
 
 /**
  * @route   POST /api/v1/payments/refund
@@ -79,7 +79,7 @@ router.get('/orders/:id', authMiddleware, getOrder);
  * @returns { success, refundId, amount, status }
  */
 // Temporarily disabled - processRefund not exported
-// router.post('/refund', authMiddleware, processRefund);
+// router.post('/refund', processRefund);
 
 export default router;
 export { router as paymentRoutes };

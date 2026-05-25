@@ -3,15 +3,25 @@ import Taro from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import './index.css';
 
+const DEMO_MODE = false; // Set to true for demo (no backend required)
+
 const Index = () => {
   const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (DEMO_MODE) {
+      setUserInfo({ name: 'Demo User', avatar: '' });
+      setLoading(false);
+      return;
+    }
     // Check login status
     const token = Taro.getStorageSync('accessToken');
     if (token) {
       // Fetch user info
       fetchUserInfo();
+    } else {
+      setLoading(false);
     }
   }, []);
 

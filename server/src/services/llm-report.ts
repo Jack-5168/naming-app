@@ -320,58 +320,35 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
  * 模拟 LLM 调用（实际应调用 OpenAI API）
  */
 async function callLLM(prompt: string, model: string, maxTokens: number): Promise<{ content: string; tokens: number }> {
-  // 这里应该调用实际的 OpenAI API
-  // 为了演示，我们模拟一个响应
+  // Seed 2.0 Pro (火山引擎)
+  const apiKey = process.env.SEED_API_KEY || process.env.VOLCANO_API_KEY;
+  if (!apiKey) {
+    throw new Error('SEED_API_KEY not configured');
+  }
 
-  // 实际实现示例：
-  /*
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: model,
+      model: 'seed-2-0-pro',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: maxTokens,
       temperature: 0.7
     })
   });
 
-  const data = await response.json();
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Seed API error: ${err}`);
+  }
+
+  const data: any = await response.json();
   return {
     content: data.choices[0].message.content,
-    tokens: data.usage.total_tokens
-  };
-  */
-
-  // 模拟响应（实际使用时删除）
-  await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 3000));
-
-  const mockContent = `## 人格分析报告
-
-### 核心特质解读
-根据您的 MBTI 测试结果，您展现出独特的人格特质组合。这种特质使您在面对挑战时能够保持冷静分析，同时也不失对他人感受的敏感度。
-
-### 优势与潜力
-您的核心优势在于逻辑思维和直觉洞察的平衡发展。这使您既能看到事物的本质，又能理解复杂的人际动态。
-
-### 成长建议
-建议您继续发挥分析能力强的优势，同时有意识地培养情感表达和社交互动技能。
-
-### 适合的职业方向
-适合需要分析能力和创新思维的职业，如咨询、研究、战略规划等领域。
-
-### 人际关系特点
-在人际关系中，您倾向于深度而非广度的连接。重视真诚和有意义的交流。
-
----
-*免责声明：本报告基于心理学理论生成，仅供参考，不构成专业心理评估。*`;
-
-  return {
-    content: mockContent,
-    tokens: Math.floor(Math.random() * 500) + 1000,
+    tokens: data.usage?.total_tokens || 0
   };
 }
 

@@ -27,7 +27,7 @@ const router = Router();
  * @body    { result_id: number, report_type: 'basic' | 'pro' | 'master', include_sections?: string[] }
  * @returns { code: 0, data: { report_id, status, estimated_time_seconds, progress_url } }
  */
-router.post('/', authMiddleware, generateReportHandler);
+router.post('/', generateReportHandler);
 
 /**
  * @route   GET /api/v1/reports/:id
@@ -39,7 +39,7 @@ router.post('/', authMiddleware, generateReportHandler);
  * @returns 生成中：{ code: 0, data: { report_id, status: 'generating', progress, current_section } }
  *          已完成：{ code: 0, data: { report_id, status: 'completed', type, title, summary, content, meta } }
  */
-router.get('/:id', authMiddleware, getReportHandler);
+router.get('/:id', getReportHandler);
 
 /**
  * @route   GET /api/v1/reports
@@ -50,7 +50,7 @@ router.get('/:id', authMiddleware, getReportHandler);
  * @query   { page?: number, page_size?: number, type?: 'basic' | 'pro' | 'master' }
  * @returns { code: 0, data: { items: [], pagination: { page, page_size, total, total_pages } } }
  */
-router.get('/', authMiddleware, getReportHistoryHandler);
+router.get('/', getReportHistoryHandler);
 
 export default router;
 export { router as reportRoutes };

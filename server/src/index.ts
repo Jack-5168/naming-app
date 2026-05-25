@@ -8,7 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import winston from 'winston';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './lib/prisma';
 import path from 'path';
 
 // Import routes
@@ -24,7 +24,6 @@ import growthRoutes from './routes/growth';
 // Create logs directory if it doesn't exist
 
 // Initialize Prisma
-const prisma = new PrismaClient();
 
 // Initialize logger
 const logger = winston.createLogger({

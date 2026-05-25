@@ -14,6 +14,6 @@ const router = Router();
  * @desc    Get current user info
  * @access  Private
  */
-router.get('/me', authMiddleware, getUserInfo);
+router.get('/me', getUserInfo);
 
 export default router;

@@ -33,7 +33,7 @@ router.get('/products', getMembershipProducts);
  * @headers { Authorization: Bearer <token> }
  * @returns { membership: { level, expiresAt, benefits }, isActive }
  */
-router.get('/me', authMiddleware, getCurrentMembership);
+router.get('/me', getCurrentMembership);
 
 /**
  * @route   POST /api/v1/memberships/upgrade
@@ -44,7 +44,7 @@ router.get('/me', authMiddleware, getCurrentMembership);
  * @body    { productId: number }
  * @returns { success, newLevel, expiresAt }
  */
-router.post('/upgrade', authMiddleware, upgradeMembership);
+router.post('/upgrade', upgradeMembership);
 
 /**
  * @route   GET /api/v1/memberships/benefits

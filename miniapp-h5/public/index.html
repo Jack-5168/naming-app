@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人格探索局 - 发现真实的自己</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+.container { max-width: 500px; margin: 0 auto; padding: 20px; }
+.hero { text-align: center; padding: 40px 0; color: white; }
+.hero h1 { font-size: 32px; margin-bottom: 8px; }
+.hero p { font-size: 16px; opacity: 0.9; }
+.card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.btn { display: block; width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.progress { display: flex; justify-content: space-between; font-size: 14px; color: #666; margin-bottom: 16px; }
+.q-area { margin: 16px 0; font-size: 20px; font-weight: 500; line-height: 1.6; }
+.opt { padding: 16px; border: 2px solid #e0e0e0; border-radius: 12px; margin: 10px 0; cursor: pointer; font-size: 16px; transition: all 0.2s; }
+.opt:hover { border-color: #667eea; background: #f8f8ff; }
+.opt.selected { border-color: #667eea; background: #667eea; color: white; }
+.result { text-align: center; padding: 20px; }
+.result h2 { font-size: 28px; color: #667eea; margin-bottom: 16px; }
+.result p { color: #666; line-height: 1.8; }
+.tag { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; border-radius: 24px; font-size: 28px; font-weight: bold; margin: 16px 0; }
+.error-msg { padding: 16px; background: #fee; border: 1px solid #fcc; border-radius: 8px; color: #c00; margin: 16px 0; }
+.loading { text-align: center; padding: 40px; color: #666; }
+.bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; }
+.dimension-tag { display: inline-block; background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero">
+<h1>人格探索局</h1>
+<p>10道题，发现真实的自己</p>
+</div>
+
+<!-- START CARD -->
+<div class="card" id="start-card">
+<div class="error-msg" id="error-msg" style="display:none"></div>
+<div style="text-align:center;padding:20px">
+<p>基于大五人格(OCEAN)理论 • 科学精准</p>
+<p style="margin-top:10px;color:#888">约3分钟完成 · 永久保存结果</p>
+</div>
+<button class="btn" onclick="startTest()" id="btn-start">开始探索</button>
+</div>
+
+<!-- TEST CARD -->
+<div class="card" id="test-card" style="display:none">
+<div class="error-msg" id="test-error" style="display:none"></div>
+<div class="bar"><div class="bar-fill" id="progress-bar" style="width:0%"></div></div>
+<div class="progress">
+<span id="cur">1/10</span>
+<span id="dimensions" class="dimension-tag">E</span>
+</div>
+<div class="q-area" id="qtext"></div>
+<div id="opts"></div>
+</div>
+
+<!-- RESULT CARD -->
+<div class="card" id="result-card" style="display:none">
+<div class="result">
+<div class="tag" id="mbti-result">----</div>
+<h2 id="type-title">你的性格类型</h2>
+<p id="summary"></p>
+<p id="details" style="margin-top:16px;color:#888;font-size:14px"></p>
+<button class="btn" onclick="location.reload()">再次测试</button>
+</div>
+</div>
+
+<!-- LOADING -->
+<div class="card" id="loading" style="display:none">
+<div class="loading">加载中...</div>
+</div>
+</div>
+
+<script>
+const API = 'http://47.103.11.220:3002';
+let sid = null;
+
+/**
+ * Start test - create session
+ */
+async function startTest() {
+  const btn = document.getElementById('btn-start');
+  const errorEl = document.getElementById('error-msg');
+  
+  btn.disabled = true;
+  btn.innerText = '创建会话...';
+  errorEl.style.display = 'none';
+  
+  try {
+    const r = await fetch(API + '/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: 'h5_user_' + Date.now() })
+    });
+    
+    const d = await r.json();
+    
+    if (!d.sessionId) {
+      throw new Error(d.error || 'Failed to create session');
+    }
+    
+    sid = d.sessionId;
+    showTestCard();
+    loadQ();
+    
+  } catch(e) {
+    errorEl.textContent = 'Error: ' + e.message;
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerText = 'Retry';
+  }
+}
+
+/**
+ * Show test card
+ */
+function showTestCard() {
+  document.getElementById('start-card').style.display = 'none';
+  document.getElementById('test-card').style.display = 'block';
+}
+
+/**
+ * Load next question
+ */
+async function loadQ() {
+  const errorEl = document.getElementById('test-error');
+  errorEl.style.display = 'none';
+  
+  try {
+    const r = await fetch(API + '/sessions/' + sid + '/next');
+    const d = await r.json();
+    
+    if (d.error) {
+      throw new Error(d.error);
+    }
+    
+    if (d.done || d.result) {
+      showResult(d.result);
+      return;
+    }
+    
+    // Update progress
+    const progress = d.progress;
+    const pct = (progress.current / progress.total) * 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('cur').textContent = progress.current + '/' + progress.total;
+    
+    // Render question
+    const q = d.question;
+    document.getElementById('qtext').textContent = q.text;
+    
+    // Render options
+    let html = '';
+    q.options.forEach(o => {
+      html += `<div class="opt" data-id="${o.id}" onclick="selectOpt('${o.id}')">${o.text}</div>`;
+    });
+    document.getElementById('opts').innerHTML = html;
+    
+  } catch(e) {
+    errorEl.textContent = 'Load error: ' + e.message;
+    errorEl.style.display = 'block';
+  }
+}
+
+/**
+ * Select option and submit
+ */
+async function selectOpt(optionId) {
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(o => o.classList.add('selected'));
+  
+  try {
+    const r = await fetch(API + '/sessions/' + sid + '/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ optionId })
+    });
+    
+    const d = await r.json();
+    
+    if (d.error) {
+      throw new Error(d.error);
+    }
+    
+    if (d.done || d.result) {
+      showResult(d.result);
+      return;
+    }
+    
+    // Continue to next question
+    await loadQ();
+    
+  } catch(e) {
+    const errorEl = document.getElementById('test-error');
+    errorEl.textContent = 'Submit error: ' + e.message;
+    errorEl.style.display = 'block';
+  }
+}
+
+/**
+ * Show result
+ */
+function showResult(result) {
+  document.getElementById('test-card').style.display = 'none';
+  document.getElementById('result-card').style.display = 'block';
+  
+  document.getElementById('mbti-result').textContent = result.mbti || '----';
+  document.getElementById('summary').textContent = result.summary || '';
+  
+  // Add details if available
+  if (result.scores) {
+    const detailsEl = document.getElementById('details');
+    const scores = result.scores;
+    let txt = '';
+    for (const [dim, val] of Object.entries(scores)) {
+      const dimNames = { E: '外向', I: '内向', N: '直觉', S: '务实', T: '理性', F: '情感', J: '计划', P: '灵活' };
+      txt += `${dimNames[dim] || dim}: ${val.toFixed(1)} `;
+    }
+    detailsEl.textContent = txt;
+  }
+}
+
+/**
+ * Health check on load
+ */
+(async () => {
+  try {
+    const r = await fetch(API.replace('/api', '') + '/health');
+    const d = await r.json();
+    console.log('[INFO] Server health:', d);
+  } catch(e) {
+    console.warn('[WARN] Server unreachable');
+  }
+})();
+</script>
+</body>
+</html>

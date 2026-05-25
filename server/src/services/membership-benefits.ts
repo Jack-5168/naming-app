@@ -1,21 +1,18 @@
 /**
  * Membership Benefits Service
- * Phase 4: 会员权益管理系统
+ * Phase 5: Code Quality Refactoring
  *
  * Handles benefit validation, usage tracking, and expiration logic
  */
 
-import { PrismaClient, MembershipLevel, MembershipStatus } from '@prisma/client';
+import { MembershipLevel, MembershipStatus } from '@prisma/client';
 import {
   MembershipTier,
-  MEMBERSHIP_TIERS,
   BenefitLimits,
   getTierConfig,
-  isUnlimited,
-  getBenefitLimit,
 } from '../models/membership-tier';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
+import { tierLevelMap, levelTierMap } from '../lib/membership-utils';
 
 // ==================== Types ====================
 
@@ -31,8 +28,10 @@ export interface UserMembership {
 export interface BenefitUsage {
   benefit: keyof BenefitLimits;
   used: number;
-  limit: number | 'unlimited';
-  remaining: number | 'unlimited';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  limit: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  remaining: any;
   resetDate?: Date;
 }
 
@@ -75,16 +74,9 @@ export async function getUserMembership(userId: number): Promise<UserMembership 
   }
 
   // Map Prisma MembershipLevel to our MembershipTier
-  const tierMap: Record<MembershipLevel, MembershipTier> = {
-    free: MembershipTier.FREE,
-    basic: MembershipTier.BASIC,
-    pro: MembershipTier.PRO_MONTHLY,
-    premium: MembershipTier.PRO_YEARLY,
-  };
-
   return {
     userId,
-    tier: tierMap[membership.level as MembershipLevel] || MembershipTier.FREE,
+    tier: tierLevelMap[membership.level as MembershipLevel] || MembershipTier.FREE,
     status: membership.status,
     startDate: membership.startDate,
     endDate: membership.endDate,
@@ -147,9 +139,9 @@ export async function checkBenefitAccess(
 
   // Check usage count
   const usage = await getBenefitUsage(userId, benefit, membership);
-  const remaining = limit - usage;
-
-  if (usage >= limit) {
+  
+  // Handle numeric limits only
+  if (typeof limit === 'number' && usage >= limit) {
     return {
       allowed: false,
       reason: 'Benefit limit reached',
@@ -157,6 +149,9 @@ export async function checkBenefitAccess(
       resetDate: getResetDate(tier, benefit, membership),
     };
   }
+
+  // Calculate remaining for numeric limits
+  const remaining = typeof limit === 'number' ? limit - usage : 'unlimited';
 
   return {
     allowed: true,
@@ -320,14 +315,23 @@ export async function getBenefitUsageDetails(
 
   for (const benefit of benefitKeys) {
     const limit = tierConfig.benefits[benefit];
-    const used = await getBenefitUsage(userId, benefit, membership);
-    const remaining = limit === 'unlimited' ? 'unlimited' : Math.max(0, limit - used);
+    const used = typeof limit === 'number' ? await getBenefitUsage(userId, benefit, membership) : 0;
+    
+    // Calculate remaining - use type assertion for mixed type handling
+    let rem: number | 'unlimited';
+    if (limit === 'unlimited') {
+      rem = 'unlimited';
+    } else if (typeof limit === 'number') {
+      rem = Math.max(0, limit - used);
+    } else {
+      rem = limit ? 1 : 0;
+    }
 
     benefits.push({
       benefit,
       used,
       limit,
-      remaining,
+      remaining: rem as any,
       resetDate: getResetDate(tier, benefit, membership),
     });
   }
@@ -357,16 +361,7 @@ export async function upgradeMembership(
     ? new Date(now.getTime() + tierConfig.durationDays * 24 * 60 * 60 * 1000)
     : now;
 
-  // Map our tier to Prisma level
-  const levelMap: Record<MembershipTier, MembershipLevel> = {
-    [MembershipTier.FREE]: 'free',
-    [MembershipTier.BASIC]: 'basic',
-    [MembershipTier.PRO_REPORT]: 'pro',
-    [MembershipTier.PRO_MONTHLY]: 'pro',
-    [MembershipTier.PRO_YEARLY]: 'premium',
-    [MembershipTier.DUAL_TEST]: 'basic',
-  };
-
+  // Use shared levelTierMap from lib/membership-utils
   // Check if user has existing membership
   const existingMembership = await prisma.membership.findUnique({
     where: { userId },
@@ -383,7 +378,7 @@ export async function upgradeMembership(
     const updated = await prisma.membership.update({
       where: { userId },
       data: {
-        level: levelMap[newTier],
+        level: levelTierMap[newTier],
         endDate: newEndDate,
         status: 'active',
       },
@@ -402,7 +397,7 @@ export async function upgradeMembership(
     const created = await prisma.membership.create({
       data: {
         userId,
-        level: levelMap[newTier],
+        level: levelTierMap[newTier],
         status: 'active',
         startDate: now,
         endDate,
@@ -442,19 +437,11 @@ export async function downgradeMembership(
     throw new Error('Invalid membership tier');
   }
 
-  const levelMap: Record<MembershipTier, MembershipLevel> = {
-    [MembershipTier.FREE]: 'free',
-    [MembershipTier.BASIC]: 'basic',
-    [MembershipTier.PRO_REPORT]: 'pro',
-    [MembershipTier.PRO_MONTHLY]: 'pro',
-    [MembershipTier.PRO_YEARLY]: 'premium',
-    [MembershipTier.DUAL_TEST]: 'basic',
-  };
-
+  // Use shared levelTierMap from lib/membership-utils
   await prisma.membership.update({
     where: { userId },
     data: {
-      level: levelMap[newTier],
+      level: levelTierMap[newTier],
       autoRenew: false,
     },
   });

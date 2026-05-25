@@ -16,7 +16,7 @@ const config = {
     options: {},
   },
   framework: 'react',
-  compiler: 'webpack5',
+  compiler: 'webpack4',
   cache: {
     enable: false,
   },

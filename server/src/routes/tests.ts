@@ -27,7 +27,7 @@ const router = Router();
  * @body    { mode?: "classic" | "adaptive", device_type?: string, entry_source?: string }
  * @returns { code: 0, data: { session_id, question_count, estimated_duration, mode } }
  */
-router.post('/sessions', authMiddleware, createSession);
+router.post('/sessions', createSession);
 
 /**
  * @route   GET /api/v1/tests/sessions/:session_id/next
@@ -47,7 +47,7 @@ router.post('/sessions', authMiddleware, createSession);
  *   }
  * }
  */
-router.get('/sessions/:session_id/next', authMiddleware, submitAnswer);
+router.get('/sessions/:session_id/next', submitAnswer);
 
 /**
  * @route   POST /api/v1/tests/sessions/:session_id/answer
@@ -65,7 +65,7 @@ router.get('/sessions/:session_id/next', authMiddleware, submitAnswer);
  *   }
  * }
  */
-router.post('/sessions/:session_id/answer', authMiddleware, submitAnswer);
+router.post('/sessions/:session_id/answer', submitAnswer);
 
 /**
  * @route   GET /api/v1/tests/results/:result_id
@@ -87,8 +87,8 @@ router.post('/sessions/:session_id/answer', authMiddleware, submitAnswer);
  * }
  */
 // Temporarily disabled - need to implement these handlers
-// router.get('/results/:result_id', authMiddleware, getTestResults);
-// router.post('/sessions/:session_id/complete', authMiddleware, completeTest);
+// router.get('/results/:result_id', getTestResults);
+// router.post('/sessions/:session_id/complete', completeTest);
 
 export default router;
 export { router as testRoutes };
