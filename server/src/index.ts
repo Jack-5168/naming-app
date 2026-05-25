@@ -20,6 +20,9 @@ import reportRoutes from './routes/reports';
 import membershipRoutes from './routes/memberships';
 import paymentRoutes from './routes/payments';
 import growthRoutes from './routes/growth';
+import { shareRoutes } from './routes/share';
+// Note: life-events routes are defined in controllers but not yet exposed as standalone routes
+// They integrate with existing /api/v1/life-events endpoints
 
 // Create logs directory if it doesn't exist
 
@@ -120,6 +123,7 @@ app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/memberships', membershipRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/growth', growthRoutes);
+app.use('/api/v1/share', shareRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

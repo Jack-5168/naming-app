@@ -1355,6 +1355,188 @@ Authorization: Bearer <token>
 }
 ```
 
+--- |
+
+## Share Module
+
+**Base Path:** `/api/v1/share`
+
+### GET /share/invite-code/:code
+
+Validate an invite code.
+
+**Access:** Public
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "invitedBy": "探索者",
+    "expiresAt": "2026-05-08T10:00:00Z"
+  }
+}
+```
+
+### POST /share/invite-code
+
+Create a new invite code.
+
+**Access:** Private
+
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "inviteCode": "ABC123",
+    "expiresAt": "2026-05-08T10:00:00Z",
+    "maxUses": 5
+  }
+}
+```
+
+### POST /share/invite-code/:code/use
+
+Use an invite code.
+
+**Access:** Public
+
+**Request Body:**
+```json
+{
+  "userId": 1
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "used": true
+  }
+}
+```
+
+### GET /share/card/personality
+
+Generate personality share card for social media.
+
+**Access:** Private
+
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "cardUrl": "https://cdn.persona-lab.com/cards/xxx.png",
+    "shareText": "我是 ENFP - 竞选者型人格"
+  }
+}
+```
+
+### GET /share/card/stability
+
+Generate stability index share card.
+
+**Access:** Private
+
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "cardUrl": "https://cdn.persona-lab.com/cards/stability_xxx.png",
+    "stabilityIndex": 0.85
+  }
+}
+```
+
+### GET /share/card/dual-test
+
+Generate dual test comparison share card.
+
+**Access:** Private
+
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "cardUrl": "https://cdn.persona-lab.com/cards/dual_xxx.png",
+    "comparisonText": "我与朋友的性格相似度达到 75%"
+  }
+}
+```
+
+### POST /share/track
+
+Track share analytics.
+
+**Access:** Private
+
+**Request Body:**
+```json
+{
+  "shareType": "personality_card",
+  "platform": "wechat"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "tracked": true
+  }
+}
+```
+
+### GET /share/stats
+
+Get share statistics for current user.
+
+**Access:** Private
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "totalShares": 15,
+    "byPlatform": {
+      "wechat": 10,
+      "moments": 3,
+      "other": 2
+    },
+    "clicks": 45
+  }
+}
+```
+
 ---
 
 ## Health Check

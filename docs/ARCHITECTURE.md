@@ -165,6 +165,22 @@ Share link → Friend signs up → Makes payment → Commission earned → Withd
 Record event → Link to personality result → Analyze correlation → Generate insights
 ```
 
+### 8. Share Module (`/api/v1/share`)
+
+**Features:**
+- Invite codes (public validation, private creation)
+- Share cards (personality, stability, dual-test)
+- Share analytics
+
+**Endpoints:**
+- `GET /share/invite-code/:code` - Validate invite (public)
+- `POST /share/invite-code` - Create invite (private)
+- `GET /share/card/personality` - Generate personality card
+- `GET /share/card/stability` - Generate stability card
+- `GET /share/card/dual-test` - Generate dual-test comparison card
+- `POST /share/track` - Track share analytics
+- `GET /share/stats` - Get share statistics
+
 ## Data Models
 
 ### Core Entities

@@ -148,16 +148,7 @@ docker-compose exec api npx prisma migrate deploy
 | POST | `/upgrade` | 升级会员 |
 | GET | `/benefits` | 获取会员权益 |
 
-### 双重测试模块 `/api/v1/dual-test`
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/invite/:code` | 通过邀请码获取测试 |
-| POST | `/create` | 创建双人合测邀请 |
-| POST | `/accept` | 接受邀请 |
-| POST | `/complete` | 完成双人测试 |
-| GET | `/:id` | 获取合测详情 |
-| GET | `/:id/report` | 获取对比报告 |
+> **注意：** 双人合测功能已整合到 Growth 模块，见 `/api/v1/growth/dual-test-*`
 
 ### 分享模块 `/api/v1/share`
 
@@ -187,6 +178,17 @@ docker-compose exec api npx prisma migrate deploy
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/me` | 获取当前用户信息 |
+
+### 生活事件模块 `/api/v1/life-events`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/` | 创建生活事件 |
+| GET | `/` | 获取事件列表 |
+| GET | `/:id` | 获取事件详情 |
+| PUT | `/:id` | 更新事件 |
+| DELETE | `/:id` | 删除事件 |
+| POST | `/:id/analyze` | 分析事件影响 |
 
 ### 健康检查
 
