@@ -345,6 +345,17 @@ Authorization: Bearer <token>
       "J": 45
     },
     "stabilityIndex": 0.85,
+    "stabilityStatus": "stable",
+    "stabilityProbability": 0.92,
+    "stabilityProbabilityDisplay": "92%",
+    "confidenceBand": {
+      "lower": 0.78,
+      "upper": 0.92
+    },
+    "perDimension": {
+      "E": { "stabilityIndex": 0.88, "stabilityProbability": 0.89, "mean": 72, "std": 8.5 },
+      "N": { "stabilityIndex": 0.75, "stabilityProbability": 0.78, "mean": 65, "std": 12.3 }
+    },
     "completedAt": "2026-05-01T10:08:00Z"
   }
 }
@@ -377,6 +388,16 @@ Authorization: Bearer <token>
       "J": 45
     },
     "stabilityIndex": 0.85,
+    "stabilityStatus": "stable",
+    "stabilityProbability": 0.92,
+    "confidenceBand": {
+      "lower": 0.78,
+      "upper": 0.92
+    },
+    "perDimension": {
+      "E": { "stabilityIndex": 0.88, "stabilityProbability": 0.89 },
+      "N": { "stabilityIndex": 0.75, "stabilityProbability": 0.78 }
+    },
     "createdAt": "2026-05-01T10:08:00Z"
   }
 }

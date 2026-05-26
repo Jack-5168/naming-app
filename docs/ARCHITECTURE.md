@@ -56,6 +56,15 @@ Persona Lab is a personality assessment platform built with the Big Five (IPIP-N
 | Validation | Zod | ^3.x |
 | Security | Helmet | ^7.x |
 
+## Business Logic Services
+
+| Service | File | Description |
+|---------|------|-------------|
+| CAT Engine | `cat-engine.ts` | Item Response Theory based adaptive testing |
+| Big5-MBTI | `big5-to-mbti.ts` | Factor score to MBTI type mapping |
+| Compatibility | `compatibility-analyzer.ts` | Personality compatibility analysis |
+| Stability Calculator | `stability-calculator.ts` | Longitudinal trait stability tracking |
+
 ## Module Architecture
 
 ### 1. Authentication Module (`/api/v1/auth`)
