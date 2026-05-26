@@ -41,22 +41,21 @@ function getDimensionName(dimension: Big5Dimension): string {
  */
 function getDimensionDescription(dimension: Big5Dimension, score: number): string {
   const name = getDimensionName(dimension);
-  
+
   if (score < 20) {
     return `极低${name}`;
-  } else if (score < 35) {
+  } if (score < 35) {
     return `较低${name}`;
-  } else if (score < 45) {
+  } if (score < 45) {
     return `略低${name}`;
-  } else if (score < 55) {
+  } if (score < 55) {
     return `中等${name}`;
-  } else if (score < 65) {
+  } if (score < 65) {
     return `略高${name}`;
-  } else if (score < 80) {
+  } if (score < 80) {
     return `较高${name}`;
-  } else {
-    return `极高${name}`;
   }
+  return `极高${name}`;
 }
 
 /**
@@ -64,11 +63,11 @@ function getDimensionDescription(dimension: Big5Dimension, score: number): strin
  */
 function getDimensionColor(dimension: Big5Dimension): string {
   switch (dimension) {
-    case 'O': return '#8b5cf6';  // purple
-    case 'C': return '#3b82f6';  // blue
-    case 'E': return '#f59e0b';  // amber
-    case 'A': return '#22c55e';  // green
-    case 'N': return '#ef4444';  // red
+    case 'O': return '#8b5cf6'; // purple
+    case 'C': return '#3b82f6'; // blue
+    case 'E': return '#f59e0b'; // amber
+    case 'A': return '#22c55e'; // green
+    case 'N': return '#ef4444'; // red
     default: return '#6b7280';
   }
 }
@@ -96,7 +95,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
   data,
   showConfidenceInterval,
   showStability,
-  onClick
+  onClick,
 }) => {
   const dimensionName = getDimensionName(data.dimension as Big5Dimension);
   const description = getDimensionDescription(data.dimension as Big5Dimension, data.score);
@@ -104,19 +103,19 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
 
   // 计算位置百分比
   const positionPercent = data.score;
-  
+
   // 计算置信区间位置
   const ciLeft = (data.confidenceInterval[0] / 100) * 100;
   const ciRight = (data.confidenceInterval[1] / 100) * 100;
   const ciWidth = ciRight - ciLeft;
 
   return (
-    <div 
+    <div
       className="dimension-bar-container"
       onClick={onClick}
       style={{
         marginBottom: '24px',
-        cursor: onClick ? 'pointer' : 'default'
+        cursor: onClick ? 'pointer' : 'default',
       }}
     >
       {/* 维度标题和分数 */}
@@ -124,19 +123,19 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '8px'
+        marginBottom: '8px',
       }}>
         <span style={{
           fontSize: '14px',
           fontWeight: 600,
-          color: color
+          color: color,
         }}>
           {dimensionName}
         </span>
         <span style={{
           fontSize: '14px',
           fontWeight: 600,
-          color: '#374151'
+          color: '#374151',
         }}>
           {data.score}/100
         </span>
@@ -149,7 +148,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
         background: `linear-gradient(90deg, #f3f4f6 0%, ${color}20 50%, #f3f4f6 100%)`,
         borderRadius: '16px',
         overflow: 'visible',
-        border: '1px solid #e5e7eb'
+        border: '1px solid #e5e7eb',
       }}>
         {/* 置信区间 */}
         {showConfidenceInterval && (
@@ -160,7 +159,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
             height: '100%',
             background: `${color}40`,
             borderRadius: '16px',
-            border: `2px dashed ${color}`
+            border: `2px dashed ${color}`,
           }} />
         )}
 
@@ -174,7 +173,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
           height: '40px',
           background: color,
           borderRadius: '2px',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
         }}>
           {/* 稳定性指示器 */}
           {showStability && (
@@ -188,13 +187,13 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
               background: getStabilityColor(data.stabilityStatus),
               borderRadius: '50%',
               border: '2px solid white',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
             }} />
           )}
         </div>
 
         {/* 刻度线 */}
-        {[0, 25, 50, 75, 100].map(tick => (
+        {[0, 25, 50, 75, 100].map((tick) => (
           <div key={tick} style={{
             position: 'absolute',
             left: `${tick}%`,
@@ -202,7 +201,7 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
             width: '1px',
             height: '8px',
             background: '#9ca3af',
-            transform: 'translateX(-50%)'
+            transform: 'translateX(-50%)',
           }} />
         ))}
       </div>
@@ -212,18 +211,18 @@ const DimensionBar: React.FC<DimensionBarProps> = ({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: '8px'
+        marginTop: '8px',
       }}>
         <span style={{
           fontSize: '12px',
-          color: '#6b7280'
+          color: '#6b7280',
         }}>
           {description}
         </span>
         {showConfidenceInterval && (
           <span style={{
             fontSize: '11px',
-            color: '#9ca3af'
+            color: '#9ca3af',
           }}>
             95% CI: [{data.confidenceInterval[0]}, {data.confidenceInterval[1]}]
           </span>
@@ -250,13 +249,13 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
       padding: '24px',
       background: '#f9fafb',
       borderRadius: '12px',
-      marginTop: '24px'
+      marginTop: '24px',
     }}>
       <h3 style={{
         margin: '0 0 16px 0',
         fontSize: '16px',
         fontWeight: 600,
-        color: '#374151'
+        color: '#374151',
       }}>
         人格稳定性
       </h3>
@@ -265,7 +264,7 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
       <div style={{
         position: 'relative',
         width: '120px',
-        height: '120px'
+        height: '120px',
       }}>
         <svg width="120" height="120" viewBox="0 0 120 120">
           {/* 背景圆环 */}
@@ -299,23 +298,23 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          textAlign: 'center'
+          textAlign: 'center',
         }}>
           <div style={{
             fontSize: '24px',
             fontWeight: 700,
-            color: '#1f2937'
+            color: '#1f2937',
           }}>
             {stability.isRange ? '~' : ''}{percentage}%
           </div>
           <div style={{
             fontSize: '12px',
             color: '#6b7280',
-            marginTop: '4px'
+            marginTop: '4px',
           }}>
-            {stability.status === 'stable' ? '稳定' : 
-             stability.status === 'evolving' ? '发展中' : 
-             stability.status === 'unstable' ? '不稳定' : '数据不足'}
+            {stability.status === 'stable' ? '稳定'
+              : stability.status === 'evolving' ? '发展中'
+                : stability.status === 'unstable' ? '不稳定' : '数据不足'}
           </div>
         </div>
       </div>
@@ -330,7 +329,7 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
           fontSize: '12px',
           color: '#92400e',
           maxWidth: '300px',
-          textAlign: 'center'
+          textAlign: 'center',
         }}>
           {stability.stabilityWarning}
         </div>
@@ -340,7 +339,7 @@ const StabilityGauge: React.FC<{ stability: StabilityResult }> = ({ stability })
       <div style={{
         marginTop: '12px',
         fontSize: '12px',
-        color: '#6b7280'
+        color: '#6b7280',
       }}>
         置信区间：[{Math.round(stability.confidenceBand[0] * 100)}%, {Math.round(stability.confidenceBand[1] * 100)}%]
       </div>
@@ -357,19 +356,17 @@ export const DimensionSpectrum = memo<DimensionSpectrumProps>(({
   onDimensionClick,
   showConfidenceInterval = true,
   showStability = true,
-  className = ''
+  className = '',
 }) => {
   const sortedDimensions = useMemo(() => {
     const order: Big5Dimension[] = ['O', 'C', 'E', 'A', 'N'];
-    return [...dimensions].sort((a, b) => {
-      return order.indexOf(a.dimension as Big5Dimension) - order.indexOf(b.dimension as Big5Dimension);
-    });
+    return [...dimensions].sort((a, b) => order.indexOf(a.dimension as Big5Dimension) - order.indexOf(b.dimension as Big5Dimension));
   }, [dimensions]);
 
   return (
     <div className={`dimension-spectrum ${className}`}>
       {/* 维度谱条 */}
-      {sortedDimensions.map(dim => (
+      {sortedDimensions.map((dim) => (
         <DimensionBar
           key={dim.dimension}
           data={dim}

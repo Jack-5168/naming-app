@@ -1,11 +1,13 @@
 /**
  * PricingTable Component
  * Phase 4: 会员权益管理系统
- * 
+ *
  * Displays detailed comparison table of all membership tiers
  */
 
-import { View, Text, Button, ScrollView } from '@tarojs/components';
+import {
+  View, Text, Button, ScrollView,
+} from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import './PricingTable.css';
@@ -40,7 +42,9 @@ const benefitRows = [
   { key: 'report_pro', label: '专业报告', icon: '📊' },
   { key: 'life_event', label: '生活事件', icon: '🎉' },
   { key: 'dual_test', label: '双人合测', icon: '👥' },
-  { key: 'priority_support', label: '优先支持', icon: '⭐', isBoolean: true },
+  {
+    key: 'priority_support', label: '优先支持', icon: '⭐', isBoolean: true,
+  },
 ];
 
 const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) => {
@@ -137,7 +141,10 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
               {tiers.map((tier) => (
                 <View key={tier.tier} className="table-cell value-cell">
                   <Text className="value-text">
-                    {formatValue(tier.benefits[row.key as keyof typeof tier.benefits], row.isBoolean)}
+                    {formatValue(
+                      tier.benefits[row.key as keyof typeof tier.benefits],
+                      row.isBoolean,
+                    )}
                   </Text>
                 </View>
               ))}

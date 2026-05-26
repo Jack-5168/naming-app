@@ -8,7 +8,7 @@ interface StabilityGaugeProps {
 const StabilityGauge: React.FC<StabilityGaugeProps> = ({ value }) => {
   // Clamp value between 0 and 100
   const normalizedValue = Math.min(100, Math.max(0, value));
-  
+
   // Determine level
   const getLevel = (val: number) => {
     if (val >= 80) return { label: '非常稳定', color: '#07c160', stars: 5 };
@@ -35,7 +35,7 @@ const StabilityGauge: React.FC<StabilityGaugeProps> = ({ value }) => {
           <Text className="gauge-value">{normalizedValue}</Text>
         </View>
       </View>
-      
+
       <View className="gauge-labels">
         <Text className="gauge-level" style={{ color: level.color }}>
           {level.label}

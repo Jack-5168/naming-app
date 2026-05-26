@@ -22,7 +22,6 @@ interface Product {
 
 const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchProducts();
@@ -108,7 +107,7 @@ const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
               </View>
               <Text className="product-description">{product.description}</Text>
               <Text className="product-duration">{product.duration}天有效期</Text>
-              
+
               <View className="product-features">
                 {product.features.map((feature, index) => (
                   <View key={index} className="feature-item">

@@ -1,7 +1,7 @@
 /**
  * MembershipCard Component
  * Phase 4: 会员权益管理系统
- * 
+ *
  * Displays current membership status and benefit usage
  */
 

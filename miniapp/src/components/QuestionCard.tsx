@@ -21,13 +21,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   questionNumber,
   onAnswer,
   disabled = false,
-}) => {
-  return (
+}) => (
     <View className="question-card">
       <View className="question-header">
         <Text className="question-number">第 {questionNumber} 题</Text>
       </View>
-      
+
       <View className="question-content">
         <Text className="question-text">{question.text}</Text>
       </View>
@@ -45,7 +44,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         ))}
       </View>
     </View>
-  );
-};
+);
 
 export default QuestionCard;

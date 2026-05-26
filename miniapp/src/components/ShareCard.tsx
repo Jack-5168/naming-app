@@ -1,7 +1,7 @@
 /**
  * ShareCard Component - 分享卡片组件
  * Phase 4: Growth Features
- * 
+ *
  * Features:
  * - MBTI 类型海报
  * - 二维码生成
@@ -9,8 +9,10 @@
  * - 支持保存到相册
  */
 
-import React, { useRef, useEffect } from 'react';
-import { View, Text, Image, Canvas } from '@tarojs/components';
+import React, { useEffect } from 'react';
+import {
+  View, Text, Image,
+} from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import './ShareCard.css';
 
@@ -46,7 +48,6 @@ const ShareCard: React.FC<ShareCardProps> = ({
   shareUrl,
   onSaved,
 }) => {
-  const canvasRef = useRef<any>(null);
   const [cardImage, setCardImage] = React.useState<string>('');
 
   useEffect(() => {
@@ -117,21 +118,19 @@ const ShareCard: React.FC<ShareCardProps> = ({
   /**
    * Download image to local
    */
-  const downloadImage = async (url: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      Taro.downloadFile({
-        url: url.startsWith('http') ? url : `https://personaalab.com${url}`,
-        success: (res) => {
-          if (res.statusCode === 200) {
-            resolve(res.tempFilePath);
-          } else {
-            reject(new Error('Download failed'));
-          }
-        },
-        fail: reject,
-      });
+  const downloadImage = async (url: string): Promise<string> => new Promise((resolve, reject) => {
+    Taro.downloadFile({
+      url: url.startsWith('http') ? url : `https://personaalab.com${url}`,
+      success: (res) => {
+        if (res.statusCode === 200) {
+          resolve(res.tempFilePath);
+        } else {
+          reject(new Error('Download failed'));
+        }
+      },
+      fail: reject,
     });
-  };
+  });
 
   /**
    * Share to WeChat
