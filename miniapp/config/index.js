@@ -18,7 +18,7 @@ const config = {
   framework: 'react',
   compiler: 'webpack4',
   cache: {
-    enable: false,
+    enable: true,
   },
   mini: {
     postcss: {
@@ -44,6 +44,31 @@ const config = {
   h5: {
     publicPath: '/',
     staticDirectory: 'static',
+    bundle: {
+      enable: true,
+    },
+    optimize: {
+      // Enable tree-shaking
+      treeShaking: {
+        enable: true,
+      },
+      // Enable split chunks for better caching
+      splitChunks: {
+        enable: true,
+        chunks: 'all',
+        cacheGroups: {
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+          },
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+        },
+      },
+    },
     postcss: {
       autoprefixer: {
         enable: true,

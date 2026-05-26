@@ -1,58 +1,87 @@
 {
-  "lastUpdated": "2026-05-26T07:00:00+08:00",
-  "summaryDate": "2026-05-26",
-  "checks": {
-    "build": {
-      "time": "07:00",
-      "status": "failed",
-      "score": 2,
-      "issues": ["~80 TS errors: Prisma schema mismatch"]
-    },
-    "codeQuality": {
-      "time": "22:00",
-      "status": "passed",
-      "score": 7,
-      "issues": []
-    },
-    "frontend": {
-      "time": "07:00",
-      "status": "passed",
-      "score": 6.5,
-      "issues": ["Taro framework type warnings (expected)", "TSCheck passes for business code"]
-    },
-    "integration": {
-      "time": "07:00",
-      "status": "failed",
-      "score": 5,
-      "issues": ["API path mismatch: /quiz/* vs /api/v1/tests/*", "Schema fields missing in dual-test, share, push-notification"]
-    },
-    "typesecurity": {
-      "time": "22:00",
-      "status": "passed",
-      "score": "A",
-      "issues": []
-    },
-    "securityScan": {
-      "time": "22:00",
-      "status": "passed",
-      "sensitiveEntries": "已扫描",
-      "sqlInjection": "已检查",
-      "issues": []
+  "project": "人格探索局 (Persona Lab)",
+  "lastUpdated": "2026-05-26T23:00:00+08:00",
+  "currentPhase": "Phase 6 - 上线准备 (延期)",
+  "currentDay": 16,
+  "currentDayDate": "2026-05-26",
+  "phases": {
+    "Phase 1": { "status": "completed", "desc": "MVP 核心", "completedDate": "2026-04-21" },
+    "Phase 2": { "status": "completed", "desc": "集成 + 优化", "completedDate": "2026-04-22" },
+    "Phase 3": { "status": "completed", "desc": "UI/UX 重构", "completedDate": "2026-05-07" },
+    "Phase 4": { "status": "completed", "desc": "商业化 + 增长", "completedDate": "2026-05-09" },
+    "Phase 5": { "status": "completed", "desc": "会员/增长/分析/性能/内容/通知/测试", "completedDate": "2026-05-11", "days": "8天计划1天完成", "commits": 12, "newFiles": 30, "newLines": "~8000+" },
+    "Phase 6": { "status": "in-progress", "desc": "上线准备 (支付+安全+上架)", "startDate": "2026-05-12", "originalTarget": "2026-05-25", "targetEnd": "待定", "currentDay": 15, "delayReason": "Prisma schema不同步导致构建失败" }
+  },
+  "today": {
+    "date": "2026-05-26",
+    "summary": "Phase 6 Day 16 — 构建失败 (~80 TS错误)，Prisma schema 不同步，API 路径不匹配。"
+  },
+  "lastNight": {
+    "timestamp": "2026-05-26T23:00:00+08:00",
+    "checks": ["晚间复盘"],
+    "results": {
+      "retroCompleted": true,
+      "stateFile": "D5B81C43-2026-05-26.md"
     }
   },
-  "dailySummary": {
-    "totalCommits": 1,
-    "modifiedFiles": "INTEGRATION_CHECK_2026-05-26.md",
-    "newFiles": "1 doc",
-    "buildStatus": "failed",
-    "tsErrors": "~80 (schema mismatch)",
-    "securityScore": 8.5
+  "buildStatus": {
+    "lastCheck": "2026-05-26T07:05:00+08:00",
+    "backend": "failed",
+    "errors": "~80 TS errors",
+    "rootCause": "Prisma schema 不同步",
+    "missingFields": [
+      "dual-test.ts: invitationMethod, expiresAt, acceptedAt, initiatorTestId, participantTestId, initiatorTestResult, participantTestResult",
+      "push-notification: PushNotificationType enum, pushNotification table",
+      "membership-benefits: membership relation"
+    ]
   },
-  "alerts": [
-    "⚠️ 后端构建失败 - Prisma schema 字段缺失，需要同步",
-    "⚠️ API 路径不一致 - 前端 /quiz/* vs 后端 /api/v1/tests/*"
-  ],
-  "nextCron": "pl-summary-0730 2026-05-25T07:30:00+08:00",
-  "gitStatus": "clean",
-  "note": "本地状态已保存workspace，不影响cron运行"
+  "apiContracts": {
+    "issue": "前端 /quiz/* 与后端 /api/v1/tests/* 路径不匹配",
+    "frontendPaths": ["/quiz/questions", "/quiz/answers", "/quiz/submit", "/quiz/results"],
+    "backendPaths": ["/api/v1/tests/sessions", "/api/v1/tests/sessions/:id/next", "/api/v1/tests/sessions/:id/answer"]
+  },
+  "dependencies": {
+    "server": { "vulnerabilities": 5, "outdated": 15 },
+    "miniapp": { "vulnerabilities": 83, "critical": 9, "high": 22, "moderate": 30, "low": 3 }
+  },
+  "codeHealth": {
+    "files": {
+      "backendFiles": 34,
+      "frontendPages": 19,
+      "components": 12,
+      "dbTables": 33
+    },
+    "p0Issues": [
+      "index.ts 12个路由未挂载",
+      "会员升级接口无支付验证",
+      "测试提交答案缺少会话所有权验证",
+      "app.config.ts subpackage路径不匹配"
+    ],
+    "p1Issues": [
+      "聊天服务无WebSocket认证",
+      "点赞接口无需认证",
+      "双人合测分享卡片缺少所有权验证",
+      "提现接口缺少实际资金处理",
+      "内容搜索contains可能全表扫描"
+    ]
+  },
+  "weeklyProgress": {
+    "week1": {
+      "range": "5/12-5/18",
+      "completed": ["支付集成", "安全加固", "TS编译修复", "代码质量提升"]
+    },
+    "week2": {
+      "range": "5/19-5/25",
+      "outcome": "未完成上线目标，延期至 week3"
+    },
+    "week3": {
+      "range": "5/26-6/1",
+      "focus": "修复构建 + 上架"
+    }
+  },
+  "notes": "Day 16 晚间复盘: 构建失败，需要同步 Prisma schema。优先处理: 1) 补字段到schema, 2) 修复路由挂载, 3) 处理TS错误, 4) 修复miniapp漏洞",
+  "retrospectives": [
+    { "date": "2026-05-25", "issue": "原定上线日", "outcome": "未上线" },
+    { "date": "2026-05-26", "issue": "构建失败", "outcome": "延期中" }
+  ]
 }

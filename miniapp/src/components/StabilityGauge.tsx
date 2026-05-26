@@ -1,4 +1,5 @@
 import { View, Text } from '@tarojs/components';
+import { memo } from 'react';
 import './StabilityGauge.css';
 
 interface StabilityGaugeProps {
@@ -55,4 +56,4 @@ const StabilityGauge: React.FC<StabilityGaugeProps> = ({ value }) => {
   );
 };
 
-export default StabilityGauge;
+export default memo(StabilityGauge);

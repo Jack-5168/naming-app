@@ -1,4 +1,5 @@
 import { View, Text } from '@tarojs/components';
+import { memo } from 'react';
 import './QuestionCard.css';
 
 interface QuestionCardProps {
@@ -46,4 +47,4 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     </View>
 );
 
-export default QuestionCard;
+export default memo(QuestionCard);

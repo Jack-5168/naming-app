@@ -1,4 +1,5 @@
 import { View, Text } from '@tarojs/components';
+import { memo } from 'react';
 import './ProgressBar.css';
 
 interface ProgressBarProps {
@@ -27,4 +28,4 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ current, total }) => {
   );
 };
 
-export default ProgressBar;
+export default memo(ProgressBar);
