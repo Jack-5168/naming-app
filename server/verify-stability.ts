@@ -9,7 +9,7 @@ import { TestResult } from './src/services/stability-types';
 
 // 辅助函数：创建测试数据
 function createTestResult(
-  userId: number,
+  userId: string,
   daysAgo: number,
   scores: { O: number; C: number; E: number; A: number; N: number },
 ): TestResult {
@@ -25,11 +25,11 @@ function createTestResult(
 console.log('=== 场景 1: 数据不足 ===');
 async function testInsufficientData() {
   const tests: TestResult[] = [
-    createTestResult(1, 7, { O: 70, C: 75, E: 65, A: 80, N: 60 }),
-    createTestResult(1, 14, { O: 72, C: 73, E: 67, A: 78, N: 62 }),
+    createTestResult('1', 7, { O: 70, C: 75, E: 65, A: 80, N: 60 }),
+    createTestResult('1', 14, { O: 72, C: 73, E: 67, A: 78, N: 62 }),
   ];
 
-  const result = await calculateStability(1, tests);
+  const result = await calculateStability('1', tests);
 
   console.log(`状态：${result.status}`);
   console.log(`警告：${result.stabilityWarning}`);
@@ -41,18 +41,18 @@ async function testInsufficientData() {
 console.log('=== 场景 2: 发展中 (3-5 次测试) ===');
 async function testEvolving() {
   const tests: TestResult[] = [
-    createTestResult(2, 7, { O: 70, C: 75, E: 65, A: 80, N: 60 }),
-    createTestResult(2, 14, { O: 72, C: 73, E: 67, A: 78, N: 62 }),
-    createTestResult(2, 21, { O: 68, C: 76, E: 64, A: 81, N: 59 }),
-    createTestResult(2, 28, { O: 71, C: 74, E: 66, A: 79, N: 61 }),
+    createTestResult('2', 7, { O: 70, C: 75, E: 65, A: 80, N: 60 }),
+    createTestResult('2', 14, { O: 72, C: 73, E: 67, A: 78, N: 62 }),
+    createTestResult('2', 21, { O: 68, C: 76, E: 64, A: 81, N: 59 }),
+    createTestResult('2', 28, { O: 71, C: 74, E: 66, A: 79, N: 61 }),
   ];
 
-  const result = await calculateStability(2, tests);
+  const result = await calculateStability('2', tests);
 
   console.log(`状态：${result.status}`);
   console.log(`稳定性指数：${result.stabilityIndex.toFixed(3)}`);
   console.log(`稳定性概率：${result.stabilityProbabilityDisplay}`);
-  console.log(`置信区间：[${result.confidenceBand[0].toFixed(3)}, ${result.confidenceBand[1].toFixed(3)}]`);
+  console.log(`置信区间：[${result.confidenceBand.lower.toFixed(3)}, ${result.confidenceBand.upper.toFixed(3)}]`);
   console.log(`警告：${result.stabilityWarning}`);
   console.log('');
 }
@@ -64,7 +64,7 @@ async function testStable() {
   const baseScores = { O: 70, C: 75, E: 65, A: 80, N: 60 };
 
   for (let i = 0; i < 10; i++) {
-    tests.push(createTestResult(3, i * 7, {
+    tests.push(createTestResult('3', i * 7, {
       O: baseScores.O + (Math.random() - 0.5) * 4, // ±2 分波动
       C: baseScores.C + (Math.random() - 0.5) * 4,
       E: baseScores.E + (Math.random() - 0.5) * 4,
@@ -73,14 +73,14 @@ async function testStable() {
     }));
   }
 
-  const result = await calculateStability(3, tests);
+  const result = await calculateStability('3', tests);
 
   console.log(`状态：${result.status}`);
   console.log(`稳定性指数：${result.stabilityIndex.toFixed(3)}`);
   console.log(`稳定性概率：${result.stabilityProbabilityDisplay}`);
-  console.log(`置信区间：[${result.confidenceBand[0].toFixed(3)}, ${result.confidenceBand[1].toFixed(3)}]`);
+  console.log(`置信区间：[${result.confidenceBand.lower.toFixed(3)}, ${result.confidenceBand.upper.toFixed(3)}]`);
   console.log(`警告：${result.stabilityWarning || '无'}`);
-  console.log(`计算时间：${result.metadata.calculationTime}ms`);
+  console.log(`计算时间：${result.metadata?.calculationTime ?? 0}ms`);
 
   console.log('\n各维度统计:');
   const dims = ['O', 'C', 'E', 'A', 'N'] as const;
@@ -93,9 +93,11 @@ async function testStable() {
   };
 
   for (const dim of dims) {
-    const stats = result.perDimension[dim];
+    const stats = result.perDimension?.[dim];
 
-    console.log(`  ${dimNames[dim]}: 均值=${stats.mean.toFixed(1)}, 标准差=${stats.std.toFixed(2)}, CV=${stats.cv.toFixed(3)}`);
+    if (stats) {
+      console.log(`  ${dimNames[dim]}: 均值=${stats.mean?.toFixed(1) ?? '-'}, 标准差=${stats.std?.toFixed(2) ?? '-'}, CV=${stats.cv?.toFixed(3) ?? '-'}`);
+    }
   }
 
   console.log('');
@@ -108,7 +110,7 @@ async function testUnstable() {
   const baseScores = { O: 70, C: 75, E: 65, A: 80, N: 60 };
 
   for (let i = 0; i < 10; i++) {
-    tests.push(createTestResult(4, i * 7, {
+    tests.push(createTestResult('4', i * 7, {
       O: baseScores.O + (Math.random() - 0.5) * 40, // ±20 分波动
       C: baseScores.C + (Math.random() - 0.5) * 40,
       E: baseScores.E + (Math.random() - 0.5) * 40,
@@ -117,14 +119,14 @@ async function testUnstable() {
     }));
   }
 
-  const result = await calculateStability(4, tests);
+  const result = await calculateStability('4', tests);
 
   console.log(`状态：${result.status}`);
   console.log(`稳定性指数：${result.stabilityIndex.toFixed(3)}`);
   console.log(`稳定性概率：${result.stabilityProbabilityDisplay}`);
-  console.log(`置信区间：[${result.confidenceBand[0].toFixed(3)}, ${result.confidenceBand[1].toFixed(3)}]`);
+  console.log(`置信区间：[${result.confidenceBand.lower.toFixed(3)}, ${result.confidenceBand.upper.toFixed(3)}]`);
   console.log(`警告：${result.stabilityWarning || '无'}`);
-  console.log(`计算时间：${result.metadata.calculationTime}ms`);
+  console.log(`计算时间：${result.metadata?.calculationTime ?? 0}ms`);
   console.log('');
 }
 
@@ -135,7 +137,7 @@ async function testPerformance() {
   const baseScores = { O: 70, C: 75, E: 65, A: 80, N: 60 };
 
   for (let i = 0; i < 50; i++) {
-    tests.push(createTestResult(5, i, {
+    tests.push(createTestResult(String(i), i, {
       O: baseScores.O + (Math.random() - 0.5) * 6,
       C: baseScores.C + (Math.random() - 0.5) * 6,
       E: baseScores.E + (Math.random() - 0.5) * 6,
@@ -149,7 +151,7 @@ async function testPerformance() {
 
   // 并发测试：同时计算 10 个用户
   for (let i = 0; i < 10; i++) {
-    promises.push(calculateStability(100 + i, tests));
+    promises.push(calculateStability(String(100 + i), tests));
   }
 
   await Promise.all(promises);

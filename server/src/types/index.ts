@@ -76,11 +76,28 @@ export interface TestHistory {
 export interface StabilityResult {
   stabilityIndex: number;
   stabilityProbability: number;
+  /** Display formatted probability string */
+  stabilityProbabilityDisplay?: string;
+  /** Warning message if applicable */
+  stabilityWarning?: string;
   status: 'stable' | 'moderate' | 'unstable' | 'new';
   confidenceBand: {
     lower: number;
     upper: number;
   };
+  /** Metadata including calculation time */
+  metadata?: {
+    calculationTime?: number;
+    [key: string]: unknown;
+  };
+  /** Per-dimension stability metrics */
+  perDimension?: Record<string, {
+    stabilityIndex: number;
+    stabilityProbability: number;
+    mean?: number;
+    std?: number;
+    cv?: number;
+  }>;
   dimensionStability?: number;
 }
 
