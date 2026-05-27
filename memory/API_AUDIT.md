@@ -8,6 +8,7 @@
 - Report saved to: `persona-lab/server/API_AUDIT_2026-05-27.md`
 
 ## Prior Issues (unchanged)
+
 - Input validation: No Zod implemented
 - Response format: Not fully standardized across endpoints
 - Production env: WECHAT_APP_ID likely missing

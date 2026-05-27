@@ -99,7 +99,7 @@ export default {
 ```javascript
 // === 分级日志系统 ===
 class ProductionLogger {
-  constructor(env = 'production') {
+  constructor(env = "production") {
     this.env = env;
     this.levels = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
     this.currentLevel = this.getLevelForEnv(env);
@@ -126,13 +126,13 @@ class ProductionLogger {
     };
 
     // 生产环境：发送到日志服务
-    if (this.env === 'production') {
+    if (this.env === "production") {
       this.buffer.push(entry);
       if (this.buffer.length >= this.maxBuffer) {
         this.flush();
       }
       // 错误级别立即发送
-      if (level === 'ERROR') this.flush();
+      if (level === "ERROR") this.flush();
     } else {
       console[level.toLowerCase()](message, data);
     }
@@ -143,28 +143,36 @@ class ProductionLogger {
     const entries = [...this.buffer];
     this.buffer = [];
     // 使用 sendBeacon 确保页面关闭时也能发送
-    navigator.sendBeacon('/api/logs', JSON.stringify(entries));
+    navigator.sendBeacon("/api/logs", JSON.stringify(entries));
   }
 
-  debug(msg, data) { this.log('DEBUG', msg, data); }
-  info(msg, data) { this.log('INFO', msg, data); }
-  warn(msg, data) { this.log('WARN', msg, data); }
-  error(msg, data) { this.log('ERROR', msg, data); }
+  debug(msg, data) {
+    this.log("DEBUG", msg, data);
+  }
+  info(msg, data) {
+    this.log("INFO", msg, data);
+  }
+  warn(msg, data) {
+    this.log("WARN", msg, data);
+  }
+  error(msg, data) {
+    this.log("ERROR", msg, data);
+  }
 }
 
 const logger = new ProductionLogger(process.env.NODE_ENV);
 
 // === 使用示例 ===
-logger.info('User clicked checkout', { userId: '123', cartItems: 3 });
-logger.error('API request failed', {
-  url: '/api/checkout',
+logger.info("User clicked checkout", { userId: "123", cartItems: 3 });
+logger.error("API request failed", {
+  url: "/api/checkout",
   status: 500,
   responseTime: 2340,
 });
 
 // === 全局错误捕获 ===
-window.addEventListener('error', (event) => {
-  logger.error('Uncaught error', {
+window.addEventListener("error", (event) => {
+  logger.error("Uncaught error", {
     message: event.message,
     filename: event.filename,
     lineno: event.lineno,
@@ -173,8 +181,8 @@ window.addEventListener('error', (event) => {
   });
 });
 
-window.addEventListener('unhandledrejection', (event) => {
-  logger.error('Unhandled rejection', {
+window.addEventListener("unhandledrejection", (event) => {
+  logger.error("Unhandled rejection", {
     reason: event.reason?.message || event.reason,
     stack: event.reason?.stack,
   });
@@ -191,27 +199,27 @@ function markPhase(name) {
 }
 
 // 标记关键阶段
-const endFetch = markPhase('data-fetch');
-fetch('/api/data')
-  .then(r => r.json())
-  .then(data => {
+const endFetch = markPhase("data-fetch");
+fetch("/api/data")
+  .then((r) => r.json())
+  .then((data) => {
     endFetch();
     return data;
   });
 
-const endRender = markPhase('render');
+const endRender = markPhase("render");
 // ... 渲染逻辑 ...
 endRender();
 
 // === 测量阶段耗时 ===
-performance.measure('fetch-duration', 'data-fetch-start', 'data-fetch-end');
-performance.measure('render-duration', 'render-start', 'render-end');
+performance.measure("fetch-duration", "data-fetch-start", "data-fetch-end");
+performance.measure("render-duration", "render-start", "render-end");
 
 // === 在 DevTools Performance 面板查看 ===
 // 标记会显示为彩色竖线，measure 显示为彩色条
 // 也可通过 JS 读取：
-const measures = performance.getEntriesByType('measure');
-measures.forEach(m => {
+const measures = performance.getEntriesByType("measure");
+measures.forEach((m) => {
   console.log(`${m.name}: ${m.duration.toFixed(2)}ms`);
 });
 
@@ -220,26 +228,26 @@ measures.forEach(m => {
 new PerformanceObserver((list) => {
   const entries = list.getEntries();
   const lastEntry = entries[entries.length - 1];
-  console.log('LCP:', lastEntry.renderTime || lastEntry.loadTime);
-}).observe({ type: 'largest-contentful-paint', buffered: true });
+  console.log("LCP:", lastEntry.renderTime || lastEntry.loadTime);
+}).observe({ type: "largest-contentful-paint", buffered: true });
 
 // FID (First Input Delay)
 new PerformanceObserver((list) => {
-  list.getEntries().forEach(entry => {
-    console.log('FID:', entry.processingStart - entry.startTime);
+  list.getEntries().forEach((entry) => {
+    console.log("FID:", entry.processingStart - entry.startTime);
   });
-}).observe({ type: 'first-input', buffered: true });
+}).observe({ type: "first-input", buffered: true });
 
 // CLS (Cumulative Layout Shift)
 let clsValue = 0;
 new PerformanceObserver((list) => {
-  list.getEntries().forEach(entry => {
+  list.getEntries().forEach((entry) => {
     if (!entry.hadRecentInput) {
       clsValue += entry.value;
     }
   });
-  console.log('CLS:', clsValue);
-}).observe({ type: 'layout-shift', buffered: true });
+  console.log("CLS:", clsValue);
+}).observe({ type: "layout-shift", buffered: true });
 ```
 
 ---
@@ -260,8 +268,8 @@ new PerformanceObserver((list) => {
   };
 
   // 1. 检测分离的 DOM 节点
-  const allElements = document.querySelectorAll('*');
-  allElements.forEach(el => {
+  const allElements = document.querySelectorAll("*");
+  allElements.forEach((el) => {
     if (!document.contains(el)) {
       results.detachedDOM.push({
         tag: el.tagName,
@@ -273,39 +281,105 @@ new PerformanceObserver((list) => {
 
   // 2. 检测全局变量泄漏
   const expectedGlobals = new Set([
-    'window', 'document', 'navigator', 'location',
-    'console', 'setTimeout', 'setInterval', 'fetch',
-    'Promise', 'JSON', 'Math', 'Array', 'Object',
-    'String', 'Number', 'Boolean', 'Symbol', 'Map',
-    'Set', 'WeakMap', 'WeakSet', 'Proxy', 'Reflect',
-    'Error', 'PerformanceObserver', 'ResizeObserver',
-    'IntersectionObserver', 'MutationObserver',
-    'performance', 'crypto', 'btoa', 'atob',
-    'requestAnimationFrame', 'cancelAnimationFrame',
-    'requestIdleCallback', 'cancelIdleCallback',
-    'queueMicrotask', 'structuredClone',
-    'history', 'screen', 'frames', 'parent', 'top',
-    'self', 'localStorage', 'sessionStorage',
-    'indexedDB', 'caches', 'Worker', 'SharedWorker',
-    'Audio', 'Image', 'WebAssembly', 'Intl',
-    'RegExp', 'Date', 'Float32Array', 'Float64Array',
-    'Int8Array', 'Int16Array', 'Int32Array',
-    'Uint8Array', 'Uint16Array', 'Uint32Array',
-    'DataView', 'ArrayBuffer', 'SharedArrayBuffer',
-    'Atomics', 'TextEncoder', 'TextDecoder',
-    'URL', 'URLSearchParams', 'FormData', 'Headers',
-    'Request', 'Response', 'WebSocket', 'EventSource',
-    'BroadcastChannel', 'MessageChannel', 'MessagePort',
-    'ReadableStream', 'WritableStream', 'TransformStream',
-    'CompressionStream', 'DecompressionStream',
-    'getComputedStyle', 'matchMedia', 'openDatabase',
-    'origin', 'isSecureContext', 'crossOriginIsolated',
-    'scheduler', 'webkitRequestAnimationFrame',
-    'webkitCancelAnimationFrame',
+    "window",
+    "document",
+    "navigator",
+    "location",
+    "console",
+    "setTimeout",
+    "setInterval",
+    "fetch",
+    "Promise",
+    "JSON",
+    "Math",
+    "Array",
+    "Object",
+    "String",
+    "Number",
+    "Boolean",
+    "Symbol",
+    "Map",
+    "Set",
+    "WeakMap",
+    "WeakSet",
+    "Proxy",
+    "Reflect",
+    "Error",
+    "PerformanceObserver",
+    "ResizeObserver",
+    "IntersectionObserver",
+    "MutationObserver",
+    "performance",
+    "crypto",
+    "btoa",
+    "atob",
+    "requestAnimationFrame",
+    "cancelAnimationFrame",
+    "requestIdleCallback",
+    "cancelIdleCallback",
+    "queueMicrotask",
+    "structuredClone",
+    "history",
+    "screen",
+    "frames",
+    "parent",
+    "top",
+    "self",
+    "localStorage",
+    "sessionStorage",
+    "indexedDB",
+    "caches",
+    "Worker",
+    "SharedWorker",
+    "Audio",
+    "Image",
+    "WebAssembly",
+    "Intl",
+    "RegExp",
+    "Date",
+    "Float32Array",
+    "Float64Array",
+    "Int8Array",
+    "Int16Array",
+    "Int32Array",
+    "Uint8Array",
+    "Uint16Array",
+    "Uint32Array",
+    "DataView",
+    "ArrayBuffer",
+    "SharedArrayBuffer",
+    "Atomics",
+    "TextEncoder",
+    "TextDecoder",
+    "URL",
+    "URLSearchParams",
+    "FormData",
+    "Headers",
+    "Request",
+    "Response",
+    "WebSocket",
+    "EventSource",
+    "BroadcastChannel",
+    "MessageChannel",
+    "MessagePort",
+    "ReadableStream",
+    "WritableStream",
+    "TransformStream",
+    "CompressionStream",
+    "DecompressionStream",
+    "getComputedStyle",
+    "matchMedia",
+    "openDatabase",
+    "origin",
+    "isSecureContext",
+    "crossOriginIsolated",
+    "scheduler",
+    "webkitRequestAnimationFrame",
+    "webkitCancelAnimationFrame",
   ]);
 
   for (const key in window) {
-    if (!expectedGlobals.has(key) && !key.startsWith('_')) {
+    if (!expectedGlobals.has(key) && !key.startsWith("_")) {
       results.closures.push({
         name: key,
         type: typeof window[key],
@@ -316,14 +390,14 @@ new PerformanceObserver((list) => {
   // 3. 检测活跃定时器（启发式）
   // 无法直接枚举，但可以通过 monkey patch 检测
   results.timers.push({
-    note: '使用 monkey patch setTimeout/setInterval 追踪',
+    note: "使用 monkey patch setTimeout/setInterval 追踪",
   });
 
   // 输出报告
-  console.group('🔍 Memory Leak Detection Report');
-  console.log('Detached DOM nodes:', results.detachedDOM.length);
+  console.group("🔍 Memory Leak Detection Report");
+  console.log("Detached DOM nodes:", results.detachedDOM.length);
   console.table(results.detachedDOM);
-  console.log('Unexpected globals:', results.closures.length);
+  console.log("Unexpected globals:", results.closures.length);
   console.table(results.closures);
   console.groupEnd();
 
@@ -331,7 +405,7 @@ new PerformanceObserver((list) => {
 })();
 
 // === Snippet: 性能基准测试 ===
-function benchmark(fn, iterations = 1000, name = 'benchmark') {
+function benchmark(fn, iterations = 1000, name = "benchmark") {
   // 预热
   for (let i = 0; i < 10; i++) fn();
 
@@ -365,10 +439,10 @@ function benchmark(fn, iterations = 1000, name = 'benchmark') {
 // === Snippet: 事件监听器检测 ===
 (function detectEventListeners() {
   // 使用 getEventListeners (仅 DevTools 可用)
-  const allElements = document.querySelectorAll('*');
+  const allElements = document.querySelectorAll("*");
   const elementsWithListeners = [];
 
-  allElements.forEach(el => {
+  allElements.forEach((el) => {
     try {
       // DevTools 专用 API
       const listeners = getEventListeners(el);
@@ -396,45 +470,51 @@ function benchmark(fn, iterations = 1000, name = 'benchmark') {
 // === Console 高级 API 完整指南 ===
 
 // 1. 分组输出
-console.group('📦 User Data');
-console.log('Name: John');
-console.groupCollapsed('📋 Addresses');
-console.log('Home: 123 Main St');
-console.log('Work: 456 Office Ave');
+console.group("📦 User Data");
+console.log("Name: John");
+console.groupCollapsed("📋 Addresses");
+console.log("Home: 123 Main St");
+console.log("Work: 456 Office Ave");
 console.groupEnd();
 console.groupEnd();
 
 // 2. 表格输出
 const users = [
-  { id: 1, name: 'Alice', role: 'admin', score: 95 },
-  { id: 2, name: 'Bob', role: 'user', score: 82 },
-  { id: 3, name: 'Charlie', role: 'user', score: 78 },
+  { id: 1, name: "Alice", role: "admin", score: 95 },
+  { id: 2, name: "Bob", role: "user", score: 82 },
+  { id: 3, name: "Charlie", role: "user", score: 78 },
 ];
-console.table(users, ['name', 'role', 'score']);
+console.table(users, ["name", "role", "score"]);
 
 // 3. 性能计时
-console.time('array-push');
+console.time("array-push");
 const arr = [];
 for (let i = 0; i < 100000; i++) arr.push(i);
-console.timeEnd('array-push');
+console.timeEnd("array-push");
 
 // 4. 条件断言
 const age = 15;
-console.assert(age >= 18, '用户年龄必须 >= 18，当前: %d', age);
+console.assert(age >= 18, "用户年龄必须 >= 18，当前: %d", age);
 
 // 5. 追踪调用栈
-function a() { b(); }
-function b() { c(); }
-function c() { console.trace('Call trace'); }
+function a() {
+  b();
+}
+function b() {
+  c();
+}
+function c() {
+  console.trace("Call trace");
+}
 a();
 
 // 6. 计数
 function handleClick() {
-  console.count('button-click');
+  console.count("button-click");
 }
 handleClick(); // button-click: 1
 handleClick(); // button-click: 2
-console.countReset('button-click');
+console.countReset("button-click");
 handleClick(); // button-click: 1
 
 // 7. 方向（DevTools 专属）
@@ -442,17 +522,29 @@ console.dir(document.body, { depth: 2 });
 
 // 8. 样式化输出
 console.log(
-  '%c⚡ Performance Alert %c| %c3.2s load time is too slow',
-  'background: #ff0000; color: #fff; padding: 4px 8px; font-weight: bold;',
-  'color: #666;',
-  'color: #ff0000; font-weight: bold;'
+  "%c⚡ Performance Alert %c| %c3.2s load time is too slow",
+  "background: #ff0000; color: #fff; padding: 4px 8px; font-weight: bold;",
+  "color: #666;",
+  "color: #ff0000; font-weight: bold;",
 );
 
 // 9. 内存信息（Chrome 专属）
 if (performance.memory) {
-  console.log('Used JS Heap:', (performance.memory.usedJSHeapSize / 1048576).toFixed(2), 'MB');
-  console.log('Total JS Heap:', (performance.memory.totalJSHeapSize / 1048576).toFixed(2), 'MB');
-  console.log('Heap Limit:', (performance.memory.jsHeapSizeLimit / 1048576).toFixed(2), 'MB');
+  console.log(
+    "Used JS Heap:",
+    (performance.memory.usedJSHeapSize / 1048576).toFixed(2),
+    "MB",
+  );
+  console.log(
+    "Total JS Heap:",
+    (performance.memory.totalJSHeapSize / 1048576).toFixed(2),
+    "MB",
+  );
+  console.log(
+    "Heap Limit:",
+    (performance.memory.jsHeapSizeLimit / 1048576).toFixed(2),
+    "MB",
+  );
 }
 
 // 10. 监控函数调用
@@ -521,9 +613,11 @@ Settings → Preferences:
 
 // 模式 A: 闭包持有大对象
 function createCache() {
-  const largeData = new Array(1000000).fill('x'); // 大数组
+  const largeData = new Array(1000000).fill("x"); // 大数组
   return {
-    get(key) { return largeData[key]; },
+    get(key) {
+      return largeData[key];
+    },
     // ❌ 闭包持有 largeData，即使组件销毁也不会释放
   };
 }
@@ -532,8 +626,12 @@ function createCache() {
 function createCacheFixed() {
   const cache = new WeakMap();
   return {
-    get(key) { return cache.get(key); },
-    set(key, value) { cache.set(key, value); },
+    get(key) {
+      return cache.get(key);
+    },
+    set(key, value) {
+      cache.set(key, value);
+    },
     // ✅ key 是对象引用，对象 GC 时自动清理
   };
 }
@@ -543,12 +641,16 @@ class Component {
   constructor() {
     this.data = new Array(500000);
     // ❌ 注册了监听器但 destroy 时未移除
-    window.addEventListener('resize', this.handleResize);
-    document.addEventListener('click', this.handleClick);
+    window.addEventListener("resize", this.handleResize);
+    document.addEventListener("click", this.handleClick);
   }
 
-  handleResize = () => { /* ... */ };
-  handleClick = () => { /* ... */ };
+  handleResize = () => {
+    /* ... */
+  };
+  handleClick = () => {
+    /* ... */
+  };
 
   // ❌ 缺少 destroy 方法
 }
@@ -558,17 +660,21 @@ class ComponentFixed {
   constructor() {
     this.data = new Array(500000);
     this.boundResize = this.handleResize.bind(this);
-    window.addEventListener('resize', this.boundResize);
+    window.addEventListener("resize", this.boundResize);
     this.boundClick = this.handleClick.bind(this);
-    document.addEventListener('click', this.boundClick);
+    document.addEventListener("click", this.boundClick);
   }
 
-  handleResize() { /* ... */ }
-  handleClick() { /* ... */ }
+  handleResize() {
+    /* ... */
+  }
+  handleClick() {
+    /* ... */
+  }
 
   destroy() {
-    window.removeEventListener('resize', this.boundResize);
-    document.removeEventListener('click', this.boundClick);
+    window.removeEventListener("resize", this.boundResize);
+    document.removeEventListener("click", this.boundClick);
     this.data = null; // 显式释放
   }
 }
@@ -583,7 +689,9 @@ class DataPoller {
     }, 5000);
   }
 
-  fetchData() { /* ... */ }
+  fetchData() {
+    /* ... */
+  }
 
   // ❌ 缺少清理
 }
@@ -595,7 +703,9 @@ class DataPollerFixed {
     this.timer = setInterval(() => this.fetchData(), 5000);
   }
 
-  fetchData() { /* ... */ }
+  fetchData() {
+    /* ... */
+  }
 
   destroy() {
     clearInterval(this.timer);
@@ -610,7 +720,7 @@ class DOMLeakDemo {
   }
 
   cacheElements() {
-    document.querySelectorAll('.item').forEach(el => {
+    document.querySelectorAll(".item").forEach((el) => {
       this.elements.push(el); // 即使 DOM 移除，引用仍在
     });
   }
@@ -618,7 +728,7 @@ class DOMLeakDemo {
   // ✅ 修复：不持有 DOM 引用，或及时清理
   cacheElementsFixed() {
     this.elementIds = [];
-    document.querySelectorAll('.item').forEach(el => {
+    document.querySelectorAll(".item").forEach((el) => {
       this.elementIds.push(el.id); // 只存 ID
     });
   }
@@ -667,11 +777,11 @@ class DOMLeakDemo {
 
 // === Long Task 检测 ===
 new PerformanceObserver((list) => {
-  list.getEntries().forEach(entry => {
-    console.warn('⚠️ Long Task detected:', {
-      duration: entry.duration.toFixed(2) + 'ms',
-      startTime: entry.startTime.toFixed(2) + 'ms',
-      attribution: entry.attribution?.map(a => ({
+  list.getEntries().forEach((entry) => {
+    console.warn("⚠️ Long Task detected:", {
+      duration: entry.duration.toFixed(2) + "ms",
+      startTime: entry.startTime.toFixed(2) + "ms",
+      attribution: entry.attribution?.map((a) => ({
         name: a.name,
         containerType: a.containerType,
         containerSrc: a.containerSrc,
@@ -679,7 +789,7 @@ new PerformanceObserver((list) => {
       })),
     });
   });
-}).observe({ type: 'longtask', buffered: true });
+}).observe({ type: "longtask", buffered: true });
 
 // === 主线程任务拆分 ===
 function processLargeDataset(data) {
@@ -688,7 +798,7 @@ function processLargeDataset(data) {
 
   function processChunk() {
     const chunk = data.slice(index, index + chunkSize);
-    chunk.forEach(item => {
+    chunk.forEach((item) => {
       // 处理每条数据
       processItem(item);
     });
@@ -696,9 +806,9 @@ function processLargeDataset(data) {
     index += chunkSize;
     if (index < data.length) {
       // 使用 scheduler.postTask (Chrome 115+) 或 requestIdleCallback
-      if ('scheduler' in window) {
-        scheduler.postTask(processChunk, { priority: 'background' });
-      } else if ('requestIdleCallback' in window) {
+      if ("scheduler" in window) {
+        scheduler.postTask(processChunk, { priority: "background" });
+      } else if ("requestIdleCallback" in window) {
         requestIdleCallback(processChunk);
       } else {
         setTimeout(processChunk, 0);
@@ -732,7 +842,7 @@ async function loadDashboard() {
   } catch (error) {
     // Async stack trace 包含:
     // loadDashboard → fetchUser → fetch → Response.json
-    console.error('Dashboard load failed:', error);
+    console.error("Dashboard load failed:", error);
     throw error;
   }
 }
@@ -795,13 +905,13 @@ function debugLayout() {
   const issues = [];
 
   // 检测溢出
-  document.querySelectorAll('*').forEach(el => {
+  document.querySelectorAll("*").forEach((el) => {
     const style = getComputedStyle(el);
-    if (style.overflow === 'visible') {
+    if (style.overflow === "visible") {
       const rect = el.getBoundingClientRect();
       if (rect.width > window.innerWidth || rect.height > window.innerHeight) {
         issues.push({
-          type: 'overflow',
+          type: "overflow",
           element: el.tagName,
           width: rect.width,
           height: rect.height,
@@ -812,16 +922,16 @@ function debugLayout() {
     // 检测布局偏移源
     if (el.animate) {
       const animations = el.getAnimations();
-      animations.forEach(anim => {
+      animations.forEach((anim) => {
         if (anim.effect?.getKeyframes) {
           const keys = anim.effect.getKeyframes();
-          const hasLayoutProps = keys.some(k =>
-            k.left || k.top || k.width || k.height ||
-            k.margin || k.padding
+          const hasLayoutProps = keys.some(
+            (k) =>
+              k.left || k.top || k.width || k.height || k.margin || k.padding,
           );
           if (hasLayoutProps) {
             issues.push({
-              type: 'layout-animation',
+              type: "layout-animation",
               element: el.tagName,
               animation: anim.name,
             });
@@ -846,7 +956,7 @@ function debugLayout() {
 // === CDP 连接方式 ===
 
 // 方式 1: 通过 puppeteer
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
 
 (async () => {
   const browser = await puppeteer.launch();
@@ -856,26 +966,26 @@ const puppeteer = require('puppeteer');
   const client = await page.createCDPSession();
 
   // 启用 Performance domain
-  await client.send('Performance.enable');
+  await client.send("Performance.enable");
 
   // 启用 Network domain
-  await client.send('Network.enable');
+  await client.send("Network.enable");
 
   // 监听网络请求
-  client.on('Network.requestWillBeSent', (params) => {
-    console.log('Request:', params.request.url);
+  client.on("Network.requestWillBeSent", (params) => {
+    console.log("Request:", params.request.url);
   });
 
-  client.on('Network.responseReceived', (params) => {
-    console.log('Response:', params.response.url, params.response.status);
+  client.on("Network.responseReceived", (params) => {
+    console.log("Response:", params.response.url, params.response.status);
   });
 
   // 导航页面
-  await page.goto('https://example.com');
+  await page.goto("https://example.com");
 
   // 获取性能指标
-  const metrics = await client.send('Performance.getMetrics');
-  metrics.metrics.forEach(m => {
+  const metrics = await client.send("Performance.getMetrics");
+  metrics.metrics.forEach((m) => {
     console.log(`${m.name}: ${m.value.toFixed(2)}`);
   });
 
@@ -897,10 +1007,10 @@ async function performanceAnalysis(page) {
 
   // 启用所需 domains
   await Promise.all([
-    client.send('Performance.enable'),
-    client.send('Network.enable'),
-    client.send('Page.enable'),
-    client.send('Runtime.enable'),
+    client.send("Performance.enable"),
+    client.send("Network.enable"),
+    client.send("Page.enable"),
+    client.send("Runtime.enable"),
   ]);
 
   const results = {
@@ -911,7 +1021,7 @@ async function performanceAnalysis(page) {
   };
 
   // 收集网络请求
-  client.on('Network.requestWillBeSent', (params) => {
+  client.on("Network.requestWillBeSent", (params) => {
     results.requests.push({
       url: params.request.url,
       method: params.request.method,
@@ -919,7 +1029,7 @@ async function performanceAnalysis(page) {
     });
   });
 
-  client.on('Network.responseReceived', (params) => {
+  client.on("Network.responseReceived", (params) => {
     results.responses.push({
       url: params.response.url,
       status: params.response.status,
@@ -930,8 +1040,8 @@ async function performanceAnalysis(page) {
   });
 
   // 收集控制台错误
-  client.on('Runtime.consoleAPICalled', (params) => {
-    if (params.type === 'error') {
+  client.on("Runtime.consoleAPICalled", (params) => {
+    if (params.type === "error") {
       results.errors.push({
         text: params.args[0]?.value,
         stack: params.args[0]?.description,
@@ -940,10 +1050,10 @@ async function performanceAnalysis(page) {
   });
 
   // 导航并等待加载完成
-  await page.goto('https://example.com', { waitUntil: 'networkidle0' });
+  await page.goto("https://example.com", { waitUntil: "networkidle0" });
 
   // 获取性能指标
-  const perfMetrics = await client.send('Performance.getMetrics');
+  const perfMetrics = await client.send("Performance.getMetrics");
   results.metrics = perfMetrics.metrics.reduce((acc, m) => {
     acc[m.name] = m.value;
     return acc;
@@ -951,15 +1061,17 @@ async function performanceAnalysis(page) {
 
   // 获取 Lighthouse 指标
   const lhr = await page.evaluate(() => {
-    return new Promise(resolve => {
-      const entries = performance.getEntriesByType('paint');
+    return new Promise((resolve) => {
+      const entries = performance.getEntriesByType("paint");
       const result = {};
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         result[entry.name] = entry.startTime;
       });
 
       // LCP
-      const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
+      const lcpEntries = performance.getEntriesByType(
+        "largest-contentful-paint",
+      );
       if (lcpEntries.length > 0) {
         result.lcp = lcpEntries[lcpEntries.length - 1].startTime;
       }
@@ -977,7 +1089,7 @@ async function performanceAnalysis(page) {
 async function memoryAnalysis(page) {
   const client = await page.createCDPSession();
 
-  await client.send('HeapProfiler.enable');
+  await client.send("HeapProfiler.enable");
 
   // 拍摄堆快照
   await page.evaluate(() => {
@@ -992,8 +1104,11 @@ async function memoryAnalysis(page) {
         usedJSHeapSize: performance.memory.usedJSHeapSize,
         totalJSHeapSize: performance.memory.totalJSHeapSize,
         jsHeapSizeLimit: performance.memory.jsHeapSizeLimit,
-        usagePercent: (performance.memory.usedJSHeapSize /
-                       performance.memory.jsHeapSizeLimit * 100).toFixed(2),
+        usagePercent: (
+          (performance.memory.usedJSHeapSize /
+            performance.memory.jsHeapSizeLimit) *
+          100
+        ).toFixed(2),
       };
     }
     return null;
@@ -1005,25 +1120,25 @@ async function memoryAnalysis(page) {
 // === 完整自动化诊断流程 ===
 async function fullDiagnostic(url) {
   const browser = await puppeteer.launch({
-    args: ['--enable-precise-memory-info', '--js-flags=--expose-gc'],
+    args: ["--enable-precise-memory-info", "--js-flags=--expose-gc"],
   });
   const page = await browser.newPage();
 
   // 设置视口
   await page.setViewport({ width: 1280, height: 720 });
 
-  console.log('🔍 Starting diagnostic for:', url);
+  console.log("🔍 Starting diagnostic for:", url);
 
   // 1. 性能分析
-  console.log('📊 Analyzing performance...');
+  console.log("📊 Analyzing performance...");
   const perfResults = await performanceAnalysis(page);
 
   // 2. 内存分析
-  console.log('🧠 Analyzing memory...');
+  console.log("🧠 Analyzing memory...");
   const memResults = await memoryAnalysis(page);
 
   // 3. 截图
-  await page.screenshot({ path: 'diagnostic-screenshot.png', fullPage: true });
+  await page.screenshot({ path: "diagnostic-screenshot.png", fullPage: true });
 
   // 4. 生成报告
   const report = {
@@ -1041,14 +1156,15 @@ async function fullDiagnostic(url) {
       totalRequests: perfResults.requests.length,
       totalResponses: perfResults.responses.length,
       totalBytes: perfResults.responses.reduce(
-        (sum, r) => sum + (r.encodedDataLength || 0), 0
+        (sum, r) => sum + (r.encodedDataLength || 0),
+        0,
       ),
       errors: perfResults.errors.length,
     },
     memory: memResults,
   };
 
-  console.log('\n📋 Diagnostic Report:');
+  console.log("\n📋 Diagnostic Report:");
   console.log(JSON.stringify(report, null, 2));
 
   await browser.close();
@@ -1063,11 +1179,11 @@ async function fullDiagnostic(url) {
 // manifest.json
 const manifest = {
   manifest_version: 3,
-  name: 'Debug Assistant',
-  version: '1.0',
-  description: 'Custom DevTools panel for debugging',
-  devtools_page: 'devtools.html',
-  permissions: ['debugger', 'storage'],
+  name: "Debug Assistant",
+  version: "1.0",
+  description: "Custom DevTools panel for debugging",
+  devtools_page: "devtools.html",
+  permissions: ["debugger", "storage"],
 };
 
 // devtools.html — DevTools 面板入口
@@ -1220,9 +1336,10 @@ class StateDebugger {
 
   setState(updater) {
     const prevState = { ...this.state };
-    this.state = typeof updater === 'function'
-      ? updater(this.state)
-      : { ...this.state, ...updater };
+    this.state =
+      typeof updater === "function"
+        ? updater(this.state)
+        : { ...this.state, ...updater };
 
     this.history.push({
       timestamp: Date.now(),
@@ -1237,7 +1354,7 @@ class StateDebugger {
   _diff(prev, next) {
     const diff = {};
     const allKeys = new Set([...Object.keys(prev), ...Object.keys(next)]);
-    allKeys.forEach(key => {
+    allKeys.forEach((key) => {
       if (prev[key] !== next[key]) {
         diff[key] = { from: prev[key], to: next[key] };
       }
@@ -1245,7 +1362,9 @@ class StateDebugger {
     return diff;
   }
 
-  getHistory() { return [...this.history]; }
+  getHistory() {
+    return [...this.history];
+  }
 
   replay(step) {
     if (step >= 0 && step < this.history.length) {
@@ -1281,25 +1400,25 @@ class StateDebugger {
 // === 反模式 1: console.log 轰炸 ===
 // ❌ 错误做法
 function processData(data) {
-  console.log('start', data);
-  console.log('step 1');
+  console.log("start", data);
+  console.log("step 1");
   const a = step1(data);
-  console.log('after step 1', a);
-  console.log('step 2');
+  console.log("after step 1", a);
+  console.log("step 2");
   const b = step2(a);
-  console.log('after step 2', b);
-  console.log('step 3');
+  console.log("after step 2", b);
+  console.log("step 3");
   const c = step3(b);
-  console.log('after step 3', c);
-  console.log('end', c);
+  console.log("after step 3", c);
+  console.log("end", c);
   return c;
 }
 
 // ✅ 正确做法：使用断点 + 条件断点
 function processDataFixed(data) {
-  const a = step1(data);  // ← 断点在这里
-  const b = step2(a);     // ← 断点在这里
-  const c = step3(b);     // ← 断点在这里
+  const a = step1(data); // ← 断点在这里
+  const b = step2(a); // ← 断点在这里
+  const c = step3(b); // ← 断点在这里
   return c;
 }
 
@@ -1352,17 +1471,19 @@ class VirtualList {
     this.buffer = Math.ceil(this.visibleCount * 0.5);
     this.scrollTop = 0;
 
-    this.contentEl = document.createElement('div');
-    this.contentEl.style.position = 'relative';
+    this.contentEl = document.createElement("div");
+    this.contentEl.style.position = "relative";
     container.appendChild(this.contentEl);
 
     this.renderedItems = new Map();
     this.observer = new IntersectionObserver(
       (entries) => this._handleIntersection(entries),
-      { root: container, rootMargin: '200px' }
+      { root: container, rootMargin: "200px" },
     );
 
-    container.addEventListener('scroll', () => this._onScroll(), { passive: true });
+    container.addEventListener("scroll", () => this._onScroll(), {
+      passive: true,
+    });
     this._updateTotalHeight();
   }
 
@@ -1378,11 +1499,13 @@ class VirtualList {
   _renderVisibleItems() {
     const startIndex = Math.max(
       0,
-      Math.floor(this.scrollTop / this.itemHeight) - this.buffer
+      Math.floor(this.scrollTop / this.itemHeight) - this.buffer,
     );
     const endIndex = Math.min(
       this.items.length,
-      Math.ceil((this.scrollTop + this.container.clientHeight) / this.itemHeight) + this.buffer
+      Math.ceil(
+        (this.scrollTop + this.container.clientHeight) / this.itemHeight,
+      ) + this.buffer,
     );
 
     const visibleIds = new Set();
@@ -1405,11 +1528,11 @@ class VirtualList {
   }
 
   _renderItem(item, index) {
-    const el = document.createElement('div');
-    el.style.position = 'absolute';
+    const el = document.createElement("div");
+    el.style.position = "absolute";
     el.style.top = `${index * this.itemHeight}px`;
     el.style.height = `${this.itemHeight}px`;
-    el.style.width = '100%';
+    el.style.width = "100%";
     el.innerHTML = this._renderItemHTML(item);
     this.contentEl.appendChild(el);
     this.renderedItems.set(item.id, el);
@@ -1427,7 +1550,7 @@ class VirtualList {
 
   updateItems(items) {
     this.items = items;
-    this.renderedItems.forEach(el => el.remove());
+    this.renderedItems.forEach((el) => el.remove());
     this.renderedItems.clear();
     this._updateTotalHeight();
     this._renderVisibleItems();
@@ -1501,7 +1624,7 @@ class ModalManager {
     this.modals.push(modal);
 
     const listener = () => this._handleOverlayClick(modal);
-    modal.overlay.addEventListener('click', listener);
+    modal.overlay.addEventListener("click", listener);
     this.listeners.push({ modal, listener }); // ❌ 关闭时未移除
   }
 
@@ -1513,8 +1636,8 @@ class ModalManager {
 
   _createModal(config) {
     return {
-      element: document.createElement('div'),
-      overlay: document.createElement('div'),
+      element: document.createElement("div"),
+      overlay: document.createElement("div"),
       config,
     };
   }
@@ -1531,14 +1654,14 @@ class ModalManagerFixed {
     this.activeModals.add(modal);
 
     const listener = () => this._handleOverlayClick(modal);
-    modal.overlay.addEventListener('click', listener);
+    modal.overlay.addEventListener("click", listener);
     // 将 listener 关联到 modal，关闭时可移除
     modal._cleanupListener = listener;
   }
 
   close(modal) {
     modal.element.remove();
-    modal.overlay.removeEventListener('click', modal._cleanupListener);
+    modal.overlay.removeEventListener("click", modal._cleanupListener);
     this.activeModals.delete(modal);
     modal._cleanupListener = null;
   }
@@ -1592,10 +1715,10 @@ class RequestOptimizer {
   // 批量请求：合并多个小请求
   async batch(requests) {
     // 将多个 GET 请求合并为一次批量请求
-    const urls = requests.map(r => r.url);
-    const response = await this.fetch('/api/batch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const urls = requests.map((r) => r.url);
+    const response = await this.fetch("/api/batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ urls }),
     });
     return response.json();
@@ -1603,9 +1726,9 @@ class RequestOptimizer {
 
   // 预加载关键资源
   preload(urls) {
-    urls.forEach(url => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
+    urls.forEach((url) => {
+      const link = document.createElement("link");
+      link.rel = "preload";
       link.href = url;
       link.as = this._getType(url);
       document.head.appendChild(link);
@@ -1613,11 +1736,11 @@ class RequestOptimizer {
   }
 
   _getType(url) {
-    if (url.endsWith('.js')) return 'script';
-    if (url.endsWith('.css')) return 'style';
-    if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) return 'image';
-    if (url.match(/\.(woff|woff2|ttf|otf)$/)) return 'font';
-    return 'fetch';
+    if (url.endsWith(".js")) return "script";
+    if (url.endsWith(".css")) return "style";
+    if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) return "image";
+    if (url.match(/\.(woff|woff2|ttf|otf)$/)) return "font";
+    return "fetch";
   }
 }
 
@@ -1653,6 +1776,7 @@ class RequestOptimizer {
 ## 性能调试 Checklist
 
 ### 加载性能
+
 - [ ] LCP < 2.5s
 - [ ] FID < 100ms
 - [ ] CLS < 0.1
@@ -1663,6 +1787,7 @@ class RequestOptimizer {
 - [ ] 字体使用 font-display: swap
 
 ### 运行时性能
+
 - [ ] FPS ≥ 55
 - [ ] 无 Long Task (>50ms)
 - [ ] 无强制同步布局
@@ -1672,6 +1797,7 @@ class RequestOptimizer {
 - [ ] 事件监听使用 passive
 
 ### 内存管理
+
 - [ ] 无 detached DOM 节点
 - [ ] 事件监听器正确清理
 - [ ] Timer 正确清理
@@ -1686,43 +1812,47 @@ class RequestOptimizer {
 ## DevTools 快捷键速查
 
 ### 通用
-| 快捷键 | 功能 |
-|--------|------|
-| F12 / Cmd+Option+I | 打开 DevTools |
-| Ctrl+Shift+M | 切换设备模拟 |
-| Ctrl+Shift+P | Command Menu |
-| Esc | 打开/关闭 Console |
-| Ctrl+/ | 注释/取消注释 |
+
+| 快捷键             | 功能              |
+| ------------------ | ----------------- |
+| F12 / Cmd+Option+I | 打开 DevTools     |
+| Ctrl+Shift+M       | 切换设备模拟      |
+| Ctrl+Shift+P       | Command Menu      |
+| Esc                | 打开/关闭 Console |
+| Ctrl+/             | 注释/取消注释     |
 
 ### Sources 面板
-| 快捷键 | 功能 |
-|--------|------|
-| Ctrl+O | 打开文件 |
-| Ctrl+Shift+O | 跳转到符号 |
-| Ctrl+G | 跳转到行号 |
-| Ctrl+Shift+F | 全局搜索 |
-| F8 / Ctrl+\ | 继续/暂停 |
-| F10 | Step over |
-| F11 | Step into |
-| Shift+F11 | Step out |
-| Ctrl+\ | 切换断点 |
-| Ctrl+Shift+\ | 禁用/启用所有断点 |
+
+| 快捷键        | 功能              |
+| ------------- | ----------------- |
+| Ctrl+O        | 打开文件          |
+| Ctrl+Shift+O  | 跳转到符号        |
+| Ctrl+G        | 跳转到行号        |
+| Ctrl+Shift+F  | 全局搜索          |
+| F8 / Ctrl+\   | 继续/暂停         |
+| F10           | Step over         |
+| F11           | Step into         |
+| Shift+F11     | Step out          |
+| Ctrl+\        | 切换断点          |
+| Ctrl+Shift+\  | 禁用/启用所有断点 |
 
 ### Console
-| 快捷键 | 功能 |
-|--------|------|
-| Ctrl+` | 切换 Console |
-| Ctrl+L | 清空 Console |
-| Tab | 自动补全 |
-| Shift+Enter | 换行 |
-| ↑/↓ | 历史命令 |
+
+| 快捷键      | 功能         |
+| ----------- | ------------ |
+| Ctrl+`      | 切换 Console |
+| Ctrl+L      | 清空 Console |
+| Tab         | 自动补全     |
+| Shift+Enter | 换行         |
+| ↑/↓         | 历史命令     |
 
 ### Network
-| 快捷键 | 功能 |
-|--------|------|
+
+| 快捷键 | 功能           |
+| ------ | -------------- |
 | Ctrl+E | 清空并禁用缓存 |
-| Ctrl+R | 刷新并捕获 |
-| Ctrl+F | 过滤请求 |
+| Ctrl+R | 刷新并捕获     |
+| Ctrl+F | 过滤请求       |
 ```
 
 ---
@@ -1731,15 +1861,15 @@ class RequestOptimizer {
 
 ### Chrome DevTools 调试能力全景
 
-| 能力域 | 核心工具 | 关键指标 |
-|--------|----------|----------|
-| 性能分析 | Performance 面板 | FPS, Long Task, 火焰图 |
-| 内存分析 | Memory 面板 | Heap Snapshot, Allocation Timeline |
-| 断点调试 | Sources 面板 | 条件断点, Logpoint, Async Stack |
-| 网络分析 | Network 面板 | 瀑布图, TTFB, 资源大小 |
-| 渲染调试 | Rendering 面板 | Paint Flashing, Layout Shifts |
-| 自动化 | CDP / Puppeteer | 自动化测试, 性能监控 |
-| 生产调试 | Source Map + 远程调试 | 错误追踪, 用户会话回放 |
+| 能力域   | 核心工具              | 关键指标                           |
+| -------- | --------------------- | ---------------------------------- |
+| 性能分析 | Performance 面板      | FPS, Long Task, 火焰图             |
+| 内存分析 | Memory 面板           | Heap Snapshot, Allocation Timeline |
+| 断点调试 | Sources 面板          | 条件断点, Logpoint, Async Stack    |
+| 网络分析 | Network 面板          | 瀑布图, TTFB, 资源大小             |
+| 渲染调试 | Rendering 面板        | Paint Flashing, Layout Shifts      |
+| 自动化   | CDP / Puppeteer       | 自动化测试, 性能监控               |
+| 生产调试 | Source Map + 远程调试 | 错误追踪, 用户会话回放             |
 
 ### 调试核心原则
 
@@ -1752,4 +1882,4 @@ class RequestOptimizer {
 
 ---
 
-*Chrome DevTools v4 — 从基础调试到自动化诊断，掌握生产环境调试全流程*
+_Chrome DevTools v4 — 从基础调试到自动化诊断，掌握生产环境调试全流程_

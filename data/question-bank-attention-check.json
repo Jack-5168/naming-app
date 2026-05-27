@@ -10,22 +10,112 @@
     "socialDesirability": "社会赞许性检测题 - 检测被试是否试图呈现完美形象"
   },
   "questions": [
-    {"id": "AC01", "type": "attention", "text": "本题请选择'非常不同意'", "expectedAnswer": 1, "note": "直接注意力检测"},
-    {"id": "AC02", "type": "attention", "text": "请跳过本题，直接选择'中立'", "expectedAnswer": 3, "note": "指令遵循检测"},
-    {"id": "AC03", "type": "attention", "text": "本题请选择第三个选项", "expectedAnswer": 3, "note": "阅读理解检测"},
-    {"id": "AC04", "type": "attention", "text": "如果你认真阅读了本题，请选择'同意'", "expectedAnswer": 4, "note": "注意力持续性检测"},
-    {"id": "AC05", "type": "attention", "text": "本题的正确答案是'非常同意'", "expectedAnswer": 5, "note": "指令检测"},
-    {"id": "AC06", "type": "attention", "text": "请在本题选择'不同意'以证明你在认真答题", "expectedAnswer": 2, "note": "注意力检测"},
-    {"id": "AC07", "type": "attention", "text": "本题请选择与前一题不同的选项", "expectedAnswer": null, "note": "相对位置检测，需动态判断"},
-    {"id": "AC08", "type": "attention", "text": "如果你能看到这段文字，请选择'中立'", "expectedAnswer": 3, "note": "阅读检测"},
-    {"id": "AC09", "type": "attention", "text": "本题请选择第二个和第四个选项之间的答案", "expectedAnswer": 3, "note": "逻辑理解检测"},
-    {"id": "AC10", "type": "attention", "text": "请随意选择本题，此题不计分", "expectedAnswer": null, "note": "放松检测，任何答案均可"},
-    
-    {"id": "SD01", "type": "socialDesirability", "text": "我从不撒谎", "reverse": false, "note": "极端完美主义检测 - 正常人都会偶尔撒谎"},
-    {"id": "SD02", "type": "socialDesirability", "text": "我总是准时，从不迟到", "reverse": false, "note": "完美行为检测"},
-    {"id": "SD03", "type": "socialDesirability", "text": "我从未对他人感到过不耐烦", "reverse": false, "note": "情绪完美检测"},
-    {"id": "SD04", "type": "socialDesirability", "text": "我每天帮助至少 10 个陌生人", "reverse": false, "note": "过度利他检测"},
-    {"id": "SD05", "type": "socialDesirability", "text": "我从未说过任何人的坏话", "reverse": false, "note": "道德完美检测"}
+    {
+      "id": "AC01",
+      "type": "attention",
+      "text": "本题请选择'非常不同意'",
+      "expectedAnswer": 1,
+      "note": "直接注意力检测"
+    },
+    {
+      "id": "AC02",
+      "type": "attention",
+      "text": "请跳过本题，直接选择'中立'",
+      "expectedAnswer": 3,
+      "note": "指令遵循检测"
+    },
+    {
+      "id": "AC03",
+      "type": "attention",
+      "text": "本题请选择第三个选项",
+      "expectedAnswer": 3,
+      "note": "阅读理解检测"
+    },
+    {
+      "id": "AC04",
+      "type": "attention",
+      "text": "如果你认真阅读了本题，请选择'同意'",
+      "expectedAnswer": 4,
+      "note": "注意力持续性检测"
+    },
+    {
+      "id": "AC05",
+      "type": "attention",
+      "text": "本题的正确答案是'非常同意'",
+      "expectedAnswer": 5,
+      "note": "指令检测"
+    },
+    {
+      "id": "AC06",
+      "type": "attention",
+      "text": "请在本题选择'不同意'以证明你在认真答题",
+      "expectedAnswer": 2,
+      "note": "注意力检测"
+    },
+    {
+      "id": "AC07",
+      "type": "attention",
+      "text": "本题请选择与前一题不同的选项",
+      "expectedAnswer": null,
+      "note": "相对位置检测，需动态判断"
+    },
+    {
+      "id": "AC08",
+      "type": "attention",
+      "text": "如果你能看到这段文字，请选择'中立'",
+      "expectedAnswer": 3,
+      "note": "阅读检测"
+    },
+    {
+      "id": "AC09",
+      "type": "attention",
+      "text": "本题请选择第二个和第四个选项之间的答案",
+      "expectedAnswer": 3,
+      "note": "逻辑理解检测"
+    },
+    {
+      "id": "AC10",
+      "type": "attention",
+      "text": "请随意选择本题，此题不计分",
+      "expectedAnswer": null,
+      "note": "放松检测，任何答案均可"
+    },
+
+    {
+      "id": "SD01",
+      "type": "socialDesirability",
+      "text": "我从不撒谎",
+      "reverse": false,
+      "note": "极端完美主义检测 - 正常人都会偶尔撒谎"
+    },
+    {
+      "id": "SD02",
+      "type": "socialDesirability",
+      "text": "我总是准时，从不迟到",
+      "reverse": false,
+      "note": "完美行为检测"
+    },
+    {
+      "id": "SD03",
+      "type": "socialDesirability",
+      "text": "我从未对他人感到过不耐烦",
+      "reverse": false,
+      "note": "情绪完美检测"
+    },
+    {
+      "id": "SD04",
+      "type": "socialDesirability",
+      "text": "我每天帮助至少 10 个陌生人",
+      "reverse": false,
+      "note": "过度利他检测"
+    },
+    {
+      "id": "SD05",
+      "type": "socialDesirability",
+      "text": "我从未说过任何人的坏话",
+      "reverse": false,
+      "note": "道德完美检测"
+    }
   ],
   "scoring": {
     "scale": [1, 2, 3, 4, 5],

@@ -5,12 +5,10 @@
  * Displays detailed comparison table of all membership tiers
  */
 
-import {
-  View, Text, Button, ScrollView,
-} from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
-import './PricingTable.css';
+import { View, Text, Button, ScrollView } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { useState, useEffect } from "react";
+import "./PricingTable.css";
 
 interface MembershipTier {
   tier: string;
@@ -19,12 +17,12 @@ interface MembershipTier {
   price: number;
   priceDisplay: string;
   durationDays: number;
-  billingCycle?: 'once' | 'monthly' | 'yearly';
+  billingCycle?: "once" | "monthly" | "yearly";
   benefits: {
-    report_basic: number | 'unlimited';
-    report_pro: number | 'unlimited';
-    life_event: number | 'unlimited';
-    dual_test: number | 'unlimited';
+    report_basic: number | "unlimited";
+    report_pro: number | "unlimited";
+    life_event: number | "unlimited";
+    dual_test: number | "unlimited";
     priority_support: boolean;
   };
   features: string[];
@@ -38,16 +36,22 @@ interface PricingTableProps {
 }
 
 const benefitRows = [
-  { key: 'report_basic', label: '基础报告', icon: '📄' },
-  { key: 'report_pro', label: '专业报告', icon: '📊' },
-  { key: 'life_event', label: '生活事件', icon: '🎉' },
-  { key: 'dual_test', label: '双人合测', icon: '👥' },
+  { key: "report_basic", label: "基础报告", icon: "📄" },
+  { key: "report_pro", label: "专业报告", icon: "📊" },
+  { key: "life_event", label: "生活事件", icon: "🎉" },
+  { key: "dual_test", label: "双人合测", icon: "👥" },
   {
-    key: 'priority_support', label: '优先支持', icon: '⭐', isBoolean: true,
+    key: "priority_support",
+    label: "优先支持",
+    icon: "⭐",
+    isBoolean: true,
   },
 ];
 
-const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) => {
+const PricingTable: React.FC<PricingTableProps> = ({
+  onUpgrade,
+  currentTier,
+}) => {
   const [tiers, setTiers] = useState<MembershipTier[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -57,11 +61,11 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
 
   const fetchTiers = async () => {
     try {
-      const token = Taro.getStorageSync('accessToken');
+      const token = Taro.getStorageSync("accessToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const res = await Taro.request({
-        url: 'http://localhost:3000/api/v1/memberships/tiers',
+        url: "http://localhost:3000/api/v1/memberships/tiers",
         header: headers,
       });
 
@@ -69,18 +73,21 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
         setTiers(res.data.data);
       }
     } catch (error) {
-      console.error('Failed to fetch tiers:', error);
+      console.error("Failed to fetch tiers:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatValue = (value: number | 'unlimited' | boolean, isBoolean?: boolean): string => {
+  const formatValue = (
+    value: number | "unlimited" | boolean,
+    isBoolean?: boolean,
+  ): string => {
     if (isBoolean) {
-      return value ? '✅' : '❌';
+      return value ? "✅" : "❌";
     }
-    if (value === 'unlimited') return '无限';
-    if (value === 0) return '—';
+    if (value === "unlimited") return "无限";
+    if (value === 0) return "—";
     return `${value}次`;
   };
 
@@ -89,7 +96,7 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
       onUpgrade(tier.tier);
     } else {
       Taro.navigateTo({
-        url: '/pages/membership/membership',
+        url: "/pages/membership/membership",
       });
     }
   };
@@ -119,14 +126,26 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
             {tiers.map((tier) => (
               <View
                 key={tier.tier}
-                className={`table-cell tier-cell ${tier.isPopular ? 'popular' : ''} ${currentTier === tier.tier ? 'current' : ''}`}
+                className={`table-cell tier-cell ${tier.isPopular ? "popular" : ""} ${currentTier === tier.tier ? "current" : ""}`}
               >
                 <Text className="tier-name">{tier.name}</Text>
                 <Text className="tier-price">{tier.priceDisplay}</Text>
-                {tier.billingCycle === 'monthly' && <Text className="cycle">/月</Text>}
-                {tier.billingCycle === 'yearly' && <Text className="cycle">/年</Text>}
-                {tier.isPopular && <View className="popular-tag"><Text>推荐</Text></View>}
-                {currentTier === tier.tier && <View className="current-tag"><Text>当前</Text></View>}
+                {tier.billingCycle === "monthly" && (
+                  <Text className="cycle">/月</Text>
+                )}
+                {tier.billingCycle === "yearly" && (
+                  <Text className="cycle">/年</Text>
+                )}
+                {tier.isPopular && (
+                  <View className="popular-tag">
+                    <Text>推荐</Text>
+                  </View>
+                )}
+                {currentTier === tier.tier && (
+                  <View className="current-tag">
+                    <Text>当前</Text>
+                  </View>
+                )}
               </View>
             ))}
           </View>
@@ -159,7 +178,9 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
             {tiers.map((tier) => (
               <View key={tier.tier} className="table-cell features-cell">
                 {tier.features.slice(0, 3).map((feature, idx) => (
-                  <Text key={idx} className="feature-item">✓ {feature}</Text>
+                  <Text key={idx} className="feature-item">
+                    ✓ {feature}
+                  </Text>
                 ))}
               </View>
             ))}
@@ -171,11 +192,11 @@ const PricingTable: React.FC<PricingTableProps> = ({ onUpgrade, currentTier }) =
             {tiers.map((tier) => (
               <View key={tier.tier} className="table-cell action-cell">
                 <Button
-                  className={`upgrade-btn ${tier.isPopular ? 'popular' : ''} ${currentTier === tier.tier ? 'current' : ''}`}
+                  className={`upgrade-btn ${tier.isPopular ? "popular" : ""} ${currentTier === tier.tier ? "current" : ""}`}
                   onClick={() => handleUpgrade(tier)}
                   disabled={currentTier === tier.tier}
                 >
-                  {currentTier === tier.tier ? '当前套餐' : '立即升级'}
+                  {currentTier === tier.tier ? "当前套餐" : "立即升级"}
                 </Button>
               </View>
             ))}

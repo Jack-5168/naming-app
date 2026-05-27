@@ -64,6 +64,7 @@
 ```
 
 **核心知识点:**
+
 - `flex: 0 0 200px` = `flex-grow: 0` `flex-shrink: 0` `flex-basis: 200px`（固定尺寸）
 - `flex: 1 1 auto` = 弹性填充剩余空间
 - `min-width: 0` 是 Flexbox 子元素内容溢出的经典修复方案
@@ -79,15 +80,15 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center; /* 主轴居中 */
-  align-items: stretch;    /* 交叉轴等高 */
+  align-items: stretch; /* 交叉轴等高 */
 }
 
 .card {
-  flex: 1 1 280px;  /* 最小 280px，最大等分 */
+  flex: 1 1 280px; /* 最小 280px，最大等分 */
   max-width: 400px;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   display: flex;
   flex-direction: column; /* 卡片内部纵向排列 */
@@ -105,6 +106,7 @@
 ```
 
 **核心知识点:**
+
 - `flex: 1 1 280px` 实现响应式等分，自动换行
 - `gap` 替代 margin hack，间距更精准
 - `align-items: stretch` 让同行卡片等高
@@ -146,7 +148,7 @@
 
 /* 下划线动画 */
 .navbar__links a::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
@@ -176,7 +178,9 @@
   height: 3px;
   background: #fff;
   border-radius: 2px;
-  transition: transform 0.3s, opacity 0.3s;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
 }
 
 /* 移动端：汉堡菜单 */
@@ -202,6 +206,7 @@
 ```
 
 **核心知识点:**
+
 - `justify-content: space-between` 经典两端对齐
 - `::after` 伪元素 + `width` 过渡实现下划线动画
 - 汉堡菜单三横线用 `flex-direction: column` + `gap` 实现
@@ -216,7 +221,7 @@
 .center {
   display: flex;
   justify-content: center; /* 主轴居中 */
-  align-items: center;     /* 交叉轴居中 */
+  align-items: center; /* 交叉轴居中 */
   min-height: 100vh;
 }
 
@@ -248,6 +253,7 @@
 ```
 
 **核心知识点:**
+
 - `justify-content` 控制主轴，`align-items` 控制交叉轴
 - `align-content` 控制多行时的行间距分布
 - `flex-direction` 改变主轴方向后，justify/align 含义互换
@@ -286,6 +292,7 @@
 ```
 
 **核心知识点:**
+
 - `calc()` 动态计算宽度，减去 gap
 - `flex: 0 1` 表示不放大、可缩小、基础宽度为 calc 值
 - Flexbox 模拟 Grid 的局限性：无法精确控制行列对齐
@@ -303,7 +310,9 @@
 .sidebar {
   flex: 0 0 250px;
   background: #16213e;
-  transition: flex-basis 0.3s ease, padding 0.3s ease;
+  transition:
+    flex-basis 0.3s ease,
+    padding 0.3s ease;
   overflow: hidden;
   padding: 1rem;
 }
@@ -325,6 +334,7 @@
 ```
 
 **核心知识点:**
+
 - `flex-basis` 过渡动画实现侧边栏折叠效果
 - `overflow: hidden` 防止折叠时内容溢出
 - 配合 JS 切换 `.sidebar--collapsed` 类
@@ -386,6 +396,7 @@
 ```
 
 **核心知识点:**
+
 - `align-self` 控制单个元素的交叉轴位置
 - `flex-direction: row-reverse` 反转子元素顺序
 - `word-break: break-word` 防止长 URL 撑破气泡
@@ -424,7 +435,9 @@
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .form-input:focus {
@@ -448,6 +461,7 @@
 ```
 
 **核心知识点:**
+
 - 表单行内 `flex: 1 1 200px` 实现响应式等分
 - `flex-wrap: wrap` 保证窄屏自动换行
 - `:focus` 状态用 `box-shadow` 做 focus ring（无障碍友好）
@@ -496,6 +510,7 @@
 ```
 
 **核心知识点:**
+
 - `aspect-ratio` 现代 CSS 属性，轻松控制比例
 - `object-fit: cover` 图片裁剪填充（类似 background-size: cover）
 - `flex: 2 1 400px` 让特色项占双倍空间
@@ -517,7 +532,7 @@
   padding: 1rem;
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .news-item--pinned {
@@ -532,13 +547,20 @@
 
 /* 响应式：改变视觉顺序 */
 @media (max-width: 768px) {
-  .sidebar { order: 2; }  /* 移动端侧边栏移到底部 */
-  .main { order: 1; }     /* 主内容先显示 */
-  .footer { order: 3; }
+  .sidebar {
+    order: 2;
+  } /* 移动端侧边栏移到底部 */
+  .main {
+    order: 1;
+  } /* 主内容先显示 */
+  .footer {
+    order: 3;
+  }
 }
 ```
 
 **核心知识点:**
+
 - `order` 属性改变视觉顺序，不影响 DOM 顺序（无障碍友好）
 - 负值优先级更高
 - 响应式布局中用 `order` 调整阅读顺序
@@ -553,7 +575,7 @@
 .grid-holy-grail {
   display: grid;
   grid-template-columns: 200px 1fr 250px; /* 左 中 右 */
-  grid-template-rows: auto 1fr auto;      /* 头 内容 脚 */
+  grid-template-rows: auto 1fr auto; /* 头 内容 脚 */
   grid-template-areas:
     "header  header  header"
     "nav     main    aside"
@@ -562,11 +584,33 @@
   gap: 0;
 }
 
-.grid-holy-grail__header { grid-area: header; background: #1a1a2e; color: #fff; padding: 1rem; }
-.grid-holy-grail__nav    { grid-area: nav;    background: #16213e; padding: 1rem; }
-.grid-holy-grail__main   { grid-area: main;   background: #0f3460; padding: 1rem; }
-.grid-holy-grail__aside  { grid-area: aside;  background: #533483; padding: 1rem; }
-.grid-holy-grail__footer { grid-area: footer; background: #1a1a2e; color: #fff; padding: 1rem; }
+.grid-holy-grail__header {
+  grid-area: header;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 1rem;
+}
+.grid-holy-grail__nav {
+  grid-area: nav;
+  background: #16213e;
+  padding: 1rem;
+}
+.grid-holy-grail__main {
+  grid-area: main;
+  background: #0f3460;
+  padding: 1rem;
+}
+.grid-holy-grail__aside {
+  grid-area: aside;
+  background: #533483;
+  padding: 1rem;
+}
+.grid-holy-grail__footer {
+  grid-area: footer;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 1rem;
+}
 
 @media (max-width: 768px) {
   .grid-holy-grail {
@@ -582,6 +626,7 @@
 ```
 
 **核心知识点:**
+
 - `grid-template-areas` 用 ASCII 艺术定义布局，直观可读
 - `1fr` 表示剩余空间的等分份额
 - 响应式只需重新定义 `grid-template-areas`
@@ -602,18 +647,21 @@
 .auto-grid__card {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .auto-grid__card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 ```
 
 **核心知识点:**
+
 - `repeat(auto-fill, minmax(250px, 1fr))` 是 Grid 响应式最经典模式
 - 无需媒体查询，自动根据容器宽度决定列数
 - `auto-fill` vs `auto-fit`：`auto-fit` 会在空间有余时拉伸轨道
@@ -632,10 +680,18 @@
 }
 
 /* 跨列布局 */
-.dashboard__stat-1 { grid-column: span 3; }
-.dashboard__stat-2 { grid-column: span 3; }
-.dashboard__stat-3 { grid-column: span 3; }
-.dashboard__stat-4 { grid-column: span 3; }
+.dashboard__stat-1 {
+  grid-column: span 3;
+}
+.dashboard__stat-2 {
+  grid-column: span 3;
+}
+.dashboard__stat-3 {
+  grid-column: span 3;
+}
+.dashboard__stat-4 {
+  grid-column: span 3;
+}
 
 .dashboard__chart-main {
   grid-column: span 8;
@@ -659,8 +715,12 @@
   .dashboard__stat-4 {
     grid-column: span 6; /* 平板：2 列 */
   }
-  .dashboard__chart-main { grid-column: span 12; }
-  .dashboard__chart-side { grid-column: span 12; }
+  .dashboard__chart-main {
+    grid-column: span 12;
+  }
+  .dashboard__chart-side {
+    grid-column: span 12;
+  }
 }
 
 @media (max-width: 768px) {
@@ -674,6 +734,7 @@
 ```
 
 **核心知识点:**
+
 - 12 列栅格系统是 Bootstrap 经典模式的 CSS 原生实现
 - `grid-column: span N` 控制占几列
 - `grid-column: 1 / -1` 表示全宽（从第一列到最后一列）
@@ -710,7 +771,7 @@
   background: #fff;
   border-radius: 8px;
   padding: 1rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .magazine__article--wide {
@@ -723,6 +784,7 @@
 ```
 
 **核心知识点:**
+
 - `grid-column: 1 / 2` 和 `grid-row: 1 / 3` 精确控制跨列/跨行
 - 非对称布局是 Grid 的强项（Flexbox 很难做到）
 - 杂志/博客首页是典型应用场景
@@ -758,6 +820,7 @@
 ```
 
 **核心知识点:**
+
 - `place-content` 控制网格整体在容器中的位置
 - `place-items` 控制每个单元格内内容的对齐
 - `justify-self` / `align-self` 可覆盖单个元素的对齐
@@ -778,7 +841,7 @@
   background: #fff;
   border-radius: 8px;
   padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* 网格线命名 — 更语义化的定位 */
@@ -789,11 +852,16 @@
   min-height: 100vh;
 }
 
-.named-grid__sidebar { grid-column: sidebar-start / sidebar-end; }
-.named-grid__main    { grid-column: main-start / main-end; }
+.named-grid__sidebar {
+  grid-column: sidebar-start / sidebar-end;
+}
+.named-grid__main {
+  grid-column: main-start / main-end;
+}
 ```
 
 **核心知识点:**
+
 - `grid-auto-rows` 控制隐式行（超出定义的行数）的高度
 - `minmax(100px, auto)` 保证最小高度，内容多时自动撑开
 - 命名网格线让定位更语义化，但日常开发中 `grid-template-areas` 更常用
@@ -832,6 +900,7 @@
 ```
 
 **核心知识点:**
+
 - Grid 子元素本身可以是 Grid 容器
 - 嵌套 Grid 是构建复杂页面的标准模式
 - 每个 Grid 上下文独立，互不影响
@@ -875,7 +944,7 @@
 
 .overlay-grid__caption {
   align-self: end;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   color: #fff;
   padding: 3rem 1.5rem 1.5rem;
   border-radius: 0 0 12px 12px;
@@ -883,6 +952,7 @@
 ```
 
 **核心知识点:**
+
 - 多个元素放在同一 `grid-column: 1; grid-row: 1` 实现重叠
 - 比 `position: absolute` 更灵活，可配合 `place-self` 精确定位
 - 图片 + 标签 + 标题的经典覆盖布局
@@ -905,7 +975,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 脉冲动画 */
@@ -914,8 +986,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%      { transform: scale(1.05); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
 }
 
 /* 弹跳动画 */
@@ -924,8 +1003,13 @@
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-20px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 /* 打字机效果 */
@@ -933,16 +1017,24 @@
   overflow: hidden;
   white-space: nowrap;
   border-right: 3px solid #e94560;
-  animation: typing 3s steps(20) forwards, blink 0.7s step-end infinite;
+  animation:
+    typing 3s steps(20) forwards,
+    blink 0.7s step-end infinite;
 }
 
 @keyframes typing {
-  from { width: 0; }
-  to   { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink {
-  50% { border-color: transparent; }
+  50% {
+    border-color: transparent;
+  }
 }
 
 /* 骨架屏闪烁 */
@@ -954,8 +1046,12 @@
 }
 
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* 波浪加载 */
@@ -974,19 +1070,35 @@
   animation: wave 1.2s ease-in-out infinite;
 }
 
-.wave-loader span:nth-child(1) { animation-delay: 0s; }
-.wave-loader span:nth-child(2) { animation-delay: 0.1s; }
-.wave-loader span:nth-child(3) { animation-delay: 0.2s; }
-.wave-loader span:nth-child(4) { animation-delay: 0.3s; }
-.wave-loader span:nth-child(5) { animation-delay: 0.4s; }
+.wave-loader span:nth-child(1) {
+  animation-delay: 0s;
+}
+.wave-loader span:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.wave-loader span:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.wave-loader span:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.wave-loader span:nth-child(5) {
+  animation-delay: 0.4s;
+}
 
 @keyframes wave {
-  0%, 100% { transform: scaleY(1); }
-  50%      { transform: scaleY(2); }
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(2);
+  }
 }
 ```
 
 **核心知识点:**
+
 - `animation` 简写：`name duration timing-function delay iteration-count direction fill-mode play-state`
 - `steps(N)` 实现逐帧动画（打字机）
 - `animation-delay` 错开多个元素的动画节奏
@@ -1025,20 +1137,23 @@
 
 /* 卡片悬停效果 */
 .card-hover {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
 }
 
 .card-hover:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
 /* 平滑高度展开（纯 CSS 方案） */
 .expandable {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.4s ease;
+  transition:
+    max-height 0.4s ease,
+    padding 0.4s ease;
 }
 
 .expandable--open {
@@ -1052,6 +1167,7 @@
 ```
 
 **核心知识点:**
+
 - `transition` 可同时对多个属性设置不同缓动
 - `cubic-bezier(0.34, 1.56, 0.64, 1)` 弹性缓动（overshoot 效果）
 - `max-height` 过渡是实现纯 CSS 展开/收起的经典方案
@@ -1106,6 +1222,7 @@
 ```
 
 **核心知识点:**
+
 - `perspective` 定义 3D 透视深度，值越小透视感越强
 - `transform-style: preserve-3d` 让子元素保持在 3D 空间
 - `backface-visibility: hidden` 隐藏元素背面
@@ -1120,7 +1237,9 @@
 .animate-on-scroll {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 
 /* 进入视口后：可见 + 归位 */
@@ -1133,7 +1252,9 @@
 .animate-from-left {
   opacity: 0;
   transform: translateX(-50px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 .animate-from-left.is-visible {
   opacity: 1;
@@ -1143,7 +1264,9 @@
 .animate-scale {
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .animate-scale.is-visible {
   opacity: 1;
@@ -1154,14 +1277,26 @@
 .stagger-container > * {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
-.stagger-container.is-visible > *:nth-child(1) { transition-delay: 0.05s; }
-.stagger-container.is-visible > *:nth-child(2) { transition-delay: 0.1s; }
-.stagger-container.is-visible > *:nth-child(3) { transition-delay: 0.15s; }
-.stagger-container.is-visible > *:nth-child(4) { transition-delay: 0.2s; }
-.stagger-container.is-visible > *:nth-child(5) { transition-delay: 0.25s; }
+.stagger-container.is-visible > *:nth-child(1) {
+  transition-delay: 0.05s;
+}
+.stagger-container.is-visible > *:nth-child(2) {
+  transition-delay: 0.1s;
+}
+.stagger-container.is-visible > *:nth-child(3) {
+  transition-delay: 0.15s;
+}
+.stagger-container.is-visible > *:nth-child(4) {
+  transition-delay: 0.2s;
+}
+.stagger-container.is-visible > *:nth-child(5) {
+  transition-delay: 0.25s;
+}
 
 .stagger-container.is-visible > * {
   opacity: 1;
@@ -1170,6 +1305,7 @@
 ```
 
 **核心知识点:**
+
 - CSS 只负责动画，JS（Intersection Observer）负责触发
 - `transition-delay` 实现交错动画（stagger effect）
 - `cubic-bezier(0.34, 1.56, 0.64, 1)` 弹性效果让动画更生动
@@ -1205,9 +1341,15 @@
 .progress-bar__fill {
   height: 100%;
   width: var(--progress);
-  background: linear-gradient(90deg, hsl(var(--hue), 70%, 60%), hsl(calc(var(--hue) + 40), 70%, 60%));
+  background: linear-gradient(
+    90deg,
+    hsl(var(--hue), 70%, 60%),
+    hsl(calc(var(--hue) + 40), 70%, 60%)
+  );
   border-radius: 4px;
-  transition: width 0.5s ease, background 0.3s;
+  transition:
+    width 0.5s ease,
+    background 0.3s;
 }
 
 /* 鼠标跟随效果 */
@@ -1223,6 +1365,7 @@
 ```
 
 **核心知识点:**
+
 - CSS 自定义属性（CSS Variables）可在运行时动态修改
 - `calc()` 可对自定义属性进行计算
 - `hsl()` 色相环 + 自定义属性实现动态配色
@@ -1241,11 +1384,11 @@
 }
 
 .btn-loading::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -1260,10 +1403,18 @@
 }
 
 @keyframes success-pop {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.15); }
-  60%  { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.15);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* 错误抖动 */
@@ -1272,9 +1423,23 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80%      { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 /* 通知滑入 */
@@ -1287,17 +1452,30 @@
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideOut {
-  from { transform: translateX(0); opacity: 1; }
-  to   { transform: translateX(100%); opacity: 0; }
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 ```
 
 **核心知识点:**
+
 - `pointer-events: none` 禁用加载中的按钮点击
 - `color: transparent` 隐藏文字但保留按钮尺寸
 - `animation-fill-mode: forwards` 保持动画结束状态
@@ -1335,6 +1513,7 @@ p {
 ```
 
 **核心知识点:**
+
 - `clamp()` 是现代 CSS 流体排版的最佳方案
 - 无需媒体查询，字号随视口自动缩放
 - `2vw + 10px` 中的 `vw` 单位让字号与视口宽度关联
@@ -1388,6 +1567,7 @@ p {
 ```
 
 **核心知识点:**
+
 - 容器查询让组件真正可复用（不依赖视口宽度）
 - `container-type: inline-size` 定义容器
 - `@container` 语法与 `@media` 类似，但基于容器尺寸
@@ -1430,7 +1610,7 @@ p {
 .nav-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -1454,6 +1634,7 @@ p {
 ```
 
 **核心知识点:**
+
 - `transform: translateX(100%)` 比 `left: 100%` 性能更好（GPU 加速）
 - `pointer-events: none` 让遮罩层不可点击
 - `inset: 0` 是现代 CSS 的全方位定位简写
@@ -1510,6 +1691,7 @@ p {
 ```
 
 **核心知识点:**
+
 - `max-width: 100%` + `height: auto` 是响应式图片的黄金法则
 - `object-fit: cover` 配合 `aspect-ratio` 实现艺术方向控制
 - HTML `<picture>` + `srcset` 是服务端方案，CSS 是表现层配合
@@ -1547,7 +1729,7 @@ p {
 /* 响应式容器宽度 */
 .container {
   width: min(90%, 1200px); /* 最大 1200px，窄屏占 90% */
-  margin-inline: auto;     /* 水平居中 */
+  margin-inline: auto; /* 水平居中 */
 }
 
 /* 响应式 gap */
@@ -1559,6 +1741,7 @@ p {
 ```
 
 **核心知识点:**
+
 - `clamp()` 实现响应式间距，无需媒体查询
 - `width: min(90%, 1200px)` 是现代容器模式
 - `margin-inline: auto` 是 `margin-left/right: auto` 的逻辑属性写法
@@ -1631,6 +1814,7 @@ p {
 ```
 
 **HTML 配合:**
+
 ```html
 <td data-label="姓名">张三</td>
 <td data-label="邮箱">zhang@example.com</td>
@@ -1638,6 +1822,7 @@ p {
 ```
 
 **核心知识点:**
+
 - `display: block` 将表格行转为卡片
 - `::before` + `attr()` 显示列名（移动端必备）
 - `position: sticky` 表头滚动固定
@@ -1657,7 +1842,9 @@ p {
       <span class="notion-sidebar__name">我的空间</span>
     </div>
     <nav class="notion-sidebar__nav">
-      <a class="notion-sidebar__link notion-sidebar__link--active" href="#">📄 快速开始</a>
+      <a class="notion-sidebar__link notion-sidebar__link--active" href="#"
+        >📄 快速开始</a
+      >
       <a class="notion-sidebar__link" href="#">📁 项目</a>
       <a class="notion-sidebar__link" href="#">📋 待办</a>
       <a class="notion-sidebar__link" href="#">💡 想法</a>
@@ -1690,7 +1877,7 @@ p {
 .notion-layout {
   display: flex;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #fff;
   color: #37352f;
 }
@@ -1843,7 +2030,7 @@ p {
     top: 0;
     height: 100vh;
     z-index: 100;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   }
   .notion-sidebar--collapsed {
     transform: translateX(-100%);
@@ -1860,6 +2047,7 @@ p {
 ```
 
 **临摹要点:**
+
 1. Flexbox 主布局：侧边栏 `flex-shrink: 0` + 主内容 `flex: 1`
 2. 侧边栏折叠：`width` 过渡 + `overflow: hidden`
 3. 主内容区 `padding: 2rem 96px` 实现 Notion 标志性宽边距
@@ -1888,8 +2076,12 @@ p {
   <!-- Tab 导航 -->
   <nav class="repo-tabs">
     <a class="repo-tab repo-tab--active" href="#">Code</a>
-    <a class="repo-tab" href="#">Issues <span class="repo-tab__badge">12</span></a>
-    <a class="repo-tab" href="#">Pull requests <span class="repo-tab__badge">3</span></a>
+    <a class="repo-tab" href="#"
+      >Issues <span class="repo-tab__badge">12</span></a
+    >
+    <a class="repo-tab" href="#"
+      >Pull requests <span class="repo-tab__badge">3</span></a
+    >
     <a class="repo-tab" href="#">Actions</a>
     <a class="repo-tab" href="#">Projects</a>
   </nav>
@@ -1898,12 +2090,8 @@ p {
     <!-- 文件浏览器 -->
     <div class="repo-file-browser">
       <div class="repo-file-browser__toolbar">
-        <div class="repo-branch-selector">
-          <span>main</span> ▾
-        </div>
-        <div class="repo-file-browser__search">
-          🔍 Search file
-        </div>
+        <div class="repo-branch-selector"><span>main</span> ▾</div>
+        <div class="repo-file-browser__search">🔍 Search file</div>
         <div class="repo-file-browser__add">
           <button class="repo-btn-sm">Add file</button>
         </div>
@@ -1965,9 +2153,18 @@ p {
       <div class="repo-sidebar__section">
         <h4>Languages</h4>
         <div class="repo-lang-bar">
-          <div class="repo-lang-segment" style="width: 60%; background: #f1e05a;"></div>
-          <div class="repo-lang-segment" style="width: 25%; background: #3178c6;"></div>
-          <div class="repo-lang-segment" style="width: 15%; background: #e34c26;"></div>
+          <div
+            class="repo-lang-segment"
+            style="width: 60%; background: #f1e05a;"
+          ></div>
+          <div
+            class="repo-lang-segment"
+            style="width: 25%; background: #3178c6;"
+          ></div>
+          <div
+            class="repo-lang-segment"
+            style="width: 15%; background: #e34c26;"
+          ></div>
         </div>
         <div class="repo-lang-list">
           <span>JavaScript 60%</span>
@@ -1982,7 +2179,8 @@ p {
 
 ```css
 .repo-page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   background: #fff;
   color: #1f2328;
   max-width: 1280px;
@@ -2031,7 +2229,9 @@ p {
   color: #1f2328;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .repo-btn:hover {
@@ -2165,8 +2365,14 @@ p {
   vertical-align: middle;
 }
 
-.repo-file-row td:nth-child(1) { width: 40px; text-align: center; }
-.repo-file-row td:nth-child(3) { color: #656c76; width: 250px; }
+.repo-file-row td:nth-child(1) {
+  width: 40px;
+  text-align: center;
+}
+.repo-file-row td:nth-child(3) {
+  color: #656c76;
+  width: 250px;
+}
 
 .repo-file-row a {
   color: #0969da;
@@ -2305,6 +2511,7 @@ p {
 ```
 
 **临摹要点:**
+
 1. Flexbox 主布局：文件浏览器 `flex: 1` + 侧边栏 `flex: 0 0 296px`
 2. Tab 导航：`border-bottom` 激活态 + `badge` 计数
 3. 文件表格：hover 高亮行 + 列宽控制
@@ -2320,9 +2527,7 @@ p {
 <div class="product-page">
   <!-- 面包屑 -->
   <nav class="breadcrumb">
-    <a href="#">首页</a> /
-    <a href="#">电子产品</a> /
-    <a href="#">手机</a> /
+    <a href="#">首页</a> / <a href="#">电子产品</a> / <a href="#">手机</a> /
     <span>产品名称</span>
   </nav>
 
@@ -2330,7 +2535,11 @@ p {
     <!-- 左侧：图片画廊 -->
     <div class="product-gallery">
       <div class="product-gallery__main">
-        <img src="product-main.jpg" alt="产品主图" class="product-gallery__image" />
+        <img
+          src="product-main.jpg"
+          alt="产品主图"
+          class="product-gallery__image"
+        />
         <span class="product-gallery__badge">新品</span>
       </div>
       <div class="product-gallery__thumbs">
@@ -2365,9 +2574,21 @@ p {
         <p><strong>品牌：</strong>BrandName</p>
         <p><strong>颜色：</strong></p>
         <div class="product-info__colors">
-          <button class="color-swatch color-swatch--active" style="background: #000;" data-color="black"></button>
-          <button class="color-swatch" style="background: #fff; border: 1px solid #ddd;" data-color="white"></button>
-          <button class="color-swatch" style="background: #1a73e8;" data-color="blue"></button>
+          <button
+            class="color-swatch color-swatch--active"
+            style="background: #000;"
+            data-color="black"
+          ></button>
+          <button
+            class="color-swatch"
+            style="background: #fff; border: 1px solid #ddd;"
+            data-color="white"
+          ></button>
+          <button
+            class="color-swatch"
+            style="background: #1a73e8;"
+            data-color="blue"
+          ></button>
         </div>
         <p><strong>存储：</strong></p>
         <div class="product-info__options">
@@ -2413,8 +2634,12 @@ p {
           <button class="quantity-btn">+</button>
         </div>
       </div>
-      <button class="product-buy-panel__btn product-buy-panel__btn--primary">加入购物车</button>
-      <button class="product-buy-panel__btn product-buy-panel__btn--outline">立即购买</button>
+      <button class="product-buy-panel__btn product-buy-panel__btn--primary">
+        加入购物车
+      </button>
+      <button class="product-buy-panel__btn product-buy-panel__btn--outline">
+        立即购买
+      </button>
       <div class="product-buy-panel__sellers">
         <h4>其他卖家</h4>
         <div class="seller-item">
@@ -2446,7 +2671,8 @@ p {
 
 ```css
 .product-page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
@@ -2628,7 +2854,9 @@ p {
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .color-swatch:hover {
@@ -2637,7 +2865,9 @@ p {
 
 .color-swatch--active {
   border-color: #0066cc;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0066cc;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px #0066cc;
 }
 
 /* 规格选择 */
@@ -2685,7 +2915,9 @@ p {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 }
 
 .btn-primary:hover {
@@ -2909,7 +3141,9 @@ p {
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
 }
 
 .product-tab:hover {
@@ -2983,6 +3217,7 @@ p {
 ```
 
 **临摹要点:**
+
 1. 三栏 Flexbox 布局：画廊 `flex: 0 0 480px` + 信息 `flex: 1` + 面板 `flex: 0 0 300px`
 2. 图片画廊：主图 `aspect-ratio: 1/1` + 缩略图 `object-fit: cover`
 3. 购买面板 `position: sticky` 实现滚动跟随
@@ -2995,28 +3230,32 @@ p {
 
 ### Flexbox vs Grid 选择指南
 
-| 场景 | 推荐 | 原因 |
-|------|------|------|
-| 一维布局（行或列） | Flexbox | 更灵活，自动换行 |
-| 二维布局（行+列） | Grid | 精确控制行列 |
-| 内容优先（内容决定大小） | Flexbox | `flex: 1 1 auto` 自适应 |
-| 布局优先（固定网格） | Grid | `grid-template-columns` 精确 |
-| 导航栏/工具栏 | Flexbox | 两端对齐、间距均等 |
-| 卡片网格/仪表盘 | Grid | `auto-fill` + `minmax` |
-| 圣杯布局 | 两者皆可 | Grid 用 areas 更直观 |
-| 组件内部布局 | Flexbox | 嵌套更自然 |
+| 场景                     | 推荐     | 原因                         |
+| ------------------------ | -------- | ---------------------------- |
+| 一维布局（行或列）       | Flexbox  | 更灵活，自动换行             |
+| 二维布局（行+列）        | Grid     | 精确控制行列                 |
+| 内容优先（内容决定大小） | Flexbox  | `flex: 1 1 auto` 自适应      |
+| 布局优先（固定网格）     | Grid     | `grid-template-columns` 精确 |
+| 导航栏/工具栏            | Flexbox  | 两端对齐、间距均等           |
+| 卡片网格/仪表盘          | Grid     | `auto-fill` + `minmax`       |
+| 圣杯布局                 | 两者皆可 | Grid 用 areas 更直观         |
+| 组件内部布局             | Flexbox  | 嵌套更自然                   |
 
 ### 动画性能优化
 
 ```css
 /* ✅ 只变换 transform 和 opacity（GPU 加速） */
 .good-animation {
-  transition: transform 0.3s, opacity 0.3s;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
 }
 
 /* ❌ 避免变换 width/height/top/left（触发重排） */
 .bad-animation {
-  transition: width 0.3s, top 0.3s;
+  transition:
+    width 0.3s,
+    top 0.3s;
 }
 
 /* ✅ 使用 will-change 提示浏览器优化 */
@@ -3041,19 +3280,24 @@ p {
 /* 基础样式 = 移动端 */
 
 /* 平板竖屏 */
-@media (min-width: 480px) { }
+@media (min-width: 480px) {
+}
 
 /* 平板横屏 / 小笔记本 */
-@media (min-width: 768px) { }
+@media (min-width: 768px) {
+}
 
 /* 桌面 */
-@media (min-width: 1024px) { }
+@media (min-width: 1024px) {
+}
 
 /* 大桌面 */
-@media (min-width: 1280px) { }
+@media (min-width: 1280px) {
+}
 
 /* 超大屏 */
-@media (min-width: 1536px) { }
+@media (min-width: 1536px) {
+}
 ```
 
 ---
@@ -3062,14 +3306,14 @@ p {
 
 ### 本次产出
 
-| 类别 | 数量 | 说明 |
-|------|------|------|
-| Flexbox 示例 | 10 个 | 圣杯布局、卡片行、导航栏、居中、画廊、聊天、表单等 |
-| Grid 示例 | 8 个 | 圣杯、自动填充、仪表盘、杂志、嵌套、覆盖层等 |
-| 动画示例 | 6 个 | 关键帧、过渡、3D 翻转、滚动触发、自定义属性、组合动画 |
-| 响应式示例 | 6 个 | 流体排版、容器查询、抽屉导航、响应式图片/间距/表格 |
-| 复杂布局临摹 | 3 个 | Notion 编辑器、GitHub 仓库页、电商产品详情页 |
-| **总计** | **33 个示例** | 远超 20+ 目标 ✅ |
+| 类别         | 数量          | 说明                                                  |
+| ------------ | ------------- | ----------------------------------------------------- |
+| Flexbox 示例 | 10 个         | 圣杯布局、卡片行、导航栏、居中、画廊、聊天、表单等    |
+| Grid 示例    | 8 个          | 圣杯、自动填充、仪表盘、杂志、嵌套、覆盖层等          |
+| 动画示例     | 6 个          | 关键帧、过渡、3D 翻转、滚动触发、自定义属性、组合动画 |
+| 响应式示例   | 6 个          | 流体排版、容器查询、抽屉导航、响应式图片/间距/表格    |
+| 复杂布局临摹 | 3 个          | Notion 编辑器、GitHub 仓库页、电商产品详情页          |
+| **总计**     | **33 个示例** | 远超 20+ 目标 ✅                                      |
 
 ### 核心技能掌握
 
@@ -3086,5 +3330,5 @@ p {
 
 ---
 
-*CSS 深度专项训练完成 ✅*
-*下次建议：TypeScript 类型系统专项（高难度，需 2h）*
+_CSS 深度专项训练完成 ✅_
+_下次建议：TypeScript 类型系统专项（高难度，需 2h）_

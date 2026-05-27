@@ -4,7 +4,7 @@
 
 export interface Question {
   id: string;
-  dimension: 'E' | 'N' | 'T' | 'J';
+  dimension: "E" | "N" | "T" | "J";
   difficulty: number;
   content: string;
   options: QuestionOption[];
@@ -17,7 +17,7 @@ export interface QuestionOption {
 
 export interface Answer {
   questionId: string;
-  dimension: 'E' | 'N' | 'T' | 'J';
+  dimension: "E" | "N" | "T" | "J";
   selectedOption: string;
   timestamp: number;
 }
@@ -80,7 +80,7 @@ export interface StabilityResult {
   stabilityProbabilityDisplay?: string;
   /** Warning message if applicable */
   stabilityWarning?: string;
-  status: 'stable' | 'moderate' | 'unstable' | 'new';
+  status: "stable" | "moderate" | "unstable" | "new";
   confidenceBand: {
     lower: number;
     upper: number;
@@ -91,13 +91,16 @@ export interface StabilityResult {
     [key: string]: unknown;
   };
   /** Per-dimension stability metrics */
-  perDimension?: Record<string, {
-    stabilityIndex: number;
-    stabilityProbability: number;
-    mean?: number;
-    std?: number;
-    cv?: number;
-  }>;
+  perDimension?: Record<
+    string,
+    {
+      stabilityIndex: number;
+      stabilityProbability: number;
+      mean?: number;
+      std?: number;
+      cv?: number;
+    }
+  >;
   dimensionStability?: number;
 }
 

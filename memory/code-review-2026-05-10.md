@@ -8,11 +8,11 @@
 
 ## 📊 变更概览
 
-| 类别 | 变更量 | 说明 |
-|------|--------|------|
-| 删除旧文件 | ~35K 行 | 清理 JS 旧控制器/路由（authController.js, paymentController.js 等） |
-| 新增/修改 | ~5.7K 行 | TypeScript 重构、新组件、安全加固 |
-| 核心模块 | 12 个文件 | auth, tests, encryption, rate-limiter, api, Paywall, Calibration, ShareCard |
+| 类别       | 变更量    | 说明                                                                        |
+| ---------- | --------- | --------------------------------------------------------------------------- |
+| 删除旧文件 | ~35K 行   | 清理 JS 旧控制器/路由（authController.js, paymentController.js 等）         |
+| 新增/修改  | ~5.7K 行  | TypeScript 重构、新组件、安全加固                                           |
+| 核心模块   | 12 个文件 | auth, tests, encryption, rate-limiter, api, Paywall, Calibration, ShareCard |
 
 ---
 
@@ -28,7 +28,7 @@ try {
   const encryptedData = JSON.parse(item.phone);
   item.phone = decrypt(encryptedData);
 } catch (error) {
-  console.error('Failed to decrypt phone field:', error);
+  console.error("Failed to decrypt phone field:", error);
   // ❌ 问题：解密失败后 item.phone 未被恢复为原始值
   // 调用方会拿到 undefined 的 phone 字段
 }
@@ -37,12 +37,13 @@ try {
 **风险**：数据库中旧格式（纯字符串加密数据）的用户，解密失败后 phone 变为 `undefined`，可能导致下游逻辑异常。
 
 **修复建议**：
+
 ```typescript
 try {
   const encryptedData = JSON.parse(item.phone);
   item.phone = decrypt(encryptedData);
 } catch (error) {
-  console.error('Failed to decrypt phone field:', error);
+  console.error("Failed to decrypt phone field:", error);
   // 保留原始值，避免下游拿到 undefined
   // item.phone 保持不变
 }
@@ -53,15 +54,17 @@ try {
 **文件**：`server/src/security/encryption.ts` L17
 
 ```typescript
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+const ENCRYPTION_KEY =
+  process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString("hex");
 ```
 
 **风险**：如果 `ENCRYPTION_KEY` 环境变量未设置，每次进程重启都会生成新密钥，导致**所有已加密数据永久不可解密**。
 
 **修复建议**：
+
 ```typescript
 if (!process.env.ENCRYPTION_KEY) {
-  throw new Error('ENCRYPTION_KEY environment variable is required');
+  throw new Error("ENCRYPTION_KEY environment variable is required");
 }
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 ```
@@ -106,14 +109,16 @@ const catEngine = new CATEngine(); // 模块级单例
 ```
 
 **问题**：
+
 - 没有区分网络错误 vs 业务错误
 - 没有 token 过期自动刷新机制
 - `requiresAuth: true` 但 token 不存在时静默发送无 token 请求
 
 **建议**：
+
 ```typescript
 if (requiresAuth && !token) {
-  throw new Error('Authentication required but no token available');
+  throw new Error("Authentication required but no token available");
 }
 ```
 
@@ -123,10 +128,13 @@ if (requiresAuth && !token) {
 
 ```typescript
 const res = await api.createOrder(product.id, product.level);
-Taro.requestPayment({ /* ... */ });
+Taro.requestPayment({
+  /* ... */
+});
 ```
 
 **风险**：订单创建成功后，如果用户取消支付或支付超时，订单会停留在 `pending` 状态。需要：
+
 1. 订单有过期时间
 2. 支付回调确认机制
 3. 定时清理过期订单
@@ -147,6 +155,7 @@ setTimeout(() => {
 ```
 
 **问题**：
+
 - 600ms 对部分用户可能太快（尤其是老年用户）
 - `handleSubmit` 在最后一个答案时直接调用，但此时 `answers` state 还没更新（React 批处理）
 - `newAnswers` 作为参数传入是正确的，但 `answers` state 不同步
@@ -183,7 +192,9 @@ metadata: JSON.stringify({ /* ... */ }),
 **文件**：`server/src/controllers/auth.ts` L21-34
 
 ```typescript
-const logger = winston.createLogger({ /* ... */ }); // 模块级
+const logger = winston.createLogger({
+  /* ... */
+}); // 模块级
 ```
 
 **问题**：虽然声明在模块级（只创建一次），但 `logs/` 目录可能不存在导致启动失败。
@@ -207,7 +218,9 @@ timeout: 30000,          // 30s — 应定义为常量
 **文件**：`server/src/controllers/tests.ts`
 
 ```typescript
-const session = await prisma.testSession.findUnique({ /* ... */ }) as User | null;
+const session = (await prisma.testSession.findUnique({
+  /* ... */
+})) as User | null;
 ```
 
 **问题**：`findUnique` 返回的是 `TestSession | null`，强制断言为 `User | null` 是错误的。应该用 `include` 或单独查询。
@@ -246,15 +259,16 @@ const session = await prisma.testSession.findUnique({ /* ... */ }) as User | nul
 
 ## 📋 总结
 
-| 等级 | 数量 | 优先级 |
-|------|------|--------|
-| 🔴 P0 严重 | 3 | 必须修复后才能上线 |
-| 🟡 P1 中等 | 6 | 建议本周内修复 |
-| 🟢 P2 轻微 | 5 | 可排入技术债务 |
+| 等级       | 数量 | 优先级             |
+| ---------- | ---- | ------------------ |
+| 🔴 P0 严重 | 3    | 必须修复后才能上线 |
+| 🟡 P1 中等 | 6    | 建议本周内修复     |
+| 🟢 P2 轻微 | 5    | 可排入技术债务     |
 
 **总体评价**：今天的代码变更质量中等偏上。最大的进步是从 JS 到 TS 的重构、统一错误处理、以及安全加固（加密/限流）。主要风险集中在加密密钥管理和错误处理的完整性上。
 
 **建议下一步**：
+
 1. 修复 P0-2（加密密钥必须从环境变量读取）
 2. 修复 P0-1（解密失败保留原始值）
 3. 补充 CATEngine 的并发安全性确认

@@ -34,14 +34,8 @@
     #8bc34a 135deg,
     #07c160 180deg
   );
-  mask: radial-gradient(
-    transparent 65px,
-    black 66px
-  );
-  -webkit-mask: radial-gradient(
-    transparent 65px,
-    black 66px
-  );
+  mask: radial-gradient(transparent 65px, black 66px);
+  -webkit-mask: radial-gradient(transparent 65px, black 66px);
 }
 
 .gauge-needle {
@@ -58,7 +52,7 @@
 }
 
 .gauge-needle::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -8px;
   left: -6px;

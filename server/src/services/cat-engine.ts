@@ -3,7 +3,7 @@
  * Phase 2 Implementation
  */
 
-import { Question, Answer, AbilityEstimate } from '../types';
+import { Question, Answer, AbilityEstimate } from "../types";
 
 export class CATEngine {
   private initialAbility: number[] = [0, 0, 0, 0]; // E, N, T, J dimensions
@@ -22,13 +22,13 @@ export class CATEngine {
       id: `q_${Date.now()}`,
       dimension: this.getMostUncertainDimension(ability),
       difficulty: this.estimateOptimalDifficulty(ability),
-      content: 'Sample question content',
+      content: "Sample question content",
       options: [
-        { id: 'a', text: 'Strongly Disagree' },
-        { id: 'b', text: 'Disagree' },
-        { id: 'c', text: 'Neutral' },
-        { id: 'd', text: 'Agree' },
-        { id: 'e', text: 'Strongly Agree' },
+        { id: "a", text: "Strongly Disagree" },
+        { id: "b", text: "Disagree" },
+        { id: "c", text: "Neutral" },
+        { id: "d", text: "Agree" },
+        { id: "e", text: "Strongly Agree" },
       ],
     };
 
@@ -56,10 +56,10 @@ export class CATEngine {
     });
 
     return [
-      dimensionCounts.E > 0 ? dimensionScores.E / dimensionCounts.E * 25 : 0,
-      dimensionCounts.N > 0 ? dimensionScores.N / dimensionCounts.N * 25 : 0,
-      dimensionCounts.T > 0 ? dimensionScores.T / dimensionCounts.T * 25 : 0,
-      dimensionCounts.J > 0 ? dimensionScores.J / dimensionCounts.J * 25 : 0,
+      dimensionCounts.E > 0 ? (dimensionScores.E / dimensionCounts.E) * 25 : 0,
+      dimensionCounts.N > 0 ? (dimensionScores.N / dimensionCounts.N) * 25 : 0,
+      dimensionCounts.T > 0 ? (dimensionScores.T / dimensionCounts.T) * 25 : 0,
+      dimensionCounts.J > 0 ? (dimensionScores.J / dimensionCounts.J) * 25 : 0,
     ];
   }
 
@@ -101,11 +101,11 @@ export class CATEngine {
   /**
    * Get the dimension with highest uncertainty
    */
-  private getMostUncertainDimension(ability: number[]): 'E' | 'N' | 'T' | 'J' {
-    const dimensions = ['E', 'N', 'T', 'J'] as const;
+  private getMostUncertainDimension(ability: number[]): "E" | "N" | "T" | "J" {
+    const dimensions = ["E", "N", "T", "J"] as const;
     // Return dimension with ability closest to 0 (neutral/uncertain)
     let minAbs = Math.abs(ability[0]);
-    let uncertainDim = 'E';
+    let uncertainDim = "E";
 
     dimensions.forEach((dim, idx) => {
       const abs = Math.abs(ability[idx]);
@@ -116,7 +116,7 @@ export class CATEngine {
       }
     });
 
-    return uncertainDim as 'E' | 'N' | 'T' | 'J';
+    return uncertainDim as "E" | "N" | "T" | "J";
   }
 
   /**
@@ -134,7 +134,11 @@ export class CATEngine {
    */
   private scoreAnswer(answer: Answer): number {
     const scores: { [key: string]: number } = {
-      a: -2, b: -1, c: 0, d: 1, e: 2,
+      a: -2,
+      b: -1,
+      c: 0,
+      d: 1,
+      e: 2,
     };
 
     return scores[answer.selectedOption] || 0;

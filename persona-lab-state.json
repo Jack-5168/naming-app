@@ -5,12 +5,44 @@
   "currentDay": 17,
   "currentDayDate": "2026-05-27",
   "phases": {
-    "Phase 1": { "status": "completed", "desc": "MVP 核心", "completedDate": "2026-04-21" },
-    "Phase 2": { "status": "completed", "desc": "集成 + 优化", "completedDate": "2026-04-22" },
-    "Phase 3": { "status": "completed", "desc": "UI/UX 重构", "completedDate": "2026-05-07" },
-    "Phase 4": { "status": "completed", "desc": "商业化 + 增长", "completedDate": "2026-05-09" },
-    "Phase 5": { "status": "completed", "desc": "会员/增长/分析/性能/内容/通知/测试", "completedDate": "2026-05-11", "days": "8天计划1天完成", "commits": 12, "newFiles": 30, "newLines": "~8000+" },
-    "Phase 6": { "status": "in-progress", "desc": "上线准备 (支付+安全+上架)", "startDate": "2026-05-12", "originalTarget": "2026-05-25", "targetEnd": "待定", "currentDay": 17, "delayReason": "Prisma schema未同步导致构建失败, 缺失依赖winston/@types/qrcode" }
+    "Phase 1": {
+      "status": "completed",
+      "desc": "MVP 核心",
+      "completedDate": "2026-04-21"
+    },
+    "Phase 2": {
+      "status": "completed",
+      "desc": "集成 + 优化",
+      "completedDate": "2026-04-22"
+    },
+    "Phase 3": {
+      "status": "completed",
+      "desc": "UI/UX 重构",
+      "completedDate": "2026-05-07"
+    },
+    "Phase 4": {
+      "status": "completed",
+      "desc": "商业化 + 增长",
+      "completedDate": "2026-05-09"
+    },
+    "Phase 5": {
+      "status": "completed",
+      "desc": "会员/增长/分析/性能/内容/通知/测试",
+      "completedDate": "2026-05-11",
+      "days": "8天计划1天完成",
+      "commits": 12,
+      "newFiles": 30,
+      "newLines": "~8000+"
+    },
+    "Phase 6": {
+      "status": "in-progress",
+      "desc": "上线准备 (支付+安全+上架)",
+      "startDate": "2026-05-12",
+      "originalTarget": "2026-05-25",
+      "targetEnd": "待定",
+      "currentDay": 17,
+      "delayReason": "Prisma schema未同步导致构建失败, 缺失依赖winston/@types/qrcode"
+    }
   },
   "today": {
     "date": "2026-05-27",
@@ -30,17 +62,40 @@
     "errors": "~113 TS errors",
     "rootCause": "Prisma schema未同步 + 缺失依赖",
     "details": "winston未安装, @types/qrcode缺失, Prisma缺失InvitationMethod/enum, DualTest缺expiresAt/acceptedAt/mbtiType等字段",
-    "affected": ["auth.ts(winston)", "dual-test.ts(qrcode/prisma字段)", "users.ts(mbtiType)"],
+    "affected": [
+      "auth.ts(winston)",
+      "dual-test.ts(qrcode/prisma字段)",
+      "users.ts(mbtiType)"
+    ],
     "frontend": "warning-needs-legacy-provider"
   },
   "apiContracts": {
     "issue": "前端 /quiz/* 与后端 /api/v1/tests/* 路径不匹配",
-    "frontendPaths": ["/quiz/questions", "/quiz/answers", "/quiz/submit", "/quiz/results"],
-    "backendPaths": ["/api/v1/tests/sessions", "/api/v1/tests/sessions/:id/next", "/api/v1/tests/sessions/:id/answer"]
+    "frontendPaths": [
+      "/quiz/questions",
+      "/quiz/answers",
+      "/quiz/submit",
+      "/quiz/results"
+    ],
+    "backendPaths": [
+      "/api/v1/tests/sessions",
+      "/api/v1/tests/sessions/:id/next",
+      "/api/v1/tests/sessions/:id/answer"
+    ]
   },
   "dependencies": {
-    "server": { "vulnerabilities": 5, "outdated": 15, "missingDeps": ["winston", "@types/qrcode"] },
-    "miniapp": { "vulnerabilities": 83, "critical": 9, "high": 22, "moderate": 30, "low": 3 }
+    "server": {
+      "vulnerabilities": 5,
+      "outdated": 15,
+      "missingDeps": ["winston", "@types/qrcode"]
+    },
+    "miniapp": {
+      "vulnerabilities": 83,
+      "critical": 9,
+      "high": 22,
+      "moderate": 30,
+      "low": 3
+    }
   },
   "codeHealth": {
     "files": {
@@ -85,6 +140,10 @@
   "retrospectives": [
     { "date": "2026-05-25", "issue": "原定上线日", "outcome": "未上线" },
     { "date": "2026-05-26", "issue": "构建失败", "outcome": "延期中" },
-    { "date": "2026-05-27", "issue": "构建仍失败(错误增加)", "outcome": "延期第3天" }
+    {
+      "date": "2026-05-27",
+      "issue": "构建仍失败(错误增加)",
+      "outcome": "延期第3天"
+    }
   ]
 }

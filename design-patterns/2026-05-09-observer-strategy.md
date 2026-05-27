@@ -3,9 +3,11 @@
 ## 模式一：观察者模式 (Observer Pattern)
 
 ### 核心思想
+
 定义对象间**一对多**的依赖关系。当一个对象状态改变时，所有依赖它的对象都会收到通知并自动更新。
 
 ### 适用场景
+
 - 事件系统 / 发布订阅
 - 数据绑定（如 Vue 的响应式系统）
 - 消息队列、事件总线
@@ -92,12 +94,13 @@ const emitter = new EventEmitter();
 emitter.on("data", (val) => console.log("收到数据:", val));
 emitter.once("ready", () => console.log("就绪（仅触发一次）"));
 
-emitter.emit("data", 42);   // 收到数据: 42
-emitter.emit("ready");      // 就绪（仅触发一次）
-emitter.emit("ready");      // 无输出
+emitter.emit("data", 42); // 收到数据: 42
+emitter.emit("ready"); // 就绪（仅触发一次）
+emitter.emit("ready"); // 无输出
 ```
 
 ### 关键点
+
 - `Set` 天然去重，避免同一监听器被重复注册
 - 返回取消函数是优雅的设计，调用方无需持有引用
 - `once` 通过包装函数 + 自动注销实现
@@ -107,9 +110,11 @@ emitter.emit("ready");      // 无输出
 ## 模式二：策略模式 (Strategy Pattern)
 
 ### 核心思想
+
 定义一系列算法，把它们**封装**起来，并且使它们可以互相替换。策略模式让算法独立于使用它的客户端而变化。
 
 ### 适用场景
+
 - 表单验证规则切换
 - 支付方式选择（支付宝/微信/银行卡）
 - 排序算法切换、折扣计算
@@ -147,10 +152,10 @@ function calculatePrice(type, price) {
 }
 
 // --- 使用示例 ---
-console.log(calculatePrice("normal", 200));      // 200
-console.log(calculatePrice("vip", 200));         // 160
-console.log(calculatePrice("promotion", 300));   // 250
-console.log(calculatePrice("clearance", 200));   // 100
+console.log(calculatePrice("normal", 200)); // 200
+console.log(calculatePrice("vip", 200)); // 160
+console.log(calculatePrice("promotion", 300)); // 250
+console.log(calculatePrice("clearance", 200)); // 100
 ```
 
 ```js
@@ -179,13 +184,13 @@ const buy2Get1Free = (p) => {
 
 // --- 使用示例 ---
 const calc = new PriceCalculator(noDiscount);
-console.log(calc.calculate(100));  // 100
+console.log(calc.calculate(100)); // 100
 
 calc.setStrategy(tenPercentOff);
-console.log(calc.calculate(100));  // 90
+console.log(calc.calculate(100)); // 90
 
 calc.setStrategy(buy2Get1Free);
-console.log(calc.calculate(90));   // 60
+console.log(calc.calculate(90)); // 60
 ```
 
 ```js
@@ -206,8 +211,7 @@ const validators = {
   },
 
   minLength(min) {
-    return (value) =>
-      value.length >= min || `最少 ${min} 个字符`;
+    return (value) => value.length >= min || `最少 ${min} 个字符`;
   },
 };
 
@@ -242,6 +246,7 @@ console.log(validate(form, rules));
 ```
 
 ### 关键点
+
 - 策略模式的核心是**消除 if-else/switch**，用对象/函数映射替代
 - 策略与上下文分离，策略可独立测试
 - 高阶函数（如 `minLength`）让策略支持参数化
@@ -250,15 +255,16 @@ console.log(validate(form, rules));
 
 ## 对比总结
 
-| 维度 | 观察者模式 | 策略模式 |
-|------|-----------|---------|
-| 类型 | 行为型 | 行为型 |
-| 解决的问题 | 对象间松耦合通信 | 算法族可替换 |
-| 核心结构 | Subject + Observer | Context + Strategy |
+| 维度        | 观察者模式                 | 策略模式            |
+| ----------- | -------------------------- | ------------------- |
+| 类型        | 行为型                     | 行为型              |
+| 解决的问题  | 对象间松耦合通信           | 算法族可替换        |
+| 核心结构    | Subject + Observer         | Context + Strategy  |
 | JS 原生对应 | EventTarget / EventEmitter | 对象映射 / 函数参数 |
-| 常见误区 | 过度使用导致调试困难 | 策略过多时管理复杂 |
+| 常见误区    | 过度使用导致调试困难       | 策略过多时管理复杂  |
 
 ## 学习收获
+
 1. 观察者模式 = 发布订阅，核心是 **一对多通知**，JS 中用 Set/Map 管理监听器
 2. 策略模式 = 算法封装，核心是 **消除条件分支**，用对象映射替代 switch
 3. 两者都体现了**开闭原则**：对扩展开放，对修改关闭

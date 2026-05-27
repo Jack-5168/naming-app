@@ -166,7 +166,9 @@ function sendMessageToSW(message) {
       messageChannel.port2.close();
     };
 
-    navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+    navigator.serviceWorker.controller.postMessage(message, [
+      messageChannel.port2,
+    ]);
   });
 }
 
@@ -305,7 +307,10 @@ async function checkOfflineQueue() {
  */
 function showNotification(title, body) {
   if ('Notification' in window && Notification.permission === 'granted') {
-    const notification = new Notification(title, { body, icon: '/icons/icon-192.png' });
+    const notification = new Notification(title, {
+      body,
+      icon: '/icons/icon-192.png',
+    });
     return notification;
   }
   return null;

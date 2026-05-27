@@ -8,29 +8,34 @@
  * - Device fingerprinting
  */
 
-import { Request, Response, NextFunction } from 'express';
-import * as jwt from 'jsonwebtoken';
-import * as crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response, NextFunction } from "express";
+import * as jwt from "jsonwebtoken";
+import * as crypto from "crypto";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 // ==================== Configuration ====================
 
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || crypto.randomBytes(64).toString('hex');
-const JWT_EXPIRATION = '2h'; // 2 hours
-const JWT_REFRESH_EXPIRATION = '30d'; // 30 days
+const JWT_SECRET =
+  process.env.JWT_SECRET || crypto.randomBytes(64).toString("hex");
+const JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET || crypto.randomBytes(64).toString("hex");
+const JWT_EXPIRATION = "2h"; // 2 hours
+const JWT_REFRESH_EXPIRATION = "30d"; // 30 days
 
 // In-memory refresh token store for MVP
 // Format: tokenId -> { userId, deviceId, expiresAt, revoked }
-const refreshTokensStore = new Map<string, {
-  userId: number;
-  tokenId: string;
-  deviceId?: string;
-  expiresAt: Date;
-  revoked: boolean;
-}>();
+const refreshTokensStore = new Map<
+  string,
+  {
+    userId: number;
+    tokenId: string;
+    deviceId?: string;
+    expiresAt: Date;
+    revoked: boolean;
+  }
+>();
 
 // ==================== Types ====================
 
@@ -55,7 +60,11 @@ export interface RefreshTokenPayload {
 /**
  * Generate access token
  */
-export function generateAccessToken(userId: number, email: string, deviceId?: string): string {
+export function generateAccessToken(
+  userId: number,
+  email: string,
+  deviceId?: string,
+): string {
   const payload: JWTPayload = {
     userId,
     email,
@@ -72,8 +81,11 @@ export function generateAccessToken(userId: number, email: string, deviceId?: st
 /**
  * Generate refresh token
  */
-export async function generateRefreshToken(userId: number, deviceId?: string): Promise<{ token: string; tokenId: string }> {
-  const tokenId = crypto.randomBytes(32).toString('hex');
+export async function generateRefreshToken(
+  userId: number,
+  deviceId?: string,
+): Promise<{ token: string; tokenId: string }> {
+  const tokenId = crypto.randomBytes(32).toString("hex");
 
   const payload: RefreshTokenPayload = {
     userId,
@@ -113,14 +125,20 @@ export function verifyAccessToken(token: string): JWTPayload {
 /**
  * Verify refresh token
  */
-export async function verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
+export async function verifyRefreshToken(
+  token: string,
+): Promise<RefreshTokenPayload> {
   const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
 
   // Check if token is revoked or expired
   const storedToken = refreshTokensStore.get(decoded.tokenId);
 
-  if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
-    throw new Error('Refresh token is invalid or revoked');
+  if (
+    !storedToken ||
+    storedToken.revoked ||
+    storedToken.expiresAt < new Date()
+  ) {
+    throw new Error("Refresh token is invalid or revoked");
   }
 
   return decoded;
@@ -157,11 +175,15 @@ export async function revokeAllUserTokens(userId: number): Promise<void> {
 /**
  * Generate device fingerprint
  */
-export function generateDeviceFingerprint(userAgent: string, ip: string, headers: any): string {
+export function generateDeviceFingerprint(
+  userAgent: string,
+  ip: string,
+  headers: any,
+): string {
   const fingerprint = crypto
-    .createHash('sha256')
-    .update(`${userAgent}|${ip}|${headers['accept-language'] || ''}`)
-    .digest('hex');
+    .createHash("sha256")
+    .update(`${userAgent}|${ip}|${headers["accept-language"] || ""}`)
+    .digest("hex");
 
   return fingerprint;
 }
@@ -227,7 +249,7 @@ export async function recordLogin(
       } as any,
     });
   } catch (error) {
-    console.error('Failed to record login:', error);
+    console.error("Failed to record login:", error);
   }
 }
 
@@ -236,14 +258,18 @@ export async function recordLogin(
 /**
  * Authentication middleware
  */
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        error: 'No token provided',
+        error: "No token provided",
       });
     }
 
@@ -260,7 +286,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   } catch (error) {
     return res.status(401).json({
       success: false,
-      error: 'Invalid token',
+      error: "Invalid token",
     });
   }
 }

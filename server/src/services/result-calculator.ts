@@ -3,7 +3,7 @@
  * Phase 2 Integration
  */
 
-import { MBTIResult, TestResult } from '../types';
+import { MBTIResult, TestResult } from "../types";
 
 /**
  * Convert theta (ability estimate) to 0-100 score
@@ -19,16 +19,16 @@ function thetaToScore(theta: number): number {
  */
 function getLabel(dimension: string, score: number): string {
   const labels: { [key: string]: { positive: string; negative: string } } = {
-    E: { positive: 'Extraverted', negative: 'Introverted' },
-    N: { positive: 'Intuitive', negative: 'Sensing' },
-    T: { positive: 'Thinking', negative: 'Feeling' },
-    J: { positive: 'Judging', negative: 'Perceiving' },
+    E: { positive: "Extraverted", negative: "Introverted" },
+    N: { positive: "Intuitive", negative: "Sensing" },
+    T: { positive: "Thinking", negative: "Feeling" },
+    J: { positive: "Judging", negative: "Perceiving" },
   };
 
   const dimLabels = labels[dimension];
 
   if (!dimLabels) {
-    return 'Unknown';
+    return "Unknown";
   }
 
   return score >= 50 ? dimLabels.positive : dimLabels.negative;
@@ -51,20 +51,23 @@ function calculateConfidence(ability: number[]): number {
  * Phase 2 Integration: Uses CAT ability estimates instead of raw scores
  */
 export function calculateMBTIType(ability: number[]): MBTIResult {
-  const [eScore, nScore, tScore, jScore] = ability.map((theta) => thetaToScore(theta));
+  const [eScore, nScore, tScore, jScore] = ability.map((theta) =>
+    thetaToScore(theta),
+  );
 
-  const type = (eScore >= 50 ? 'E' : 'I')
-    + (nScore >= 50 ? 'N' : 'S')
-    + (tScore >= 50 ? 'T' : 'F')
-    + (jScore >= 50 ? 'J' : 'P');
+  const type =
+    (eScore >= 50 ? "E" : "I") +
+    (nScore >= 50 ? "N" : "S") +
+    (tScore >= 50 ? "T" : "F") +
+    (jScore >= 50 ? "J" : "P");
 
   return {
     type,
     dimensions: {
-      E: { score: eScore, label: getLabel('E', eScore) },
-      N: { score: nScore, label: getLabel('N', nScore) },
-      T: { score: tScore, label: getLabel('T', tScore) },
-      J: { score: jScore, label: getLabel('J', jScore) },
+      E: { score: eScore, label: getLabel("E", eScore) },
+      N: { score: nScore, label: getLabel("N", nScore) },
+      T: { score: tScore, label: getLabel("T", tScore) },
+      J: { score: jScore, label: getLabel("J", jScore) },
     },
     confidence: calculateConfidence(ability),
   };

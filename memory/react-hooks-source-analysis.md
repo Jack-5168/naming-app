@@ -15,11 +15,11 @@ React Hooks 不是魔法，它只是一个**挂载在 Fiber 节点上的单向�
 
 ```typescript
 export type Hook = {
-  memoizedState: any,        // 当前渲染周期最终计算出的状态
-  baseState: any,            // 基础状态（未被跳过的更新之前的状态）
-  baseQueue: Update<any, any> | null,  // 基础更新队列（被跳过的更新会挂在这里）
-  queue: any,                // 更新队列（包含 pending 更新链表 + dispatch 函数）
-  next: Hook | null,         // 指向下一个 Hook（单向链表）
+  memoizedState: any; // 当前渲染周期最终计算出的状态
+  baseState: any; // 基础状态（未被跳过的更新之前的状态）
+  baseQueue: Update<any, any> | null; // 基础更新队列（被跳过的更新会挂在这里）
+  queue: any; // 更新队列（包含 pending 更新链表 + dispatch 函数）
+  next: Hook | null; // 指向下一个 Hook（单向链表）
 };
 ```
 
@@ -36,6 +36,7 @@ Fiber.memoizedState
 ```
 
 **为什么用链表而不是数组？**
+
 - 链表可以在 render 过程中增量构建（mountWorkInProgressHook 逐个追加）
 - 更新时可以复用旧 Hook 结构（clone + 替换 memoizedState）
 - 与 Fiber 的 child/sibling 链表风格一致
@@ -81,6 +82,7 @@ pending.next 指向第一个元素
 ```
 
 **为什么用环形链表？**
+
 - `enqueue` O(1)：只需修改 `pending.next` 和 `pending` 指针
 - `dequeue` O(1)：从 `pending.next` 开始遍历
 - 合并两个队列 O(1)：只需交换两个环的断点
@@ -119,9 +121,9 @@ let hookTypesUpdateIndexDev: number = -1;
 
 ```typescript
 export function renderWithHooks(
-  current: Fiber | null,        // current 树的 Fiber（首次渲染为 null）
-  workInProgress: Fiber,        // WIP 树的 Fiber
-  Component: (props, arg) => any,  // 组件函数
+  current: Fiber | null, // current 树的 Fiber（首次渲染为 null）
+  workInProgress: Fiber, // WIP 树的 Fiber
+  Component: (props, arg) => any, // 组件函数
   props: Props,
   secondArg: SecondArg,
   nextRenderLanes: Lanes,
@@ -138,15 +140,20 @@ export function renderWithHooks(
   // 3. 选择 Dispatcher（关键！）
   ReactSharedInternals.H =
     current === null || current.memoizedState === null
-      ? HooksDispatcherOnMount    // 首次挂载
-      : HooksDispatcherOnUpdate;  // 更新
+      ? HooksDispatcherOnMount // 首次挂载
+      : HooksDispatcherOnUpdate; // 更新
 
   // 4. 调用组件函数（Hooks 在这里被调用）
   let children = Component(props, secondArg);
 
   // 5. 处理 render 阶段的更新（setState 在渲染中调用）
   if (didScheduleRenderPhaseUpdateDuringThisPass) {
-    children = renderWithHooksAgain(workInProgress, Component, props, secondArg);
+    children = renderWithHooksAgain(
+      workInProgress,
+      Component,
+      props,
+      secondArg,
+    );
   }
 
   // 6. 清理
@@ -385,11 +392,11 @@ function updateReducerImpl<S, A>(
     if (baseQueue !== null) {
       const baseFirst = baseQueue.next;
       const pendingFirst = pendingQueue.next;
-      baseQueue.next = pendingFirst;    // base 尾部 → pending 头部
-      pendingQueue.next = baseFirst;    // pending 尾部 → base 头部
+      baseQueue.next = pendingFirst; // base 尾部 → pending 头部
+      pendingQueue.next = baseFirst; // pending 尾部 → base 头部
     }
     current.baseQueue = baseQueue = pendingQueue;
-    queue.pending = null;  // 清空 pending
+    queue.pending = null; // 清空 pending
   }
 
   // === 步骤 2：如果没有待处理更新 → 直接返回 ===
@@ -430,7 +437,7 @@ function updateReducerImpl<S, A>(
     } else {
       // 处理此更新
       const action = update.action;
-      newState = reducer(newState, action);  // 调用 reducer
+      newState = reducer(newState, action); // 调用 reducer
 
       // 如果 eagerState 匹配 → 跳过后续更新（优化）
       if (update.hasEagerState) {
@@ -499,15 +506,15 @@ dispatchReducerAction(fiber, queue, action)
 
 ```typescript
 export type Effect = {
-  tag: HookFlags,           // 效果标记（Passive / Layout / HasEffect 等）
-  inst: EffectInstance,     // 效果实例（存储 destroy 函数）
-  create: () => (() => void) | void,  // 副作用函数
-  deps: Array<mixed> | void | null,   // 依赖数组
-  next: Effect,             // 指向下一个 Effect（环形链表）
+  tag: HookFlags; // 效果标记（Passive / Layout / HasEffect 等）
+  inst: EffectInstance; // 效果实例（存储 destroy 函数）
+  create: () => (() => void) | void; // 副作用函数
+  deps: Array<mixed> | void | null; // 依赖数组
+  next: Effect; // 指向下一个 Effect（环形链表）
 };
 
 type EffectInstance = {
-  destroy: void | (() => void),  // 清理函数
+  destroy: void | (() => void); // 清理函数
 };
 ```
 
@@ -518,13 +525,14 @@ export type HookFlags = number;
 // 定义在 ReactHookEffectTags.js
 
 export const NoFlags = /*     */ 0b0000;
-export const HasEffect = /*   */ 0b0001;  // 有副作用需要执行
-export const Insertion = /*   */ 0b0010;  // useInsertionEffect
-export const Layout = /*      */ 0b0100;  // useLayoutEffect
-export const Passive = /*     */ 0b1000;  // useEffect（被动效果）
+export const HasEffect = /*   */ 0b0001; // 有副作用需要执行
+export const Insertion = /*   */ 0b0010; // useInsertionEffect
+export const Layout = /*      */ 0b0100; // useLayoutEffect
+export const Passive = /*     */ 0b1000; // useEffect（被动效果）
 ```
 
 **HasEffect 的含义：**
+
 - 有 HasEffect 标志 → 这个 effect 需要执行（首次挂载或依赖变化）
 - 无 HasEffect 标志 → 这个 effect 不需要执行（依赖未变化）
 
@@ -648,7 +656,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
   currentlyRenderingFiber.flags |= fiberFlags;
 
   const inst: EffectInstance = {
-    destroy,  // 保留上次的 destroy 函数
+    destroy, // 保留上次的 destroy 函数
   };
   hook.memoizedState = inst;
 
@@ -720,7 +728,7 @@ function mountMemo<T>(
 ): T {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
-  const nextValue = nextCreate();  // 执行计算
+  const nextValue = nextCreate(); // 执行计算
   hook.memoizedState = [nextValue, nextDeps];
   return nextValue;
 }
@@ -756,13 +764,10 @@ function updateMemo<T>(
 
 ```typescript
 // useCallback 就是 useMemo 的包装
-function useCallback<T>(
-  callback: T,
-  deps: Array<mixed> | void | null,
-): T {
-  return mountMemo(() => callback, deps);  // mount
+function useCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
+  return mountMemo(() => callback, deps); // mount
   // 或
-  return updateMemo(() => callback, deps);  // update
+  return updateMemo(() => callback, deps); // update
 }
 ```
 
@@ -826,7 +831,7 @@ ReactSharedInternals.H =
 ```typescript
 // shared/ReactSharedInternals.js
 const ReactSharedInternals = {
-  H: null,  // Hooks dispatcher
+  H: null, // Hooks dispatcher
   // ...
 };
 
@@ -848,15 +853,15 @@ React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactSharedInternals;
 ```typescript
 // updateWorkInProgressHook 中
 if (nextCurrentHook === null) {
-  throw new Error('Rendered more hooks than during the previous render.');
+  throw new Error("Rendered more hooks than during the previous render.");
 }
 
 // finishRenderingHooks 中
 const didRenderTooFewHooks = currentHook !== null && currentHook.next !== null;
 if (didRenderTooFewHooks) {
   throw new Error(
-    'Rendered fewer hooks than expected. This may be caused by an accidental ' +
-      'early return statement.',
+    "Rendered fewer hooks than expected. This may be caused by an accidental " +
+      "early return statement.",
   );
 }
 ```
@@ -920,26 +925,27 @@ This will lead to bugs and errors if not fixed.
 
 ### 10.1 Hook 链表 vs 对象存储
 
-| 方面 | Hook 链表 | 对象存储（如 Vue） |
-|------|-----------|-------------------|
-| 身份标识 | 调用顺序（索引位置） | 变量名（key） |
-| 条件渲染 | ❌ 不支持 | ✅ 支持 |
-| 动态增减 | ❌ 不支持 | ✅ 支持 |
-| 内存布局 | 紧凑（单向链表） | 稀疏（对象属性） |
-| 遍历方式 | 顺序遍历 | 随机访问 |
+| 方面     | Hook 链表            | 对象存储（如 Vue） |
+| -------- | -------------------- | ------------------ |
+| 身份标识 | 调用顺序（索引位置） | 变量名（key）      |
+| 条件渲染 | ❌ 不支持            | ✅ 支持            |
+| 动态增减 | ❌ 不支持            | ✅ 支持            |
+| 内存布局 | 紧凑（单向链表）     | 稀疏（对象属性）   |
+| 遍历方式 | 顺序遍历             | 随机访问           |
 
 ### 10.2 环形链表 vs 普通链表
 
 React 在多处使用环形链表：
 
-| 位置 | 数据结构 | 用途 |
-|------|---------|------|
-| UpdateQueue | pending 环形链表 | 存储待处理的 state 更新 |
-| Effect 链表 | lastEffect 环形链表 | 存储副作用 |
-| Fiber 子节点 | child + sibling 单向链表 | 虚拟 DOM 树 |
-| Hook 链表 | memoizedState → next 单向链表 | 组件状态 |
+| 位置         | 数据结构                      | 用途                    |
+| ------------ | ----------------------------- | ----------------------- |
+| UpdateQueue  | pending 环形链表              | 存储待处理的 state 更新 |
+| Effect 链表  | lastEffect 环形链表           | 存储副作用              |
+| Fiber 子节点 | child + sibling 单向链表      | 虚拟 DOM 树             |
+| Hook 链表    | memoizedState → next 单向链表 | 组件状态                |
 
 **环形链表的优势：**
+
 - enqueue O(1)：`pending.next = new; new.next = first; pending = new`
 - dequeue O(1)：`first = pending.next; pending.next = first.next`
 - 合并 O(1)：交换两个环的断点
@@ -957,7 +963,7 @@ function dispatchReducerAction(fiber, queue, action) {
 
   // 如果新状态和旧状态相同 → 直接 bailout
   if (is(eagerState, lastRenderedState)) {
-    return;  // 不触发渲染！
+    return; // 不触发渲染！
   }
 
   // 否则正常调度
@@ -966,6 +972,7 @@ function dispatchReducerAction(fiber, queue, action) {
 ```
 
 **这个优化避免了不必要的渲染：**
+
 ```
 setState(5) → 当前 state 就是 5 → eagerState === 5 → bailout → 不渲染
 ```
@@ -990,16 +997,16 @@ if (shouldSkipUpdate) {
 
 ## 十一、与 Vue 3 响应式系统的对比
 
-| 方面 | React Hooks | Vue 3 响应式 |
-|------|-------------|-------------|
-| 更新触发 | 手动 setState | 自动 Proxy 依赖追踪 |
-| 状态存储 | Fiber 上的 Hook 链表 | Proxy 包裹的对象 |
-| 依赖追踪 | 无（靠重新渲染） | 自动 track/trigger |
-| 精确更新 | 无（整个组件重渲染） | 属性级精确更新 |
-| 条件渲染 | ❌ Hooks 不支持 | ✅ 无限制 |
-| 记忆化 | useMemo/useCallback | computed/watch（自动缓存） |
-| 副作用 | useEffect（手动依赖） | watchEffect（自动依赖） |
-| 更新队列 | 环形链表 + Lane 优先级 | batch + flushQueue |
+| 方面     | React Hooks            | Vue 3 响应式               |
+| -------- | ---------------------- | -------------------------- |
+| 更新触发 | 手动 setState          | 自动 Proxy 依赖追踪        |
+| 状态存储 | Fiber 上的 Hook 链表   | Proxy 包裹的对象           |
+| 依赖追踪 | 无（靠重新渲染）       | 自动 track/trigger         |
+| 精确更新 | 无（整个组件重渲染）   | 属性级精确更新             |
+| 条件渲染 | ❌ Hooks 不支持        | ✅ 无限制                  |
+| 记忆化   | useMemo/useCallback    | computed/watch（自动缓存） |
+| 副作用   | useEffect（手动依赖）  | watchEffect（自动依赖）    |
+| 更新队列 | 环形链表 + Lane 优先级 | batch + flushQueue         |
 
 ---
 

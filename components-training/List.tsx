@@ -1,10 +1,10 @@
-import React, { ReactNode, forwardRef } from 'react';
-import './List.css';
+import React, { ReactNode, forwardRef } from "react";
+import "./List.css";
 
 // ============ Types ============
 
-export type ListSize = 'sm' | 'md' | 'lg';
-export type ListLayout = 'list' | 'grid';
+export type ListSize = "sm" | "md" | "lg";
+export type ListLayout = "list" | "grid";
 
 export interface ListItemProps<T = any> {
   /** 项的数据 */
@@ -64,96 +64,98 @@ export interface ListProps<T = any> {
 
 // ============ ListItem Component ============
 
-export const ListItem = forwardRef<HTMLDivElement, ListItemProps<any>>(function ListItem(
-  {
-    data,
-    index = 0,
-    selected = false,
-    disabled = false,
-    leftContent,
-    rightContent,
-    onClick,
-    children,
-    className = '',
-  },
-  ref
-) {
-  const classes = [
-    'list-item',
-    selected && 'list-item-selected',
-    disabled && 'list-item-disabled',
-    className,
-  ].filter(Boolean).join(' ');
+export const ListItem = forwardRef<HTMLDivElement, ListItemProps<any>>(
+  function ListItem(
+    {
+      data,
+      index = 0,
+      selected = false,
+      disabled = false,
+      leftContent,
+      rightContent,
+      onClick,
+      children,
+      className = "",
+    },
+    ref,
+  ) {
+    const classes = [
+      "list-item",
+      selected && "list-item-selected",
+      disabled && "list-item-disabled",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-  const handleClick = () => {
-    if (!disabled && onClick) {
-      onClick(data, index);
-    }
-  };
+    const handleClick = () => {
+      if (!disabled && onClick) {
+        onClick(data, index);
+      }
+    };
 
-  return (
-    <div
-      ref={ref}
-      className={classes}
-      onClick={handleClick}
-      role="listitem"
-      aria-selected={selected}
-      aria-disabled={disabled}
-      tabIndex={disabled ? undefined : 0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          handleClick();
-        }
-      }}
-    >
-      {leftContent && (
-        <div className="list-item-left">{leftContent}</div>
-      )}
-      <div className="list-item-content">
-        {children}
+    return (
+      <div
+        ref={ref}
+        className={classes}
+        onClick={handleClick}
+        role="listitem"
+        aria-selected={selected}
+        aria-disabled={disabled}
+        tabIndex={disabled ? undefined : 0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            handleClick();
+          }
+        }}
+      >
+        {leftContent && <div className="list-item-left">{leftContent}</div>}
+        <div className="list-item-content">{children}</div>
+        {rightContent && <div className="list-item-right">{rightContent}</div>}
       </div>
-      {rightContent && (
-        <div className="list-item-right">{rightContent}</div>
-      )}
-    </div>
-  );
-});
+    );
+  },
+);
 
 // ============ List Component ============
 
-export const List = forwardRef<HTMLDivElement, ListProps<any>>(function List<T = any>(
+export const List = forwardRef<HTMLDivElement, ListProps<any>>(function List<
+  T = any,
+>(
   {
     data,
-    size = 'md',
-    layout = 'list',
+    size = "md",
+    layout = "list",
     bordered = false,
     split = true,
     selectable = false,
     selectedKeys = [],
     onSelectionChange,
     renderItem,
-    itemKey = 'id',
-    emptyText = '暂无数据',
+    itemKey = "id",
+    emptyText = "暂无数据",
     loading = false,
     children,
-    className = '',
+    className = "",
     header,
     footer,
   },
-  ref
+  ref,
 ) {
   const classes = [
-    'list',
+    "list",
     `list-${size}`,
     `list-${layout}`,
-    bordered && 'list-bordered',
-    split && 'list-split',
-    loading && 'list-loading',
+    bordered && "list-bordered",
+    split && "list-split",
+    loading && "list-loading",
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const getKey = (item: T, index: number): string | number => {
-    if (typeof itemKey === 'function') {
+    if (typeof itemKey === "function") {
       return itemKey(item, index);
     }
     return (item as any)[itemKey] ?? index;
@@ -161,12 +163,12 @@ export const List = forwardRef<HTMLDivElement, ListProps<any>>(function List<T =
 
   const handleItemClick = (item: T, index: number) => {
     if (!selectable) return;
-    
+
     const key = getKey(item, index);
     const newSelectedKeys = selectedKeys.includes(key)
-      ? selectedKeys.filter(k => k !== key)
+      ? selectedKeys.filter((k) => k !== key)
       : [...selectedKeys, key];
-    
+
     onSelectionChange?.(newSelectedKeys);
   };
 
@@ -203,7 +205,7 @@ export const List = forwardRef<HTMLDivElement, ListProps<any>>(function List<T =
             selected={isSelected}
             onClick={handleItemClick}
           >
-            {typeof item === 'string' ? item : JSON.stringify(item)}
+            {typeof item === "string" ? item : JSON.stringify(item)}
           </ListItem>
         );
       });
@@ -219,9 +221,7 @@ export const List = forwardRef<HTMLDivElement, ListProps<any>>(function List<T =
   return (
     <div ref={ref} className={classes} role="list">
       {header && <div className="list-header">{header}</div>}
-      <div className="list-body">
-        {renderContent()}
-      </div>
+      <div className="list-body">{renderContent()}</div>
       {footer && <div className="list-footer">{footer}</div>}
     </div>
   );
@@ -233,7 +233,10 @@ List.Item = ListItem;
 
 // ============ Virtual List (for large datasets) ============
 
-export interface VirtualListProps<T = any> extends Omit<ListProps<T>, 'children'> {
+export interface VirtualListProps<T = any> extends Omit<
+  ListProps<T>,
+  "children"
+> {
   /** 项的高度 */
   itemHeight?: number;
   /** 缓冲区大小 */
@@ -242,26 +245,23 @@ export interface VirtualListProps<T = any> extends Omit<ListProps<T>, 'children'
   height?: number | string;
 }
 
-export const VirtualList = forwardRef<HTMLDivElement, VirtualListProps<any>>(function VirtualList(
-  {
-    itemHeight = 50,
-    overscan = 5,
-    height = 400,
-    ...listProps
-  },
-  ref
-) {
-  // 简化版本 - 实际项目中应使用 react-window 或 react-virtualized
-  const containerStyle: React.CSSProperties = {
-    height,
-    overflow: 'auto',
-  };
+export const VirtualList = forwardRef<HTMLDivElement, VirtualListProps<any>>(
+  function VirtualList(
+    { itemHeight = 50, overscan = 5, height = 400, ...listProps },
+    ref,
+  ) {
+    // 简化版本 - 实际项目中应使用 react-window 或 react-virtualized
+    const containerStyle: React.CSSProperties = {
+      height,
+      overflow: "auto",
+    };
 
-  return (
-    <div ref={ref} style={containerStyle}>
-      <List {...listProps} />
-    </div>
-  );
-});
+    return (
+      <div ref={ref} style={containerStyle}>
+        <List {...listProps} />
+      </div>
+    );
+  },
+);
 
 List.Virtual = VirtualList;

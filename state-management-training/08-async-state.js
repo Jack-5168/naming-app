@@ -20,9 +20,15 @@ function createAsyncAction(type, asyncFn) {
 
 // 处理异步状态的 reducer
 function createAsyncReducer(baseState = {}) {
-  return (state = {
-    ...baseState, loading: false, error: null, data: null,
-  }, action) => {
+  return (
+    state = {
+      ...baseState,
+      loading: false,
+      error: null,
+      data: null,
+    },
+    action,
+  ) => {
     const type = action.type;
 
     if (type.endsWith('_PENDING')) {
@@ -43,11 +49,17 @@ function createAsyncReducer(baseState = {}) {
 
 // ========== 模拟 API ==========
 const api = {
-  fetchUser: (id) => new Promise((resolve) => setTimeout(() => resolve({ id, name: `User${id}`, email: `user${id}@example.com` }), 500)),
-  fetchPosts: (userId) => new Promise((resolve) => setTimeout(() => resolve([
-    { id: 1, title: 'Post 1', userId },
-    { id: 2, title: 'Post 2', userId },
-  ]), 300)),
+  fetchUser: (id) => new Promise((resolve) => setTimeout(
+    () => resolve({ id, name: `User${id}`, email: `user${id}@example.com` }),
+    500,
+  )),
+  fetchPosts: (userId) => new Promise((resolve) => setTimeout(
+    () => resolve([
+      { id: 1, title: 'Post 1', userId },
+      { id: 2, title: 'Post 2', userId },
+    ]),
+    300,
+  )),
   updateUser: (id, data) => new Promise((resolve) => setTimeout(() => resolve({ id, ...data }), 400)),
 };
 
@@ -114,5 +126,7 @@ store.subscribe(() => {
   console.log('用户已更新');
 
   console.log('\n最终状态:', JSON.stringify(store.getState(), null, 2));
-  console.log('\n✅ 示例 8 完成：理解异步状态管理模式 (pending/fulfilled/rejected)');
+  console.log(
+    '\n✅ 示例 8 完成：理解异步状态管理模式 (pending/fulfilled/rejected)',
+  );
 })();

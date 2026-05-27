@@ -15,10 +15,12 @@ CV = σ / μ
 ```
 
 其中：
+
 - σ: 标准差 (Standard Deviation)
 - μ: 均值 (Mean)
 
 **特点：**
+
 - 无量纲，适合比较不同量纲的数据
 - CV 越小，数据越稳定
 - CV 越大，数据波动越大
@@ -32,6 +34,7 @@ stabilityIndex = 1 - mean(CV_O, CV_C, CV_E, CV_A, CV_N)
 ```
 
 **取值范围：** 0-1
+
 - 1: 完全稳定 (所有维度 CV = 0)
 - 0: 极不稳定 (平均 CV ≥ 1)
 - > 0.8: 稳定
@@ -43,12 +46,14 @@ stabilityIndex = 1 - mean(CV_O, CV_C, CV_E, CV_A, CV_N)
 **目的：** 评估稳定性估计的可靠性和置信度
 
 **步骤：**
+
 1. 从原始测试数据中有放回地抽取 n 个样本 (n = 原始数据量)
 2. 计算重采样数据的稳定性指数
 3. 重复 10000 次
 4. 分析 10000 个稳定性指数的分布
 
 **Bootstrap 重采样：**
+
 ```typescript
 function bootstrapSample(data: TestResult[]): TestResult[] {
   const sample = [];
@@ -95,12 +100,14 @@ const upper = sorted[Math.floor(n * 0.975)];
 **文件：** `stability-calculator.ts`
 
 **输入：**
+
 - userId: 用户 ID
 - testHistory: 历史测试记录数组
 
 **输出：** `StabilityResult` 对象
 
 **计算流程：**
+
 1. 检查数据量 (边界条件)
 2. 计算各维度统计 (mean, std, cv)
 3. 计算平均 CV 和稳定性指数
@@ -112,11 +119,13 @@ const upper = sorted[Math.floor(n * 0.975)];
 ### 2. Monte Carlo 模拟
 
 **配置参数：**
+
 - bootstrapIterations: 10000 (默认)
 - stabilityThreshold: 0.15 (CV 阈值)
 - confidenceLevel: 0.95
 
 **模拟过程：**
+
 ```
 for i in 1..10000:
   resampled_data = bootstrap(original_data)
@@ -132,13 +141,14 @@ stability_probability = count(cv_i <= 0.15) / 10000 * 100%
 
 **显示规则：**
 
-| 测试次数 | 显示方式 | 示例 |
-|---------|---------|------|
-| < 3 | "数据不足" | 数据不足 |
-| 3-5 | 范围值 | 75%~85% |
-| 6+ | 精确值 | 82% |
+| 测试次数 | 显示方式   | 示例     |
+| -------- | ---------- | -------- |
+| < 3      | "数据不足" | 数据不足 |
+| 3-5      | 范围值     | 75%~85%  |
+| 6+       | 精确值     | 82%      |
 
 **范围值计算：**
+
 ```typescript
 margin = 5 + (5 - testCount) * 2;
 lower = probability - margin;
@@ -149,14 +159,15 @@ upper = probability + margin;
 
 ```typescript
 enum Status {
-  INSUFFICIENT_DATA = 'insufficient_data', // < 3 次
-  EVOLVING = 'evolving',                   // 3-5 次 或 指数 0.6-0.8
-  STABLE = 'stable',                       // ≥ 6 次 且 指数 ≥ 0.8
-  UNSTABLE = 'unstable'                    // ≥ 6 次 且 指数 < 0.6
+  INSUFFICIENT_DATA = "insufficient_data", // < 3 次
+  EVOLVING = "evolving", // 3-5 次 或 指数 0.6-0.8
+  STABLE = "stable", // ≥ 6 次 且 指数 ≥ 0.8
+  UNSTABLE = "unstable", // ≥ 6 次 且 指数 < 0.6
 }
 ```
 
 **警告信息触发条件：**
+
 - testCount < 3: "测试次数不足，建议完成至少 3 次测试"
 - 3 ≤ testCount ≤ 5: "测试次数较少，结果可能存在波动"
 - stabilityIndex < 0.6: "人格稳定性较低，建议关注情绪和行为的一致性"
@@ -167,19 +178,19 @@ enum Status {
 
 ```typescript
 interface StabilityResult {
-  stabilityIndex: number;              // 0-1
-  stabilityProbability: number;        // 0-100%
+  stabilityIndex: number; // 0-1
+  stabilityProbability: number; // 0-100%
   stabilityProbabilityDisplay: string; // 显示用
-  isRange: boolean;                    // 是否为范围值
-  stabilityWarning: string | null;     // 警告信息
-  confidenceBand: [number, number];    // [下限，上限]
-  status: 'stable' | 'evolving' | 'unstable' | 'insufficient_data';
+  isRange: boolean; // 是否为范围值
+  stabilityWarning: string | null; // 警告信息
+  confidenceBand: [number, number]; // [下限，上限]
+  status: "stable" | "evolving" | "unstable" | "insufficient_data";
   perDimension: {
-    O: { mean: number; std: number; cv: number; };
-    C: { mean: number; std: number; cv: number; };
-    E: { mean: number; std: number; cv: number; };
-    A: { mean: number; std: number; cv: number; };
-    N: { mean: number; std: number; cv: number; };
+    O: { mean: number; std: number; cv: number };
+    C: { mean: number; std: number; cv: number };
+    E: { mean: number; std: number; cv: number };
+    A: { mean: number; std: number; cv: number };
+    N: { mean: number; std: number; cv: number };
   };
   metadata: {
     testCount: number;
@@ -194,8 +205,8 @@ interface StabilityResult {
 ```typescript
 async function calculateStability(
   userId: number,
-  testHistory: TestResult[]
-): Promise<StabilityResult>
+  testHistory: TestResult[],
+): Promise<StabilityResult>;
 ```
 
 ### TestResult 数据结构
@@ -221,7 +232,7 @@ interface TestResult {
 ### 基本使用
 
 ```typescript
-import { calculateStability } from './services/stability-calculator';
+import { calculateStability } from "./services/stability-calculator";
 
 const testHistory = [
   {
@@ -243,12 +254,12 @@ console.log(`状态：${result.status}`);
 ### 自定义配置
 
 ```typescript
-import { StabilityCalculator } from './services/stability-calculator';
+import { StabilityCalculator } from "./services/stability-calculator";
 
 const calculator = new StabilityCalculator({
-  bootstrapIterations: 5000,    // 减少迭代次数 (更快但精度略低)
-  stabilityThreshold: 0.2,      // 调整稳定性阈值
-  confidenceLevel: 0.99,        // 99% 置信水平
+  bootstrapIterations: 5000, // 减少迭代次数 (更快但精度略低)
+  stabilityThreshold: 0.2, // 调整稳定性阈值
+  confidenceLevel: 0.99, // 99% 置信水平
 });
 
 const result = await calculator.calculateStability(userId, testHistory);
@@ -260,7 +271,7 @@ const result = await calculator.calculateStability(userId, testHistory);
 // 从数据库获取测试历史
 const testHistory = await db.testResults.findMany({
   where: { userId },
-  orderBy: { testDate: 'desc' },
+  orderBy: { testDate: "desc" },
   take: 100, // 最多取 100 次测试
 });
 
@@ -282,11 +293,11 @@ await db.stabilityResults.create({
 
 ### 基准测试
 
-| 指标 | 目标 | 实测 |
-|-----|------|------|
-| 计算时间 | < 500ms | ~200ms (10000 次迭代) |
-| 内存占用 | < 200MB | ~50MB |
-| 并发支持 | > 50 QPS | ~100 QPS |
+| 指标     | 目标     | 实测                  |
+| -------- | -------- | --------------------- |
+| 计算时间 | < 500ms  | ~200ms (10000 次迭代) |
+| 内存占用 | < 200MB  | ~50MB                 |
+| 并发支持 | > 50 QPS | ~100 QPS              |
 
 ### 优化策略
 
@@ -304,6 +315,7 @@ npm test -- stability-calculator.test.ts
 ```
 
 **测试类别：**
+
 - ✅ 边界条件处理
 - ✅ 稳定性指数计算
 - ✅ Monte Carlo 模拟
@@ -315,13 +327,13 @@ npm test -- stability-calculator.test.ts
 
 ### 验收标准
 
-| 标准 | 要求 | 验证方法 |
-|-----|------|---------|
-| Monte Carlo 分布正确 | 正态分布 | Q-Q 图检验 |
-| Bootstrap 重采样正确 | 无偏估计 | 均值对比 |
-| 置信区间正确 | 覆盖率 > 95% | 多次运行统计 |
-| 边界条件正确 | 所有分支覆盖 | 单元测试 |
-| 一致性 > 80% | 稳定数据指数 > 0.8 | 模拟数据测试 |
+| 标准                 | 要求               | 验证方法     |
+| -------------------- | ------------------ | ------------ |
+| Monte Carlo 分布正确 | 正态分布           | Q-Q 图检验   |
+| Bootstrap 重采样正确 | 无偏估计           | 均值对比     |
+| 置信区间正确         | 覆盖率 > 95%       | 多次运行统计 |
+| 边界条件正确         | 所有分支覆盖       | 单元测试     |
+| 一致性 > 80%         | 稳定数据指数 > 0.8 | 模拟数据测试 |
 
 ## 文件结构
 
@@ -341,10 +353,12 @@ persona-lab/
 ## 依赖关系
 
 ### 内部依赖
+
 - Phase 0 题库：用于参数标定和验证
 - TestResult 表：历史测试记录
 
 ### 外部依赖
+
 - Node.js >= 18.0
 - TypeScript >= 5.0
 - Jest (测试框架)

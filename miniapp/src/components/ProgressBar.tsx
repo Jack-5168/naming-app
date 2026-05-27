@@ -1,6 +1,6 @@
-import { View, Text } from '@tarojs/components';
-import { memo } from 'react';
-import './ProgressBar.css';
+import { View, Text } from "@tarojs/components";
+import { memo } from "react";
+import "./ProgressBar.css";
 
 interface ProgressBarProps {
   current: number;
@@ -19,10 +19,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ current, total }) => {
         <Text className="progress-percentage">{percentage}%</Text>
       </View>
       <View className="progress-track">
-        <View
-          className="progress-fill"
-          style={{ width: `${percentage}%` }}
-        />
+        <View className="progress-fill" style={{ width: `${percentage}%` }} />
       </View>
     </View>
   );

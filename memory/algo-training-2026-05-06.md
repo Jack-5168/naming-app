@@ -11,6 +11,7 @@
 **题目：** 给定整数数组 nums 和目标值 target，找出数组中和为目标值的两个整数，返回它们的数组下标。
 
 **输入输出：**
+
 ```
 nums = [2,7,11,15], target = 9  → [0,1]
 nums = [3,2,4], target = 6      → [1,2]
@@ -20,6 +21,7 @@ nums = [3,3], target = 6        → [0,1]
 **思路：** 一次遍历，用 Map 记录「值→下标」的映射。对于每个元素 x，检查 `target - x` 是否已在 Map 中。
 
 **代码：**
+
 ```javascript
 /**
  * @param {number[]} nums
@@ -50,6 +52,7 @@ function twoSum(nums, target) {
 **题目：** 给定两个字符串 s 和 t，判断 t 是否是 s 的字母异位词（字符种类和数量完全相同，顺序可以不同）。
 
 **输入输出：**
+
 ```
 s = "anagram", t = "nagaram"  → true
 s = "rat", t = "car"          → false
@@ -59,6 +62,7 @@ s = "a", t = "ab"             → false
 **思路：** 先判断长度是否相同，再用一个长度为 26 的数组统计字符频次。s 中字符 +1，t 中字符 -1，最后检查是否全为 0。
 
 **代码：**
+
 ```javascript
 /**
  * @param {string} s
@@ -67,16 +71,16 @@ s = "a", t = "ab"             → false
  */
 function isAnagram(s, t) {
   if (s.length !== t.length) return false;
-  
+
   const count = new Array(26).fill(0);
-  const base = 'a'.charCodeAt(0);
-  
+  const base = "a".charCodeAt(0);
+
   for (let i = 0; i < s.length; i++) {
     count[s.charCodeAt(i) - base]++;
     count[t.charCodeAt(i) - base]--;
   }
-  
-  return count.every(c => c === 0);
+
+  return count.every((c) => c === 0);
 }
 ```
 
@@ -93,6 +97,7 @@ function isAnagram(s, t) {
 **题目：** 给定整数数组 nums 和整数 k，判断是否存在两个不同下标 i 和 j，满足 `nums[i] === nums[j]` 且 `|i - j| ≤ k`。
 
 **输入输出：**
+
 ```
 nums = [1,2,3,1], k = 3        → true
 nums = [1,0,1,1], k = 1        → true
@@ -102,6 +107,7 @@ nums = [1,2,3,1,2,3], k = 2    → false
 **思路：** 滑动窗口 + Set。维护一个大小为 k 的窗口，窗口内的元素放入 Set。每次遍历到新元素时，先检查 Set 中是否已有，有则返回 true；再将新元素加入 Set，如果 Set 大小超过 k，移除最老的元素（`nums[i-k]`）。
 
 **代码：**
+
 ```javascript
 /**
  * @param {number[]} nums
@@ -110,17 +116,17 @@ nums = [1,2,3,1,2,3], k = 2    → false
  */
 function containsNearbyDuplicate(nums, k) {
   const window = new Set();
-  
+
   for (let i = 0; i < nums.length; i++) {
     if (window.has(nums[i])) return true;
     window.add(nums[i]);
-    
+
     // 窗口大小超过 k，移除最老的元素
     if (window.size > k) {
       window.delete(nums[i - k]);
     }
   }
-  
+
   return false;
 }
 ```
@@ -140,6 +146,7 @@ function containsNearbyDuplicate(nums, k) {
 **题目：** 给定字符串 s，找出其中不含有重复字符的最长子串的长度。
 
 **输入输出：**
+
 ```
 s = "abcabcbb"  → 3（"abc"）
 s = "bbbbb"     → 1（"b"）
@@ -149,6 +156,7 @@ s = "pwwkew"    → 3（"wke"）
 **思路：** 滑动窗口 + 哈希表。用 Map 记录每个字符最后一次出现的下标。右指针不断扩展窗口，当遇到重复字符时，左指针跳到 `max(left, lastPos[char] + 1)`（注意取 max，因为左指针只能前进不能后退）。
 
 **代码：**
+
 ```javascript
 /**
  * @param {string} s
@@ -158,19 +166,19 @@ function lengthOfLongestSubstring(s) {
   let maxLen = 0;
   let left = 0;
   const charMap = new Map();
-  
+
   for (let right = 0; right < s.length; right++) {
     const char = s[right];
-    
+
     if (charMap.has(char) && charMap.get(char) >= left) {
       // 重复字符在窗口内，左指针跳到重复字符的下一位
       left = charMap.get(char) + 1;
     }
-    
+
     charMap.set(char, right);
     maxLen = Math.max(maxLen, right - left + 1);
   }
-  
+
   return maxLen;
 }
 ```
@@ -186,6 +194,7 @@ function lengthOfLongestSubstring(s) {
 **题目：** 给定字符串数组 strs，将字母异位词组合在一起。字母异位词是由相同字母重新排列组成的字符串。
 
 **输入输出：**
+
 ```
 strs = ["eat","tea","tan","ate","nat","bat"]
 → [["eat","tea","ate"],["nat","tan"],["bat"]]
@@ -200,6 +209,7 @@ strs = ["a"]
 **思路：** 字母异位词排序后字符串相同。对每个字符串排序后作为 key，原字符串作为 value 加入 Map。也可以用字符计数数组作为 key（更高效，避免排序开销）。
 
 **方法一：排序作为 key**
+
 ```javascript
 /**
  * @param {string[]} strs
@@ -207,41 +217,43 @@ strs = ["a"]
  */
 function groupAnagrams(strs) {
   const map = new Map();
-  
+
   for (const str of strs) {
-    const key = str.split('').sort().join('');
+    const key = str.split("").sort().join("");
     if (!map.has(key)) {
       map.set(key, []);
     }
     map.get(key).push(str);
   }
-  
+
   return Array.from(map.values());
 }
 ```
 
 **方法二：字符计数作为 key（更优）**
+
 ```javascript
 function groupAnagramsOptimized(strs) {
   const map = new Map();
-  
+
   for (const str of strs) {
     const count = new Array(26).fill(0);
     for (let i = 0; i < str.length; i++) {
       count[str.charCodeAt(i) - 97]++;
     }
-    const key = count.join('#');  // "1#0#0#..." 作为 key
+    const key = count.join("#"); // "1#0#0#..." 作为 key
     if (!map.has(key)) {
       map.set(key, []);
     }
     map.get(key).push(str);
   }
-  
+
   return Array.from(map.values());
 }
 ```
 
 **复杂度：**
+
 - 方法一：O(n × k log k) 时间（n 个字符串，每个排序 k log k），O(n × k) 空间
 - 方法二：O(n × k) 时间（每个字符串遍历 k 个字符），O(n × k) 空间
 
@@ -251,13 +263,13 @@ function groupAnagramsOptimized(strs) {
 
 ## 今日总结
 
-| # | 题目 | 难度 | 核心考点 | 时间 | 空间 |
-|---|------|------|----------|------|------|
-| 1 | 两数之和 | ⭐ | 哈希表一次遍历 | O(n) | O(n) |
-| 2 | 有效字母异位词 | ⭐ | 字符频次统计 | O(n) | O(1) |
-| 3 | 存在重复 II | ⭐ | 滑动窗口 + Set | O(n) | O(min(n,k)) |
-| 4 | 无重复最长子串 | ⭐⭐ | 滑动窗口 + Map | O(n) | O(min(n,m)) |
-| 5 | 字母异位词分组 | ⭐⭐ | 哈希分组 + 同构建模 | O(nk) | O(nk) |
+| #   | 题目           | 难度 | 核心考点            | 时间  | 空间        |
+| --- | -------------- | ---- | ------------------- | ----- | ----------- |
+| 1   | 两数之和       | ⭐   | 哈希表一次遍历      | O(n)  | O(n)        |
+| 2   | 有效字母异位词 | ⭐   | 字符频次统计        | O(n)  | O(1)        |
+| 3   | 存在重复 II    | ⭐   | 滑动窗口 + Set      | O(n)  | O(min(n,k)) |
+| 4   | 无重复最长子串 | ⭐⭐ | 滑动窗口 + Map      | O(n)  | O(min(n,m)) |
+| 5   | 字母异位词分组 | ⭐⭐ | 哈希分组 + 同构建模 | O(nk) | O(nk)       |
 
 ### 知识要点
 
@@ -268,24 +280,24 @@ function groupAnagramsOptimized(strs) {
 
 ### 与之前训练的关系
 
-| 日期 | 核心考点 | 今日对比 |
-|------|----------|----------|
-| 4/28 | Set/Boyer-Moore/滑动窗口 | 滑动窗口延续，新增哈希表分组 |
-| 5/2 | XOR/字符计数/频率统计 | 字符计数深化（Anagram 分组） |
-| 5/4 | 罗马数字/回文串/跳跃游戏 | 新增滑动窗口进阶（最长子串） |
-| **5/6** | **哈希表综合应用** | **从简单查找到复杂分组的完整闭环** |
+| 日期    | 核心考点                 | 今日对比                           |
+| ------- | ------------------------ | ---------------------------------- |
+| 4/28    | Set/Boyer-Moore/滑动窗口 | 滑动窗口延续，新增哈希表分组       |
+| 5/2     | XOR/字符计数/频率统计    | 字符计数深化（Anagram 分组）       |
+| 5/4     | 罗马数字/回文串/跳跃游戏 | 新增滑动窗口进阶（最长子串）       |
+| **5/6** | **哈希表综合应用**       | **从简单查找到复杂分组的完整闭环** |
 
 ### 7 轮算法训练累计
 
-| 轮次 | 日期 | 题目数 | 核心考点 |
-|------|------|--------|----------|
-| 1 | 4/25 | 5 | 哈希表/单调队列 |
-| 2 | 4/28 | 5 | Set/Boyer-Moore/滑动窗口 |
-| 3 | 4/29 | 5 | 哈希表/栈/双指针 |
-| 4 | 5/2 | 5 | XOR/字符计数/频率统计 |
-| 5 | 5/3 | 5 | 双指针/贪心/Set/前缀积 |
-| 6 | 5/4 | 5 | 罗马数字/回文/跳跃/前缀和 |
-| 7 | 5/5 | 5 | XOR/字符计数/频率/双指针/桶 |
-| **8** | **5/6** | **5** | **哈希表综合（查找/频次/滑动窗口/分组）** |
+| 轮次  | 日期    | 题目数 | 核心考点                                  |
+| ----- | ------- | ------ | ----------------------------------------- |
+| 1     | 4/25    | 5      | 哈希表/单调队列                           |
+| 2     | 4/28    | 5      | Set/Boyer-Moore/滑动窗口                  |
+| 3     | 4/29    | 5      | 哈希表/栈/双指针                          |
+| 4     | 5/2     | 5      | XOR/字符计数/频率统计                     |
+| 5     | 5/3     | 5      | 双指针/贪心/Set/前缀积                    |
+| 6     | 5/4     | 5      | 罗马数字/回文/跳跃/前缀和                 |
+| 7     | 5/5     | 5      | XOR/字符计数/频率/双指针/桶               |
+| **8** | **5/6** | **5**  | **哈希表综合（查找/频次/滑动窗口/分组）** |
 
 **累计完成：40 道算法题，8 轮训练。**

@@ -13,70 +13,300 @@
     "N": "神经质 (Neuroticism)"
   },
   "questions": [
-    {"id": "O01", "dimension": "O", "text": "我有丰富的词汇量", "reverse": false},
-    {"id": "O02", "dimension": "O", "text": "我有生动的想象力", "reverse": false},
-    {"id": "O03", "dimension": "O", "text": "我有出色的想法", "reverse": false},
-    {"id": "O04", "dimension": "O", "text": "我很快就能理解事物", "reverse": false},
-    {"id": "O05", "dimension": "O", "text": "我使用难懂的词汇", "reverse": false},
-    {"id": "O06", "dimension": "O", "text": "我充满想法", "reverse": false},
-    {"id": "O07", "dimension": "O", "text": "我很难理解抽象的概念", "reverse": true},
-    {"id": "O08", "dimension": "O", "text": "我不喜欢花时间在幻想上", "reverse": true},
-    {"id": "O09", "dimension": "O", "text": "我对他人的感受不感兴趣", "reverse": true},
-    {"id": "O10", "dimension": "O", "text": "我不喜欢处理抽象的问题", "reverse": true},
-    {"id": "O11", "dimension": "O", "text": "我没有丰富的词汇量", "reverse": true},
-    {"id": "O12", "dimension": "O", "text": "我缺乏想象力", "reverse": true},
-    
-    {"id": "C01", "dimension": "C", "text": "我总是准备就绪", "reverse": false},
-    {"id": "C02", "dimension": "C", "text": "我注重细节", "reverse": false},
-    {"id": "C03", "dimension": "C", "text": "我把东西放回原处", "reverse": false},
-    {"id": "C04", "dimension": "C", "text": "我按计划行事", "reverse": false},
-    {"id": "C05", "dimension": "C", "text": "我追求完美", "reverse": false},
-    {"id": "C06", "dimension": "C", "text": "我继续任务直到完成", "reverse": false},
-    {"id": "C07", "dimension": "C", "text": "我做事杂乱无章", "reverse": true},
-    {"id": "C08", "dimension": "C", "text": "我经常忘记把东西放回原处", "reverse": true},
-    {"id": "C09", "dimension": "C", "text": "我逃避责任", "reverse": true},
-    {"id": "C10", "dimension": "C", "text": "我很难集中注意力", "reverse": true},
-    {"id": "C11", "dimension": "C", "text": "我不按计划行事", "reverse": true},
-    {"id": "C12", "dimension": "C", "text": "我做事半途而废", "reverse": true},
-    
-    {"id": "E01", "dimension": "E", "text": "我是派对的灵魂", "reverse": false},
-    {"id": "E02", "dimension": "E", "text": "我和很多人交朋友", "reverse": false},
-    {"id": "E03", "dimension": "E", "text": "我感到周围人的活力", "reverse": false},
-    {"id": "E04", "dimension": "E", "text": "我主动开始对话", "reverse": false},
-    {"id": "E05", "dimension": "E", "text": "我很少感到孤独", "reverse": false},
-    {"id": "E06", "dimension": "E", "text": "我善于结交新朋友", "reverse": false},
-    {"id": "E07", "dimension": "E", "text": "我很少说话", "reverse": true},
-    {"id": "E08", "dimension": "E", "text": "我尽量避开人群", "reverse": true},
-    {"id": "E09", "dimension": "E", "text": "在社交场合我保持低调", "reverse": true},
-    {"id": "E10", "dimension": "E", "text": "我不喜欢成为关注的焦点", "reverse": true},
-    {"id": "E11", "dimension": "E", "text": "我很难接近", "reverse": true},
-    {"id": "E12", "dimension": "E", "text": "我避免与人群接触", "reverse": true},
-    
-    {"id": "A01", "dimension": "A", "text": "我同情他人", "reverse": false},
-    {"id": "A02", "dimension": "A", "text": "我花时间帮助他人", "reverse": false},
-    {"id": "A03", "dimension": "A", "text": "我对他人的问题不感兴趣", "reverse": true},
-    {"id": "A04", "dimension": "A", "text": "我感受到他人的情绪", "reverse": false},
-    {"id": "A05", "dimension": "A", "text": "我使他人感到放松", "reverse": false},
-    {"id": "A06", "dimension": "A", "text": "我关心他人", "reverse": false},
-    {"id": "A07", "dimension": "A", "text": "我不喜欢帮助他人", "reverse": true},
-    {"id": "A08", "dimension": "A", "text": "我对他人漠不关心", "reverse": true},
-    {"id": "A09", "dimension": "A", "text": "我侮辱他人", "reverse": true},
-    {"id": "A10", "dimension": "A", "text": "我挑起争端", "reverse": true},
-    {"id": "A11", "dimension": "A", "text": "我对他人苛刻", "reverse": true},
-    {"id": "A12", "dimension": "A", "text": "我不关心他人的问题", "reverse": true},
-    
-    {"id": "N01", "dimension": "N", "text": "我经常感到不安", "reverse": false},
-    {"id": "N02", "dimension": "N", "text": "我容易烦恼", "reverse": false},
-    {"id": "N03", "dimension": "N", "text": "我的情绪经常波动", "reverse": false},
-    {"id": "N04", "dimension": "N", "text": "我经常感到紧张", "reverse": false},
-    {"id": "N05", "dimension": "N", "text": "我容易感到沮丧", "reverse": false},
-    {"id": "N06", "dimension": "N", "text": "我经常感到不知所措", "reverse": false},
-    {"id": "N07", "dimension": "N", "text": "我很少感到沮丧", "reverse": true},
-    {"id": "N08", "dimension": "N", "text": "我很少感到紧张", "reverse": true},
-    {"id": "N09", "dimension": "N", "text": "我很少感到不安", "reverse": true},
-    {"id": "N10", "dimension": "N", "text": "我很少感到孤独", "reverse": true},
-    {"id": "N11", "dimension": "N", "text": "我很少感到悲伤", "reverse": true},
-    {"id": "N12", "dimension": "N", "text": "我很少感到不知所措", "reverse": true}
+    {
+      "id": "O01",
+      "dimension": "O",
+      "text": "我有丰富的词汇量",
+      "reverse": false
+    },
+    {
+      "id": "O02",
+      "dimension": "O",
+      "text": "我有生动的想象力",
+      "reverse": false
+    },
+    {
+      "id": "O03",
+      "dimension": "O",
+      "text": "我有出色的想法",
+      "reverse": false
+    },
+    {
+      "id": "O04",
+      "dimension": "O",
+      "text": "我很快就能理解事物",
+      "reverse": false
+    },
+    {
+      "id": "O05",
+      "dimension": "O",
+      "text": "我使用难懂的词汇",
+      "reverse": false
+    },
+    { "id": "O06", "dimension": "O", "text": "我充满想法", "reverse": false },
+    {
+      "id": "O07",
+      "dimension": "O",
+      "text": "我很难理解抽象的概念",
+      "reverse": true
+    },
+    {
+      "id": "O08",
+      "dimension": "O",
+      "text": "我不喜欢花时间在幻想上",
+      "reverse": true
+    },
+    {
+      "id": "O09",
+      "dimension": "O",
+      "text": "我对他人的感受不感兴趣",
+      "reverse": true
+    },
+    {
+      "id": "O10",
+      "dimension": "O",
+      "text": "我不喜欢处理抽象的问题",
+      "reverse": true
+    },
+    {
+      "id": "O11",
+      "dimension": "O",
+      "text": "我没有丰富的词汇量",
+      "reverse": true
+    },
+    { "id": "O12", "dimension": "O", "text": "我缺乏想象力", "reverse": true },
+
+    {
+      "id": "C01",
+      "dimension": "C",
+      "text": "我总是准备就绪",
+      "reverse": false
+    },
+    { "id": "C02", "dimension": "C", "text": "我注重细节", "reverse": false },
+    {
+      "id": "C03",
+      "dimension": "C",
+      "text": "我把东西放回原处",
+      "reverse": false
+    },
+    { "id": "C04", "dimension": "C", "text": "我按计划行事", "reverse": false },
+    { "id": "C05", "dimension": "C", "text": "我追求完美", "reverse": false },
+    {
+      "id": "C06",
+      "dimension": "C",
+      "text": "我继续任务直到完成",
+      "reverse": false
+    },
+    {
+      "id": "C07",
+      "dimension": "C",
+      "text": "我做事杂乱无章",
+      "reverse": true
+    },
+    {
+      "id": "C08",
+      "dimension": "C",
+      "text": "我经常忘记把东西放回原处",
+      "reverse": true
+    },
+    { "id": "C09", "dimension": "C", "text": "我逃避责任", "reverse": true },
+    {
+      "id": "C10",
+      "dimension": "C",
+      "text": "我很难集中注意力",
+      "reverse": true
+    },
+    {
+      "id": "C11",
+      "dimension": "C",
+      "text": "我不按计划行事",
+      "reverse": true
+    },
+    {
+      "id": "C12",
+      "dimension": "C",
+      "text": "我做事半途而废",
+      "reverse": true
+    },
+
+    {
+      "id": "E01",
+      "dimension": "E",
+      "text": "我是派对的灵魂",
+      "reverse": false
+    },
+    {
+      "id": "E02",
+      "dimension": "E",
+      "text": "我和很多人交朋友",
+      "reverse": false
+    },
+    {
+      "id": "E03",
+      "dimension": "E",
+      "text": "我感到周围人的活力",
+      "reverse": false
+    },
+    {
+      "id": "E04",
+      "dimension": "E",
+      "text": "我主动开始对话",
+      "reverse": false
+    },
+    {
+      "id": "E05",
+      "dimension": "E",
+      "text": "我很少感到孤独",
+      "reverse": false
+    },
+    {
+      "id": "E06",
+      "dimension": "E",
+      "text": "我善于结交新朋友",
+      "reverse": false
+    },
+    { "id": "E07", "dimension": "E", "text": "我很少说话", "reverse": true },
+    {
+      "id": "E08",
+      "dimension": "E",
+      "text": "我尽量避开人群",
+      "reverse": true
+    },
+    {
+      "id": "E09",
+      "dimension": "E",
+      "text": "在社交场合我保持低调",
+      "reverse": true
+    },
+    {
+      "id": "E10",
+      "dimension": "E",
+      "text": "我不喜欢成为关注的焦点",
+      "reverse": true
+    },
+    { "id": "E11", "dimension": "E", "text": "我很难接近", "reverse": true },
+    {
+      "id": "E12",
+      "dimension": "E",
+      "text": "我避免与人群接触",
+      "reverse": true
+    },
+
+    { "id": "A01", "dimension": "A", "text": "我同情他人", "reverse": false },
+    {
+      "id": "A02",
+      "dimension": "A",
+      "text": "我花时间帮助他人",
+      "reverse": false
+    },
+    {
+      "id": "A03",
+      "dimension": "A",
+      "text": "我对他人的问题不感兴趣",
+      "reverse": true
+    },
+    {
+      "id": "A04",
+      "dimension": "A",
+      "text": "我感受到他人的情绪",
+      "reverse": false
+    },
+    {
+      "id": "A05",
+      "dimension": "A",
+      "text": "我使他人感到放松",
+      "reverse": false
+    },
+    { "id": "A06", "dimension": "A", "text": "我关心他人", "reverse": false },
+    {
+      "id": "A07",
+      "dimension": "A",
+      "text": "我不喜欢帮助他人",
+      "reverse": true
+    },
+    {
+      "id": "A08",
+      "dimension": "A",
+      "text": "我对他人漠不关心",
+      "reverse": true
+    },
+    { "id": "A09", "dimension": "A", "text": "我侮辱他人", "reverse": true },
+    { "id": "A10", "dimension": "A", "text": "我挑起争端", "reverse": true },
+    { "id": "A11", "dimension": "A", "text": "我对他人苛刻", "reverse": true },
+    {
+      "id": "A12",
+      "dimension": "A",
+      "text": "我不关心他人的问题",
+      "reverse": true
+    },
+
+    {
+      "id": "N01",
+      "dimension": "N",
+      "text": "我经常感到不安",
+      "reverse": false
+    },
+    { "id": "N02", "dimension": "N", "text": "我容易烦恼", "reverse": false },
+    {
+      "id": "N03",
+      "dimension": "N",
+      "text": "我的情绪经常波动",
+      "reverse": false
+    },
+    {
+      "id": "N04",
+      "dimension": "N",
+      "text": "我经常感到紧张",
+      "reverse": false
+    },
+    {
+      "id": "N05",
+      "dimension": "N",
+      "text": "我容易感到沮丧",
+      "reverse": false
+    },
+    {
+      "id": "N06",
+      "dimension": "N",
+      "text": "我经常感到不知所措",
+      "reverse": false
+    },
+    {
+      "id": "N07",
+      "dimension": "N",
+      "text": "我很少感到沮丧",
+      "reverse": true
+    },
+    {
+      "id": "N08",
+      "dimension": "N",
+      "text": "我很少感到紧张",
+      "reverse": true
+    },
+    {
+      "id": "N09",
+      "dimension": "N",
+      "text": "我很少感到不安",
+      "reverse": true
+    },
+    {
+      "id": "N10",
+      "dimension": "N",
+      "text": "我很少感到孤独",
+      "reverse": true
+    },
+    {
+      "id": "N11",
+      "dimension": "N",
+      "text": "我很少感到悲伤",
+      "reverse": true
+    },
+    {
+      "id": "N12",
+      "dimension": "N",
+      "text": "我很少感到不知所措",
+      "reverse": true
+    }
   ],
   "scoring": {
     "scale": [1, 2, 3, 4, 5],

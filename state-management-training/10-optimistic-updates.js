@@ -4,7 +4,13 @@
  */
 
 function createOptimisticReducer(baseReducer) {
-  return (state = { data: baseReducer(undefined, { type: '@@INIT' }), optimistic: [] }, action) => {
+  return (
+    state = {
+      data: baseReducer(undefined, { type: '@@INIT' }),
+      optimistic: [],
+    },
+    action,
+  ) => {
     const { data, optimistic } = state;
 
     switch (action.type) {
@@ -14,17 +20,22 @@ function createOptimisticReducer(baseReducer) {
         const newData = baseReducer(data, action.updateAction);
         return {
           data: newData,
-          optimistic: [...optimistic, {
-            id: action.optimisticId,
-            snapshot,
-            action: action.updateAction,
-          }],
+          optimistic: [
+            ...optimistic,
+            {
+              id: action.optimisticId,
+              snapshot,
+              action: action.updateAction,
+            },
+          ],
         };
       }
 
       case 'OPTIMISTIC_COMMIT': {
         // 移除乐观更新记录
-        const newOptimistic = optimistic.filter((o) => o.id !== action.optimisticId);
+        const newOptimistic = optimistic.filter(
+          (o) => o.id !== action.optimisticId,
+        );
         return { ...state, optimistic: newOptimistic };
       }
 
@@ -33,7 +44,9 @@ function createOptimisticReducer(baseReducer) {
         const record = optimistic.find((o) => o.id === action.optimisticId);
         if (!record) return state;
 
-        const newOptimistic = optimistic.filter((o) => o.id !== action.optimisticId);
+        const newOptimistic = optimistic.filter(
+          (o) => o.id !== action.optimisticId,
+        );
         return {
           data: record.snapshot,
           optimistic: newOptimistic,
@@ -86,9 +99,15 @@ function createOptimisticAction(baseAction, apiCall, optimisticId) {
 const todosReducer = (state = [], action) => {
   switch (action.type) {
     case 'ADD_TODO':
-      return [...state, {
-        id: Date.now(), text: action.text, done: false, pending: false,
-      }];
+      return [
+        ...state,
+        {
+          id: Date.now(),
+          text: action.text,
+          done: false,
+          pending: false,
+        },
+      ];
     case 'DELETE_TODO':
       return state.filter((t) => t.id !== action.id);
     case 'TOGGLE_TODO':

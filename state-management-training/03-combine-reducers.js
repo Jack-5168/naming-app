@@ -27,25 +27,34 @@ function combineReducers(reducers) {
 // 独立的 reducer
 const userReducer = (state = { name: '', age: 0 }, action = {}) => {
   switch (action.type) {
-    case 'SET_NAME': return { ...state, name: action.payload };
-    case 'SET_AGE': return { ...state, age: action.payload };
-    default: return state;
+    case 'SET_NAME':
+      return { ...state, name: action.payload };
+    case 'SET_AGE':
+      return { ...state, age: action.payload };
+    default:
+      return state;
   }
 };
 
 const todosReducer = (state = [], action = {}) => {
   switch (action.type) {
-    case 'ADD_TODO': return [...state, action.payload];
-    case 'REMOVE_TODO': return state.filter((t) => t.id !== action.payload);
-    case 'TOGGLE_TODO': return state.map((t) => (t.id === action.payload ? { ...t, done: !t.done } : t));
-    default: return state;
+    case 'ADD_TODO':
+      return [...state, action.payload];
+    case 'REMOVE_TODO':
+      return state.filter((t) => t.id !== action.payload);
+    case 'TOGGLE_TODO':
+      return state.map((t) => (t.id === action.payload ? { ...t, done: !t.done } : t));
+    default:
+      return state;
   }
 };
 
 const themeReducer = (state = 'light', action = {}) => {
   switch (action.type) {
-    case 'SET_THEME': return action.payload;
-    default: return state;
+    case 'SET_THEME':
+      return action.payload;
+    default:
+      return state;
   }
 };
 
@@ -83,8 +92,14 @@ console.log('初始状态:', JSON.stringify(store.getState(), null, 2));
 
 store.dispatch({ type: 'SET_NAME', payload: 'Alice' });
 store.dispatch({ type: 'SET_AGE', payload: 25 });
-store.dispatch({ type: 'ADD_TODO', payload: { id: 1, text: '学习 Redux', done: false } });
-store.dispatch({ type: 'ADD_TODO', payload: { id: 2, text: '练习编码', done: false } });
+store.dispatch({
+  type: 'ADD_TODO',
+  payload: { id: 1, text: '学习 Redux', done: false },
+});
+store.dispatch({
+  type: 'ADD_TODO',
+  payload: { id: 2, text: '练习编码', done: false },
+});
 store.dispatch({ type: 'TOGGLE_TODO', payload: 1 });
 store.dispatch({ type: 'SET_THEME', payload: 'dark' });
 

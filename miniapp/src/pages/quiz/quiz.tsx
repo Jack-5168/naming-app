@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuizStore } from '../../store/quiz-store';
-import { fetchQuestions, submitAllAnswers, createAutoSaveHandler } from '../../services/quiz-api';
-import QuestionCard from '../../components/QuestionCard';
-import ProgressBar from '../../components/ProgressBar';
-import './quiz.css';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuizStore } from "../../store/quiz-store";
+import {
+  fetchQuestions,
+  submitAllAnswers,
+  createAutoSaveHandler,
+} from "../../services/quiz-api";
+import QuestionCard from "../../components/QuestionCard";
+import ProgressBar from "../../components/ProgressBar";
+import "./quiz.css";
 
 const Quiz: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const {
     currentQuestionIndex,
     answers,
@@ -24,7 +28,7 @@ const Quiz: React.FC = () => {
     nextQuestion,
     previousQuestion,
     loadQuestions,
-    markComplete
+    markComplete,
   } = useQuizStore();
 
   // Auto-save handler with debounce
@@ -37,7 +41,7 @@ const Quiz: React.FC = () => {
         const fetchedQuestions = await fetchQuestions();
         loadQuestions(fetchedQuestions);
       } catch (error) {
-        console.error('Failed to load quiz:', error);
+        console.error("Failed to load quiz:", error);
       } finally {
         setIsLoading(false);
       }
@@ -53,7 +57,7 @@ const Quiz: React.FC = () => {
   // Check if quiz is complete and redirect
   useEffect(() => {
     if (isComplete && questions.length > 0) {
-      navigate('/quiz/results');
+      navigate("/quiz/results");
     }
   }, [isComplete, navigate, questions.length]);
 
@@ -80,19 +84,21 @@ const Quiz: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const answersArray = Object.entries(answers).map(([questionId, value]) => ({
-        questionId: Number(questionId),
-        value
-      }));
-      
+      const answersArray = Object.entries(answers).map(
+        ([questionId, value]) => ({
+          questionId: Number(questionId),
+          value,
+        }),
+      );
+
       await submitAllAnswers(answersArray);
       markComplete();
-      navigate('/quiz/results');
+      navigate("/quiz/results");
     } catch (error) {
-      console.error('Failed to submit quiz:', error);
+      console.error("Failed to submit quiz:", error);
       // Still mark as complete even if API fails
       markComplete();
-      navigate('/quiz/results');
+      navigate("/quiz/results");
     } finally {
       setIsSubmitting(false);
     }
@@ -135,7 +141,7 @@ const Quiz: React.FC = () => {
       </div>
 
       <div className="quiz-content">
-        <ProgressBar 
+        <ProgressBar
           progress={progress}
           current={currentQuestionIndex + 1}
           total={questions.length}
@@ -163,13 +169,11 @@ const Quiz: React.FC = () => {
             onClick={handleNext}
             disabled={!canGoNext || isSubmitting}
           >
-            {isSubmitting ? (
-              '提交中...'
-            ) : currentQuestionIndex === questions.length - 1 ? (
-              '完成测试'
-            ) : (
-              '下一题 →'
-            )}
+            {isSubmitting
+              ? "提交中..."
+              : currentQuestionIndex === questions.length - 1
+                ? "完成测试"
+                : "下一题 →"}
           </button>
         </div>
       </div>

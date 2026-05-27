@@ -14,8 +14,8 @@
 ```js
 // 模式 1：循环引用导致闭包无法 GC
 function createLeak() {
-  const largeArray = new Array(1000000).fill('x');
-  const callback = () => console.log('done');
+  const largeArray = new Array(1000000).fill("x");
+  const callback = () => console.log("done");
   // callback 持有 largeArray 的引用（即使没用到）
   // 因为它们在同一个词法环境中
   return callback;
@@ -25,10 +25,10 @@ const fn = createLeak();
 
 // 模式 2：DOM 引用 + 闭包
 function setupButton() {
-  const button = document.getElementById('btn');
+  const button = document.getElementById("btn");
   const hugeData = fetchLargeData(); // 10MB
-  button.addEventListener('click', () => {
-    console.log('clicked'); // 只用了 button，但 hugeData 也被闭包持有
+  button.addEventListener("click", () => {
+    console.log("clicked"); // 只用了 button，但 hugeData 也被闭包持有
   });
   // button 被 DOM 引用，hugeData 被闭包持有 → 内存泄漏
 }
@@ -54,13 +54,13 @@ function memoize(fn) {
 // 包含：VariableEnvironment + LexicalEnvironment + ThisBinding
 
 function outer() {
-  let a = 1;        // 存储在栈帧的局部变量区
-  let b = 2;        // 如果内部函数引用了 b → 提升到堆（closure 对象）
-  
+  let a = 1; // 存储在栈帧的局部变量区
+  let b = 2; // 如果内部函数引用了 b → 提升到堆（closure 对象）
+
   function inner() {
     console.log(b); // 只引用了 b，a 仍可在栈上
   }
-  
+
   return inner;
 }
 
@@ -82,12 +82,16 @@ const EventBus = (() => {
       listeners.get(event).push(cb);
     },
     emit(event, ...args) {
-      listeners.get(event)?.forEach(cb => cb(...args));
+      listeners.get(event)?.forEach((cb) => cb(...args));
     },
     off(event, cb) {
       const cbs = listeners.get(event);
-      if (cbs) listeners.set(event, cbs.filter(c => c !== cb));
-    }
+      if (cbs)
+        listeners.set(
+          event,
+          cbs.filter((c) => c !== cb),
+        );
+    },
   };
 })();
 
@@ -104,12 +108,12 @@ function createValidator(rules) {
 }
 
 const validateUser = createValidator({
-  name: v => !v ? 'Name is required' : null,
-  age: v => v < 0 || v > 150 ? 'Invalid age' : null,
-  email: v => !v.includes('@') ? 'Invalid email' : null
+  name: (v) => (!v ? "Name is required" : null),
+  age: (v) => (v < 0 || v > 150 ? "Invalid age" : null),
+  email: (v) => (!v.includes("@") ? "Invalid email" : null),
 });
 
-console.log(validateUser({ name: 'Alice', age: 25, email: 'alice@test.com' }));
+console.log(validateUser({ name: "Alice", age: 25, email: "alice@test.com" }));
 // { valid: true, errors: {} }
 
 // 模式 3：函数柯里化 + 闭包
@@ -156,8 +160,8 @@ const obj = new Level7();
 ```js
 // 情况 1：Object.create(null) — 无原型链的对象
 const dict = Object.create(null);
-dict.name = 'test';
-console.log(dict.toString);    // undefined（没有 Object.prototype）
+dict.name = "test";
+console.log(dict.toString); // undefined（没有 Object.prototype）
 console.log(dict.hasOwnProperty); // undefined
 // 适合做纯字典/哈希表，不会有原型链污染
 
@@ -168,7 +172,7 @@ console.log(obj.valueOf()); // TypeError: obj.valueOf is not a function
 
 // 情况 3：Symbol.toStringTag 自定义
 const myObj = {
-  [Symbol.toStringTag]: 'CustomObject'
+  [Symbol.toStringTag]: "CustomObject",
 };
 console.log(Object.prototype.toString.call(myObj)); // [object CustomObject]
 
@@ -176,13 +180,13 @@ console.log(Object.prototype.toString.call(myObj)); // [object CustomObject]
 const target = { a: 1 };
 const proxy = new Proxy(target, {
   getPrototypeOf(t) {
-    console.log('getPrototypeOf intercepted');
+    console.log("getPrototypeOf intercepted");
     return Object.getPrototypeOf(t);
   },
   setPrototypeOf(t, proto) {
-    console.log('setPrototypeOf intercepted');
+    console.log("setPrototypeOf intercepted");
     return Object.setPrototypeOf(t, proto);
-  }
+  },
 });
 Object.getPrototypeOf(proxy); // 触发拦截
 ```
@@ -191,24 +195,28 @@ Object.getPrototypeOf(proxy); // 触发拦截
 
 ```js
 class Animal {
-  static count = 0;           // 静态属性（在 Animal 上，不在原型上）
+  static count = 0; // 静态属性（在 Animal 上，不在原型上）
   constructor(name) {
-    this.name = name;         // 实例属性
+    this.name = name; // 实例属性
     Animal.count++;
   }
-  speak() { return `${this.name} speaks`; }  // 在 Animal.prototype 上
-  static create(name) {       // 静态方法
+  speak() {
+    return `${this.name} speaks`;
+  } // 在 Animal.prototype 上
+  static create(name) {
+    // 静态方法
     return new Animal(name);
   }
 }
 
 class Dog extends Animal {
   constructor(name, breed) {
-    super(name);              // 调用 Animal constructor
+    super(name); // 调用 Animal constructor
     this.breed = breed;
   }
-  speak() {                   // 覆盖父类方法
-    return super.speak() + ' woof';  // super.speak() 调用 Animal.prototype.speak
+  speak() {
+    // 覆盖父类方法
+    return super.speak() + " woof"; // super.speak() 调用 Animal.prototype.speak
   }
 }
 
@@ -245,7 +253,7 @@ class AsyncQueue {
     while (this.running < this.maxConcurrency && this.queue.length > 0) {
       const { task, resolve, reject } = this.queue.shift();
       this.running++;
-      
+
       Promise.resolve(task())
         .then(resolve)
         .catch(reject)
@@ -256,16 +264,20 @@ class AsyncQueue {
     }
   }
 
-  get pending() { return this.queue.length; }
-  get active() { return this.running; }
+  get pending() {
+    return this.queue.length;
+  }
+  get active() {
+    return this.running;
+  }
 }
 
 // 使用
 const queue = new AsyncQueue(3);
-const urls = ['/api/1', '/api/2', '/api/3', '/api/4', '/api/5'];
+const urls = ["/api/1", "/api/2", "/api/3", "/api/4", "/api/5"];
 
-urls.forEach(url => {
-  queue.add(() => fetch(url).then(r => r.json()));
+urls.forEach((url) => {
+  queue.add(() => fetch(url).then((r) => r.json()));
 });
 
 // 模式 2：Promise.allSettled 的增强版
@@ -277,16 +289,16 @@ async function fetchAllWithRetry(urls, maxRetries = 3) {
           return await fetch(url);
         } catch (e) {
           if (i === maxRetries - 1) throw e;
-          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+          await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
         }
       }
-    })
+    }),
   );
-  
+
   return results.map((r, i) => ({
     url: urls[i],
     status: r.status,
-    value: r.status === 'fulfilled' ? r.value : r.reason
+    value: r.status === "fulfilled" ? r.value : r.reason,
   }));
 }
 
@@ -317,7 +329,7 @@ for await (const chunk of readChunks(response.body)) {
 // Babel 转换后的代码大致如下：
 
 function _asyncToGenerator(fn) {
-  return function() {
+  return function () {
     const gen = fn.apply(this, arguments);
     return new Promise((resolve, reject) => {
       function step(key, arg) {
@@ -333,12 +345,12 @@ function _asyncToGenerator(fn) {
           resolve(value);
         } else {
           Promise.resolve(value).then(
-            val => step('next', val),
-            err => step('throw', err)
+            (val) => step("next", val),
+            (err) => step("throw", err),
           );
         }
       }
-      return step('next');
+      return step("next");
     });
   };
 }
@@ -355,12 +367,12 @@ myAsyncFn().then(console.log); // 3
 // ⚠️ async/await 的陷阱
 async function trap() {
   const promises = [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)];
-  
+
   // 错误：串行执行（每个 await 等待前一个完成）
   for (const p of promises) {
     console.log(await p); // 3 次 await，串行
   }
-  
+
   // 正确：并行执行
   const results = await Promise.all(promises);
   console.log(results); // 并行，一次拿到所有结果
@@ -383,8 +395,11 @@ function wrapAsync(fn) {
 }
 
 const [err, user] = await wrapAsync(fetchUser)(123);
-if (err) { /* 处理错误 */ }
-else { /* 使用 user */ }
+if (err) {
+  /* 处理错误 */
+} else {
+  /* 使用 user */
+}
 
 // 模式 2：自定义错误类型
 class AppError extends Error {
@@ -399,25 +414,25 @@ class AppError extends Error {
 
 class ValidationError extends AppError {
   constructor(message, fields) {
-    super(message, 'VALIDATION_ERROR', 400);
+    super(message, "VALIDATION_ERROR", 400);
     this.fields = fields;
   }
 }
 
 class NotFoundError extends AppError {
   constructor(resource) {
-    super(`${resource} not found`, 'NOT_FOUND', 404);
+    super(`${resource} not found`, "NOT_FOUND", 404);
   }
 }
 
 // 模式 3：全局错误处理（Node.js）
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
   // 在生产环境中应该上报监控
 });
 
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
   // 优雅关闭
   server.close(() => process.exit(1));
 });
@@ -452,11 +467,11 @@ process.on('uncaughtException', (error) => {
 
 ```js
 // 各阶段执行顺序验证
-setTimeout(() => console.log('timeout'), 0);
-setImmediate(() => console.log('immediate'));
-Promise.resolve().then(() => console.log('promise'));
-process.nextTick(() => console.log('nextTick'));
-console.log('sync');
+setTimeout(() => console.log("timeout"), 0);
+setImmediate(() => console.log("immediate"));
+Promise.resolve().then(() => console.log("promise"));
+process.nextTick(() => console.log("nextTick"));
+console.log("sync");
 
 // 输出（在主模块中）：
 // sync
@@ -475,10 +490,10 @@ console.log('sync');
 // Node.js 中 nextTick 优先级高于 Promise.then
 // 每个阶段结束后，先清空 nextTick 队列，再清空 microtask 队列
 
-process.nextTick(() => console.log('nextTick-1'));
-Promise.resolve().then(() => console.log('promise-1'));
-process.nextTick(() => console.log('nextTick-2'));
-Promise.resolve().then(() => console.log('promise-2'));
+process.nextTick(() => console.log("nextTick-1"));
+Promise.resolve().then(() => console.log("promise-1"));
+process.nextTick(() => console.log("nextTick-2"));
+Promise.resolve().then(() => console.log("promise-2"));
 
 // 输出：
 // nextTick-1
@@ -517,16 +532,18 @@ function blockEventLoop() {
 // - 浏览器有 requestIdleCallback（空闲时执行）
 
 // 跨平台兼容的异步调度
-const scheduler = typeof process !== 'undefined' && process.nextTick
-  ? process.nextTick.bind(process)           // Node.js
-  : typeof MutationObserver !== 'undefined'
-    ? (cb) => {                              // 浏览器（微任务）
-        const observer = new MutationObserver(cb);
-        const node = document.createTextNode('');
-        observer.observe(node, { characterData: true });
-        node.data = 'x';
-      }
-    : (cb) => setTimeout(cb, 0);             // 降级
+const scheduler =
+  typeof process !== "undefined" && process.nextTick
+    ? process.nextTick.bind(process) // Node.js
+    : typeof MutationObserver !== "undefined"
+      ? (cb) => {
+          // 浏览器（微任务）
+          const observer = new MutationObserver(cb);
+          const node = document.createTextNode("");
+          observer.observe(node, { characterData: true });
+          node.data = "x";
+        }
+      : (cb) => setTimeout(cb, 0); // 降级
 ```
 
 ---
@@ -540,35 +557,35 @@ const scheduler = typeof process !== 'undefined' && process.nextTick
 
 function createImageLoader() {
   const cache = {};
-  
+
   return {
     load(url) {
       if (cache[url]) return cache[url];
       const img = new Image();
       img.src = url;
       img.onload = () => {
-        cache[url] = img;  // 问题：缓存无限增长，图片无法 GC
+        cache[url] = img; // 问题：缓存无限增长，图片无法 GC
       };
       return img;
     },
     clear() {
       // 问题：只清空了引用，但 img.onload 闭包仍持有 cache 引用
       for (const key in cache) delete cache[key];
-    }
+    },
   };
 }
 
 // 修复方案：使用 WeakMap + LRU 限制
 function createImageLoaderV2(maxSize = 100) {
   const cache = new Map();
-  
+
   function evict() {
     if (cache.size > maxSize) {
       const firstKey = cache.keys().next().value;
       cache.delete(firstKey);
     }
   }
-  
+
   return {
     load(url) {
       if (cache.has(url)) {
@@ -588,7 +605,7 @@ function createImageLoaderV2(maxSize = 100) {
     },
     clear() {
       cache.clear();
-    }
+    },
   };
 }
 ```
@@ -602,16 +619,16 @@ class EventEmitter {
   constructor() {
     this._events = Object.create(null);
   }
-  
+
   on(event, listener) {
     (this._events[event] = this._events[event] || []).push(listener);
     return this;
   }
-  
+
   emit(event, ...args) {
     const listeners = this._events[event];
     if (listeners) {
-      listeners.forEach(l => l.apply(this, args));
+      listeners.forEach((l) => l.apply(this, args));
     }
     return this;
   }
@@ -627,10 +644,16 @@ class MyComponent extends EventEmitter {
     this.props = {};
     // ... 大量实例属性
   }
-  
-  render() { /* ... */ }
-  update(data) { /* ... */ }
-  destroy() { /* ... */ }
+
+  render() {
+    /* ... */
+  }
+  update(data) {
+    /* ... */
+  }
+  destroy() {
+    /* ... */
+  }
 }
 
 // 性能分析：
@@ -647,13 +670,13 @@ class EventEmitterOptimized {
   constructor() {
     this._events = null; // 延迟初始化
   }
-  
+
   on(event, listener) {
     if (!this._events) this._events = Object.create(null);
     (this._events[event] || (this._events[event] = [])).push(listener);
     return this;
   }
-  
+
   emit(event, ...args) {
     const listeners = this._events?.[event];
     if (listeners) {
@@ -672,33 +695,33 @@ class EventEmitterOptimized {
 // 问题：输出什么？为什么？
 
 async function async1() {
-  console.log('async1 start');
+  console.log("async1 start");
   await async2();
-  console.log('async1 end');
+  console.log("async1 end");
 }
 
 async function async2() {
-  console.log('async2');
+  console.log("async2");
 }
 
-console.log('script start');
+console.log("script start");
 
 setTimeout(async () => {
-  console.log('setTimeout');
+  console.log("setTimeout");
   await async1();
-  console.log('setTimeout end');
+  console.log("setTimeout end");
 }, 0);
 
 new Promise((resolve) => {
-  console.log('promise1');
+  console.log("promise1");
   resolve();
 }).then(() => {
-  console.log('promise2');
+  console.log("promise2");
 });
 
 async1();
 
-console.log('script end');
+console.log("script end");
 
 // 输出：
 // script start
@@ -732,21 +755,21 @@ console.log('script end');
 // 3. 传入空数组时 resolve([])
 // 4. 非 Promise 元素自动包装
 
-Promise.myAll = function(promises) {
+Promise.myAll = function (promises) {
   return new Promise((resolve, reject) => {
     if (!Array.isArray(promises)) {
-      return reject(new TypeError('Argument must be an array'));
+      return reject(new TypeError("Argument must be an array"));
     }
-    
+
     const results = [];
     let completed = 0;
     const total = promises.length;
-    
+
     if (total === 0) {
       resolve(results);
       return;
     }
-    
+
     promises.forEach((p, index) => {
       Promise.resolve(p).then(
         (value) => {
@@ -756,25 +779,21 @@ Promise.myAll = function(promises) {
             resolve(results);
           }
         },
-        (reason) => reject(reason) // 立即失败
+        (reason) => reject(reason), // 立即失败
       );
     });
   });
 };
 
 // 测试
-Promise.myAll([
-  Promise.resolve(1),
-  2,
-  Promise.resolve(3)
-]).then(console.log); // [1, 2, 3]
+Promise.myAll([Promise.resolve(1), 2, Promise.resolve(3)]).then(console.log); // [1, 2, 3]
 
 // 失败测试
 Promise.myAll([
   Promise.resolve(1),
-  Promise.reject(new Error('fail')),
-  Promise.resolve(3)
-]).catch(e => console.log(e.message)); // 'fail'
+  Promise.reject(new Error("fail")),
+  Promise.resolve(3),
+]).catch((e) => console.log(e.message)); // 'fail'
 ```
 
 ### 题目 5：实现 Event Emitter（★★★★★）
@@ -793,32 +812,34 @@ class EventEmitter {
     this._wildcard = [];
     this._maxListeners = 10;
   }
-  
+
   setMaxListeners(n) {
     this._maxListeners = n;
     return this;
   }
-  
+
   on(event, listener) {
-    if (typeof listener !== 'function') {
-      throw new TypeError('Listener must be a function');
+    if (typeof listener !== "function") {
+      throw new TypeError("Listener must be a function");
     }
-    
-    if (event === '*') {
+
+    if (event === "*") {
       this._wildcard.push(listener);
     } else {
       const events = this._events[event] || (this._events[event] = []);
-      
+
       if (events.length >= this._maxListeners) {
-        console.warn(`Possible memory leak: ${this._maxListeners} listeners on "${event}"`);
+        console.warn(
+          `Possible memory leak: ${this._maxListeners} listeners on "${event}"`,
+        );
       }
-      
+
       events.push(listener);
     }
-    
+
     return this;
   }
-  
+
   once(event, listener) {
     const onceListener = (...args) => {
       listener.apply(this, args);
@@ -827,47 +848,47 @@ class EventEmitter {
     onceListener._original = listener;
     return this.on(event, onceListener);
   }
-  
+
   off(event, listener) {
-    if (event === '*') {
+    if (event === "*") {
       this._wildcard = [];
       return this;
     }
-    
+
     const events = this._events[event];
     if (!events) return this;
-    
+
     this._events[event] = events.filter(
-      l => l !== listener && l._original !== listener
+      (l) => l !== listener && l._original !== listener,
     );
-    
+
     return this;
   }
-  
+
   emit(event, ...args) {
     // 触发通配符监听器
     for (const listener of this._wildcard) {
       listener.call(this, event, ...args);
     }
-    
+
     const events = this._events[event];
     if (!events || events.length === 0) {
       // error 事件未监听时抛出
-      if (event === 'error' && args.length > 0) {
+      if (event === "error" && args.length > 0) {
         throw args[0];
       }
       return false;
     }
-    
+
     // 复制数组防止监听器修改原数组
     const listeners = events.slice();
     for (const listener of listeners) {
       listener.apply(this, args);
     }
-    
+
     return true;
   }
-  
+
   removeAllListeners(event) {
     if (event) {
       delete this._events[event];
@@ -877,9 +898,9 @@ class EventEmitter {
     }
     return this;
   }
-  
+
   listenerCount(event) {
-    if (event === '*') return this._wildcard.length;
+    if (event === "*") return this._wildcard.length;
     return this._events[event]?.length || 0;
   }
 }
@@ -887,18 +908,18 @@ class EventEmitter {
 // 使用示例
 const ee = new EventEmitter();
 
-ee.on('data', (val) => console.log('data:', val));
-ee.on('*', (event, ...args) => console.log('wildcard:', event, args));
-ee.once('once', () => console.log('only once'));
+ee.on("data", (val) => console.log("data:", val));
+ee.on("*", (event, ...args) => console.log("wildcard:", event, args));
+ee.once("once", () => console.log("only once"));
 
-ee.emit('data', 1);
+ee.emit("data", 1);
 // data: 1
 // wildcard: data [1]
 
-ee.emit('once');
+ee.emit("once");
 // only once
 
-ee.emit('once'); // 无输出（once 已移除）
+ee.emit("once"); // 无输出（once 已移除）
 ```
 
 ### 题目 6：V8 引擎优化技巧（★★★★★）
@@ -939,13 +960,13 @@ delete obj.b; // 破坏隐藏类，切换到字典模式
 obj.b = undefined; // ✅ 更好：保持隐藏类
 
 // 元素类型一致性
-const arr1 = [1, 2, 3];        // PACKED_SMI_ELEMENTS（小整数）
-arr1.push(4.5);                // 升级为 PACKED_DOUBLE_ELEMENTS
-arr1.push('hello');            // 升级为 PACKED_ELEMENTS（通用）
+const arr1 = [1, 2, 3]; // PACKED_SMI_ELEMENTS（小整数）
+arr1.push(4.5); // 升级为 PACKED_DOUBLE_ELEMENTS
+arr1.push("hello"); // 升级为 PACKED_ELEMENTS（通用）
 // 类型升级不可逆，混合类型会降低性能
 
 // 预分配数组大小
-const arr2 = new Array(1000);  // 预分配，避免扩容
+const arr2 = new Array(1000); // 预分配，避免扩容
 for (let i = 0; i < 1000; i++) {
   arr2[i] = i;
 }
@@ -955,28 +976,30 @@ for (let i = 0; i < 1000; i++) {
 
 ## 六、深度面试题速答
 
-| 问题 | 答案 |
-|------|------|
-| 闭包一定会导致内存泄漏吗？ | 不会。只有闭包持有大对象且外部仍有引用时才会泄漏。V8 会优化未被引用的变量 |
-| `__proto__` 和 `prototype` 的区别？ | `__proto__` 是实例指向原型对象的属性；`prototype` 是构造函数用于创建实例原型的属性 |
-| `Object.create(null)` 和普通对象的区别？ | 无原型链，无 `toString`/`hasOwnProperty` 等方法，适合做纯字典 |
-| `async/await` 和 `Promise.then` 的优先级？ | 在同一微任务批次中，`await` 后的代码和 `Promise.then` 按注册顺序执行 |
-| `setTimeout(fn, 0)` 真的立即执行吗？ | 不。HTML5 规范要求至少 4ms，Node.js 中受事件循环阶段影响 |
-| `process.nextTick` 为什么比 `Promise.then` 快？ | Node.js 在每个阶段结束后先清空 nextTick 队列，再清空 microtask 队列 |
-| V8 隐藏类是什么？ | V8 为相同结构的对象创建共享的"隐藏类"，加速属性查找。动态添加属性会破坏隐藏类 |
-| 如何避免事件循环阻塞？ | 避免同步大计算、使用 `setImmediate`/`setTimeout` 分片、Worker 线程 |
+| 问题                                            | 答案                                                                               |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 闭包一定会导致内存泄漏吗？                      | 不会。只有闭包持有大对象且外部仍有引用时才会泄漏。V8 会优化未被引用的变量          |
+| `__proto__` 和 `prototype` 的区别？             | `__proto__` 是实例指向原型对象的属性；`prototype` 是构造函数用于创建实例原型的属性 |
+| `Object.create(null)` 和普通对象的区别？        | 无原型链，无 `toString`/`hasOwnProperty` 等方法，适合做纯字典                      |
+| `async/await` 和 `Promise.then` 的优先级？      | 在同一微任务批次中，`await` 后的代码和 `Promise.then` 按注册顺序执行               |
+| `setTimeout(fn, 0)` 真的立即执行吗？            | 不。HTML5 规范要求至少 4ms，Node.js 中受事件循环阶段影响                           |
+| `process.nextTick` 为什么比 `Promise.then` 快？ | Node.js 在每个阶段结束后先清空 nextTick 队列，再清空 microtask 队列                |
+| V8 隐藏类是什么？                               | V8 为相同结构的对象创建共享的"隐藏类"，加速属性查找。动态添加属性会破坏隐藏类      |
+| 如何避免事件循环阻塞？                          | 避免同步大计算、使用 `setImmediate`/`setTimeout` 分片、Worker 线程                 |
 
 ---
 
 ## 七、今日总结
 
 **重点回顾：**
+
 1. **闭包进阶** = 词法环境内部结构 + 内存管理 + 实际应用模式（模块/工厂/柯里化）
 2. **原型链深度** = 性能分析 + 边界情况 + ES6 Class 细节 + Proxy 拦截
 3. **异步模式** = 并发控制 + async/await 底层 + 错误处理最佳实践
 4. **事件循环 V8** = 6 阶段模型 + nextTick 优先级 + 浏览器 vs Node.js 差异
 
 **易错点：**
+
 - 闭包持有未使用的变量 → V8 会优化，但大对象仍需手动清理
 - 原型链深度 > 3 时性能下降 → 控制继承深度
 - `setTimeout(fn, 0)` 不保证立即执行 → 受事件循环阶段影响
@@ -984,6 +1007,7 @@ for (let i = 0; i < 1000; i++) {
 - `async/await` 循环中串行执行 → 用 `Promise.all` 并行
 
 **进阶方向：**
+
 - V8 源码阅读（turbofan 优化编译器）
 - Node.js libuv 事件循环实现
 - Web Workers 与 SharedArrayBuffer

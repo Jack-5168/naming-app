@@ -11,13 +11,13 @@
  * - GET /api/v1/memberships/expiring - Get expiring memberships (admin)
  */
 
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import {
   MembershipTier,
   MEMBERSHIP_TIERS,
   getAllTiers,
   getTierConfig,
-} from '../models/membership-tier';
+} from "../models/membership-tier";
 import {
   getUserMembership,
   getEffectiveTier,
@@ -28,8 +28,8 @@ import {
   processMockPayment,
   processExpiredMemberships,
   checkExpiringMemberships,
-} from '../services/membership-benefits';
-import { createPushNotification } from '../services/push-notification';
+} from "../services/membership-benefits";
+import { createPushNotification } from "../services/push-notification";
 
 // ==================== API Controllers ====================
 
@@ -59,10 +59,10 @@ export async function getMembershipTiers(req: Request, res: Response) {
       data: tiers,
     });
   } catch (error) {
-    console.error('Error fetching membership tiers:', error);
+    console.error("Error fetching membership tiers:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch membership tiers',
+      error: "Failed to fetch membership tiers",
     });
   }
 }
@@ -78,7 +78,7 @@ export async function getCurrentMembership(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -93,8 +93,8 @@ export async function getCurrentMembership(req: Request, res: Response) {
       success: true,
       data: {
         tier,
-        tierName: tierConfig?.name || '免费版',
-        status: membership?.status || 'none',
+        tierName: tierConfig?.name || "免费版",
+        status: membership?.status || "none",
         startDate: membership?.startDate || null,
         endDate: membership?.endDate || null,
         autoRenew: membership?.autoRenew || false,
@@ -110,10 +110,10 @@ export async function getCurrentMembership(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error fetching current membership:', error);
+    console.error("Error fetching current membership:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch membership',
+      error: "Failed to fetch membership",
     });
   }
 }
@@ -129,7 +129,7 @@ export async function getMembershipBenefits(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -148,10 +148,10 @@ export async function getMembershipBenefits(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error fetching benefits:', error);
+    console.error("Error fetching benefits:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch benefits',
+      error: "Failed to fetch benefits",
     });
   }
 }
@@ -168,14 +168,14 @@ export async function upgradeMembership(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
     if (!tier || !MEMBERSHIP_TIERS[tier as MembershipTier]) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid membership tier',
+        error: "Invalid membership tier",
       });
     }
 
@@ -185,7 +185,7 @@ export async function upgradeMembership(req: Request, res: Response) {
     if (!tierConfig) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid membership tier configuration',
+        error: "Invalid membership tier configuration",
       });
     }
 
@@ -199,7 +199,7 @@ export async function upgradeMembership(req: Request, res: Response) {
     if (!paymentResult.success || !paymentResult.orderId) {
       return res.status(400).json({
         success: false,
-        error: 'Payment processing failed',
+        error: "Payment processing failed",
       });
     }
 
@@ -215,13 +215,13 @@ export async function upgradeMembership(req: Request, res: Response) {
     try {
       await createPushNotification({
         userId,
-        type: 'membership_upgraded',
-        title: '会员升级成功',
+        type: "membership_upgraded",
+        title: "会员升级成功",
         content: `您已成功升级为${tierConfig.name}，有效期至${membership.endDate.toLocaleDateString()}`,
-        deepLink: '/membership',
+        deepLink: "/membership",
       });
     } catch (notifError) {
-      console.error('Failed to send notification:', notifError);
+      console.error("Failed to send notification:", notifError);
     }
 
     res.json({
@@ -239,13 +239,13 @@ export async function upgradeMembership(req: Request, res: Response) {
           transactionId: paymentResult.transactionId,
         },
       },
-      message: '会员升级成功',
+      message: "会员升级成功",
     });
   } catch (error) {
-    console.error('Error upgrading membership:', error);
+    console.error("Error upgrading membership:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to upgrade membership',
+      error: "Failed to upgrade membership",
     });
   }
 }
@@ -262,22 +262,28 @@ export async function checkBenefit(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
-    const validBenefits = ['report_basic', 'report_pro', 'life_event', 'dual_test', 'priority_support'];
+    const validBenefits = [
+      "report_basic",
+      "report_pro",
+      "life_event",
+      "dual_test",
+      "priority_support",
+    ];
 
     if (!validBenefits.includes(benefit)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid benefit type',
+        error: "Invalid benefit type",
       });
     }
 
     const result = await checkBenefitAccess(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits,
+      benefit as keyof import("../models/membership-tier").BenefitLimits,
     );
 
     res.json({
@@ -291,10 +297,10 @@ export async function checkBenefit(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error checking benefit:', error);
+    console.error("Error checking benefit:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to check benefit access',
+      error: "Failed to check benefit access",
     });
   }
 }
@@ -312,29 +318,35 @@ export async function consumeBenefit(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
-    const validBenefits = ['report_basic', 'report_pro', 'life_event', 'dual_test', 'priority_support'];
+    const validBenefits = [
+      "report_basic",
+      "report_pro",
+      "life_event",
+      "dual_test",
+      "priority_support",
+    ];
 
     if (!validBenefits.includes(benefit)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid benefit type',
+        error: "Invalid benefit type",
       });
     }
 
     // Check access first
     const access = await checkBenefitAccess(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits,
+      benefit as keyof import("../models/membership-tier").BenefitLimits,
     );
 
     if (!access.allowed) {
       return res.status(403).json({
         success: false,
-        error: access.reason || 'Benefit not available',
+        error: access.reason || "Benefit not available",
         remaining: access.remaining,
       });
     }
@@ -342,14 +354,14 @@ export async function consumeBenefit(req: Request, res: Response) {
     // Record usage
     await recordBenefitUsage(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits,
+      benefit as keyof import("../models/membership-tier").BenefitLimits,
       metadata,
     );
 
     // Get updated usage
     const updatedUsage = await checkBenefitAccess(
       userId,
-      benefit as keyof import('../models/membership-tier').BenefitLimits,
+      benefit as keyof import("../models/membership-tier").BenefitLimits,
     );
 
     res.json({
@@ -362,10 +374,10 @@ export async function consumeBenefit(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error consuming benefit:', error);
+    console.error("Error consuming benefit:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to consume benefit',
+      error: "Failed to consume benefit",
     });
   }
 }
@@ -395,10 +407,10 @@ export async function getExpiringMemberships(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error fetching expiring memberships:', error);
+    console.error("Error fetching expiring memberships:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch expiring memberships',
+      error: "Failed to fetch expiring memberships",
     });
   }
 }
@@ -423,10 +435,10 @@ export async function processExpired(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error processing expired memberships:', error);
+    console.error("Error processing expired memberships:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to process expired memberships',
+      error: "Failed to process expired memberships",
     });
   }
 }
@@ -445,7 +457,7 @@ export async function downgradeMembership(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -454,37 +466,38 @@ export async function downgradeMembership(req: Request, res: Response) {
     if (!membership) {
       return res.status(400).json({
         success: false,
-        error: 'No active membership to downgrade',
+        error: "No active membership to downgrade",
       });
     }
 
-    const targetTierValid = targetTier && MEMBERSHIP_TIERS[targetTier as MembershipTier];
+    const targetTierValid =
+      targetTier && MEMBERSHIP_TIERS[targetTier as MembershipTier];
 
     if (!targetTierValid) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid target tier',
+        error: "Invalid target tier",
       });
     }
 
     // Disable auto-renew (downgrade at end of period)
-    await import('../services/membership-benefits').then(
-      (m) => m.downgradeMembership(userId, targetTier as MembershipTier),
+    await import("../services/membership-benefits").then((m) =>
+      m.downgradeMembership(userId, targetTier as MembershipTier),
     );
 
     res.json({
       success: true,
       data: {
-        message: '会员将在当前周期结束后降级',
+        message: "会员将在当前周期结束后降级",
         endDate: membership.endDate,
         targetTier,
       },
     });
   } catch (error) {
-    console.error('Error downgrading membership:', error);
+    console.error("Error downgrading membership:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to downgrade membership',
+      error: "Failed to downgrade membership",
     });
   }
 }

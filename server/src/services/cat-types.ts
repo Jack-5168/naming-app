@@ -7,11 +7,11 @@
  */
 
 // Define types inline since they're not exported from ../types
-type Big5Dimension = 'O' | 'C' | 'E' | 'A' | 'N';
+type Big5Dimension = "O" | "C" | "E" | "A" | "N";
 
 interface CATConfig {
   maxQuestions: number;
-  stoppingRule: 'precision' | 'length';
+  stoppingRule: "precision" | "length";
   targetSEM: number;
   minQuestions: number;
 }
@@ -61,7 +61,7 @@ export interface CATEngineConfig {
   /** 能力范围 */
   abilityRange: [number, number];
   /** 先验分布 */
-  prior: 'normal' | 'uniform';
+  prior: "normal" | "uniform";
   /** 先验参数 */
   priorParams?: { mean: number; std: number };
 }
@@ -101,7 +101,11 @@ export interface CATSessionState {
   currentSEM: number;
   dimensionEstimates: { [key in Big5Dimension]?: DimensionAbilityEstimate };
   isTerminated: boolean;
-  terminationReason?: 'max_questions' | 'target_sem' | 'no_questions' | 'user_quit';
+  terminationReason?:
+    | "max_questions"
+    | "target_sem"
+    | "no_questions"
+    | "user_quit";
   startedAt: number;
   completedAt?: number;
 }
@@ -111,7 +115,7 @@ export interface CATSessionState {
  */
 export interface ItemSelectionStrategy {
   /** 策略类型 */
-  type: 'max_information' | 'weighted_information' | 'bayesian';
+  type: "max_information" | "weighted_information" | "bayesian";
   /** 维度权重 */
   dimensionWeights?: { [key in Big5Dimension]?: number };
   /** 难度匹配容差 */
@@ -193,8 +197,8 @@ export const DEFAULT_CAT_CONFIG: CATEngineConfig = {
   minQuestions: 10,
   targetSEM: 0.3,
   abilityRange: [-3, 3],
-  dimensions: ['O', 'C', 'E', 'A', 'N'],
-  prior: 'normal',
+  dimensions: ["O", "C", "E", "A", "N"],
+  prior: "normal",
   enableDimensionBalance: true,
   enableDifficultyMatching: true,
   maxExposureRate: 0.5,

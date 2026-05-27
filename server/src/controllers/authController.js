@@ -111,12 +111,18 @@ exports.refreshToken = async (req, res) => {
       include: { user: true },
     });
 
-    if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
+    if (
+      !storedToken
+      || storedToken.revoked
+      || storedToken.expiresAt < new Date()
+    ) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
 
     // Generate new tokens
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(storedToken.user.id);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(
+      storedToken.user.id,
+    );
 
     // Revoke old refresh token
     await prisma.refreshToken.update({
@@ -127,7 +133,11 @@ exports.refreshToken = async (req, res) => {
     // Store new refresh token
     const refreshExpiresAt = new Date();
     refreshExpiresAt.setDate(refreshExpiresAt.getDate() + 30);
-    await storeRefreshToken(storedToken.user.id, newRefreshToken, refreshExpiresAt);
+    await storeRefreshToken(
+      storedToken.user.id,
+      newRefreshToken,
+      refreshExpiresAt,
+    );
 
     res.json({
       accessToken,

@@ -360,11 +360,15 @@ describe('Life Events Controller', () => {
       const analysis = await analyzeLifeEvents(testUserId);
 
       // 检查洞察中是否包含非因果声明
-      const hasDisclaimer = analysis.keyInsights.some((insight) => insight.includes('非因果') || insight.includes('探索性') || insight.includes('仅供参考'));
+      const hasDisclaimer = analysis.keyInsights.some(
+        (insight) => insight.includes('非因果')
+          || insight.includes('探索性')
+          || insight.includes('仅供参考'),
+      );
 
       // 至少应该有相关说明 - 根据实际实现，检查note内容
       const hasValidNote = analysis.dimensionCorrelations.some(
-        (c) => c.note && c.note.length > 0
+        (c) => c.note && c.note.length > 0,
       );
       expect(hasValidNote).toBe(true);
     });

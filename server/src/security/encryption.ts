@@ -8,12 +8,13 @@
  * - Key management
  */
 
-import crypto from 'crypto';
+import crypto from "crypto";
 
 // ==================== Configuration ====================
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
-const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
+const ENCRYPTION_KEY =
+  process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString("hex");
+const ENCRYPTION_ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 
@@ -34,19 +35,19 @@ export function encrypt(data: string): EncryptedData {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(
     ENCRYPTION_ALGORITHM,
-    Buffer.from(ENCRYPTION_KEY, 'hex'),
+    Buffer.from(ENCRYPTION_KEY, "hex"),
     iv,
   );
 
-  let encrypted = cipher.update(data, 'utf8', 'hex');
+  let encrypted = cipher.update(data, "utf8", "hex");
 
-  encrypted += cipher.final('hex');
+  encrypted += cipher.final("hex");
 
-  const authTag = cipher.getAuthTag().toString('hex');
+  const authTag = cipher.getAuthTag().toString("hex");
 
   return {
     encryptedData: encrypted,
-    iv: iv.toString('hex'),
+    iv: iv.toString("hex"),
     authTag,
   };
 }
@@ -57,15 +58,15 @@ export function encrypt(data: string): EncryptedData {
 export function decrypt(encryptedData: EncryptedData): string {
   const decipher = crypto.createDecipheriv(
     ENCRYPTION_ALGORITHM,
-    Buffer.from(ENCRYPTION_KEY, 'hex'),
-    Buffer.from(encryptedData.iv, 'hex'),
+    Buffer.from(ENCRYPTION_KEY, "hex"),
+    Buffer.from(encryptedData.iv, "hex"),
   );
 
-  decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
+  decipher.setAuthTag(Buffer.from(encryptedData.authTag, "hex"));
 
-  let decrypted = decipher.update(encryptedData.encryptedData, 'hex', 'utf8');
+  let decrypted = decipher.update(encryptedData.encryptedData, "hex", "utf8");
 
-  decrypted += decipher.final('utf8');
+  decrypted += decipher.final("utf8");
 
   return decrypted;
 }
@@ -125,24 +126,21 @@ export function decryptFields<T extends Record<string, any>>(
  * Hash data using SHA-256
  */
 export function hash(data: string): string {
-  return crypto.createHash('sha256').update(data).digest('hex');
+  return crypto.createHash("sha256").update(data).digest("hex");
 }
 
 /**
  * Hash with salt
  */
 export function hashWithSalt(data: string, salt: string): string {
-  return crypto
-    .createHmac('sha256', salt)
-    .update(data)
-    .digest('hex');
+  return crypto.createHmac("sha256", salt).update(data).digest("hex");
 }
 
 /**
  * Generate secure random salt
  */
 export function generateSalt(length = 32): string {
-  return crypto.randomBytes(length).toString('hex');
+  return crypto.randomBytes(length).toString("hex");
 }
 
 // ==================== Sensitive Field Encryption ====================
@@ -212,7 +210,7 @@ export function encryptToken(token: string): string {
  * Decrypt API tokens
  */
 export function decryptToken(encryptedToken: string): string {
-  const [iv, authTag, encryptedData] = encryptedToken.split(':');
+  const [iv, authTag, encryptedData] = encryptedToken.split(":");
 
   return decrypt({
     iv,
@@ -231,10 +229,12 @@ export function createEncryptionMiddleware() {
   return {
     async query(params: any, query: any) {
       // Encrypt sensitive fields before write
-      if (params.action === 'create' || params.action === 'update') {
-        if (params.model === 'User') {
+      if (params.action === "create" || params.action === "update") {
+        if (params.model === "User") {
           if (params.args.data?.phone) {
-            params.args.data.phone = encrypt(params.args.data.phone).encryptedData;
+            params.args.data.phone = encrypt(
+              params.args.data.phone,
+            ).encryptedData;
           }
 
           if (params.args.data?.email) {
@@ -247,15 +247,19 @@ export function createEncryptionMiddleware() {
       const result = await query(params);
 
       // Decrypt sensitive fields after read
-      if (params.action === 'findUnique' || params.action === 'findFirst' || params.action === 'findMany') {
-        if (params.model === 'User' && result) {
+      if (
+        params.action === "findUnique" ||
+        params.action === "findFirst" ||
+        params.action === "findMany"
+      ) {
+        if (params.model === "User" && result) {
           if (Array.isArray(result)) {
             return result.map((item: any) => {
               if (item.phone) {
                 item.phone = decrypt({
                   encryptedData: item.phone,
-                  iv: '',
-                  authTag: '',
+                  iv: "",
+                  authTag: "",
                 });
               }
 
@@ -279,9 +283,13 @@ export function createEncryptionMiddleware() {
 export async function rotateEncryptionKey(
   oldKey: string,
   newKey: string,
-  reencryptFunction: (data: string, oldKey: string, newKey: string) => Promise<void>,
+  reencryptFunction: (
+    data: string,
+    oldKey: string,
+    newKey: string,
+  ) => Promise<void>,
 ): Promise<void> {
-  console.log('Starting encryption key rotation...');
+  console.log("Starting encryption key rotation...");
 
   // In production, this would:
   // 1. Fetch all encrypted records
@@ -289,9 +297,9 @@ export async function rotateEncryptionKey(
   // 3. Re-encrypt with new key
   // 4. Update database
 
-  await reencryptFunction('', oldKey, newKey);
+  await reencryptFunction("", oldKey, newKey);
 
-  console.log('Encryption key rotation completed');
+  console.log("Encryption key rotation completed");
 }
 
 export default {

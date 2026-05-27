@@ -9,7 +9,7 @@
  * - Slow query monitoring
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -59,12 +59,14 @@ export async function getUserStabilityStats(userId: number): Promise<any> {
 /**
  * Batch insert test responses (avoid multiple INSERTs)
  */
-export async function batchInsertResponses(responses: Array<{
-  sessionId: number;
-  questionId: number;
-  optionId: number;
-  timeSpent: number;
-}>) {
+export async function batchInsertResponses(
+  responses: Array<{
+    sessionId: number;
+    questionId: number;
+    optionId: number;
+    timeSpent: number;
+  }>,
+) {
   // Using Prisma's createMany for batch insert
   return prisma.response.createMany({
     data: responses,
@@ -85,7 +87,7 @@ export async function getTestRecordsPaginated(
     where: { userId },
     take: limit + 1, // Get one extra to check if there's more
     cursor: cursor ? { id: Number(cursor) } : undefined,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 }
 
@@ -175,9 +177,7 @@ export function enableSlowQueryLogging() {
  * Get slow query report
  */
 export function getSlowQueryReport(limit = 10) {
-  return slowQueries
-    .sort((a, b) => b.duration - a.duration)
-    .slice(0, limit);
+  return slowQueries.sort((a, b) => b.duration - a.duration).slice(0, limit);
 }
 
 /**
@@ -289,10 +289,12 @@ export async function bulkUpdate<T extends { id: string | number }>(
   const results = [];
 
   for (const chunk of chunks) {
-    const updates = chunk.map((item) => model.update({
-      where: { id: item.id },
-      data: updateFn(item),
-    }));
+    const updates = chunk.map((item) =>
+      model.update({
+        where: { id: item.id },
+        data: updateFn(item),
+      }),
+    );
 
     const chunkResults = await Promise.all(updates);
 

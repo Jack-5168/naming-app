@@ -1,19 +1,19 @@
 /**
  * 前端性能优化指南
- * 
+ *
  * 优化内容：
  * - 代码分割（按需加载）
  * - 图片懒加载
  * - 组件 memo 化
  * - 防抖/节流优化
  */
-import React from 'react';
+import React from "react";
 
 // ==================== 代码分割（按需加载） ====================
 
 /**
  * 动态导入示例
- * 
+ *
  * 使用方式：
  * 1. 路由级别代码分割
  * 2. 组件级别代码分割
@@ -27,15 +27,15 @@ import React from 'react';
 
 // ✅ 正确示例：动态导入
 export async function loadHeavyComponent() {
-  return import('../components/HeavyComponent');
+  return import("../components/HeavyComponent");
 }
 
 export async function loadChartComponent() {
-  return import('../components/ChartComponent');
+  return import("../components/ChartComponent");
 }
 
 export async function loadEditorComponent() {
-  return import('../components/EditorComponent');
+  return import("../components/EditorComponent");
 }
 
 /**
@@ -43,16 +43,16 @@ export async function loadEditorComponent() {
  */
 export const lazyRoutes = {
   // 测试结果页面
-  testResult: () => import('../pages/TestResultPage'),
-  
+  testResult: () => import("../pages/TestResultPage"),
+
   // 会员中心页面
-  membership: () => import('../pages/MembershipPage'),
-  
+  membership: () => import("../pages/MembershipPage"),
+
   // 分享卡片页面
-  shareCard: () => import('../pages/ShareCardPage'),
-  
+  shareCard: () => import("../pages/ShareCardPage"),
+
   // 题库页面
-  questionBank: () => import('../pages/QuestionBankPage'),
+  questionBank: () => import("../pages/QuestionBankPage"),
 };
 
 /**
@@ -62,10 +62,10 @@ export function preloadCriticalResources() {
   // 预加载用户可能访问的下一个页面
   const links = document.querySelectorAll('link[rel="prefetch"]');
   links.forEach((link) => {
-    const href = link.getAttribute('href');
+    const href = link.getAttribute("href");
     if (href) {
-      const linkElement = document.createElement('link');
-      linkElement.rel = 'prefetch';
+      const linkElement = document.createElement("link");
+      linkElement.rel = "prefetch";
       linkElement.href = href;
       document.head.appendChild(linkElement);
     }
@@ -76,7 +76,7 @@ export function preloadCriticalResources() {
 
 /**
  * 图片懒加载 Hook
- * 
+ *
  * 使用方式：
  * const imgProps = useLazyImage({
  *   src: '/images/heavy.jpg',
@@ -105,7 +105,7 @@ export function useLazyImage(options: LazyImageOptions): LazyImageResult {
   const [loading, setLoading] = React.useState(true);
   const [loaded, setLoaded] = React.useState(false);
   const [error, setError] = React.useState(false);
-  const [currentSrc, setCurrentSrc] = React.useState(options.placeholder || '');
+  const [currentSrc, setCurrentSrc] = React.useState(options.placeholder || "");
 
   React.useEffect(() => {
     const image = imgRef.current;
@@ -116,17 +116,17 @@ export function useLazyImage(options: LazyImageOptions): LazyImageResult {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setLoading(true);
-            
+
             const img = new Image();
             img.src = options.src;
-            
+
             img.onload = () => {
               setCurrentSrc(options.src);
               setLoaded(true);
               setLoading(false);
               observer.unobserve(image);
             };
-            
+
             img.onerror = () => {
               setError(true);
               setLoading(false);
@@ -137,8 +137,8 @@ export function useLazyImage(options: LazyImageOptions): LazyImageResult {
       },
       {
         threshold: options.threshold || 0.1,
-        rootMargin: options.rootMargin || '50px',
-      }
+        rootMargin: options.rootMargin || "50px",
+      },
     );
 
     observer.observe(image);
@@ -160,7 +160,9 @@ export function useLazyImage(options: LazyImageOptions): LazyImageResult {
 /**
  * 懒加载图片组件
  */
-export const LazyImage: React.FC<LazyImageOptions & React.ImgHTMLAttributes<HTMLImageElement>> = (props) => {
+export const LazyImage: React.FC<
+  LazyImageOptions & React.ImgHTMLAttributes<HTMLImageElement>
+> = (props) => {
   const { src, placeholder, ...imgProps } = props;
   const { src: currentSrc, loading, ref } = useLazyImage({ src, placeholder });
 
@@ -172,7 +174,7 @@ export const LazyImage: React.FC<LazyImageOptions & React.ImgHTMLAttributes<HTML
       {...imgProps}
       style={{
         opacity: loading ? 0.5 : 1,
-        transition: 'opacity 0.3s ease',
+        transition: "opacity 0.3s ease",
         ...props.style,
       }}
     />
@@ -185,7 +187,7 @@ export const LazyImage: React.FC<LazyImageOptions & React.ImgHTMLAttributes<HTML
 export function getResponsiveImageSrc(
   baseUrl: string,
   width: number,
-  devicePixelRatio: number = window.devicePixelRatio
+  devicePixelRatio: number = window.devicePixelRatio,
 ): string {
   const targetWidth = Math.ceil(width * devicePixelRatio);
   return `${baseUrl}?width=${targetWidth}`;
@@ -195,7 +197,7 @@ export function getResponsiveImageSrc(
 
 /**
  * React.memo 使用示例
- * 
+ *
  * 适用场景：
  * 1. 纯函数组件，props 相同则无需重新渲染
  * 2. 列表项组件
@@ -203,28 +205,24 @@ export function getResponsiveImageSrc(
  */
 
 // ✅ 使用 React.memo 优化
-export const MemoizedListItem = React.memo(({ item, onClick }: { item: any; onClick: () => void }) => {
-  return (
-    <div onClick={onClick}>
-      {item.name}
-    </div>
-  );
-});
+export const MemoizedListItem = React.memo(
+  ({ item, onClick }: { item: any; onClick: () => void }) => {
+    return <div onClick={onClick}>{item.name}</div>;
+  },
+);
 
 // ✅ 自定义比较函数
 export const MemoizedComplexComponent = React.memo(
   ({ data, config }: { data: any; config: any }) => {
-    return (
-      <div>
-        {/* 复杂渲染逻辑 */}
-      </div>
-    );
+    return <div>{/* 复杂渲染逻辑 */}</div>;
   },
   (prevProps, nextProps) => {
     // 自定义比较逻辑
-    return prevProps.data.id === nextProps.data.id && 
-           prevProps.config.theme === nextProps.config.theme;
-  }
+    return (
+      prevProps.data.id === nextProps.data.id &&
+      prevProps.config.theme === nextProps.config.theme
+    );
+  },
 );
 
 /**
@@ -232,12 +230,12 @@ export const MemoizedComplexComponent = React.memo(
  */
 export function useExpensiveCalculation(data: any[]) {
   return React.useMemo(() => {
-    console.log('Running expensive calculation...');
-    
+    console.log("Running expensive calculation...");
+
     // 模拟耗时计算
     return data
-      .filter(item => item.active)
-      .map(item => ({
+      .filter((item) => item.active)
+      .map((item) => ({
         ...item,
         computed: item.value * 2 + item.score,
       }))
@@ -251,11 +249,11 @@ export function useExpensiveCalculation(data: any[]) {
 export function useOptimizedCallbacks(dependencies: any[]) {
   // ✅ 使用 useCallback 避免函数重新创建
   const handleClick = React.useCallback((id: string) => {
-    console.log('Clicked:', id);
+    console.log("Clicked:", id);
   }, []);
 
   const handleSubmit = React.useCallback((data: any) => {
-    console.log('Submitted:', data);
+    console.log("Submitted:", data);
   }, dependencies);
 
   return { handleClick, handleSubmit };
@@ -265,7 +263,7 @@ export function useOptimizedCallbacks(dependencies: any[]) {
 
 /**
  * 防抖函数（Debounce）
- * 
+ *
  * 适用场景：
  * - 搜索框输入
  * - 窗口大小调整
@@ -274,7 +272,7 @@ export function useOptimizedCallbacks(dependencies: any[]) {
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
-  immediate: boolean = false
+  immediate: boolean = false,
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -288,11 +286,11 @@ export function debounce<T extends (...args: any[]) => any>(
     };
 
     const callNow = immediate && !timeout;
-    
+
     if (timeout) {
       clearTimeout(timeout);
     }
-    
+
     timeout = setTimeout(later, wait);
 
     if (callNow) {
@@ -303,7 +301,7 @@ export function debounce<T extends (...args: any[]) => any>(
 
 /**
  * 节流函数（Throttle）
- * 
+ *
  * 适用场景：
  * - 滚动事件
  * - 鼠标移动
@@ -312,7 +310,7 @@ export function debounce<T extends (...args: any[]) => any>(
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number,
-  trailing: boolean = true
+  trailing: boolean = true,
 ): (...args: Parameters<T>) => void {
   let inThrottle = false;
   let lastArgs: Parameters<T> | null = null;
@@ -324,7 +322,7 @@ export function throttle<T extends (...args: any[]) => any>(
     if (!inThrottle) {
       func.apply(context, args);
       inThrottle = true;
-      
+
       if (trailing) {
         timeout = setTimeout(() => {
           inThrottle = false;
@@ -376,10 +374,13 @@ export function useThrottle<T>(value: T, interval: number): T {
       setThrottledValue(value);
       lastUpdated.current = now;
     } else {
-      const timeout = setTimeout(() => {
-        setThrottledValue(value);
-        lastUpdated.current = Date.now();
-      }, interval - (now - lastUpdated.current));
+      const timeout = setTimeout(
+        () => {
+          setThrottledValue(value);
+          lastUpdated.current = Date.now();
+        },
+        interval - (now - lastUpdated.current),
+      );
 
       return () => clearTimeout(timeout);
     }
@@ -391,13 +392,15 @@ export function useThrottle<T>(value: T, interval: number): T {
 /**
  * 搜索框优化示例
  */
-export const OptimizedSearchBox: React.FC<{ onSearch: (query: string) => void }> = ({ onSearch }) => {
-  const [query, setQuery] = React.useState('');
-  
+export const OptimizedSearchBox: React.FC<{
+  onSearch: (query: string) => void;
+}> = ({ onSearch }) => {
+  const [query, setQuery] = React.useState("");
+
   // 使用防抖优化搜索
   const debouncedSearch = React.useMemo(
     () => debounce((q: string) => onSearch(q), 300),
-    [onSearch]
+    [onSearch],
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -422,15 +425,15 @@ export const OptimizedSearchBox: React.FC<{ onSearch: (query: string) => void }>
 export const OptimizedScrollHandler: React.FC = () => {
   const handleScroll = React.useCallback(
     throttle(() => {
-      console.log('Scroll position:', window.scrollY);
+      console.log("Scroll position:", window.scrollY);
       // 处理滚动逻辑
     }, 100),
-    []
+    [],
   );
 
   React.useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   return <div>滚动优化示例</div>;
@@ -445,7 +448,7 @@ export const OptimizedScrollHandler: React.FC = () => {
 export function useVirtualList<T>(
   items: T[],
   itemHeight: number,
-  containerHeight: number
+  containerHeight: number,
 ) {
   const [scrollTop, setScrollTop] = React.useState(0);
 
@@ -461,7 +464,7 @@ export function useVirtualList<T>(
     throttle((e: React.UIEvent<HTMLDivElement>) => {
       setScrollTop(e.currentTarget.scrollTop);
     }, 50),
-    []
+    [],
   );
 
   return {
@@ -475,9 +478,9 @@ export function useVirtualList<T>(
 /**
  * 资源预加载
  */
-export function preloadResource(url: string, as: string = 'script') {
-  const link = document.createElement('link');
-  link.rel = 'preload';
+export function preloadResource(url: string, as: string = "script") {
+  const link = document.createElement("link");
+  link.rel = "preload";
   link.as = as;
   link.href = url;
   document.head.appendChild(link);
@@ -496,12 +499,17 @@ export function useCleanup(cleanupFn: () => void) {
  * Web Worker 优化（用于 CPU 密集型任务）
  */
 export function createWorker(fn: Function) {
-  const blob = new Blob([`
+  const blob = new Blob(
+    [
+      `
     onmessage = function(e) {
       const result = (${fn.toString()})(e.data);
       postMessage(result);
     };
-  `], { type: 'application/javascript' });
+  `,
+    ],
+    { type: "application/javascript" },
+  );
 
   return new Worker(URL.createObjectURL(blob));
 }
@@ -512,7 +520,7 @@ export function createWorker(fn: Function) {
  * 页面加载性能监控
  */
 export function measurePageLoadPerformance() {
-  if (typeof window === 'undefined' || !window.performance) return;
+  if (typeof window === "undefined" || !window.performance) return;
 
   const timing = window.performance.timing;
   const navigation = window.performance.navigation;
@@ -520,27 +528,27 @@ export function measurePageLoadPerformance() {
   const metrics = {
     // DNS 查询时间
     dnsLookup: timing.domainLookupEnd - timing.domainLookupStart,
-    
+
     // TCP 连接时间
     tcpConnection: timing.connectEnd - timing.connectStart,
-    
+
     // 请求响应时间
     requestResponse: timing.responseEnd - timing.requestStart,
-    
+
     // DOM 解析时间
     domParsing: timing.domComplete - timing.domLoading,
-    
+
     // 页面完全加载时间
     pageLoad: timing.loadEventEnd - timing.navigationStart,
-    
+
     // 首次内容绘制（FCP）
     fcp: 0, // 需要通过 PerformanceObserver 获取
-    
+
     // 最大内容绘制（LCP）
     lcp: 0, // 需要通过 PerformanceObserver 获取
   };
 
-  console.log('[Performance] Page Load Metrics:', metrics);
+  console.log("[Performance] Page Load Metrics:", metrics);
   return metrics;
 }
 
@@ -548,18 +556,18 @@ export function measurePageLoadPerformance() {
  * 监控长任务
  */
 export function monitorLongTasks(callback: (duration: number) => void) {
-  if (typeof window === 'undefined' || !PerformanceObserver) return;
+  if (typeof window === "undefined" || !PerformanceObserver) return;
 
   const observer = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
       if (entry.duration > 50) {
         callback(entry.duration);
-        console.warn('[Performance] Long task detected:', entry.duration, 'ms');
+        console.warn("[Performance] Long task detected:", entry.duration, "ms");
       }
     }
   });
 
-  observer.observe({ entryTypes: ['longtask'] });
+  observer.observe({ entryTypes: ["longtask"] });
 
   return () => observer.disconnect();
 }

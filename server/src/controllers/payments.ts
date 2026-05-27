@@ -9,18 +9,23 @@
  * - GET /api/v1/payments/orders/:order_id - Get order details
  */
 
-import { Request, Response } from 'express';
-import { PrismaClient, MembershipLevel, MembershipStatus, OrderStatus, PushNotificationType } from '@prisma/client';
-import * as crypto from 'crypto';
-import { createPushNotification } from '../services/push-notification';
-
+import { Request, Response } from "express";
+import {
+  PrismaClient,
+  MembershipLevel,
+  MembershipStatus,
+  OrderStatus,
+  PushNotificationType,
+} from "@prisma/client";
+import * as crypto from "crypto";
+import { createPushNotification } from "../services/push-notification";
 
 // ==================== Configuration ====================
 
 // WeChat Pay configuration from environment variables
-const WECHAT_PAY_MCHID = process.env.WECHAT_PAY_MCHID || '1234567890';
-const WECHAT_PAY_KEY = process.env.WECHAT_PAY_KEY || 'your_wechat_pay_key';
-const WECHAT_PAY_APPID = process.env.WECHAT_PAY_APPID || 'wx1234567890';
+const WECHAT_PAY_MCHID = process.env.WECHAT_PAY_MCHID || "1234567890";
+const WECHAT_PAY_KEY = process.env.WECHAT_PAY_KEY || "your_wechat_pay_key";
+const WECHAT_PAY_APPID = process.env.WECHAT_PAY_APPID || "wx1234567890";
 
 // ==================== Membership Products Configuration ====================
 
@@ -30,39 +35,39 @@ const WECHAT_PAY_APPID = process.env.WECHAT_PAY_APPID || 'wx1234567890';
  */
 const MEMBERSHIP_PRODUCTS = [
   {
-    id: 'single_unlock',
-    level: 'free',
-    name: '单次测试解锁',
-    period: '永久',
-    price: 29.00,
-    original_price: 29.00,
+    id: "single_unlock",
+    level: "free",
+    name: "单次测试解锁",
+    period: "永久",
+    price: 29.0,
+    original_price: 29.0,
     features: [
-      { key: 'report_pro', name: '完整报告', unlimited: false, limit: 1 },
+      { key: "report_pro", name: "完整报告", unlimited: false, limit: 1 },
     ],
   },
   {
-    id: 'basic_unlock',
-    level: 'basic',
-    name: '基础解锁',
-    period: '永久',
-    price: 9.90,
-    original_price: 19.90,
+    id: "basic_unlock",
+    level: "basic",
+    name: "基础解锁",
+    period: "永久",
+    price: 9.9,
+    original_price: 19.9,
     features: [
-      { key: 'report_basic', name: '基础报告', unlimited: false, limit: 5 },
-      { key: 'career', name: '职业建议', unlimited: false, limit: 1 },
+      { key: "report_basic", name: "基础报告", unlimited: false, limit: 5 },
+      { key: "career", name: "职业建议", unlimited: false, limit: 1 },
     ],
   },
   {
-    id: 'pro_monthly',
-    level: 'pro',
-    name: '专业会员',
-    period: '月卡',
-    price: 49.00,
-    original_price: 59.00,
+    id: "pro_monthly",
+    level: "pro",
+    name: "专业会员",
+    period: "月卡",
+    price: 49.0,
+    original_price: 59.0,
     features: [
-      { key: 'report_basic', name: '基础报告', unlimited: true },
-      { key: 'report_pro', name: '深度报告', unlimited: true },
-      { key: 'life_event', name: '生活事件', unlimited: true },
+      { key: "report_basic", name: "基础报告", unlimited: true },
+      { key: "report_pro", name: "深度报告", unlimited: true },
+      { key: "life_event", name: "生活事件", unlimited: true },
     ],
   },
 ];
@@ -118,11 +123,11 @@ export async function getMembershipProducts(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error fetching membership products:', error);
+    console.error("Error fetching membership products:", error);
     res.status(500).json({
       code: 500,
-      message: '获取会员产品失败',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "获取会员产品失败",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -155,7 +160,7 @@ export async function createOrder(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         code: 401,
-        message: '未授权访问',
+        message: "未授权访问",
       });
     }
 
@@ -163,14 +168,14 @@ export async function createOrder(req: Request, res: Response) {
     if (!product_id) {
       return res.status(400).json({
         code: 400,
-        message: '产品 ID 不能为空',
+        message: "产品 ID 不能为空",
       });
     }
 
     if (!payment_method) {
       return res.status(400).json({
         code: 400,
-        message: '支付方式不能为空',
+        message: "支付方式不能为空",
       });
     }
 
@@ -180,15 +185,21 @@ export async function createOrder(req: Request, res: Response) {
     if (!product) {
       return res.status(404).json({
         code: 404,
-        message: '产品不存在',
+        message: "产品不存在",
       });
     }
 
     // Generate unique order number
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const orderNo = `${payment_method}${new Date().toISOString().replace(/[-:TZ]/g, '').substring(0, 14)}${randomStr}`;
-    const orderId = `ORD${new Date().toISOString().replace(/[-:TZ]/g, '').substring(0, 14)}${randomStr}`;
+    const orderNo = `${payment_method}${new Date()
+      .toISOString()
+      .replace(/[-:TZ]/g, "")
+      .substring(0, 14)}${randomStr}`;
+    const orderId = `ORD${new Date()
+      .toISOString()
+      .replace(/[-:TZ]/g, "")
+      .substring(0, 14)}${randomStr}`;
 
     // Create order in database
     const order = await prisma.order.create({
@@ -196,10 +207,10 @@ export async function createOrder(req: Request, res: Response) {
         orderNo,
         userId,
         productId: product_id,
-        productType: 'membership',
+        productType: "membership",
         amount: product.price,
-        currency: 'CNY',
-        status: 'pending',
+        currency: "CNY",
+        status: "pending",
         paymentMethod: payment_method,
       },
     });
@@ -215,7 +226,9 @@ export async function createOrder(req: Request, res: Response) {
     });
 
     // Log order creation
-    console.log(`Order created: ${order.orderNo} for user ${userId}, amount: ${product.price}`);
+    console.log(
+      `Order created: ${order.orderNo} for user ${userId}, amount: ${product.price}`,
+    );
 
     res.json({
       code: 0,
@@ -227,11 +240,11 @@ export async function createOrder(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error("Error creating order:", error);
     res.status(500).json({
       code: 500,
-      message: '创建订单失败',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "创建订单失败",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -258,7 +271,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
     const isValid = verifyWechatSignature(callbackData);
 
     if (!isValid) {
-      console.error('Invalid WeChat signature');
+      console.error("Invalid WeChat signature");
 
       return res.status(400).send(`
         <xml>
@@ -294,7 +307,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
     }
 
     // Check if already processed
-    if (order.status === 'paid') {
+    if (order.status === "paid") {
       console.log(`Order already paid: ${out_trade_no}`);
 
       return res.send(`
@@ -306,12 +319,14 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
     }
 
     // Step 2: Update order status if payment successful
-    if (trade_state === 'SUCCESS') {
+    if (trade_state === "SUCCESS") {
       // Verify amount matches
       const amountInCents = Math.round(Number(order.amount) * 100);
 
       if (amountInCents !== total_fee) {
-        console.error(`Amount mismatch: expected ${amountInCents}, got ${total_fee}`);
+        console.error(
+          `Amount mismatch: expected ${amountInCents}, got ${total_fee}`,
+        );
 
         return res.status(400).send(`
           <xml>
@@ -325,13 +340,15 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
       await prisma.order.update({
         where: { id: order.id },
         data: {
-          status: 'paid',
+          status: "paid",
           transactionId: transaction_id,
           paidAt: new Date(),
         },
       });
 
-      console.log(`Order paid: ${out_trade_no}, transaction: ${transaction_id}`);
+      console.log(
+        `Order paid: ${out_trade_no}, transaction: ${transaction_id}`,
+      );
 
       // Step 3: Activate membership benefits
       await activateMembershipBenefits(order);
@@ -342,14 +359,14 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
 
         await createPushNotification({
           userId,
-          type: 'payment_success' as PushNotificationType,
-          title: '支付成功',
+          type: "payment_success" as PushNotificationType,
+          title: "支付成功",
           content: `您已成功支付¥${Number(order.amount)}，会员权益已激活`,
-          deepLink: '/user/membership',
+          deepLink: "/user/membership",
         });
         console.log(`Push notification sent to user ${userId}`);
       } catch (notifError) {
-        console.error('Failed to send push notification:', notifError);
+        console.error("Failed to send push notification:", notifError);
         // Don't fail the callback if notification fails
       }
     }
@@ -362,7 +379,7 @@ export async function wechatPaymentCallback(req: Request, res: Response) {
       </xml>
     `);
   } catch (error) {
-    console.error('Error processing WeChat callback:', error);
+    console.error("Error processing WeChat callback:", error);
     res.status(500).send(`
       <xml>
         <return_code><![CDATA[FAIL]]></return_code>
@@ -398,7 +415,7 @@ export async function getOrder(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         code: 401,
-        message: '未授权访问',
+        message: "未授权访问",
       });
     }
 
@@ -410,7 +427,7 @@ export async function getOrder(req: Request, res: Response) {
     if (!order) {
       return res.status(404).json({
         code: 404,
-        message: '订单不存在',
+        message: "订单不存在",
       });
     }
 
@@ -418,7 +435,7 @@ export async function getOrder(req: Request, res: Response) {
     if (order.userId !== userId) {
       return res.status(403).json({
         code: 403,
-        message: '无权访问此订单',
+        message: "无权访问此订单",
       });
     }
 
@@ -443,11 +460,11 @@ export async function getOrder(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error getting order:', error);
+    console.error("Error getting order:", error);
     res.status(500).json({
       code: 500,
-      message: '获取订单失败',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "获取订单失败",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -478,9 +495,9 @@ function generateWechatPaymentParams(params: {
   // Signature string format: appId=&nonceStr=&package=&signType=&timeStamp=
   const signString = `appId=${appId}&nonceStr=${nonceStr}&package=prepay_id=${prepayId}&signType=MD5&timeStamp=${timeStamp}&key=${key}`;
   const paySign = crypto
-    .createHash('md5')
+    .createHash("md5")
     .update(signString)
-    .digest('hex')
+    .digest("hex")
     .toUpperCase();
 
   return {
@@ -488,7 +505,7 @@ function generateWechatPaymentParams(params: {
     timeStamp,
     nonceStr,
     package: prepayId,
-    signType: 'MD5',
+    signType: "MD5",
     paySign,
   };
 }
@@ -501,29 +518,29 @@ function parseWechatCallbackXml(xmlData: any): Record<string, any> {
   // In production, use a proper XML parser like 'xml2js'
   // For MVP, we'll handle both parsed JSON and raw XML
 
-  if (typeof xmlData === 'object' && xmlData.xml) {
+  if (typeof xmlData === "object" && xmlData.xml) {
     // Already parsed by express-xml middleware
     const data = xmlData.xml;
 
     return {
-      return_code: data.return_code?.[0] || '',
-      return_msg: data.return_msg?.[0] || '',
-      appid: data.appid?.[0] || '',
-      mch_id: data.mch_id?.[0] || '',
-      nonce_str: data.nonce_str?.[0] || '',
-      sign: data.sign?.[0] || '',
-      result_code: data.result_code?.[0] || '',
-      openid: data.openid?.[0] || '',
-      trade_type: data.trade_type?.[0] || '',
-      bank_type: data.bank_type?.[0] || '',
-      total_fee: parseInt(data.total_fee?.[0] || '0'),
-      fee_type: data.fee_type?.[0] || 'CNY',
-      transaction_id: data.transaction_id?.[0] || '',
-      out_trade_no: data.out_trade_no?.[0] || '',
-      attach: data.attach?.[0] || '',
-      time_end: data.time_end?.[0] || '',
-      trade_state: data.trade_state?.[0] || '',
-      trade_state_desc: data.trade_state_desc?.[0] || '',
+      return_code: data.return_code?.[0] || "",
+      return_msg: data.return_msg?.[0] || "",
+      appid: data.appid?.[0] || "",
+      mch_id: data.mch_id?.[0] || "",
+      nonce_str: data.nonce_str?.[0] || "",
+      sign: data.sign?.[0] || "",
+      result_code: data.result_code?.[0] || "",
+      openid: data.openid?.[0] || "",
+      trade_type: data.trade_type?.[0] || "",
+      bank_type: data.bank_type?.[0] || "",
+      total_fee: parseInt(data.total_fee?.[0] || "0"),
+      fee_type: data.fee_type?.[0] || "CNY",
+      transaction_id: data.transaction_id?.[0] || "",
+      out_trade_no: data.out_trade_no?.[0] || "",
+      attach: data.attach?.[0] || "",
+      time_end: data.time_end?.[0] || "",
+      trade_state: data.trade_state?.[0] || "",
+      trade_state_desc: data.trade_state_desc?.[0] || "",
     };
   }
 
@@ -539,7 +556,7 @@ function verifyWechatSignature(data: Record<string, any>): boolean {
   const { sign, ...params } = data;
 
   if (!sign) {
-    console.error('No signature provided');
+    console.error("No signature provided");
 
     return false;
   }
@@ -549,24 +566,24 @@ function verifyWechatSignature(data: Record<string, any>): boolean {
 
   // Build signature string
   const signString = `${sortedKeys
-    .filter((key) => params[key] && params[key] !== '')
+    .filter((key) => params[key] && params[key] !== "")
     .map((key) => `${key}=${params[key]}`)
-    .join('&')}&key=${WECHAT_PAY_KEY}`;
+    .join("&")}&key=${WECHAT_PAY_KEY}`;
 
   // Calculate MD5 signature
   const calculatedSign = crypto
-    .createHash('md5')
+    .createHash("md5")
     .update(signString)
-    .digest('hex')
+    .digest("hex")
     .toUpperCase();
 
   // Compare signatures
   const isValid = calculatedSign === sign.toUpperCase();
 
   if (!isValid) {
-    console.error('Signature mismatch');
-    console.error('Expected:', sign);
-    console.error('Calculated:', calculatedSign);
+    console.error("Signature mismatch");
+    console.error("Expected:", sign);
+    console.error("Calculated:", calculatedSign);
   }
 
   return isValid;
@@ -594,16 +611,16 @@ async function activateMembershipBenefits(order: any) {
   let endDate: Date;
 
   switch (product.period) {
-    case '月卡':
+    case "月卡":
       endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       break;
-    case '季卡':
+    case "季卡":
       endDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
       break;
-    case '年卡':
+    case "年卡":
       endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
       break;
-    case '永久':
+    case "永久":
     default:
       // For permanent products, set far future date
       endDate = new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000);
@@ -616,19 +633,22 @@ async function activateMembershipBenefits(order: any) {
       where: { userId },
     });
 
-    if (existingMembership && existingMembership.status === 'active') {
+    if (existingMembership && existingMembership.status === "active") {
       // Extend existing membership
-      const newEndDate = product.period === '永久'
-        ? endDate
-        : new Date(Math.max(existingMembership.endDate.getTime(), now.getTime())
-                   + (endDate.getTime() - now.getTime()));
+      const newEndDate =
+        product.period === "永久"
+          ? endDate
+          : new Date(
+              Math.max(existingMembership.endDate.getTime(), now.getTime()) +
+                (endDate.getTime() - now.getTime()),
+            );
 
       await prisma.membership.update({
         where: { userId },
         data: {
           level: product.level as MembershipLevel,
           endDate: newEndDate,
-          status: 'active' as MembershipStatus,
+          status: "active" as MembershipStatus,
           autoRenew: false,
         },
       });
@@ -646,7 +666,7 @@ async function activateMembershipBenefits(order: any) {
         data: {
           userId,
           level: product.level as MembershipLevel,
-          status: 'active' as MembershipStatus,
+          status: "active" as MembershipStatus,
           startDate: now,
           endDate,
           autoRenew: false,
@@ -670,7 +690,7 @@ async function activateMembershipBenefits(order: any) {
       },
     });
   } catch (error) {
-    console.error('Error activating membership benefits:', error);
+    console.error("Error activating membership benefits:", error);
     throw error;
   }
 }

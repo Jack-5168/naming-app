@@ -15,18 +15,18 @@ React 18 引入的 **Lane 模型** 是并发渲染的核心调度机制。它回
 
 ### 1.1 Lane vs Priority 的演进
 
-| React 版本 | 调度模型 | 特点 |
-|-----------|---------|------|
-| React 15 | Stack Reconciler | 同步渲染，不可中断 |
-| React 16 | Fiber + expirationTime | 基于时间戳的优先级，粒度粗 |
-| React 17 | Lane (实验性) | 位运算优先级，更精细 |
-| React 18+ | Lane (正式) | 31 个 Lane 位，支持中断/恢复/纠缠/过期 |
+| React 版本 | 调度模型               | 特点                                   |
+| ---------- | ---------------------- | -------------------------------------- |
+| React 15   | Stack Reconciler       | 同步渲染，不可中断                     |
+| React 16   | Fiber + expirationTime | 基于时间戳的优先级，粒度粗             |
+| React 17   | Lane (实验性)          | 位运算优先级，更精细                   |
+| React 18+  | Lane (正式)            | 31 个 Lane 位，支持中断/恢复/纠缠/过期 |
 
 **关键洞察：Lane 本质是一个 31-bit 整数，每个 bit 代表一个优先级通道。**
 
 ```typescript
-export type Lanes = number;  // 多个 Lane 的集合（位掩码）
-export type Lane = number;   // 单个 Lane（一个 bit）
+export type Lanes = number; // 多个 Lane 的集合（位掩码）
+export type Lane = number; // 单个 Lane（一个 bit）
 ```
 
 ### 1.2 31 个 Lane 的完整布局
@@ -110,26 +110,26 @@ export const DeferredLane: Lane =    0b1000000000000000000000000000000;  // bit 
 
 **逐行解析：**
 
-| 行号 | 代码 | 作用 |
-|------|------|------|
-| `TotalLanes = 31` | 31 个 Lane | JS 位运算只支持 31 位有符号整数（第 32 位是符号位） |
-| `NoLanes = 0` | 空掩码 | 表示"没有待处理的工作" |
-| `SyncHydrationLane` bit 0 | 最高优先级 | 仅用于 SSR 水合，比普通 SyncLane 更高 |
-| `SyncLane` bit 1 | 同步更新 | `flushSync()`、`useState` 同步调用、事件处理器中的 setState |
-| `InputContinuousLane` bit 3 | 连续输入 | `onMouseMove`、`onScroll` 等高频事件 |
-| `DefaultLane` bit 5 | 默认优先级 | 普通的 `startTransition` 之外的 setState |
-| `TransitionLanes` bit 7-20 | 14 个 Transition Lane | `startTransition` / `useTransition` 的更新，可被打断 |
-| `RetryLanes` bit 22-25 | 4 个 Retry Lane | Suspense 数据加载完成后的重试 |
-| `IdleLane` bit 28 | 空闲优先级 | `useId` / 低优先级后台任务 |
-| `OffscreenLane` bit 29 | 离线渲染 | `display: none` 的组件、增量水合 |
-| `DeferredLane` bit 30 | 延迟渲染 | `useDeferredValue` 的延迟值 |
+| 行号                        | 代码                  | 作用                                                        |
+| --------------------------- | --------------------- | ----------------------------------------------------------- |
+| `TotalLanes = 31`           | 31 个 Lane            | JS 位运算只支持 31 位有符号整数（第 32 位是符号位）         |
+| `NoLanes = 0`               | 空掩码                | 表示"没有待处理的工作"                                      |
+| `SyncHydrationLane` bit 0   | 最高优先级            | 仅用于 SSR 水合，比普通 SyncLane 更高                       |
+| `SyncLane` bit 1            | 同步更新              | `flushSync()`、`useState` 同步调用、事件处理器中的 setState |
+| `InputContinuousLane` bit 3 | 连续输入              | `onMouseMove`、`onScroll` 等高频事件                        |
+| `DefaultLane` bit 5         | 默认优先级            | 普通的 `startTransition` 之外的 setState                    |
+| `TransitionLanes` bit 7-20  | 14 个 Transition Lane | `startTransition` / `useTransition` 的更新，可被打断        |
+| `RetryLanes` bit 22-25      | 4 个 Retry Lane       | Suspense 数据加载完成后的重试                               |
+| `IdleLane` bit 28           | 空闲优先级            | `useId` / 低优先级后台任务                                  |
+| `OffscreenLane` bit 29      | 离线渲染              | `display: none` 的组件、增量水合                            |
+| `DeferredLane` bit 30       | 延迟渲染              | `useDeferredValue` 的延迟值                                 |
 
 ### 2.2 核心位运算工具函数（源码第 260-320 行）
 
 ```typescript
 // === 获取最高优先级 Lane ===
 export function getHighestPriorityLane(lanes: Lanes): Lane {
-  return lanes & -lanes;  // 经典技巧：x & (-x) 提取最低位的 1
+  return lanes & -lanes; // 经典技巧：x & (-x) 提取最低位的 1
 }
 ```
 
@@ -156,22 +156,22 @@ export function getHighestPriorityLane(lanes: Lanes): Lane {
 ```typescript
 // === 合并 Lane ===
 export function mergeLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
-  return a | b;  // 位或运算：合并两个 Lane 集合
+  return a | b; // 位或运算：合并两个 Lane 集合
 }
 
 // === 移除 Lane ===
 export function removeLanes(set: Lanes, subset: Lanes | Lane): Lanes {
-  return set & ~subset;  // 位与非：从集合中移除指定 Lane
+  return set & ~subset; // 位与非：从集合中移除指定 Lane
 }
 
 // === 子集检查 ===
 export function isSubsetOfLanes(set: Lanes, subset: Lanes | Lane): boolean {
-  return (set & subset) === subset;  // subset 的所有 bit 都在 set 中
+  return (set & subset) === subset; // subset 的所有 bit 都在 set 中
 }
 
 // === 交集检查 ===
 export function includesSomeLane(a: Lanes | Lane, b: Lanes | Lane): boolean {
-  return (a & b) !== NoLanes;  // 两个集合是否有重叠
+  return (a & b) !== NoLanes; // 两个集合是否有重叠
 }
 
 // === 更高优先级 ===
@@ -303,9 +303,9 @@ let nextRetryLane: Lane = RetryLane1;
 export function claimNextTransitionUpdateLane(): Lane {
   // 循环分配 Transition Lane，避免所有 transition 挤在同一个 Lane
   const lane = nextTransitionUpdateLane;
-  nextTransitionUpdateLane <<= 1;  // 左移一位，指向下一个 Lane
+  nextTransitionUpdateLane <<= 1; // 左移一位，指向下一个 Lane
   if ((nextTransitionUpdateLane & TransitionUpdateLanes) === NoLanes) {
-    nextTransitionUpdateLane = TransitionLane1;  // 溢出后回绕
+    nextTransitionUpdateLane = TransitionLane1; // 溢出后回绕
   }
   return lane;
 }
@@ -321,20 +321,20 @@ function computeExpirationTime(lane: Lane, currentTime: number) {
     case SyncLane:
     case InputContinuousLane:
     case GestureLane:
-      return currentTime + syncLaneExpirationMs;  // ~5s (用户交互)
+      return currentTime + syncLaneExpirationMs; // ~5s (用户交互)
     case DefaultLane:
     case TransitionLanes:
-      return currentTime + transitionLaneExpirationMs;  // ~5s
+      return currentTime + transitionLaneExpirationMs; // ~5s
     case RetryLane1:
     case RetryLane2:
     case RetryLane3:
     case RetryLane4:
       return enableRetryLaneExpiration
         ? currentTime + retryLaneExpirationMs
-        : NoTimestamp;  // Retry 默认不过期
+        : NoTimestamp; // Retry 默认不过期
     case IdleLane:
     case OffscreenLane:
-      return NoTimestamp;  // Idle 永不过期
+      return NoTimestamp; // Idle 永不过期
   }
 }
 
@@ -352,13 +352,16 @@ export function markStarvedLanesAsExpired(
     : pendingLanes & ~RetryLanes;
 
   while (lanes > 0) {
-    const index = pickArbitraryLaneIndex(lanes);  // 31 - clz32(lanes)
+    const index = pickArbitraryLaneIndex(lanes); // 31 - clz32(lanes)
     const lane = 1 << index;
 
     const expirationTime = expirationTimes[index];
     if (expirationTime === NoTimestamp) {
       // 首次计算过期时间
-      if ((lane & suspendedLanes) === NoLanes || (lane & pingedLanes) !== NoLanes) {
+      if (
+        (lane & suspendedLanes) === NoLanes ||
+        (lane & pingedLanes) !== NoLanes
+      ) {
         expirationTimes[index] = computeExpirationTime(lane, currentTime);
       }
     } else if (expirationTime <= currentTime) {
@@ -366,7 +369,7 @@ export function markStarvedLanesAsExpired(
       root.expiredLanes |= lane;
     }
 
-    lanes &= ~lane;  // 清除已处理的 bit
+    lanes &= ~lane; // 清除已处理的 bit
   }
 }
 ```
@@ -386,6 +389,7 @@ Lane 创建时:
 ```
 
 **过期时间常量：**
+
 - Sync/InputContinuous: ~5 秒（用户交互不能等太久）
 - Transition: ~5 秒
 - Retry: 默认不过期（数据加载时间不可控）
@@ -399,25 +403,25 @@ Lane 创建时:
 
 ```typescript
 // === 执行上下文（位掩码） ===
-export const NoContext = 0b000;          // 无上下文
-const BatchedContext = 0b001;            // 批量更新中
-export const RenderContext = 0b010;      // 正在 Render 阶段
-export const CommitContext = 0b100;      // 正在 Commit 阶段
+export const NoContext = 0b000; // 无上下文
+const BatchedContext = 0b001; // 批量更新中
+export const RenderContext = 0b010; // 正在 Render 阶段
+export const CommitContext = 0b100; // 正在 Commit 阶段
 
 // === 渲染退出状态 ===
-const RootInProgress = 0;    // 渲染中
-const RootFatalErrored = 1;  // 致命错误
-const RootErrored = 2;       // 可恢复错误
-const RootSuspended = 3;     // 挂起（等待数据）
-const RootSuspendedWithDelay = 4;  // 挂起（延迟提交）
-const RootCompleted = 5;     // 完成
-const RootSuspendedAtTheShell = 6;  // Shell 层挂起
+const RootInProgress = 0; // 渲染中
+const RootFatalErrored = 1; // 致命错误
+const RootErrored = 2; // 可恢复错误
+const RootSuspended = 3; // 挂起（等待数据）
+const RootSuspendedWithDelay = 4; // 挂起（延迟提交）
+const RootCompleted = 5; // 完成
+const RootSuspendedAtTheShell = 6; // Shell 层挂起
 
 // === 全局变量（整个 reconciler 共享） ===
 let executionContext: ExecutionContext = NoContext;
-let workInProgressRoot: FiberRoot | null = null;  // 当前正在处理的 Root
-let workInProgress: Fiber | null = null;          // 当前正在处理的 Fiber
-let workInProgressRootRenderLanes: Lanes = NoLanes;  // 当前渲染的 Lane
+let workInProgressRoot: FiberRoot | null = null; // 当前正在处理的 Root
+let workInProgress: Fiber | null = null; // 当前正在处理的 Fiber
+let workInProgressRootRenderLanes: Lanes = NoLanes; // 当前渲染的 Lane
 ```
 
 **关键设计：全局变量 = Fiber 树的"游标"。**
@@ -513,20 +517,20 @@ export function performWorkOnRoot(
 ): void {
   // 第 1 步: 安全检查
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
-    throw new Error('Should not already be working.');
+    throw new Error("Should not already be working.");
   }
 
   // 第 2 步: 决定是否使用时间切片
   const shouldTimeSlice =
     (!forceSync &&
-     !includesBlockingLane(lanes) &&       // 不是阻塞性 Lane (Sync/Default/Input)
-     !includesExpiredLane(root, lanes)) || // 没有过期的 Lane
+      !includesBlockingLane(lanes) && // 不是阻塞性 Lane (Sync/Default/Input)
+      !includesExpiredLane(root, lanes)) || // 没有过期的 Lane
     checkIfRootIsPrerendering(root, lanes); // 或者正在预渲染
 
   // 第 3 步: 执行渲染
   let exitStatus: RootExitStatus = shouldTimeSlice
-    ? renderRootConcurrent(root, lanes)    // 并发模式：可中断
-    : renderRootSync(root, lanes, true);   // 同步模式：不可中断
+    ? renderRootConcurrent(root, lanes) // 并发模式：可中断
+    : renderRootSync(root, lanes, true); // 同步模式：不可中断
 
   // 第 4 步: 处理退出状态
   let renderWasConcurrent = shouldTimeSlice;
@@ -538,7 +542,10 @@ export function performWorkOnRoot(
     } else {
       // 渲染完成，检查外部存储一致性
       const finishedWork = root.current.alternate;
-      if (renderWasConcurrent && !isRenderConsistentWithExternalStores(finishedWork)) {
+      if (
+        renderWasConcurrent &&
+        !isRenderConsistentWithExternalStores(finishedWork)
+      ) {
         // 并发渲染期间外部存储被修改 → 重新同步渲染
         exitStatus = renderRootSync(root, lanes, false);
         renderWasConcurrent = false;
@@ -548,7 +555,7 @@ export function performWorkOnRoot(
       // 检查错误
       if (exitStatus === RootErrored) {
         exitStatus = recoverFromConcurrentError(root, lanes, errorRetryLanes);
-        if (exitStatus !== RootErrored) continue;  // 重试
+        if (exitStatus !== RootErrored) continue; // 重试
       }
 
       if (exitStatus === RootFatalErrored) {
@@ -558,7 +565,13 @@ export function performWorkOnRoot(
       }
 
       // 完成渲染 → 提交或等待
-      finishConcurrentRender(root, exitStatus, finishedWork, lanes, renderEndTime);
+      finishConcurrentRender(
+        root,
+        exitStatus,
+        finishedWork,
+        lanes,
+        renderEndTime,
+      );
     }
     break;
   } while (true);
@@ -605,22 +618,22 @@ function workLoopSync() {
 
 **关键区别：**
 
-| 特性 | workLoopConcurrent | workLoopSync |
-|------|-------------------|-------------|
-| `shouldYield()` | ✅ 每步检查 | ❌ 不检查 |
-| 可中断 | ✅ 是 | ❌ 否 |
-| 恢复点 | `workInProgress` 保留 | 不适用 |
-| 使用场景 | Transition/Idle/Retry | Sync/Default/过期 |
+| 特性            | workLoopConcurrent    | workLoopSync      |
+| --------------- | --------------------- | ----------------- |
+| `shouldYield()` | ✅ 每步检查           | ❌ 不检查         |
+| 可中断          | ✅ 是                 | ❌ 否             |
+| 恢复点          | `workInProgress` 保留 | 不适用            |
+| 使用场景        | Transition/Idle/Retry | Sync/Default/过期 |
 
 ### 3.5 markRootUpdated / markRootSuspended — Root 状态管理
 
 ```typescript
 export function markRootUpdated(root: FiberRoot, updateLane: Lane) {
-  root.pendingLanes |= updateLane;  // 添加新的待处理 Lane
+  root.pendingLanes |= updateLane; // 添加新的待处理 Lane
 
   // 新更新可能解除挂起 → 清除挂起标记
   if (updateLane !== IdleLane) {
-    root.suspendedLanes = NoLanes;  // 清除所有挂起
+    root.suspendedLanes = NoLanes; // 清除所有挂起
     root.pingedLanes = NoLanes;
     root.warmLanes = NoLanes;
   }
@@ -632,11 +645,11 @@ export function markRootSuspended(
   spawnedLane: Lane,
   didAttemptEntireTree: boolean,
 ) {
-  root.suspendedLanes |= suspendedLanes;   // 标记挂起的 Lane
-  root.pingedLanes &= ~suspendedLanes;     // 从 pinged 中移除
+  root.suspendedLanes |= suspendedLanes; // 标记挂起的 Lane
+  root.pingedLanes &= ~suspendedLanes; // 从 pinged 中移除
 
   if (didAttemptEntireTree) {
-    root.warmLanes |= suspendedLanes;  // 标记为"已尝试过"
+    root.warmLanes |= suspendedLanes; // 标记为"已尝试过"
   }
 
   // 清除挂起 Lane 的过期时间（它们不再 CPU 绑定）
@@ -715,13 +728,13 @@ pending &=        suspended |=
 
 React 用 31-bit 整数代替了传统的优先级队列（堆/链表），带来以下优势：
 
-| 操作 | 传统队列 | Lane 位运算 |
-|------|---------|-----------|
-| 插入 | O(log n) | O(1) `pendingLanes |= lane` |
-| 获取最高 | O(1) | O(1) `lanes & -lanes` |
-| 合并 | O(n) | O(1) `a \| b` |
-| 移除 | O(n) | O(1) `set & ~subset` |
-| 检查存在 | O(n) | O(1) `a & b !== 0` |
+| 操作     | 传统队列 | Lane 位运算           |
+| -------- | -------- | --------------------- | ------- |
+| 插入     | O(log n) | O(1) `pendingLanes    | = lane` |
+| 获取最高 | O(1)     | O(1) `lanes & -lanes` |
+| 合并     | O(n)     | O(1) `a \| b`         |
+| 移除     | O(n)     | O(1) `set & ~subset`  |
+| 检查存在 | O(n)     | O(1) `a & b !== 0`    |
 
 ### 5.2 Lane 纠缠（Entanglement）
 
@@ -742,7 +755,7 @@ export function getEntangledLanes(root: FiberRoot, renderLanes: Lanes): Lanes {
     while (lanes > 0) {
       const index = pickArbitraryLaneIndex(lanes);
       const lane = 1 << index;
-      entangledLanes |= entanglements[index];  // 传递性纠缠
+      entangledLanes |= entanglements[index]; // 传递性纠缠
       lanes &= ~lane;
     }
   }
@@ -828,15 +841,15 @@ ensureRootIsScheduled(root)
 
 ## 六、与 Vue 3 响应式系统的对比
 
-| 维度 | React Lane | Vue 3 Scheduler |
-|------|-----------|----------------|
-| 优先级模型 | 31-bit 位掩码 | 10 个固定优先级队列 |
-| 中断机制 | `shouldYield()` 每步检查 | 基于优先级队列的调度 |
-| 恢复机制 | `workInProgress` 保留在 Fiber | effect 的 `version` 脏检查 |
-| 并发安全 | Lane 纠缠保证原子性 | Link 双向链表保证依赖一致性 |
-| 饥饿保护 | 过期时间 + 提升为 Sync | 无显式过期机制 |
-| Suspense 协作 | SuspendedReason + Ping | watchEffect 自动重新执行 |
-| 数据结构 | number (位运算) | Set/Map/双向链表 |
+| 维度          | React Lane                    | Vue 3 Scheduler             |
+| ------------- | ----------------------------- | --------------------------- |
+| 优先级模型    | 31-bit 位掩码                 | 10 个固定优先级队列         |
+| 中断机制      | `shouldYield()` 每步检查      | 基于优先级队列的调度        |
+| 恢复机制      | `workInProgress` 保留在 Fiber | effect 的 `version` 脏检查  |
+| 并发安全      | Lane 纠缠保证原子性           | Link 双向链表保证依赖一致性 |
+| 饥饿保护      | 过期时间 + 提升为 Sync        | 无显式过期机制              |
+| Suspense 协作 | SuspendedReason + Ping        | watchEffect 自动重新执行    |
+| 数据结构      | number (位运算)               | Set/Map/双向链表            |
 
 **核心差异：** React Lane 是**调度层**的优先级系统（决定"谁先渲染"），Vue 3 响应式是**数据层**的依赖追踪系统（决定"谁需要更新"）。两者解决的问题不同，但都服务于"高效更新"这个目标。
 
@@ -849,23 +862,23 @@ ensureRootIsScheduled(root)
 ```typescript
 // 用户点击事件中的 setState
 function handleClick() {
-  setCount(c => c + 1);  // → DiscreteEventPriority → SyncLane
+  setCount((c) => c + 1); // → DiscreteEventPriority → SyncLane
 }
 
 // onMouseMove 中的 setState
 function handleMove(e) {
-  setPos({ x: e.clientX, y: e.clientY });  // → DefaultEventPriority → InputContinuousLane
+  setPos({ x: e.clientX, y: e.clientY }); // → DefaultEventPriority → InputContinuousLane
 }
 
 // startTransition 中的 setState
 function handleSearch(q) {
   startTransition(() => {
-    setQuery(q);  // → TransitionLane (循环分配)
+    setQuery(q); // → TransitionLane (循环分配)
   });
 }
 
 // useDeferredValue
-const deferredQuery = useDeferredValue(query);  // → DeferredLane
+const deferredQuery = useDeferredValue(query); // → DeferredLane
 ```
 
 ### 7.2 Lane 抢占的实际效果
@@ -928,6 +941,7 @@ T5.5: 渲染完成
 ```
 
 这个技巧被用于：
+
 - `getHighestPriorityLane(lanes)` — 获取最高优先级 Lane
 - `pickArbitraryLane(lanes)` — 任意选择一个 Lane
 - `pickArbitraryLaneIndex(lanes)` — 获取 Lane 的 bit 索引
@@ -936,7 +950,7 @@ T5.5: 渲染完成
 
 ```typescript
 function pickArbitraryLaneIndex(lanes: Lanes) {
-  return 31 - clz32(lanes);  // 31 - 前导零数量 = 最高位索引
+  return 31 - clz32(lanes); // 31 - 前导零数量 = 最高位索引
 }
 ```
 
@@ -945,10 +959,14 @@ function pickArbitraryLaneIndex(lanes: Lanes) {
 ### 8.3 渲染阶段更新的特殊处理
 
 ```typescript
-if ((executionContext & RenderContext) !== NoContext && root === workInProgressRoot) {
+if (
+  (executionContext & RenderContext) !== NoContext &&
+  root === workInProgressRoot
+) {
   // 渲染阶段更新 → 合并到当前渲染的 Lane
   workInProgressRootRenderPhaseUpdatedLanes = mergeLanes(
-    workInProgressRootRenderPhaseUpdatedLanes, lane
+    workInProgressRootRenderPhaseUpdatedLanes,
+    lane,
   );
 }
 ```
@@ -968,5 +986,5 @@ React 允许在渲染阶段更新状态（虽然不推荐），这些更新会�
 
 ---
 
-*精读完成于 2026-05-06 04:00 AM*
-*下次精读方向：React Commit 阶段 (ReactFiberCommitWork.js) — DOM 变更的批量提交机制*
+_精读完成于 2026-05-06 04:00 AM_
+_下次精读方向：React Commit 阶段 (ReactFiberCommitWork.js) — DOM 变更的批量提交机制_

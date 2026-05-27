@@ -12,129 +12,849 @@
     "J": "判断 (Judging) vs 知觉 (Perceiving)"
   },
   "questions": [
-    {"id": "EI01", "dimension": "E", "pole": "E", "text": "在聚会中，我通常会主动认识新朋友", "reverse": false},
-    {"id": "EI02", "dimension": "E", "pole": "E", "text": "我喜欢成为众人关注的焦点", "reverse": false},
-    {"id": "EI03", "dimension": "E", "pole": "E", "text": "与人交流后我感到精力充沛", "reverse": false},
-    {"id": "EI04", "dimension": "E", "pole": "E", "text": "我更喜欢团队工作而不是独自工作", "reverse": false},
-    {"id": "EI05", "dimension": "E", "pole": "E", "text": "我经常主动发起社交活动", "reverse": false},
-    {"id": "EI06", "dimension": "E", "pole": "E", "text": "在陌生环境中我能很快融入", "reverse": false},
-    {"id": "EI07", "dimension": "E", "pole": "E", "text": "我喜欢热闹的环境", "reverse": false},
-    {"id": "EI08", "dimension": "E", "pole": "E", "text": "我有很多朋友", "reverse": false},
-    {"id": "EI09", "dimension": "E", "pole": "E", "text": "我享受在人群中发言的感觉", "reverse": false},
-    {"id": "EI10", "dimension": "E", "pole": "E", "text": "独处太久会让我感到不适", "reverse": false},
-    {"id": "EI11", "dimension": "E", "pole": "E", "text": "我倾向于边说边思考", "reverse": false},
-    {"id": "EI12", "dimension": "E", "pole": "E", "text": "我喜欢参加各种社交聚会", "reverse": false},
-    {"id": "EI13", "dimension": "E", "pole": "E", "text": "我善于在人群中活跃气氛", "reverse": false},
-    {"id": "EI14", "dimension": "E", "pole": "E", "text": "我更喜欢与他人一起度过闲暇时间", "reverse": false},
-    {"id": "EI15", "dimension": "E", "pole": "E", "text": "我容易与陌生人交谈", "reverse": false},
-    {"id": "EI16", "dimension": "E", "pole": "I", "text": "我更喜欢独处而不是与人在一起", "reverse": false},
-    {"id": "EI17", "dimension": "E", "pole": "I", "text": "社交活动后我需要独处来恢复精力", "reverse": false},
-    {"id": "EI18", "dimension": "E", "pole": "I", "text": "我更喜欢小圈子的深度交流", "reverse": false},
-    {"id": "EI19", "dimension": "E", "pole": "I", "text": "在发言前我喜欢先思考清楚", "reverse": false},
-    {"id": "EI20", "dimension": "E", "pole": "I", "text": "我倾向于保持低调", "reverse": false},
-    {"id": "EI21", "dimension": "E", "pole": "I", "text": "大型聚会让我感到疲惫", "reverse": false},
-    {"id": "EI22", "dimension": "E", "pole": "I", "text": "我更喜欢倾听而不是表达", "reverse": false},
-    {"id": "EI23", "dimension": "E", "pole": "I", "text": "我需要大量的私人空间", "reverse": false},
-    {"id": "EI24", "dimension": "E", "pole": "I", "text": "我更喜欢书面沟通而不是口头沟通", "reverse": false},
-    {"id": "EI25", "dimension": "E", "pole": "I", "text": "在群体中我通常保持安静", "reverse": false},
-    {"id": "EI26", "dimension": "E", "pole": "I", "text": "我不喜欢成为关注的焦点", "reverse": false},
-    {"id": "EI27", "dimension": "E", "pole": "I", "text": "我更喜欢一对一的交流", "reverse": false},
-    {"id": "EI28", "dimension": "E", "pole": "I", "text": "独处让我感到舒适和自在", "reverse": false},
-    {"id": "EI29", "dimension": "E", "pole": "I", "text": "我倾向于先观察再参与", "reverse": false},
-    {"id": "EI30", "dimension": "E", "pole": "I", "text": "我的朋友圈比较小但关系深厚", "reverse": false},
-    
-    {"id": "SN01", "dimension": "S", "pole": "S", "text": "我注重事实和细节", "reverse": false},
-    {"id": "SN02", "dimension": "S", "pole": "S", "text": "我更相信实际经验而不是理论", "reverse": false},
-    {"id": "SN03", "dimension": "S", "pole": "S", "text": "我喜欢按部就班地做事", "reverse": false},
-    {"id": "SN04", "dimension": "S", "pole": "S", "text": "我关注当下而不是未来", "reverse": false},
-    {"id": "SN05", "dimension": "S", "pole": "S", "text": "我更喜欢具体的信息而不是抽象概念", "reverse": false},
-    {"id": "SN06", "dimension": "S", "pole": "S", "text": "我善于记住细节", "reverse": false},
-    {"id": "SN07", "dimension": "S", "pole": "S", "text": "我偏好使用已经验证过的方法", "reverse": false},
-    {"id": "SN08", "dimension": "S", "pole": "S", "text": "我注重实际效果", "reverse": false},
-    {"id": "SN09", "dimension": "S", "pole": "S", "text": "我喜欢清晰明确的指示", "reverse": false},
-    {"id": "SN10", "dimension": "S", "pole": "S", "text": "我更关注现实而不是可能性", "reverse": false},
-    {"id": "SN11", "dimension": "S", "pole": "S", "text": "我善于处理具体的事务", "reverse": false},
-    {"id": "SN12", "dimension": "S", "pole": "S", "text": "我更喜欢实际的应用而不是理论探讨", "reverse": false},
-    {"id": "SN13", "dimension": "S", "pole": "S", "text": "我注重感官体验", "reverse": false},
-    {"id": "SN14", "dimension": "S", "pole": "S", "text": "我倾向于相信已经发生的事情", "reverse": false},
-    {"id": "SN15", "dimension": "S", "pole": "S", "text": "我做事讲究实际和务实", "reverse": false},
-    {"id": "SN16", "dimension": "S", "pole": "N", "text": "我喜欢思考未来的可能性", "reverse": false},
-    {"id": "SN17", "dimension": "S", "pole": "N", "text": "我善于发现事物之间的联系和模式", "reverse": false},
-    {"id": "SN18", "dimension": "S", "pole": "N", "text": "我喜欢抽象思考和理论探讨", "reverse": false},
-    {"id": "SN19", "dimension": "S", "pole": "N", "text": "我常有灵光一现的顿悟", "reverse": false},
-    {"id": "SN20", "dimension": "S", "pole": "N", "text": "我更喜欢创新而不是遵循传统", "reverse": false},
-    {"id": "SN21", "dimension": "S", "pole": "N", "text": "我善于想象和构思", "reverse": false},
-    {"id": "SN22", "dimension": "S", "pole": "N", "text": "我关注整体而不是细节", "reverse": false},
-    {"id": "SN23", "dimension": "S", "pole": "N", "text": "我喜欢探索新的想法和概念", "reverse": false},
-    {"id": "SN24", "dimension": "S", "pole": "N", "text": "我倾向于看到事物的潜在意义", "reverse": false},
-    {"id": "SN25", "dimension": "S", "pole": "N", "text": "我喜欢思考'如果...会怎样'的问题", "reverse": false},
-    {"id": "SN26", "dimension": "S", "pole": "N", "text": "我善于预见未来的趋势", "reverse": false},
-    {"id": "SN27", "dimension": "S", "pole": "N", "text": "我更喜欢理论框架而不是具体事实", "reverse": false},
-    {"id": "SN28", "dimension": "S", "pole": "N", "text": "我常有独特的见解", "reverse": false},
-    {"id": "SN29", "dimension": "S", "pole": "N", "text": "我喜欢用隐喻和象征来思考", "reverse": false},
-    {"id": "SN30", "dimension": "S", "pole": "N", "text": "我善于从不同角度看待问题", "reverse": false},
-    
-    {"id": "TF01", "dimension": "T", "pole": "T", "text": "我做决定时更注重逻辑而不是感受", "reverse": false},
-    {"id": "TF02", "dimension": "T", "pole": "T", "text": "我认为公平比和谐更重要", "reverse": false},
-    {"id": "TF03", "dimension": "T", "pole": "T", "text": "我善于客观分析问题", "reverse": false},
-    {"id": "TF04", "dimension": "T", "pole": "T", "text": "我更看重事情的合理性而不是人的感受", "reverse": false},
-    {"id": "TF05", "dimension": "T", "pole": "T", "text": "在争论中我坚持逻辑正确", "reverse": false},
-    {"id": "TF06", "dimension": "T", "pole": "T", "text": "我倾向于用理性而非情感做判断", "reverse": false},
-    {"id": "TF07", "dimension": "T", "pole": "T", "text": "我认为真相比礼貌更重要", "reverse": false},
-    {"id": "TF08", "dimension": "T", "pole": "T", "text": "我善于发现逻辑漏洞", "reverse": false},
-    {"id": "TF09", "dimension": "T", "pole": "T", "text": "我更喜欢基于事实的讨论", "reverse": false},
-    {"id": "TF10", "dimension": "T", "pole": "T", "text": "我认为原则比人情更重要", "reverse": false},
-    {"id": "TF11", "dimension": "T", "pole": "T", "text": "我善于进行批判性思考", "reverse": false},
-    {"id": "TF12", "dimension": "T", "pole": "T", "text": "我倾向于冷静分析问题", "reverse": false},
-    {"id": "TF13", "dimension": "T", "pole": "T", "text": "我认为效率比感受更重要", "reverse": false},
-    {"id": "TF14", "dimension": "T", "pole": "T", "text": "我更喜欢讲道理而不是讲感情", "reverse": false},
-    {"id": "TF15", "dimension": "T", "pole": "T", "text": "我善于制定客观标准", "reverse": false},
-    {"id": "TF16", "dimension": "T", "pole": "F", "text": "我做决定时更考虑他人的感受", "reverse": false},
-    {"id": "TF17", "dimension": "T", "pole": "F", "text": "我认为和谐比公平更重要", "reverse": false},
-    {"id": "TF18", "dimension": "T", "pole": "F", "text": "我善于理解他人的情感", "reverse": false},
-    {"id": "TF19", "dimension": "T", "pole": "F", "text": "我更看重人的感受而不是事情的合理性", "reverse": false},
-    {"id": "TF20", "dimension": "T", "pole": "F", "text": "在争论中我考虑对方的感受", "reverse": false},
-    {"id": "TF21", "dimension": "T", "pole": "F", "text": "我倾向于用情感和价值观做判断", "reverse": false},
-    {"id": "TF22", "dimension": "T", "pole": "F", "text": "我认为礼貌比真相更重要", "reverse": false},
-    {"id": "TF23", "dimension": "T", "pole": "F", "text": "我善于体察他人的情绪", "reverse": false},
-    {"id": "TF24", "dimension": "T", "pole": "F", "text": "我更喜欢考虑人的因素的讨论", "reverse": false},
-    {"id": "TF25", "dimension": "T", "pole": "F", "text": "我认为人情比原则更重要", "reverse": false},
-    {"id": "TF26", "dimension": "T", "pole": "F", "text": "我善于进行同理心思考", "reverse": false},
-    {"id": "TF27", "dimension": "T", "pole": "F", "text": "我倾向于考虑问题对人的影响", "reverse": false},
-    {"id": "TF28", "dimension": "T", "pole": "F", "text": "我认为感受比效率更重要", "reverse": false},
-    {"id": "TF29", "dimension": "T", "pole": "F", "text": "我更喜欢讲感情而不是讲道理", "reverse": false},
-    {"id": "TF30", "dimension": "T", "pole": "F", "text": "我善于维护人际关系的和谐", "reverse": false},
-    
-    {"id": "JP01", "dimension": "J", "pole": "J", "text": "我喜欢事先做好计划", "reverse": false},
-    {"id": "JP02", "dimension": "J", "pole": "J", "text": "我倾向于提前完成任务", "reverse": false},
-    {"id": "JP03", "dimension": "J", "pole": "J", "text": "我喜欢有条理的生活方式", "reverse": false},
-    {"id": "JP04", "dimension": "J", "pole": "J", "text": "我做决定很快", "reverse": false},
-    {"id": "JP05", "dimension": "J", "pole": "J", "text": "我喜欢按清单做事", "reverse": false},
-    {"id": "JP06", "dimension": "J", "pole": "J", "text": "我注重截止日期", "reverse": false},
-    {"id": "JP07", "dimension": "J", "pole": "J", "text": "我喜欢事情有明确的结果", "reverse": false},
-    {"id": "JP08", "dimension": "J", "pole": "J", "text": "我善于组织和规划", "reverse": false},
-    {"id": "JP09", "dimension": "J", "pole": "J", "text": "我偏好结构化的环境", "reverse": false},
-    {"id": "JP10", "dimension": "J", "pole": "J", "text": "我喜欢把事情安排妥当", "reverse": false},
-    {"id": "JP11", "dimension": "J", "pole": "J", "text": "我倾向于遵循既定计划", "reverse": false},
-    {"id": "JP12", "dimension": "J", "pole": "J", "text": "我喜欢确定性而不是不确定性", "reverse": false},
-    {"id": "JP13", "dimension": "J", "pole": "J", "text": "我善于制定时间表", "reverse": false},
-    {"id": "JP14", "dimension": "J", "pole": "J", "text": "我偏好有规则的环境", "reverse": false},
-    {"id": "JP15", "dimension": "J", "pole": "J", "text": "我喜欢完成任务后的成就感", "reverse": false},
-    {"id": "JP16", "dimension": "J", "pole": "P", "text": "我喜欢保持选择的开放性", "reverse": false},
-    {"id": "JP17", "dimension": "J", "pole": "P", "text": "我倾向于在最后一刻完成任务", "reverse": false},
-    {"id": "JP18", "dimension": "J", "pole": "P", "text": "我喜欢灵活随性的生活方式", "reverse": false},
-    {"id": "JP19", "dimension": "J", "pole": "P", "text": "我做决定比较慢，喜欢收集更多信息", "reverse": false},
-    {"id": "JP20", "dimension": "J", "pole": "P", "text": "我不喜欢被计划束缚", "reverse": false},
-    {"id": "JP21", "dimension": "J", "pole": "P", "text": "我更能适应突发变化", "reverse": false},
-    {"id": "JP22", "dimension": "J", "pole": "P", "text": "我喜欢事情有回旋的余地", "reverse": false},
-    {"id": "JP23", "dimension": "J", "pole": "P", "text": "我善于应对即兴情况", "reverse": false},
-    {"id": "JP24", "dimension": "J", "pole": "P", "text": "我偏好自由开放的环境", "reverse": false},
-    {"id": "JP25", "dimension": "J", "pole": "P", "text": "我喜欢边做边调整", "reverse": false},
-    {"id": "JP26", "dimension": "J", "pole": "P", "text": "我倾向于保持多种可能性", "reverse": false},
-    {"id": "JP27", "dimension": "J", "pole": "P", "text": "我喜欢不确定性带来的刺激", "reverse": false},
-    {"id": "JP28", "dimension": "J", "pole": "P", "text": "我善于灵活应变", "reverse": false},
-    {"id": "JP29", "dimension": "J", "pole": "P", "text": "我偏好没有太多限制的环境", "reverse": false},
-    {"id": "JP30", "dimension": "J", "pole": "P", "text": "我享受过程中的探索而非结果", "reverse": false}
+    {
+      "id": "EI01",
+      "dimension": "E",
+      "pole": "E",
+      "text": "在聚会中，我通常会主动认识新朋友",
+      "reverse": false
+    },
+    {
+      "id": "EI02",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我喜欢成为众人关注的焦点",
+      "reverse": false
+    },
+    {
+      "id": "EI03",
+      "dimension": "E",
+      "pole": "E",
+      "text": "与人交流后我感到精力充沛",
+      "reverse": false
+    },
+    {
+      "id": "EI04",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我更喜欢团队工作而不是独自工作",
+      "reverse": false
+    },
+    {
+      "id": "EI05",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我经常主动发起社交活动",
+      "reverse": false
+    },
+    {
+      "id": "EI06",
+      "dimension": "E",
+      "pole": "E",
+      "text": "在陌生环境中我能很快融入",
+      "reverse": false
+    },
+    {
+      "id": "EI07",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我喜欢热闹的环境",
+      "reverse": false
+    },
+    {
+      "id": "EI08",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我有很多朋友",
+      "reverse": false
+    },
+    {
+      "id": "EI09",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我享受在人群中发言的感觉",
+      "reverse": false
+    },
+    {
+      "id": "EI10",
+      "dimension": "E",
+      "pole": "E",
+      "text": "独处太久会让我感到不适",
+      "reverse": false
+    },
+    {
+      "id": "EI11",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我倾向于边说边思考",
+      "reverse": false
+    },
+    {
+      "id": "EI12",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我喜欢参加各种社交聚会",
+      "reverse": false
+    },
+    {
+      "id": "EI13",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我善于在人群中活跃气氛",
+      "reverse": false
+    },
+    {
+      "id": "EI14",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我更喜欢与他人一起度过闲暇时间",
+      "reverse": false
+    },
+    {
+      "id": "EI15",
+      "dimension": "E",
+      "pole": "E",
+      "text": "我容易与陌生人交谈",
+      "reverse": false
+    },
+    {
+      "id": "EI16",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我更喜欢独处而不是与人在一起",
+      "reverse": false
+    },
+    {
+      "id": "EI17",
+      "dimension": "E",
+      "pole": "I",
+      "text": "社交活动后我需要独处来恢复精力",
+      "reverse": false
+    },
+    {
+      "id": "EI18",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我更喜欢小圈子的深度交流",
+      "reverse": false
+    },
+    {
+      "id": "EI19",
+      "dimension": "E",
+      "pole": "I",
+      "text": "在发言前我喜欢先思考清楚",
+      "reverse": false
+    },
+    {
+      "id": "EI20",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我倾向于保持低调",
+      "reverse": false
+    },
+    {
+      "id": "EI21",
+      "dimension": "E",
+      "pole": "I",
+      "text": "大型聚会让我感到疲惫",
+      "reverse": false
+    },
+    {
+      "id": "EI22",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我更喜欢倾听而不是表达",
+      "reverse": false
+    },
+    {
+      "id": "EI23",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我需要大量的私人空间",
+      "reverse": false
+    },
+    {
+      "id": "EI24",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我更喜欢书面沟通而不是口头沟通",
+      "reverse": false
+    },
+    {
+      "id": "EI25",
+      "dimension": "E",
+      "pole": "I",
+      "text": "在群体中我通常保持安静",
+      "reverse": false
+    },
+    {
+      "id": "EI26",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我不喜欢成为关注的焦点",
+      "reverse": false
+    },
+    {
+      "id": "EI27",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我更喜欢一对一的交流",
+      "reverse": false
+    },
+    {
+      "id": "EI28",
+      "dimension": "E",
+      "pole": "I",
+      "text": "独处让我感到舒适和自在",
+      "reverse": false
+    },
+    {
+      "id": "EI29",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我倾向于先观察再参与",
+      "reverse": false
+    },
+    {
+      "id": "EI30",
+      "dimension": "E",
+      "pole": "I",
+      "text": "我的朋友圈比较小但关系深厚",
+      "reverse": false
+    },
+
+    {
+      "id": "SN01",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我注重事实和细节",
+      "reverse": false
+    },
+    {
+      "id": "SN02",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我更相信实际经验而不是理论",
+      "reverse": false
+    },
+    {
+      "id": "SN03",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我喜欢按部就班地做事",
+      "reverse": false
+    },
+    {
+      "id": "SN04",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我关注当下而不是未来",
+      "reverse": false
+    },
+    {
+      "id": "SN05",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我更喜欢具体的信息而不是抽象概念",
+      "reverse": false
+    },
+    {
+      "id": "SN06",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我善于记住细节",
+      "reverse": false
+    },
+    {
+      "id": "SN07",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我偏好使用已经验证过的方法",
+      "reverse": false
+    },
+    {
+      "id": "SN08",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我注重实际效果",
+      "reverse": false
+    },
+    {
+      "id": "SN09",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我喜欢清晰明确的指示",
+      "reverse": false
+    },
+    {
+      "id": "SN10",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我更关注现实而不是可能性",
+      "reverse": false
+    },
+    {
+      "id": "SN11",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我善于处理具体的事务",
+      "reverse": false
+    },
+    {
+      "id": "SN12",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我更喜欢实际的应用而不是理论探讨",
+      "reverse": false
+    },
+    {
+      "id": "SN13",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我注重感官体验",
+      "reverse": false
+    },
+    {
+      "id": "SN14",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我倾向于相信已经发生的事情",
+      "reverse": false
+    },
+    {
+      "id": "SN15",
+      "dimension": "S",
+      "pole": "S",
+      "text": "我做事讲究实际和务实",
+      "reverse": false
+    },
+    {
+      "id": "SN16",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我喜欢思考未来的可能性",
+      "reverse": false
+    },
+    {
+      "id": "SN17",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我善于发现事物之间的联系和模式",
+      "reverse": false
+    },
+    {
+      "id": "SN18",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我喜欢抽象思考和理论探讨",
+      "reverse": false
+    },
+    {
+      "id": "SN19",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我常有灵光一现的顿悟",
+      "reverse": false
+    },
+    {
+      "id": "SN20",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我更喜欢创新而不是遵循传统",
+      "reverse": false
+    },
+    {
+      "id": "SN21",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我善于想象和构思",
+      "reverse": false
+    },
+    {
+      "id": "SN22",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我关注整体而不是细节",
+      "reverse": false
+    },
+    {
+      "id": "SN23",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我喜欢探索新的想法和概念",
+      "reverse": false
+    },
+    {
+      "id": "SN24",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我倾向于看到事物的潜在意义",
+      "reverse": false
+    },
+    {
+      "id": "SN25",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我喜欢思考'如果...会怎样'的问题",
+      "reverse": false
+    },
+    {
+      "id": "SN26",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我善于预见未来的趋势",
+      "reverse": false
+    },
+    {
+      "id": "SN27",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我更喜欢理论框架而不是具体事实",
+      "reverse": false
+    },
+    {
+      "id": "SN28",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我常有独特的见解",
+      "reverse": false
+    },
+    {
+      "id": "SN29",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我喜欢用隐喻和象征来思考",
+      "reverse": false
+    },
+    {
+      "id": "SN30",
+      "dimension": "S",
+      "pole": "N",
+      "text": "我善于从不同角度看待问题",
+      "reverse": false
+    },
+
+    {
+      "id": "TF01",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我做决定时更注重逻辑而不是感受",
+      "reverse": false
+    },
+    {
+      "id": "TF02",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我认为公平比和谐更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF03",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我善于客观分析问题",
+      "reverse": false
+    },
+    {
+      "id": "TF04",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我更看重事情的合理性而不是人的感受",
+      "reverse": false
+    },
+    {
+      "id": "TF05",
+      "dimension": "T",
+      "pole": "T",
+      "text": "在争论中我坚持逻辑正确",
+      "reverse": false
+    },
+    {
+      "id": "TF06",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我倾向于用理性而非情感做判断",
+      "reverse": false
+    },
+    {
+      "id": "TF07",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我认为真相比礼貌更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF08",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我善于发现逻辑漏洞",
+      "reverse": false
+    },
+    {
+      "id": "TF09",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我更喜欢基于事实的讨论",
+      "reverse": false
+    },
+    {
+      "id": "TF10",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我认为原则比人情更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF11",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我善于进行批判性思考",
+      "reverse": false
+    },
+    {
+      "id": "TF12",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我倾向于冷静分析问题",
+      "reverse": false
+    },
+    {
+      "id": "TF13",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我认为效率比感受更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF14",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我更喜欢讲道理而不是讲感情",
+      "reverse": false
+    },
+    {
+      "id": "TF15",
+      "dimension": "T",
+      "pole": "T",
+      "text": "我善于制定客观标准",
+      "reverse": false
+    },
+    {
+      "id": "TF16",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我做决定时更考虑他人的感受",
+      "reverse": false
+    },
+    {
+      "id": "TF17",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我认为和谐比公平更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF18",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我善于理解他人的情感",
+      "reverse": false
+    },
+    {
+      "id": "TF19",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我更看重人的感受而不是事情的合理性",
+      "reverse": false
+    },
+    {
+      "id": "TF20",
+      "dimension": "T",
+      "pole": "F",
+      "text": "在争论中我考虑对方的感受",
+      "reverse": false
+    },
+    {
+      "id": "TF21",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我倾向于用情感和价值观做判断",
+      "reverse": false
+    },
+    {
+      "id": "TF22",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我认为礼貌比真相更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF23",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我善于体察他人的情绪",
+      "reverse": false
+    },
+    {
+      "id": "TF24",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我更喜欢考虑人的因素的讨论",
+      "reverse": false
+    },
+    {
+      "id": "TF25",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我认为人情比原则更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF26",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我善于进行同理心思考",
+      "reverse": false
+    },
+    {
+      "id": "TF27",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我倾向于考虑问题对人的影响",
+      "reverse": false
+    },
+    {
+      "id": "TF28",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我认为感受比效率更重要",
+      "reverse": false
+    },
+    {
+      "id": "TF29",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我更喜欢讲感情而不是讲道理",
+      "reverse": false
+    },
+    {
+      "id": "TF30",
+      "dimension": "T",
+      "pole": "F",
+      "text": "我善于维护人际关系的和谐",
+      "reverse": false
+    },
+
+    {
+      "id": "JP01",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢事先做好计划",
+      "reverse": false
+    },
+    {
+      "id": "JP02",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我倾向于提前完成任务",
+      "reverse": false
+    },
+    {
+      "id": "JP03",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢有条理的生活方式",
+      "reverse": false
+    },
+    {
+      "id": "JP04",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我做决定很快",
+      "reverse": false
+    },
+    {
+      "id": "JP05",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢按清单做事",
+      "reverse": false
+    },
+    {
+      "id": "JP06",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我注重截止日期",
+      "reverse": false
+    },
+    {
+      "id": "JP07",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢事情有明确的结果",
+      "reverse": false
+    },
+    {
+      "id": "JP08",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我善于组织和规划",
+      "reverse": false
+    },
+    {
+      "id": "JP09",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我偏好结构化的环境",
+      "reverse": false
+    },
+    {
+      "id": "JP10",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢把事情安排妥当",
+      "reverse": false
+    },
+    {
+      "id": "JP11",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我倾向于遵循既定计划",
+      "reverse": false
+    },
+    {
+      "id": "JP12",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢确定性而不是不确定性",
+      "reverse": false
+    },
+    {
+      "id": "JP13",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我善于制定时间表",
+      "reverse": false
+    },
+    {
+      "id": "JP14",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我偏好有规则的环境",
+      "reverse": false
+    },
+    {
+      "id": "JP15",
+      "dimension": "J",
+      "pole": "J",
+      "text": "我喜欢完成任务后的成就感",
+      "reverse": false
+    },
+    {
+      "id": "JP16",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我喜欢保持选择的开放性",
+      "reverse": false
+    },
+    {
+      "id": "JP17",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我倾向于在最后一刻完成任务",
+      "reverse": false
+    },
+    {
+      "id": "JP18",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我喜欢灵活随性的生活方式",
+      "reverse": false
+    },
+    {
+      "id": "JP19",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我做决定比较慢，喜欢收集更多信息",
+      "reverse": false
+    },
+    {
+      "id": "JP20",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我不喜欢被计划束缚",
+      "reverse": false
+    },
+    {
+      "id": "JP21",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我更能适应突发变化",
+      "reverse": false
+    },
+    {
+      "id": "JP22",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我喜欢事情有回旋的余地",
+      "reverse": false
+    },
+    {
+      "id": "JP23",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我善于应对即兴情况",
+      "reverse": false
+    },
+    {
+      "id": "JP24",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我偏好自由开放的环境",
+      "reverse": false
+    },
+    {
+      "id": "JP25",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我喜欢边做边调整",
+      "reverse": false
+    },
+    {
+      "id": "JP26",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我倾向于保持多种可能性",
+      "reverse": false
+    },
+    {
+      "id": "JP27",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我喜欢不确定性带来的刺激",
+      "reverse": false
+    },
+    {
+      "id": "JP28",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我善于灵活应变",
+      "reverse": false
+    },
+    {
+      "id": "JP29",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我偏好没有太多限制的环境",
+      "reverse": false
+    },
+    {
+      "id": "JP30",
+      "dimension": "J",
+      "pole": "P",
+      "text": "我享受过程中的探索而非结果",
+      "reverse": false
+    }
   ],
   "scoring": {
     "scale": [1, 2, 3, 4, 5],

@@ -14,7 +14,7 @@ const authenticate = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -52,13 +52,17 @@ const verifyRefreshToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    
+
     const storedToken = await prisma.refreshToken.findUnique({
       where: { token: refreshToken },
       include: { user: true },
     });
 
-    if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
+    if (
+      !storedToken
+      || storedToken.revoked
+      || storedToken.expiresAt < new Date()
+    ) {
       return res.status(401).json({ error: 'Invalid refresh token' });
     }
 
@@ -71,17 +75,11 @@ const verifyRefreshToken = async (req, res, next) => {
 
 // Generate tokens
 const generateTokens = (userId) => {
-  const accessToken = jwt.sign(
-    { userId },
-    JWT_SECRET,
-    { expiresIn: '2h' }
-  );
+  const accessToken = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '2h' });
 
-  const refreshToken = jwt.sign(
-    { userId },
-    JWT_REFRESH_SECRET,
-    { expiresIn: '30d' }
-  );
+  const refreshToken = jwt.sign({ userId }, JWT_REFRESH_SECRET, {
+    expiresIn: '30d',
+  });
 
   return { accessToken, refreshToken };
 };
@@ -123,7 +121,9 @@ const testRateLimit = async (req, res, next) => {
   });
 
   if (testCount >= 3) {
-    return res.status(429).json({ error: 'Daily test limit reached (3 tests/day)' });
+    return res
+      .status(429)
+      .json({ error: 'Daily test limit reached (3 tests/day)' });
   }
 
   next();

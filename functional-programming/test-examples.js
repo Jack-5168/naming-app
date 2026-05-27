@@ -66,7 +66,10 @@ const Immutable = {
 const list = ['a', 'b', 'c'];
 console.log('add:', Immutable.add(list, 'd'));
 console.log('remove:', Immutable.remove(list, 1));
-console.log('update:', Immutable.update(list, 0, (x) => x.toUpperCase()));
+console.log(
+  'update:',
+  Immutable.update(list, 0, (x) => x.toUpperCase()),
+);
 console.log('insert:', Immutable.insert(list, 1, 'x'));
 console.log('原数组不变:', list);
 
@@ -80,26 +83,47 @@ const lower = (s) => s.toLowerCase();
 const removeVowels = (s) => s.replace(/[aeiou]/g, '');
 const wrap = (s) => `[${s}]`;
 
-console.log('compose:', compose(wrap, removeVowels, lower, trim)('  Hello World  '));
-console.log('pipe:   ', pipe(trim, lower, removeVowels, wrap)('  Hello World  '));
+console.log(
+  'compose:',
+  compose(wrap, removeVowels, lower, trim)('  Hello World  '),
+);
+console.log(
+  'pipe:   ',
+  pipe(trim, lower, removeVowels, wrap)('  Hello World  '),
+);
 
 // ========== 示例 7: 数据管道 ==========
 console.log('\n【示例 7】数据管道');
 const users = [
   {
-    name: 'Alice', age: 28, role: 'admin', active: true,
+    name: 'Alice',
+    age: 28,
+    role: 'admin',
+    active: true,
   },
   {
-    name: 'bob', age: 17, role: 'user', active: false,
+    name: 'bob',
+    age: 17,
+    role: 'user',
+    active: false,
   },
   {
-    name: 'Charlie', age: 35, role: 'admin', active: true,
+    name: 'Charlie',
+    age: 35,
+    role: 'admin',
+    active: true,
   },
   {
-    name: 'diana', age: 22, role: 'user', active: true,
+    name: 'diana',
+    age: 22,
+    role: 'user',
+    active: true,
   },
   {
-    name: 'Eve', age: 31, role: 'user', active: true,
+    name: 'Eve',
+    age: 31,
+    role: 'user',
+    active: true,
   },
 ];
 
@@ -114,11 +138,19 @@ console.log(getActiveAdminNames(users));
 // ========== 示例 8: Pipeline 构建器 ==========
 console.log('\n【示例 8】链式管道');
 class Pipeline {
-  constructor(v) { this._v = v; this._s = []; }
+  constructor(v) {
+    this._v = v;
+    this._s = [];
+  }
 
-  use(fn) { this._s.push(fn); return this; }
+  use(fn) {
+    this._s.push(fn);
+    return this;
+  }
 
-  run() { return this._s.reduce((v, f) => f(v), this._v); }
+  run() {
+    return this._s.reduce((v, f) => f(v), this._v);
+  }
 }
 const result = new Pipeline([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   .use((a) => a.filter((n) => n % 2 === 0))
@@ -135,7 +167,9 @@ function curry(fn) {
     return (...more) => curried(...args, ...more);
   };
 }
-function add(a, b, c) { return a + b + c; }
+function add(a, b, c) {
+  return a + b + c;
+}
 const curriedAdd = curry(add);
 console.log('curriedAdd(1)(2)(3):', curriedAdd(1)(2)(3));
 console.log('curriedAdd(1,2)(3):', curriedAdd(1, 2)(3));
@@ -151,14 +185,17 @@ const isEmail = matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
 const isPhone = matches(/^\d{11}$/);
 console.log('isEmail:', isEmail('test@example.com'));
 console.log('isPhone:', isPhone('13812345678'));
-console.log('filter emails:', ['a@b.com', 'invalid', 'c@d.org'].filter(isEmail));
+console.log(
+  'filter emails:',
+  ['a@b.com', 'invalid', 'c@d.org'].filter(isEmail),
+);
 
 // ========== 示例 11: 柯里化查询器 ==========
 console.log('\n【示例 11】柯里化查询构建器');
 const where = curry((field, value, arr) => arr.filter((item) => item[field] === value));
 const select = curry((fields, arr) => arr.map((item) => {
   const picked = {};
-  fields.forEach((f) => picked[f] = item[f]);
+  fields.forEach((f) => (picked[f] = item[f]));
   return picked;
 }));
 const orderBy = curry((field, arr) => [...arr].sort((a, b) => (a[field] > b[field] ? 1 : -1)));
@@ -181,7 +218,8 @@ const pf = {
   map: (fn) => (arr) => arr.map(fn),
   filter: (fn) => (arr) => arr.filter(fn),
   reduce: (fn, init) => (arr) => arr.reduce(fn, init),
-  compose: (...fns) => (x) => fns.reduceRight((v, f) => f(v), x),
+  compose:
+    (...fns) => (x) => fns.reduceRight((v, f) => f(v), x),
 };
 const sumOfSquaresOfEvens = pf.compose(
   pf.reduce((s, n) => s + n, 0),
@@ -193,20 +231,41 @@ console.log('偶数平方和:', sumOfSquaresOfEvens([1, 2, 3, 4, 5, 6])); // 56
 // ========== 示例 13: Maybe ==========
 console.log('\n【示例 13】Maybe Functor');
 class Maybe {
-  static of(v) { return new Maybe(v); }
+  static of(v) {
+    return new Maybe(v);
+  }
 
-  constructor(v) { this.value = v; }
+  constructor(v) {
+    this.value = v;
+  }
 
-  isNothing() { return this.value == null; }
+  isNothing() {
+    return this.value == null;
+  }
 
-  map(fn) { return this.isNothing() ? new Maybe(null) : new Maybe(fn(this.value)); }
+  map(fn) {
+    return this.isNothing() ? new Maybe(null) : new Maybe(fn(this.value));
+  }
 
-  getOrElse(d) { return this.isNothing() ? d : this.value; }
+  getOrElse(d) {
+    return this.isNothing() ? d : this.value;
+  }
 }
 const userObj = { profile: { settings: { theme: 'dark' } } };
-console.log('get theme:', Maybe.of(userObj).map((u) => u.profile).map((p) => p.settings).map((s) => s.theme)
-  .getOrElse('light'));
-console.log('null safe:', Maybe.of(null).map((u) => u.profile).getOrElse('light'));
+console.log(
+  'get theme:',
+  Maybe.of(userObj)
+    .map((u) => u.profile)
+    .map((p) => p.settings)
+    .map((s) => s.theme)
+    .getOrElse('light'),
+);
+console.log(
+  'null safe:',
+  Maybe.of(null)
+    .map((u) => u.profile)
+    .getOrElse('light'),
+);
 
 // ========== 示例 14: 函数式状态管理 ==========
 console.log('\n【示例 14】函数式状态管理');
@@ -221,16 +280,29 @@ const createStore = (reducer, initialState) => {
   const listeners = [];
   return {
     getState: () => state,
-    dispatch: (action) => { state = reducer(state, action); listeners.forEach((fn) => fn(state)); },
-    subscribe: (fn) => { listeners.push(fn); return () => listeners.splice(listeners.indexOf(fn), 1); },
+    dispatch: (action) => {
+      state = reducer(state, action);
+      listeners.forEach((fn) => fn(state));
+    },
+    subscribe: (fn) => {
+      listeners.push(fn);
+      return () => listeners.splice(listeners.indexOf(fn), 1);
+    },
   };
 };
 function todoReducer(state, action) {
   switch (action.type) {
-    case 'ADD': return [...state, { id: Date.now() + Math.random(), text: action.text, done: false }];
-    case 'TOGGLE': return state.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t));
-    case 'REMOVE': return state.filter((t) => t.id !== action.id);
-    default: return state;
+    case 'ADD':
+      return [
+        ...state,
+        { id: Date.now() + Math.random(), text: action.text, done: false },
+      ];
+    case 'TOGGLE':
+      return state.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t));
+    case 'REMOVE':
+      return state.filter((t) => t.id !== action.id);
+    default:
+      return state;
   }
 }
 const store = createStore(todoReducer, []);

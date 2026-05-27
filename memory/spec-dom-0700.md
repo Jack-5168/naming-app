@@ -10,22 +10,22 @@
 
 ```js
 // ❌ 反模式：给每个 li 绑定事件（内存浪费 + 新增元素无事件）
-document.querySelectorAll('.list-item').forEach(item => {
-  item.addEventListener('click', handleItemClick);
+document.querySelectorAll(".list-item").forEach((item) => {
+  item.addEventListener("click", handleItemClick);
 });
 
 // ✅ 事件委托：只在父元素上绑定一个监听器
-const list = document.getElementById('list');
-list.addEventListener('click', (e) => {
-  const item = e.target.closest('.list-item');
+const list = document.getElementById("list");
+list.addEventListener("click", (e) => {
+  const item = e.target.closest(".list-item");
   if (!item) return; // 忽略非目标元素点击
 
   const id = item.dataset.id;
   const action = e.target.dataset.action;
 
-  if (action === 'delete') {
+  if (action === "delete") {
     deleteItem(id);
-  } else if (action === 'edit') {
+  } else if (action === "edit") {
     editItem(id);
   } else {
     viewItem(id);
@@ -44,18 +44,18 @@ class TableDelegate {
   }
 
   bind() {
-    this.table.addEventListener('click', this._delegate('click'));
-    this.table.addEventListener('change', this._delegate('change'));
-    this.table.addEventListener('contextmenu', this._delegate('contextmenu'));
+    this.table.addEventListener("click", this._delegate("click"));
+    this.table.addEventListener("change", this._delegate("change"));
+    this.table.addEventListener("contextmenu", this._delegate("contextmenu"));
   }
 
   _delegate(eventType) {
     return (e) => {
       const target = e.target;
       // 向上查找匹配的选择器
-      const row = target.closest('tr');
-      const cell = target.closest('td, th');
-      const btn = target.closest('[data-action]');
+      const row = target.closest("tr");
+      const cell = target.closest("td, th");
+      const btn = target.closest("[data-action]");
 
       const context = {
         event: e,
@@ -68,7 +68,7 @@ class TableDelegate {
         table: this.table,
       };
 
-      const key = `${eventType}:${btn?.dataset.action || 'cell'}`;
+      const key = `${eventType}:${btn?.dataset.action || "cell"}`;
       const handler = this.handlers.get(key);
       if (handler) handler(context);
     };
@@ -82,16 +82,16 @@ class TableDelegate {
 }
 
 // 使用
-const table = new TableDelegate(document.getElementById('dataTable'));
+const table = new TableDelegate(document.getElementById("dataTable"));
 table
-  .on('click', 'delete', (ctx) => {
+  .on("click", "delete", (ctx) => {
     console.log(`删除第 ${ctx.rowIndex} 行`);
     ctx.row.remove();
   })
-  .on('click', 'edit', (ctx) => {
+  .on("click", "edit", (ctx) => {
     console.log(`编辑第 ${ctx.rowIndex} 行第 ${ctx.cellIndex} 列`);
   })
-  .on('contextmenu', 'cell', (ctx) => {
+  .on("contextmenu", "cell", (ctx) => {
     e.preventDefault();
     console.log(`右键菜单: ${ctx.rowIndex}, ${ctx.cellIndex}`);
   });
@@ -114,7 +114,7 @@ class VirtualList {
   setData(items) {
     this.items = items;
     this.container.style.height = `${items.length * this.itemHeight}px`;
-    this.container.style.position = 'relative';
+    this.container.style.position = "relative";
     this._render();
   }
 
@@ -124,7 +124,7 @@ class VirtualList {
     const start = Math.floor(scrollTop / this.itemHeight);
     const end = Math.min(
       Math.ceil((scrollTop + containerHeight) / this.itemHeight),
-      this.items.length - 1
+      this.items.length - 1,
     );
 
     // 只渲染可见区域 + 缓冲区
@@ -148,9 +148,9 @@ class VirtualList {
     this.container.style.transform = `translateY(${offsetY}px)`;
 
     // 只创建/更新需要的 DOM 节点
-    const existingNodes = this.container.querySelectorAll('.virt-item');
+    const existingNodes = this.container.querySelectorAll(".virt-item");
     const existingMap = new Map();
-    existingNodes.forEach(n => existingMap.set(n.dataset.index, n));
+    existingNodes.forEach((n) => existingMap.set(n.dataset.index, n));
 
     const fragment = document.createDocumentFragment();
     const neededKeys = new Set();
@@ -163,21 +163,21 @@ class VirtualList {
         node.textContent = this.renderItem(this.items[i], i);
       } else {
         // 创建新节点
-        node = document.createElement('div');
-        node.className = 'virt-item';
+        node = document.createElement("div");
+        node.className = "virt-item";
         node.dataset.index = i;
         node.style.height = `${this.itemHeight}px`;
-        node.style.position = 'absolute';
+        node.style.position = "absolute";
         node.style.top = `${(i - start) * this.itemHeight}px`;
-        node.style.left = '0';
-        node.style.right = '0';
+        node.style.left = "0";
+        node.style.right = "0";
         node.textContent = this.renderItem(this.items[i], i);
       }
       fragment.appendChild(node);
     }
 
     // 移除不再需要的节点
-    existingNodes.forEach(n => {
+    existingNodes.forEach((n) => {
       if (!neededKeys.has(n.dataset.index)) n.remove();
     });
 
@@ -188,13 +188,17 @@ class VirtualList {
 
   init() {
     // 使用 rAF 节流滚动事件
-    this.container.addEventListener('scroll', () => {
-      if (this._rafId) return;
-      this._rafId = requestAnimationFrame(() => {
-        this._render();
-        this._rafId = null;
-      });
-    }, { passive: true });
+    this.container.addEventListener(
+      "scroll",
+      () => {
+        if (this._rafId) return;
+        this._rafId = requestAnimationFrame(() => {
+          this._render();
+          this._rafId = null;
+        });
+      },
+      { passive: true },
+    );
   }
 }
 ```
@@ -212,49 +216,69 @@ class VirtualList {
  */
 function domDiff(oldChildren, newChildren) {
   const patches = [];
-  let oldStart = 0, oldEnd = oldChildren.length - 1;
-  let newStart = 0, newEnd = newChildren.length - 1;
+  let oldStart = 0,
+    oldEnd = oldChildren.length - 1;
+  let newStart = 0,
+    newEnd = newChildren.length - 1;
 
   while (oldStart <= oldEnd && newStart <= newEnd) {
     // 跳过已处理的节点
-    if (oldChildren[oldStart] === null) { oldStart++; continue; }
-    if (oldChildren[oldEnd] === null) { oldEnd--; continue; }
-    if (newChildren[newStart] === null) { newStart++; continue; }
-    if (newChildren[newEnd] === null) { newEnd--; continue; }
+    if (oldChildren[oldStart] === null) {
+      oldStart++;
+      continue;
+    }
+    if (oldChildren[oldEnd] === null) {
+      oldEnd--;
+      continue;
+    }
+    if (newChildren[newStart] === null) {
+      newStart++;
+      continue;
+    }
+    if (newChildren[newEnd] === null) {
+      newEnd--;
+      continue;
+    }
 
-    const os = oldChildren[oldStart], ns = newChildren[newStart];
-    const oe = oldChildren[oldEnd], ne = newChildren[newEnd];
+    const os = oldChildren[oldStart],
+      ns = newChildren[newStart];
+    const oe = oldChildren[oldEnd],
+      ne = newChildren[newEnd];
 
     // 头-头匹配
     if (isSameNode(os, ns)) {
-      patches.push({ type: 'patch', oldIdx: oldStart, newIdx: newStart });
-      oldStart++; newStart++;
+      patches.push({ type: "patch", oldIdx: oldStart, newIdx: newStart });
+      oldStart++;
+      newStart++;
     }
     // 尾-尾匹配
     else if (isSameNode(oe, ne)) {
-      patches.push({ type: 'patch', oldIdx: oldEnd, newIdx: newEnd });
-      oldEnd--; newEnd--;
+      patches.push({ type: "patch", oldIdx: oldEnd, newIdx: newEnd });
+      oldEnd--;
+      newEnd--;
     }
     // 头-尾匹配（节点移到末尾）
     else if (isSameNode(os, ne)) {
-      patches.push({ type: 'move', from: oldStart, to: newEnd });
-      oldStart++; newEnd--;
+      patches.push({ type: "move", from: oldStart, to: newEnd });
+      oldStart++;
+      newEnd--;
     }
     // 尾-头匹配（节点移到开头）
     else if (isSameNode(oe, ns)) {
-      patches.push({ type: 'move', from: oldEnd, to: newStart });
-      oldEnd--; newStart++;
+      patches.push({ type: "move", from: oldEnd, to: newStart });
+      oldEnd--;
+      newStart++;
     }
     // 都不匹配，在旧数组中查找新头节点
     else {
       const idxInOld = oldChildren.findIndex(
-        (n, i) => n !== null && isSameNode(n, ns)
+        (n, i) => n !== null && isSameNode(n, ns),
       );
       if (idxInOld > -1) {
-        patches.push({ type: 'move', from: idxInOld, to: newStart });
+        patches.push({ type: "move", from: idxInOld, to: newStart });
         oldChildren[idxInOld] = null;
       } else {
-        patches.push({ type: 'add', idx: newStart, node: ns });
+        patches.push({ type: "add", idx: newStart, node: ns });
       }
       newStart++;
     }
@@ -264,13 +288,13 @@ function domDiff(oldChildren, newChildren) {
   if (oldStart <= oldEnd) {
     for (let i = oldStart; i <= oldEnd; i++) {
       if (oldChildren[i] !== null) {
-        patches.push({ type: 'remove', idx: i });
+        patches.push({ type: "remove", idx: i });
       }
     }
   }
   if (newStart <= newEnd) {
     for (let i = newStart; i <= newEnd; i++) {
-      patches.push({ type: 'add', idx: i, node: newChildren[i] });
+      patches.push({ type: "add", idx: i, node: newChildren[i] });
     }
   }
 
@@ -283,16 +307,16 @@ function isSameNode(a, b) {
 
 // 测试
 const oldVNodes = [
-  { tag: 'div', key: 'a' },
-  { tag: 'div', key: 'b' },
-  { tag: 'div', key: 'c' },
-  { tag: 'div', key: 'd' },
+  { tag: "div", key: "a" },
+  { tag: "div", key: "b" },
+  { tag: "div", key: "c" },
+  { tag: "div", key: "d" },
 ];
 const newVNodes = [
-  { tag: 'div', key: 'd' },
-  { tag: 'div', key: 'a' },
-  { tag: 'div', key: 'e' },
-  { tag: 'div', key: 'c' },
+  { tag: "div", key: "d" },
+  { tag: "div", key: "a" },
+  { tag: "div", key: "e" },
+  { tag: "div", key: "c" },
 ];
 
 console.log(domDiff(oldVNodes, newVNodes));
@@ -312,7 +336,7 @@ class DOMPatch {
   apply(parentNode, patches) {
     const children = Array.from(parentNode.children);
     const keyToNode = new Map(
-      children.map(n => [n.dataset.key || n.textContent, n])
+      children.map((n) => [n.dataset.key || n.textContent, n]),
     );
 
     // 排序 patches：先 add/move，再 remove
@@ -323,18 +347,18 @@ class DOMPatch {
 
     for (const patch of sorted) {
       switch (patch.type) {
-        case 'add': {
+        case "add": {
           const el = this.createElement(patch.node);
           const refNode = children[patch.idx];
           parentNode.insertBefore(el, refNode || null);
           break;
         }
-        case 'remove': {
+        case "remove": {
           const node = children[patch.idx];
           if (node) node.remove();
           break;
         }
-        case 'move': {
+        case "move": {
           const node = children[patch.from];
           const refNode = children[patch.to];
           if (node && node !== refNode) {
@@ -342,7 +366,7 @@ class DOMPatch {
           }
           break;
         }
-        case 'patch': {
+        case "patch": {
           // 内容更新（文本节点等）
           const node = children[patch.oldIdx];
           if (node && patch.node) {
@@ -359,7 +383,7 @@ class DOMPatch {
     if (vnode.key) el.dataset.key = vnode.key;
     if (vnode.text) el.textContent = vnode.text;
     if (vnode.children) {
-      vnode.children.forEach(child => {
+      vnode.children.forEach((child) => {
         el.appendChild(this.createElement(child));
       });
     }
@@ -396,13 +420,13 @@ class BatchDOMUpdater {
   // 批量更新列表数据
   updateList(container, data, keyFn, renderFn) {
     const oldChildren = Array.from(container.children);
-    const oldKeys = new Map(oldChildren.map(c => [keyFn(c), c]));
+    const oldKeys = new Map(oldChildren.map((c) => [keyFn(c), c]));
 
     const newKeys = new Set(data.map(keyFn));
     const fragment = document.createDocumentFragment();
 
     // 1. 移除不在新数据中的节点
-    oldChildren.forEach(child => {
+    oldChildren.forEach((child) => {
       if (!newKeys.has(keyFn(child))) {
         child.remove();
       }
@@ -442,26 +466,30 @@ class BatchDOMUpdater {
     this._scheduled = false;
     const tasks = this.tasks.splice(0);
     // 使用 DocumentFragment 批量执行
-    tasks.forEach(fn => fn());
+    tasks.forEach((fn) => fn());
   }
 }
 
 // 使用示例
 const updater = new BatchDOMUpdater();
-const list = document.getElementById('myList');
+const list = document.getElementById("myList");
 
 updater.updateList(
   list,
-  [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Charlie' }],
-  item => item.id,
+  [
+    { id: 1, name: "Alice" },
+    { id: 2, name: "Bob" },
+    { id: 3, name: "Charlie" },
+  ],
+  (item) => item.id,
   (node, item) => {
     if (!node) {
-      node = document.createElement('li');
+      node = document.createElement("li");
       node.dataset.id = item.id;
     }
     node.textContent = item.name;
     return node;
-  }
+  },
 );
 ```
 
@@ -474,31 +502,31 @@ updater.updateList(
 ```js
 // ❌ 反模式：读写交替 → 每次写都触发强制同步布局
 function badUpdate(elements) {
-  elements.forEach(el => {
-    const width = el.offsetWidth;  // 读
-    el.style.width = width + 10 + 'px';  // 写 → 触发 reflow
-    const height = el.offsetHeight;  // 读 → 强制同步布局！
-    el.style.height = height + 10 + 'px';  // 写 → 触发 reflow
+  elements.forEach((el) => {
+    const width = el.offsetWidth; // 读
+    el.style.width = width + 10 + "px"; // 写 → 触发 reflow
+    const height = el.offsetHeight; // 读 → 强制同步布局！
+    el.style.height = height + 10 + "px"; // 写 → 触发 reflow
   });
 }
 
 // ✅ 优化：先读后写，批量操作
 function goodUpdate(elements) {
   // 阶段 1：批量读取（不会触发 reflow）
-  const widths = elements.map(el => el.offsetWidth);
-  const heights = elements.map(el => el.offsetHeight);
+  const widths = elements.map((el) => el.offsetWidth);
+  const heights = elements.map((el) => el.offsetHeight);
 
   // 阶段 2：批量写入（只触发一次 reflow）
   elements.forEach((el, i) => {
-    el.style.width = widths[i] + 10 + 'px';
-    el.style.height = heights[i] + 10 + 'px';
+    el.style.width = widths[i] + 10 + "px";
+    el.style.height = heights[i] + 10 + "px";
   });
 }
 
 // ✅ 更优：使用 CSS transform（不触发 reflow，只触发 composite）
 function bestUpdate(elements) {
-  elements.forEach(el => {
-    el.style.transform = 'scale(1.05)'; // GPU 加速，只 composite
+  elements.forEach((el) => {
+    el.style.transform = "scale(1.05)"; // GPU 加速，只 composite
   });
 }
 ```
@@ -509,24 +537,24 @@ function bestUpdate(elements) {
 class LazyLoader {
   constructor(options = {}) {
     this.threshold = options.threshold || 0.1;
-    this.rootMargin = options.rootMargin || '50px';
+    this.rootMargin = options.rootMargin || "50px";
     this.placeholder = options.placeholder || this._defaultPlaceholder;
     this.loadedCount = 0;
     this.loadTimes = [];
     this.observer = new IntersectionObserver(
       (entries) => this._handleIntersect(entries),
-      { threshold: this.threshold, rootMargin: this.rootMargin }
+      { threshold: this.threshold, rootMargin: this.rootMargin },
     );
   }
 
   observe(container) {
-    const targets = container.querySelectorAll('[data-lazy]');
-    targets.forEach(el => this.observer.observe(el));
+    const targets = container.querySelectorAll("[data-lazy]");
+    targets.forEach((el) => this.observer.observe(el));
     return targets.length;
   }
 
   _handleIntersect(entries) {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
 
       const el = entry.target;
@@ -542,9 +570,11 @@ class LazyLoader {
         this.loadedCount++;
 
         // 触发 loaded 事件（供性能监控）
-        el.dispatchEvent(new CustomEvent('lazyloaded', {
-          detail: { loadTime, index: this.loadedCount }
-        }));
+        el.dispatchEvent(
+          new CustomEvent("lazyloaded", {
+            detail: { loadTime, index: this.loadedCount },
+          }),
+        );
       });
 
       this.observer.unobserve(el);
@@ -553,12 +583,12 @@ class LazyLoader {
 
   _loadResource(el) {
     const src = el.dataset.lazy;
-    if (el.tagName === 'IMG') {
+    if (el.tagName === "IMG") {
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
           el.src = src;
-          el.classList.add('loaded');
+          el.classList.add("loaded");
           resolve();
         };
         img.onerror = reject;
@@ -567,12 +597,14 @@ class LazyLoader {
     }
     // 通用：加载 HTML 片段
     return fetch(src)
-      .then(r => r.text())
-      .then(html => { el.innerHTML = html; });
+      .then((r) => r.text())
+      .then((html) => {
+        el.innerHTML = html;
+      });
   }
 
   _defaultPlaceholder(el) {
-    el.classList.add('loading');
+    el.classList.add("loading");
   }
 
   getStats() {
@@ -614,8 +646,9 @@ class ResponsiveLayout {
   }
 
   _applyBreakpoint(width) {
-    const bp = this.breakpoints.find(b => width <= b.max)
-      || this.breakpoints[this.breakpoints.length - 1];
+    const bp =
+      this.breakpoints.find((b) => width <= b.max) ||
+      this.breakpoints[this.breakpoints.length - 1];
 
     if (bp?.class && bp.class !== this.currentBreakpoint) {
       // 移除旧 breakpoint class
@@ -626,9 +659,11 @@ class ResponsiveLayout {
       this.currentBreakpoint = bp.class;
 
       // 触发自定义事件
-      this.container.dispatchEvent(new CustomEvent('breakpointchange', {
-        detail: { breakpoint: bp.class, width }
-      }));
+      this.container.dispatchEvent(
+        new CustomEvent("breakpointchange", {
+          detail: { breakpoint: bp.class, width },
+        }),
+      );
     }
   }
 
@@ -638,15 +673,12 @@ class ResponsiveLayout {
 }
 
 // 使用
-const layout = new ResponsiveLayout(
-  document.getElementById('app'),
-  [
-    { max: 480, class: 'xs' },
-    { max: 768, class: 'sm' },
-    { max: 1024, class: 'md' },
-    { max: Infinity, class: 'lg' },
-  ]
-);
+const layout = new ResponsiveLayout(document.getElementById("app"), [
+  { max: 480, class: "xs" },
+  { max: 768, class: "sm" },
+  { max: 1024, class: "md" },
+  { max: Infinity, class: "lg" },
+]);
 ```
 
 ### 示例 10：高性能事件系统（事件池 + 委托 + 被动监听）
@@ -686,13 +718,13 @@ class EventSystem {
   off(eventType, selector) {
     const handlers = this.handlers.get(eventType);
     if (!handlers) return;
-    const idx = handlers.findIndex(h => h.selector === selector);
+    const idx = handlers.findIndex((h) => h.selector === selector);
     if (idx > -1) {
       handlers.splice(idx, 1);
       if (handlers.length === 0) {
         this.root.removeEventListener(
           eventType,
-          this._boundHandlers.get(eventType)
+          this._boundHandlers.get(eventType),
         );
         this.handlers.delete(eventType);
         this._boundHandlers.delete(eventType);
@@ -718,7 +750,7 @@ class DOMWatcher {
     this.target = target;
     this.changes = [];
     this.observer = new MutationObserver((mutations) => {
-      mutations.forEach(m => this._record(m));
+      mutations.forEach((m) => this._record(m));
       options.onChange?.(this.changes);
     });
 
@@ -738,16 +770,16 @@ class DOMWatcher {
       timestamp: Date.now(),
     };
 
-    if (mutation.type === 'childList') {
-      change.added = Array.from(mutation.addedNodes).filter(
-        n => n.nodeType === Node.ELEMENT_NODE
-      ).map(n => ({ tag: n.tagName, class: n.className }));
-      change.removed = Array.from(mutation.removedNodes).filter(
-        n => n.nodeType === Node.ELEMENT_NODE
-      ).map(n => ({ tag: n.tagName, class: n.className }));
+    if (mutation.type === "childList") {
+      change.added = Array.from(mutation.addedNodes)
+        .filter((n) => n.nodeType === Node.ELEMENT_NODE)
+        .map((n) => ({ tag: n.tagName, class: n.className }));
+      change.removed = Array.from(mutation.removedNodes)
+        .filter((n) => n.nodeType === Node.ELEMENT_NODE)
+        .map((n) => ({ tag: n.tagName, class: n.className }));
     }
 
-    if (mutation.type === 'attributes') {
+    if (mutation.type === "attributes") {
       change.attribute = mutation.attributeName;
       change.oldValue = mutation.oldValue;
     }
@@ -774,10 +806,10 @@ class DOMWatcher {
 
 // 使用：监控特定属性变化
 const watcher = new DOMWatcher(document.body, {
-  attributeFilter: ['class', 'style'],
+  attributeFilter: ["class", "style"],
   onChange: (changes) => {
     console.log(`DOM 变化: ${changes.length} 次`);
-  }
+  },
 });
 ```
 
@@ -804,8 +836,12 @@ class DOMBenchmark {
     console.log(`\n📊 ${name} (${iterations} 次)`);
     console.log(`  平均: ${avg.toFixed(3)}ms`);
     console.log(`  P50:  ${sorted[Math.floor(iterations * 0.5)].toFixed(3)}ms`);
-    console.log(`  P95:  ${sorted[Math.floor(iterations * 0.95)].toFixed(3)}ms`);
-    console.log(`  P99:  ${sorted[Math.floor(iterations * 0.99)].toFixed(3)}ms`);
+    console.log(
+      `  P95:  ${sorted[Math.floor(iterations * 0.95)].toFixed(3)}ms`,
+    );
+    console.log(
+      `  P99:  ${sorted[Math.floor(iterations * 0.99)].toFixed(3)}ms`,
+    );
     console.log(`  最快: ${sorted[0].toFixed(3)}ms`);
     console.log(`  最慢: ${sorted[sorted.length - 1].toFixed(3)}ms`);
 
@@ -815,40 +851,56 @@ class DOMBenchmark {
 
 // 对比测试：innerHTML vs DocumentFragment vs createElement
 const testData = Array.from({ length: 1000 }, (_, i) => ({
-  id: i, text: `Item ${i}`
+  id: i,
+  text: `Item ${i}`,
 }));
 
 document.body.innerHTML = '<div id="bench"></div>';
-const bench = document.getElementById('bench');
+const bench = document.getElementById("bench");
 
 // 方法 1：innerHTML 拼接
-DOMBenchmark.measure('innerHTML 拼接', () => {
-  bench.innerHTML = testData.map(item =>
-    `<div class="item" data-id="${item.id}">${item.text}</div>`
-  ).join('');
-}, 50);
+DOMBenchmark.measure(
+  "innerHTML 拼接",
+  () => {
+    bench.innerHTML = testData
+      .map(
+        (item) => `<div class="item" data-id="${item.id}">${item.text}</div>`,
+      )
+      .join("");
+  },
+  50,
+);
 
 // 方法 2：DocumentFragment
-DOMBenchmark.measure('DocumentFragment', () => {
-  const frag = document.createDocumentFragment();
-  testData.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.dataset.id = item.id;
-    div.textContent = item.text;
-    frag.appendChild(div);
-  });
-  bench.appendChild(frag);
-}, 50);
+DOMBenchmark.measure(
+  "DocumentFragment",
+  () => {
+    const frag = document.createDocumentFragment();
+    testData.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.dataset.id = item.id;
+      div.textContent = item.text;
+      frag.appendChild(div);
+    });
+    bench.appendChild(frag);
+  },
+  50,
+);
 
 // 方法 3：预分配数组 + innerHTML
-DOMBenchmark.measure('预分配 + innerHTML', () => {
-  const html = new Array(testData.length);
-  for (let i = 0; i < testData.length; i++) {
-    html[i] = `<div class="item" data-id="${testData[i].id}">${testData[i].text}</div>`;
-  }
-  bench.innerHTML = html.join('');
-}, 50);
+DOMBenchmark.measure(
+  "预分配 + innerHTML",
+  () => {
+    const html = new Array(testData.length);
+    for (let i = 0; i < testData.length; i++) {
+      html[i] =
+        `<div class="item" data-id="${testData[i].id}">${testData[i].text}</div>`;
+    }
+    bench.innerHTML = html.join("");
+  },
+  50,
+);
 ```
 
 ---
@@ -864,33 +916,33 @@ class SortableTable {
     this.columns = config.columns;
     this.data = [];
     this.sortCol = null;
-    this.sortDir = 'asc';
+    this.sortDir = "asc";
     this._rafId = null;
     this._build();
     this._bindEvents();
   }
 
   _build() {
-    this.container.innerHTML = '';
-    this.container.className = 'sortable-table';
+    this.container.innerHTML = "";
+    this.container.className = "sortable-table";
 
     // 表头
-    this.thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    this.columns.forEach(col => {
-      const th = document.createElement('th');
+    this.thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    this.columns.forEach((col) => {
+      const th = document.createElement("th");
       th.textContent = col.label;
       th.dataset.col = col.key;
-      if (col.sortable) th.classList.add('sortable');
+      if (col.sortable) th.classList.add("sortable");
       headerRow.appendChild(th);
     });
     this.thead.appendChild(headerRow);
 
     // 表体（使用 DocumentFragment 初始构建）
-    this.tbody = document.createElement('tbody');
+    this.tbody = document.createElement("tbody");
 
     // 组装
-    const table = document.createElement('table');
+    const table = document.createElement("table");
     table.appendChild(this.thead);
     table.appendChild(this.tbody);
     this.container.appendChild(table);
@@ -898,21 +950,21 @@ class SortableTable {
 
   _bindEvents() {
     // 事件委托：表头点击排序
-    this.thead.addEventListener('click', (e) => {
-      const th = e.target.closest('th.sortable');
+    this.thead.addEventListener("click", (e) => {
+      const th = e.target.closest("th.sortable");
       if (!th) return;
 
       const col = th.dataset.col;
       if (this.sortCol === col) {
-        this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+        this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
       } else {
         this.sortCol = col;
-        this.sortDir = 'asc';
+        this.sortDir = "asc";
       }
 
       // 更新表头样式（批量写入）
-      this.thead.querySelectorAll('th').forEach(h => {
-        h.classList.remove('asc', 'desc');
+      this.thead.querySelectorAll("th").forEach((h) => {
+        h.classList.remove("asc", "desc");
         if (h.dataset.col === col) h.classList.add(this.sortDir);
       });
 
@@ -920,15 +972,20 @@ class SortableTable {
     });
 
     // 事件委托：行内操作按钮
-    this.tbody.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action]');
+    this.tbody.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      const row = btn.closest('tr');
+      const row = btn.closest("tr");
       const idx = row ? parseInt(row.dataset.index) : -1;
 
       switch (btn.dataset.action) {
-        case 'delete': this.data.splice(idx, 1); this._render(); break;
-        case 'select': this._toggleSelect(row); break;
+        case "delete":
+          this.data.splice(idx, 1);
+          this._render();
+          break;
+        case "select":
+          this._toggleSelect(row);
+          break;
       }
     });
   }
@@ -941,14 +998,16 @@ class SortableTable {
   _sortAndRender() {
     if (!this.sortCol) return this._render();
 
-    const col = this.columns.find(c => c.key === this.sortCol);
+    const col = this.columns.find((c) => c.key === this.sortCol);
     this.data.sort((a, b) => {
-      let va = a[this.sortCol], vb = b[this.sortCol];
-      if (typeof va === 'string') {
-        va = va.toLowerCase(); vb = vb.toLowerCase();
+      let va = a[this.sortCol],
+        vb = b[this.sortCol];
+      if (typeof va === "string") {
+        va = va.toLowerCase();
+        vb = vb.toLowerCase();
       }
       const cmp = va < vb ? -1 : va > vb ? 1 : 0;
-      return this.sortDir === 'asc' ? cmp : -cmp;
+      return this.sortDir === "asc" ? cmp : -cmp;
     });
     this._render();
   }
@@ -966,11 +1025,11 @@ class SortableTable {
     const fragment = document.createDocumentFragment();
 
     this.data.forEach((row, idx) => {
-      const tr = document.createElement('tr');
+      const tr = document.createElement("tr");
       tr.dataset.index = idx;
 
-      this.columns.forEach(col => {
-        const td = document.createElement('td');
+      this.columns.forEach((col) => {
+        const td = document.createElement("td");
         td.textContent = col.format
           ? col.format(row[col.key], row)
           : row[col.key];
@@ -978,8 +1037,8 @@ class SortableTable {
       });
 
       // 操作列
-      const actions = document.createElement('td');
-      actions.className = 'actions';
+      const actions = document.createElement("td");
+      actions.className = "actions";
       actions.innerHTML = `
         <button data-action="select" data-index="${idx}">选择</button>
         <button data-action="delete" data-index="${idx}">删除</button>
@@ -989,29 +1048,34 @@ class SortableTable {
     });
 
     // 一次性替换（避免多次 DOM 操作）
-    this.tbody.innerHTML = '';
+    this.tbody.innerHTML = "";
     this.tbody.appendChild(fragment);
   }
 
   _toggleSelect(row) {
-    row.classList.toggle('selected');
+    row.classList.toggle("selected");
   }
 }
 
 // 使用
-const table = new SortableTable(document.getElementById('table-container'), {
+const table = new SortableTable(document.getElementById("table-container"), {
   columns: [
-    { key: 'name', label: '姓名', sortable: true },
-    { key: 'age', label: '年龄', sortable: true },
-    { key: 'date', label: '日期', sortable: true, format: d => new Date(d).toLocaleDateString() },
-    { key: 'status', label: '状态', format: v => v ? '✅' : '❌' },
-  ]
+    { key: "name", label: "姓名", sortable: true },
+    { key: "age", label: "年龄", sortable: true },
+    {
+      key: "date",
+      label: "日期",
+      sortable: true,
+      format: (d) => new Date(d).toLocaleDateString(),
+    },
+    { key: "status", label: "状态", format: (v) => (v ? "✅" : "❌") },
+  ],
 });
 
 table.setData([
-  { name: 'Alice', age: 28, date: '2024-01-15', status: true },
-  { name: 'Bob', age: 32, date: '2024-03-22', status: false },
-  { name: 'Charlie', age: 25, date: '2024-06-01', status: true },
+  { name: "Alice", age: 28, date: "2024-01-15", status: true },
+  { name: "Bob", age: 32, date: "2024-03-22", status: false },
+  { name: "Charlie", age: 25, date: "2024-06-01", status: true },
 ]);
 ```
 
@@ -1020,12 +1084,12 @@ table.setData([
 ```js
 class VirtualCard extends HTMLElement {
   static get observedAttributes() {
-    return ['title', 'status', 'priority'];
+    return ["title", "status", "priority"];
   }
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    this.attachShadow({ mode: "open" });
     this.shadowRoot.innerHTML = `
       <style>
         :host {
@@ -1056,13 +1120,13 @@ class VirtualCard extends HTMLElement {
         .content { margin-top: 12px; }
         ::slotted(*) { color: #595959; font-size: 14px; line-height: 1.6; }
       </style>
-      <div class="title">${this.getAttribute('title') || 'Untitled'}</div>
+      <div class="title">${this.getAttribute("title") || "Untitled"}</div>
       <div class="meta">
-        <span class="badge ${this.getAttribute('status') || 'active'}">
-          ${this.getAttribute('status') || 'active'}
+        <span class="badge ${this.getAttribute("status") || "active"}">
+          ${this.getAttribute("status") || "active"}
         </span>
-        <span class="badge ${this.getAttribute('priority') || 'medium'}">
-          ${this.getAttribute('priority') || 'medium'}
+        <span class="badge ${this.getAttribute("priority") || "medium"}">
+          ${this.getAttribute("priority") || "medium"}
         </span>
       </div>
       <div class="content">
@@ -1078,12 +1142,12 @@ class VirtualCard extends HTMLElement {
   }
 
   render() {
-    const titleEl = this.shadowRoot.querySelector('.title');
-    if (titleEl) titleEl.textContent = this.getAttribute('title') || 'Untitled';
+    const titleEl = this.shadowRoot.querySelector(".title");
+    if (titleEl) titleEl.textContent = this.getAttribute("title") || "Untitled";
   }
 }
 
-customElements.define('virtual-card', VirtualCard);
+customElements.define("virtual-card", VirtualCard);
 
 // 使用
 // <virtual-card title="任务卡片" status="active" priority="high">
@@ -1096,18 +1160,21 @@ customElements.define('virtual-card', VirtualCard);
 ## 五、核心知识点总结
 
 ### 事件委托三要素
+
 1. **监听父元素**而非子元素
 2. **e.target / e.target.closest()** 定位实际目标
-3. **data-* 属性**传递上下文信息
+3. **data-\* 属性**传递上下文信息
 
 ### DOM Diff 核心策略
-| 策略 | 说明 | 时间复杂度 |
-|------|------|-----------|
-| 双端比较 | 头头/尾尾/头尾/尾头四路比较 | O(n) |
-| Key 映射 | 用 Map 快速定位节点 | O(n) |
-| 最长递增子序列 | Vue 3 用的优化方案 | O(n log n) |
+
+| 策略           | 说明                        | 时间复杂度 |
+| -------------- | --------------------------- | ---------- |
+| 双端比较       | 头头/尾尾/头尾/尾头四路比较 | O(n)       |
+| Key 映射       | 用 Map 快速定位节点         | O(n)       |
+| 最长递增子序列 | Vue 3 用的优化方案          | O(n log n) |
 
 ### 性能优化清单
+
 - ✅ **读写分离**：先读所有 DOM 属性，再批量写入
 - ✅ **DocumentFragment**：批量插入不触发重排
 - ✅ **requestAnimationFrame**：与浏览器刷新率同步
@@ -1119,6 +1186,7 @@ customElements.define('virtual-card', VirtualCard);
 - ✅ **Shadow DOM**：隔离样式，减少 CSS 选择器开销
 
 ### 反模式速查
+
 - ❌ 在循环中读写 DOM 属性（交替触发 reflow）
 - ❌ 给大量子元素分别绑定事件（内存泄漏）
 - ❌ innerHTML 直接插入不可信内容（XSS）
@@ -1131,22 +1199,25 @@ customElements.define('virtual-card', VirtualCard);
 ## 六、与框架的关联
 
 ### Vue 3 Patch 算法中的 DOM Diff
+
 - 使用**最长递增子序列**优化移动操作
 - Key 映射分两遍：先处理头尾相同节点，再处理中间
 - 静态提升（hoistStatic）：静态节点只创建一次
 
 ### React Fiber 中的 DOM 更新
+
 - Fiber 树 = 双缓冲 DOM 表示
 - reconcileChildFibers 做 diff
 - commitPhase 批量应用 DOM 变更
 - 使用 `beforeMutation` / `mutation` / `layout` 三阶段
 
 ### 原生 vs 框架
-| 维度 | 原生 DOM | Vue/React |
-|------|----------|-----------|
-| 更新粒度 | 手动精确控制 | 自动批量更新 |
-| 性能 | 上限高，下限低 | 稳定在中上 |
-| 复杂度 | 低（简单场景） | 高（复杂场景） |
+
+| 维度     | 原生 DOM       | Vue/React      |
+| -------- | -------------- | -------------- |
+| 更新粒度 | 手动精确控制   | 自动批量更新   |
+| 性能     | 上限高，下限低 | 稳定在中上     |
+| 复杂度   | 低（简单场景） | 高（复杂场景） |
 | 可维护性 | 依赖开发者纪律 | 框架保证一致性 |
 
 ---

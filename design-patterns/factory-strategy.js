@@ -119,7 +119,9 @@ class DatabaseLogger extends Logger {
   }
 
   log(message) {
-    console.log(`[DB ${this.connection}] INSERT INTO logs VALUES ('${message}')`);
+    console.log(
+      `[DB ${this.connection}] INSERT INTO logs VALUES ('${message}')`,
+    );
   }
 }
 
@@ -149,14 +151,24 @@ dbLogger.log('订单创建成功');
 // 创建一组相关/依赖的对象，无需指定具体类
 
 // UI 组件族 — 暗色主题
-const DarkButton = { render: () => '<button class="dark">Dark Button</button>' };
-const DarkInput = { render: () => '<input class="dark" placeholder="Dark Input" />' };
+const DarkButton = {
+  render: () => '<button class="dark">Dark Button</button>',
+};
+const DarkInput = {
+  render: () => '<input class="dark" placeholder="Dark Input" />',
+};
 const DarkModal = { render: () => '<div class="modal dark">Dark Modal</div>' };
 
 // UI 组件族 — 亮色主题
-const LightButton = { render: () => '<button class="light">Light Button</button>' };
-const LightInput = { render: () => '<input class="light" placeholder="Light Input" />' };
-const LightModal = { render: () => '<div class="modal light">Light Modal</div>' };
+const LightButton = {
+  render: () => '<button class="light">Light Button</button>',
+};
+const LightInput = {
+  render: () => '<input class="light" placeholder="Light Input" />',
+};
+const LightModal = {
+  render: () => '<div class="modal light">Light Modal</div>',
+};
 
 // 抽象工厂
 function createUIFactory(theme) {
@@ -247,9 +259,7 @@ class FormValidator {
     for (const [field, rules] of this.rules) {
       const value = data[field] ?? '';
       for (const { validator, message } of rules) {
-        const error = typeof validator === 'function'
-          ? validator(value)
-          : message;
+        const error = typeof validator === 'function' ? validator(value) : message;
         if (error) {
           errors[field] = errors[field] || [];
           errors[field].push(error);
@@ -295,22 +305,32 @@ const discountStrategies = {
   // 会员折扣
   member(price, level) {
     const rates = {
-      bronze: 0.95, silver: 0.9, gold: 0.8, platinum: 0.7,
+      bronze: 0.95,
+      silver: 0.9,
+      gold: 0.8,
+      platinum: 0.7,
     };
     const rate = rates[level] ?? 1;
     const discount = price * (1 - rate);
     return {
-      original: price, discount, final: price * rate, level,
+      original: price,
+      discount,
+      final: price * rate,
+      level,
     };
   },
 
   // 促销活动
   promotion(price, promoType) {
     switch (promoType) {
-      case 'flash_sale': return { original: price, discount: price * 0.3, final: price * 0.7 };
-      case 'bundle': return { original: price, discount: price * 0.15, final: price * 0.85 };
-      case 'seasonal': return { original: price, discount: price * 0.2, final: price * 0.8 };
-      default: return discountStrategies.none(price);
+      case 'flash_sale':
+        return { original: price, discount: price * 0.3, final: price * 0.7 };
+      case 'bundle':
+        return { original: price, discount: price * 0.15, final: price * 0.85 };
+      case 'seasonal':
+        return { original: price, discount: price * 0.2, final: price * 0.8 };
+      default:
+        return discountStrategies.none(price);
     }
   },
 
@@ -339,11 +359,14 @@ const calc = new PriceCalculator();
 console.log('\n--- 折扣计算 ---');
 console.log('会员金卡 ¥1000:', calc.calculate('member', 1000, 'gold'));
 console.log('闪购 ¥500:', calc.calculate('promotion', 500, 'flash_sale'));
-console.log('满减 ¥300:', calc.calculate('threshold', 300, [
-  { min: 500, off: 100 },
-  { min: 200, off: 50 },
-  { min: 100, off: 20 },
-]));
+console.log(
+  '满减 ¥300:',
+  calc.calculate('threshold', 300, [
+    { min: 500, off: 100 },
+    { min: 200, off: 50 },
+    { min: 100, off: 20 },
+  ]),
+);
 
 // --- 实现 3：路由策略（实战场景） ---
 
@@ -394,8 +417,16 @@ function createRouter(mode, routes) {
 }
 
 const routes = {
-  '/': { component: 'Home', render: () => '<h1>Home SSR</h1>', staticHTML: '<h1>Home Static</h1>' },
-  '/about': { component: 'About', render: () => '<h1>About SSR</h1>', staticHTML: '<h1>About Static</h1>' },
+  '/': {
+    component: 'Home',
+    render: () => '<h1>Home SSR</h1>',
+    staticHTML: '<h1>Home Static</h1>',
+  },
+  '/about': {
+    component: 'About',
+    render: () => '<h1>About SSR</h1>',
+    staticHTML: '<h1>About Static</h1>',
+  },
 };
 
 const spaRouter = createRouter('spa', routes);

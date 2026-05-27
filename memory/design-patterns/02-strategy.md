@@ -1,9 +1,11 @@
 # 策略模式 (Strategy Pattern)
 
 ## 核心思想
+
 定义一系列算法，将每个算法封装起来，使它们可以互相替换。策略模式让算法的变化独立于使用它的客户端。
 
 ## 适用场景
+
 - 表单验证（不同验证规则）
 - 支付方式选择（支付宝/微信/银行卡）
 - 排序算法切换（快速排序/归并排序/插入排序）
@@ -18,30 +20,32 @@
 
 // 策略 1: 支付宝支付
 const AlipayStrategy = {
-  name: '支付宝',
+  name: "支付宝",
   pay(amount) {
     console.log(`[支付宝] 支付 ¥${amount}, 手续费 0.6%`);
-    return { success: true, channel: 'alipay', fee: amount * 0.006 };
-  }
+    return { success: true, channel: "alipay", fee: amount * 0.006 };
+  },
 };
 
 // 策略 2: 微信支付
 const WechatStrategy = {
-  name: '微信',
+  name: "微信",
   pay(amount) {
     console.log(`[微信] 支付 ¥${amount}, 手续费 0.6%`);
-    return { success: true, channel: 'wechat', fee: amount * 0.006 };
-  }
+    return { success: true, channel: "wechat", fee: amount * 0.006 };
+  },
 };
 
 // 策略 3: 银行卡支付
 const BankCardStrategy = {
-  name: '银行卡',
+  name: "银行卡",
   pay(amount) {
     const fee = amount > 1000 ? 0 : 2;
-    console.log(`[银行卡] 支付 ¥${amount}, ${fee === 0 ? '免手续费' : `手续费 ¥${fee}`}`);
-    return { success: true, channel: 'bank_card', fee };
-  }
+    console.log(
+      `[银行卡] 支付 ¥${amount}, ${fee === 0 ? "免手续费" : `手续费 ¥${fee}`}`,
+    );
+    return { success: true, channel: "bank_card", fee };
+  },
 };
 
 // --- 上下文类：维护策略引用，委托执行 ---
@@ -60,7 +64,7 @@ class PaymentContext {
   // 执行支付（委托给策略）
   executePayment(amount) {
     if (!this.strategy) {
-      throw new Error('请先选择支付方式！');
+      throw new Error("请先选择支付方式！");
     }
     return this.strategy.pay(amount);
   }
@@ -70,19 +74,19 @@ class PaymentContext {
 
 const payment = new PaymentContext();
 
-console.log('--- 选择支付宝 ---');
+console.log("--- 选择支付宝 ---");
 payment.setStrategy(AlipayStrategy);
-let result = payment.executePayment(299.00);
+let result = payment.executePayment(299.0);
 console.log(`  返回:`, result);
 
-console.log('\n--- 切换为微信 ---');
+console.log("\n--- 切换为微信 ---");
 payment.setStrategy(WechatStrategy);
-result = payment.executePayment(150.00);
+result = payment.executePayment(150.0);
 console.log(`  返回:`, result);
 
-console.log('\n--- 切换为银行卡（大额免手续费）---');
+console.log("\n--- 切换为银行卡（大额免手续费）---");
 payment.setStrategy(BankCardStrategy);
-result = payment.executePayment(2000.00);
+result = payment.executePayment(2000.0);
 console.log(`  返回:`, result);
 
 // ============ 进阶：策略 + 工厂 ============
@@ -91,7 +95,7 @@ class PaymentFactory {
   static strategies = {
     alipay: AlipayStrategy,
     wechat: WechatStrategy,
-    bank: BankCardStrategy
+    bank: BankCardStrategy,
   };
 
   static create(type) {
@@ -103,14 +107,15 @@ class PaymentFactory {
   }
 }
 
-console.log('\n--- 工厂 + 策略 ---');
+console.log("\n--- 工厂 + 策略 ---");
 const ctx = new PaymentContext();
-ctx.setStrategy(PaymentFactory.create('wechat'));
-result = ctx.executePayment(99.90);
+ctx.setStrategy(PaymentFactory.create("wechat"));
+result = ctx.executePayment(99.9);
 console.log(`  返回:`, result);
 ```
 
 ## 输出示例
+
 ```
 --- 选择支付宝 ---
 [Context] 切换支付方式: 支付宝
@@ -134,6 +139,7 @@ console.log(`  返回:`, result);
 ```
 
 ## 要点总结
+
 1. **开闭原则**: 新增策略无需修改上下文代码，只需添加新策略类
 2. **消除条件分支**: 替代 `if/else` 或 `switch` 选择算法
 3. **运行时切换**: 可以在运行时动态更换策略

@@ -9,14 +9,14 @@
 
 已完成 5 个核心 UI 组件的设计与实现：
 
-| 组件 | 文件 | 核心功能 | 代码行数 |
-|------|------|----------|----------|
-| Button | Button.tsx | 基础按钮，支持多种变体/尺寸/状态 | ~80 行 |
-| Input | Input.tsx | 输入框，支持多种类型/状态/前后缀 | ~90 行 |
-| Form | Form.tsx | 表单容器，支持验证/布局/复合组件 | ~180 行 |
-| List | List.tsx | 列表组件，支持泛型/虚拟化/选择 | ~150 行 |
-| Modal | Modal.tsx | 模态框，支持动画/Portal/命令式 API | ~200 行 |
-| Card | Card.tsx | 内容卡片，支持网格/骨架屏/Meta | ~100 行 |
+| 组件   | 文件       | 核心功能                           | 代码行数 |
+| ------ | ---------- | ---------------------------------- | -------- |
+| Button | Button.tsx | 基础按钮，支持多种变体/尺寸/状态   | ~80 行   |
+| Input  | Input.tsx  | 输入框，支持多种类型/状态/前后缀   | ~90 行   |
+| Form   | Form.tsx   | 表单容器，支持验证/布局/复合组件   | ~180 行  |
+| List   | List.tsx   | 列表组件，支持泛型/虚拟化/选择     | ~150 行  |
+| Modal  | Modal.tsx  | 模态框，支持动画/Portal/命令式 API | ~200 行  |
+| Card   | Card.tsx   | 内容卡片，支持网格/骨架屏/Meta     | ~100 行  |
 
 ---
 
@@ -36,7 +36,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // Input 继承 InputHTMLAttributes (排除 size)
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface InputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> {
   type?: InputType;
   status?: InputStatus;
   prefix?: React.ReactNode;
@@ -50,16 +53,16 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 ```tsx
 // Button 默认值
-variant = 'primary'
-size = 'md'
-loading = false
-fullWidth = false
+variant = "primary";
+size = "md";
+loading = false;
+fullWidth = false;
 
 // Modal 默认值
-closable = true
-maskClosable = true
-keyboard = true
-size = 'md'
+closable = true;
+maskClosable = true;
+keyboard = true;
+size = "md";
 ```
 
 ### 3. 扩展性强
@@ -67,12 +70,11 @@ size = 'md'
 支持 className、style 等通用属性透传：
 
 ```tsx
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className = '', ...props },
-  ref
-) {
-  return <button ref={ref} className={classes} {...props} />;
-});
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button({ className = "", ...props }, ref) {
+    return <button ref={ref} className={classes} {...props} />;
+  },
+);
 ```
 
 ### 4. 事件标准化
@@ -114,7 +116,9 @@ Card.Grid = CardGrid;
     <Input name="username" />
   </Form.Field>
   <Form.Actions>
-    <Button type="submit" variant="primary">提交</Button>
+    <Button type="submit" variant="primary">
+      提交
+    </Button>
   </Form.Actions>
 </Form>
 ```
@@ -125,7 +129,7 @@ Card.Grid = CardGrid;
 
 ```tsx
 <Modal title="标题" open={isOpen} onClose={handleClose}>
-  <Form>...</Form>  {/* 任意内容 */}
+  <Form>...</Form> {/* 任意内容 */}
 </Modal>
 ```
 
@@ -134,9 +138,9 @@ Card.Grid = CardGrid;
 支持 className/style 覆盖，支持 CSS 变量：
 
 ```tsx
-<Form 
-  layout="horizontal" 
-  labelWidth={120}  // 通过 CSS 变量传递
+<Form
+  layout="horizontal"
+  labelWidth={120} // 通过 CSS 变量传递
   className="custom-form"
 />
 ```
@@ -153,9 +157,9 @@ function CreateUserFlow() {
   return (
     <>
       <Button onClick={() => setModalOpen(true)}>添加用户</Button>
-      
-      <List data={users} renderItem={user => <span>{user.name}</span>} />
-      
+
+      <List data={users} renderItem={(user) => <span>{user.name}</span>} />
+
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <Form onSubmit={handleAdd}>
           <Form.Field label="姓名">
@@ -180,13 +184,16 @@ function CreateUserFlow() {
 List 组件支持泛型，保持类型安全：
 
 ```tsx
-interface User { id: number; name: string; }
+interface User {
+  id: number;
+  name: string;
+}
 
 <List<User>
   data={users}
   itemKey="id"
-  renderItem={(user) => <div>{user.name}</div>}  // user 类型为 User
-/>
+  renderItem={(user) => <div>{user.name}</div>} // user 类型为 User
+/>;
 ```
 
 ### 2. 联合类型处理状态
@@ -194,9 +201,14 @@ interface User { id: number; name: string; }
 使用联合类型明确状态选项：
 
 ```tsx
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link';
-export type InputStatus = 'default' | 'error' | 'success' | 'warning';
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "ghost"
+  | "link";
+export type InputStatus = "default" | "error" | "success" | "warning";
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "fullscreen";
 ```
 
 ### 3. 统一导出类型
@@ -204,8 +216,8 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
 components.ts 统一导出组件和类型：
 
 ```tsx
-export { Button } from './Button';
-export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
+export { Button } from "./Button";
+export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 ```
 
 ---
@@ -237,19 +249,19 @@ export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 <div
   tabIndex={disabled ? undefined : 0}
   onKeyDown={(e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       handleClick();
     }
   }}
-/>
+/>;
 
 // Modal 支持 ESC 关闭
 useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
+    if (e.key === "Escape") onClose();
   };
-  document.addEventListener('keydown', handleKeyDown);
-  return () => document.removeEventListener('keydown', handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
+  return () => document.removeEventListener("keydown", handleKeyDown);
 }, [onClose]);
 ```
 
@@ -260,7 +272,7 @@ useEffect(() => {
 useEffect(() => {
   if (open && modalRef.current) {
     const focusable = modalRef.current.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
     focusable?.focus();
   }
@@ -287,20 +299,22 @@ useEffect(() => {
 
 ```tsx
 const form = useForm({
-  initialValues: { username: '', email: '' },
+  initialValues: { username: "", email: "" },
   validate: (values) => {
     const errors: Record<string, string> = {};
-    if (!values.username) errors.username = '必填';
+    if (!values.username) errors.username = "必填";
     return errors;
   },
-  onSubmit: async (values) => { /* 提交逻辑 */ },
+  onSubmit: async (values) => {
+    /* 提交逻辑 */
+  },
 });
 
 // 使用
-<Input 
+<Input
   value={form.values.username}
-  onChange={(e) => form.handleChange('username', e.target.value)}
-/>
+  onChange={(e) => form.handleChange("username", e.target.value)}
+/>;
 ```
 
 ### 2. Modal - Portal + 动画
@@ -332,13 +346,15 @@ useEffect(() => {
 提供类似 Ant Design 的命令式调用：
 
 ```tsx
-Modal.info({ title: '提示', content: '这是一条提示' });
-Modal.success({ title: '成功', content: '操作成功' });
-Modal.error({ title: '错误', content: '操作失败' });
-Modal.confirm({ 
-  title: '确认', 
-  content: '确定要删除吗？',
-  onOk: () => { /* 确认逻辑 */ },
+Modal.info({ title: "提示", content: "这是一条提示" });
+Modal.success({ title: "成功", content: "操作成功" });
+Modal.error({ title: "错误", content: "操作失败" });
+Modal.confirm({
+  title: "确认",
+  content: "确定要删除吗？",
+  onOk: () => {
+    /* 确认逻辑 */
+  },
 });
 ```
 
@@ -362,11 +378,13 @@ Modal.confirm({
 // Modal 打开时阻止背景滚动
 useEffect(() => {
   if (open) {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   } else {
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   }
-  return () => { document.body.style.overflow = ''; };
+  return () => {
+    document.body.style.overflow = "";
+  };
 }, [open]);
 ```
 
@@ -378,11 +396,11 @@ useEffect(() => {
 
 ```tsx
 // Form 组件传递 CSS 变量
-const style = labelWidth 
-  ? { '--form-label-width': labelWidth } as React.CSSProperties 
+const style = labelWidth
+  ? ({ "--form-label-width": labelWidth } as React.CSSProperties)
   : undefined;
 
-<form style={style}>...</form>
+<form style={style}>...</form>;
 ```
 
 ### 2. BEM 命名规范
@@ -450,16 +468,16 @@ components-training/
 
 ## 九、设计亮点总结
 
-| 设计维度 | 实现方式 |
-|----------|----------|
-| **API 一致性** | 所有组件支持 className, style, children 透传 |
-| **类型安全** | 完整 TypeScript 类型，泛型支持 (List<T>) |
-| **可组合性** | Compound Components 模式 (Form.Field, List.Item 等) |
-| **无障碍性** | ARIA 属性，键盘导航，焦点管理，屏幕阅读器支持 |
-| **状态管理** | Form 内置验证，Modal 动画状态，List 选择状态 |
-| **扩展能力** | CSS 变量，className 覆盖，命令式 API (Modal) |
-| **性能优化** | List 虚拟滚动支持，Portal 渲染隔离 |
-| **开发体验** | 合理默认值，清晰类型提示，统一导出 |
+| 设计维度       | 实现方式                                            |
+| -------------- | --------------------------------------------------- |
+| **API 一致性** | 所有组件支持 className, style, children 透传        |
+| **类型安全**   | 完整 TypeScript 类型，泛型支持 (List<T>)            |
+| **可组合性**   | Compound Components 模式 (Form.Field, List.Item 等) |
+| **无障碍性**   | ARIA 属性，键盘导航，焦点管理，屏幕阅读器支持       |
+| **状态管理**   | Form 内置验证，Modal 动画状态，List 选择状态        |
+| **扩展能力**   | CSS 变量，className 覆盖，命令式 API (Modal)        |
+| **性能优化**   | List 虚拟滚动支持，Portal 渲染隔离                  |
+| **开发体验**   | 合理默认值，清晰类型提示，统一导出                  |
 
 ---
 

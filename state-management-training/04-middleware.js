@@ -12,7 +12,9 @@ function createStoreWithMiddleware(reducer, middlewares = []) {
   const compose = (...fns) => {
     if (fns.length === 0) return (arg) => arg;
     if (fns.length === 1) return fns[0];
-    return fns.reduce((a, b) => (...args) => a(b(...args)));
+    return fns.reduce(
+      (a, b) => (...args) => a(b(...args)),
+    );
   };
 
   // 中间件签名：store => next => action => result
@@ -75,9 +77,12 @@ const crashReporter = (store) => (next) => (action) => {
 // ========== 使用示例 ==========
 const reducer = (state = { count: 0 }, action) => {
   switch (action.type) {
-    case 'INCREMENT': return { count: state.count + 1 };
-    case 'DECREMENT': return { count: state.count - 1 };
-    default: return state;
+    case 'INCREMENT':
+      return { count: state.count + 1 };
+    case 'DECREMENT':
+      return { count: state.count - 1 };
+    default:
+      return state;
   }
 };
 

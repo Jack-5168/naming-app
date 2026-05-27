@@ -3,7 +3,7 @@
  * Phase 2 Implementation
  */
 
-import { StabilityResult, TestHistory } from '../types';
+import { StabilityResult, TestHistory } from "../types";
 
 /**
  * Calculate stability index based on test history
@@ -18,7 +18,7 @@ export async function calculateStability(
     return {
       stabilityIndex: 0,
       stabilityProbability: 0.5,
-      status: 'new',
+      status: "new",
       confidenceBand: { lower: 0, upper: 1 },
     };
   }
@@ -46,19 +46,19 @@ export async function calculateStability(
   );
 
   // Calculate probability of same type on retest
-  const stabilityProbability = 0.5 + (consistency * 0.4);
+  const stabilityProbability = 0.5 + consistency * 0.4;
 
   // Determine status
-  let status: 'stable' | 'moderate' | 'unstable' | 'new';
+  let status: "stable" | "moderate" | "unstable" | "new";
 
   if (testHistory.length === 1) {
-    status = 'new';
+    status = "new";
   } else if (stabilityIndex >= 80) {
-    status = 'stable';
+    status = "stable";
   } else if (stabilityIndex >= 60) {
-    status = 'moderate';
+    status = "moderate";
   } else {
-    status = 'unstable';
+    status = "unstable";
   }
 
   // Calculate confidence band
@@ -84,11 +84,13 @@ function calculateDimensionStability(history: TestHistory[]): number {
     return 0.5;
   }
 
-  const dimensions = ['E', 'N', 'T', 'J'];
+  const dimensions = ["E", "N", "T", "J"];
   let totalStability = 0;
 
   dimensions.forEach((dim) => {
-    const scores = history.map((h) => h.dimensionScores?.[dim as keyof typeof h.dimensionScores] || 50);
+    const scores = history.map(
+      (h) => h.dimensionScores?.[dim as keyof typeof h.dimensionScores] || 50,
+    );
     const variance = calculateVariance(scores);
     // Lower variance = higher stability
     const dimStability = 1 / (1 + variance / 100);

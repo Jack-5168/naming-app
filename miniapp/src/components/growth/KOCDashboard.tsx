@@ -3,15 +3,15 @@
  * Phase 4: Growth Features - KOC 分销系统
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import './KOCDashboard.scss';
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, ScrollView } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import "./KOCDashboard.scss";
 
 interface Commission {
   id: string;
   amount: number;
-  status: 'pending' | 'approved' | 'paid' | 'cancelled';
+  status: "pending" | "approved" | "paid" | "cancelled";
   createdAt: string;
 }
 
@@ -27,7 +27,7 @@ interface DashboardData {
 export const KOCDashboard: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [commissions, setCommissions] = useState<Commission[]>([]);
-  const [referralLink, setReferralLink] = useState('');
+  const [referralLink, setReferralLink] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,32 +37,32 @@ export const KOCDashboard: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch dashboard data
       const dashboardRes = await Taro.request({
-        url: '/api/v1/growth/koc/dashboard',
-        method: 'GET',
+        url: "/api/v1/growth/koc/dashboard",
+        method: "GET",
       });
       setDashboard(dashboardRes.data.data);
 
       // Fetch commissions
       const commissionsRes = await Taro.request({
-        url: '/api/v1/growth/koc/commissions',
-        method: 'GET',
+        url: "/api/v1/growth/koc/commissions",
+        method: "GET",
       });
       setCommissions(commissionsRes.data.data.commissions);
 
       // Fetch referral link
       const referralRes = await Taro.request({
-        url: '/api/v1/growth/koc/referral-link',
-        method: 'GET',
+        url: "/api/v1/growth/koc/referral-link",
+        method: "GET",
       });
       setReferralLink(referralRes.data.data.referralLink);
     } catch (error) {
-      console.error('Load data failed:', error);
+      console.error("Load data failed:", error);
       Taro.showToast({
-        title: '加载失败',
-        icon: 'none',
+        title: "加载失败",
+        icon: "none",
       });
     } finally {
       setLoading(false);
@@ -75,60 +75,60 @@ export const KOCDashboard: React.FC = () => {
         data: referralLink,
       });
       Taro.showToast({
-        title: '已复制',
-        icon: 'success',
+        title: "已复制",
+        icon: "success",
       });
     } catch (error) {
-      console.error('Copy failed:', error);
+      console.error("Copy failed:", error);
     }
   };
 
   const handleShare = async () => {
     try {
       await Taro.shareAppMessage({
-        title: '人格测试 - 专业性格分析',
-        path: `/?ref=${referralLink.split('ref=')[1]}`,
+        title: "人格测试 - 专业性格分析",
+        path: `/?ref=${referralLink.split("ref=")[1]}`,
       });
     } catch (error) {
-      console.error('Share failed:', error);
+      console.error("Share failed:", error);
     }
   };
 
   const handleWithdraw = async () => {
     if (!dashboard || dashboard.balance < 50) {
       Taro.showToast({
-        title: '余额不足¥50',
-        icon: 'none',
+        title: "余额不足¥50",
+        icon: "none",
       });
       return;
     }
 
     Taro.showModal({
-      title: '提现申请',
+      title: "提现申请",
       content: `可提现金额：¥${dashboard.balance.toFixed(2)}`,
       success: async (res) => {
         if (res.confirm) {
           try {
             await Taro.request({
-              url: '/api/v1/growth/koc/withdraw',
-              method: 'POST',
+              url: "/api/v1/growth/koc/withdraw",
+              method: "POST",
               data: {
                 amount: dashboard.balance,
-                alipayAccount: 'user@example.com', // Get from user profile
+                alipayAccount: "user@example.com", // Get from user profile
               },
             });
-            
+
             Taro.showToast({
-              title: '提现申请已提交',
-              icon: 'success',
+              title: "提现申请已提交",
+              icon: "success",
             });
-            
+
             loadData(); // Refresh data
           } catch (error) {
-            console.error('Withdraw failed:', error);
+            console.error("Withdraw failed:", error);
             Taro.showToast({
-              title: '提现失败',
-              icon: 'none',
+              title: "提现失败",
+              icon: "none",
             });
           }
         }
@@ -149,7 +149,9 @@ export const KOCDashboard: React.FC = () => {
       {/* Stats Overview */}
       <View className="stats-section">
         <View className="stat-card primary">
-          <Text className="stat-value">¥{dashboard?.balance.toFixed(2) || '0.00'}</Text>
+          <Text className="stat-value">
+            ¥{dashboard?.balance.toFixed(2) || "0.00"}
+          </Text>
           <Text className="stat-label">可提现余额</Text>
         </View>
 
@@ -159,11 +161,15 @@ export const KOCDashboard: React.FC = () => {
             <Text className="stat-label">邀请人数</Text>
           </View>
           <View className="stat-item">
-            <Text className="stat-value">{dashboard?.conversionRate.toFixed(1) || '0'}%</Text>
+            <Text className="stat-value">
+              {dashboard?.conversionRate.toFixed(1) || "0"}%
+            </Text>
             <Text className="stat-label">转化率</Text>
           </View>
           <View className="stat-item">
-            <Text className="stat-value">¥{dashboard?.totalEarned.toFixed(2) || '0.00'}</Text>
+            <Text className="stat-value">
+              ¥{dashboard?.totalEarned.toFixed(2) || "0.00"}
+            </Text>
             <Text className="stat-label">累计收益</Text>
           </View>
         </View>
@@ -197,9 +203,7 @@ export const KOCDashboard: React.FC = () => {
         >
           提现
         </Button>
-        <Text className="withdraw-note">
-          满¥50 可提现，3 个工作日内到账
-        </Text>
+        <Text className="withdraw-note">满¥50 可提现，3 个工作日内到账</Text>
       </View>
 
       {/* Commission Records */}
@@ -216,10 +220,15 @@ export const KOCDashboard: React.FC = () => {
                 <Text className="record-date">
                   {new Date(commission.createdAt).toLocaleDateString()}
                 </Text>
-                <Text className="record-status">{getStatusText(commission.status)}</Text>
+                <Text className="record-status">
+                  {getStatusText(commission.status)}
+                </Text>
               </View>
-              <Text className={`record-amount ${commission.amount < 0 ? 'negative' : 'positive'}`}>
-                {commission.amount < 0 ? '-' : '+'}¥{Math.abs(commission.amount).toFixed(2)}
+              <Text
+                className={`record-amount ${commission.amount < 0 ? "negative" : "positive"}`}
+              >
+                {commission.amount < 0 ? "-" : "+"}¥
+                {Math.abs(commission.amount).toFixed(2)}
               </Text>
             </View>
           ))
@@ -231,10 +240,10 @@ export const KOCDashboard: React.FC = () => {
 
 function getStatusText(status: string): string {
   const statusMap: Record<string, string> = {
-    pending: '待审核',
-    approved: '已通过',
-    paid: '已打款',
-    cancelled: '已取消',
+    pending: "待审核",
+    approved: "已通过",
+    paid: "已打款",
+    cancelled: "已取消",
   };
   return statusMap[status] || status;
 }

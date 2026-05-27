@@ -3,10 +3,10 @@
  * Phase 4: Growth Features - 双人合测
  */
 
-import React, { useState } from 'react';
-import { View, Text, Image, Button, Share } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import './DualTestCard.scss';
+import React, { useState } from "react";
+import { View, Text, Image, Button, Share } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import "./DualTestCard.scss";
 
 interface DualTestCardProps {
   inviteCode: string;
@@ -24,12 +24,12 @@ export const DualTestCard: React.FC<DualTestCardProps> = ({
   const handleShare = async () => {
     try {
       await Taro.shareAppMessage({
-        title: '邀请你进行双人合测',
+        title: "邀请你进行双人合测",
         path: `/pages/dual-test/accept?code=${inviteCode}`,
         imageUrl: qrCodeUrl,
       });
     } catch (error) {
-      console.error('Share failed:', error);
+      console.error("Share failed:", error);
     }
   };
 
@@ -41,7 +41,7 @@ export const DualTestCard: React.FC<DualTestCardProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Copy failed:', error);
+      console.error("Copy failed:", error);
     }
   };
 
@@ -61,11 +61,7 @@ export const DualTestCard: React.FC<DualTestCardProps> = ({
       <View className="card-body">
         <View className="qr-code-container">
           {qrCodeUrl && (
-            <Image
-              className="qr-code"
-              src={qrCodeUrl}
-              mode="aspectFit"
-            />
+            <Image className="qr-code" src={qrCodeUrl} mode="aspectFit" />
           )}
           <Text className="invite-code">邀请码：{inviteCode}</Text>
         </View>
@@ -91,7 +87,7 @@ export const DualTestCard: React.FC<DualTestCardProps> = ({
           分享给好友
         </Button>
         <Button className="action-btn secondary" onClick={handleCopyLink}>
-          {copied ? '已复制' : '复制链接'}
+          {copied ? "已复制" : "复制链接"}
         </Button>
         {onAccept && (
           <Button className="action-btn accept" onClick={handleAccept}>

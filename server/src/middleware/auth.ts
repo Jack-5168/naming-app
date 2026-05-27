@@ -3,21 +3,25 @@
  * Phase 1: MVP Implementation
  */
 
-import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../security/auth';
+import { Request, Response, NextFunction } from "express";
+import { verifyAccessToken } from "../security/auth";
 
 /**
  * Authentication middleware
  * Verifies JWT access token and attaches user to request
  */
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        error: 'No token provided',
+        error: "No token provided",
       });
     }
 
@@ -34,7 +38,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   } catch (error) {
     return res.status(401).json({
       success: false,
-      error: 'Invalid token',
+      error: "Invalid token",
     });
   }
 }

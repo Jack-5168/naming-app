@@ -1,21 +1,24 @@
 # 装饰器模式 (Decorator Pattern)
 
 ## 核心思想
+
 动态地为对象添加额外功能，而不改变其原始结构。通过组合而非继承实现功能扩展，遵循开闭原则。
 
 ## JS 原生体现
+
 - 函数组合（compose/pipeline）
 - HOC（高阶组件）— React 装饰组件
 - Middleware 中间件 — Express/Koa 洋葱模型
 - ES2022 Decorator 语法（`@decorator`）— TS/Stage 3
 
 ## 与代理模式的区别
-| 维度 | 装饰器模式 | 代理模式 |
-|------|------------|----------|
-| 目的 | 增强功能 | 控制访问 |
-| 接口 | 保持相同接口 | 保持相同接口 |
-| 关系 | "我有额外功能" | "我替你挡一下" |
-| 组合 | 多个装饰器可叠加 | 通常一个代理 |
+
+| 维度 | 装饰器模式       | 代理模式       |
+| ---- | ---------------- | -------------- |
+| 目的 | 增强功能         | 控制访问       |
+| 接口 | 保持相同接口     | 保持相同接口   |
+| 关系 | "我有额外功能"   | "我替你挡一下" |
+| 组合 | 多个装饰器可叠加 | 通常一个代理   |
 
 ---
 
@@ -45,7 +48,7 @@ function withRetry(fn, maxRetries = 3, delay = 100) {
       } catch (err) {
         console.warn(`[Retry] ${fn.name} 第 ${i + 1} 次失败:`, err.message);
         if (i === maxRetries) throw err;
-        await new Promise(r => setTimeout(r, delay * (i + 1)));
+        await new Promise((r) => setTimeout(r, delay * (i + 1)));
       }
     }
   };
@@ -70,14 +73,14 @@ function withCache(fn, keyFn = JSON.stringify, ttl = 60000) {
 // ============ 使用 ============
 function fetchUser(id) {
   console.log(`[API] 请求用户 ${id}`);
-  return { id, name: 'Alice', email: 'alice@example.com' };
+  return { id, name: "Alice", email: "alice@example.com" };
 }
 
 // 叠加多个装饰器
-const cachedFetchUser = withCache(withLogging(fetchUser, 'fetchUser'));
-cachedFetchUser(1);  // [LOG] → [API] → [LOG] 返回
-cachedFetchUser(1);  // [Cache] 命中（跳过 API 和 LOG）
-cachedFetchUser(2);  // [LOG] → [API] → [LOG] 返回（新参数）
+const cachedFetchUser = withCache(withLogging(fetchUser, "fetchUser"));
+cachedFetchUser(1); // [LOG] → [API] → [LOG] 返回
+cachedFetchUser(1); // [Cache] 命中（跳过 API 和 LOG）
+cachedFetchUser(2); // [LOG] → [API] → [LOG] 返回（新参数）
 ```
 
 ## 实现二：Koa 洋葱模型（中间件装饰）
@@ -86,7 +89,9 @@ cachedFetchUser(2);  // [LOG] → [API] → [LOG] 返回（新参数）
 // ============ Koa 洋葱模型 — 中间件装饰 ============
 
 class KoaLike {
-  constructor() { this.middlewares = []; }
+  constructor() {
+    this.middlewares = [];
+  }
 
   use(fn) {
     this.middlewares.push(fn);
@@ -105,7 +110,13 @@ class KoaLike {
   }
 
   async listen(port) {
-    const ctx = { url: '/', method: 'GET', body: null, status: 200, headers: {} };
+    const ctx = {
+      url: "/",
+      method: "GET",
+      body: null,
+      status: 200,
+      headers: {},
+    };
     console.log(`\n=== 请求: ${ctx.method} ${ctx.url} ===`);
     await this.compose(ctx);
     console.log(`=== 响应: ${ctx.status} ${JSON.stringify(ctx.body)} ===\n`);
@@ -126,24 +137,27 @@ function logger(ctx, next) {
 
 // 2. 认证中间件
 function auth(ctx, next) {
-  const token = ctx.headers['authorization'];
+  const token = ctx.headers["authorization"];
   if (!token) {
     ctx.status = 401;
-    ctx.body = { error: '未授权' };
+    ctx.body = { error: "未授权" };
     return Promise.resolve(); // 短路，不调用 next
   }
   console.log(`  [Auth] 用户已认证`);
-  ctx.user = { id: 1, role: 'admin' };
+  ctx.user = { id: 1, role: "admin" };
   return next();
 }
 
 // 3. 路由中间件
 function router(ctx, next) {
-  if (ctx.url === '/api/users') {
-    ctx.body = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }];
+  if (ctx.url === "/api/users") {
+    ctx.body = [
+      { id: 1, name: "Alice" },
+      { id: 2, name: "Bob" },
+    ];
     return Promise.resolve();
   }
-  if (ctx.url === '/api/orders') {
+  if (ctx.url === "/api/orders") {
     ctx.body = [{ id: 101, total: 299 }];
     return Promise.resolve();
   }
@@ -152,10 +166,10 @@ function router(ctx, next) {
 
 // 4. 错误处理中间件
 function errorHandler(ctx, next) {
-  return next().catch(err => {
+  return next().catch((err) => {
     console.error(`  [Error] ${err.message}`);
     ctx.status = 500;
-    ctx.body = { error: '服务器内部错误' };
+    ctx.body = { error: "服务器内部错误" };
   });
 }
 
@@ -166,7 +180,7 @@ function formatResponse(ctx, next) {
       ctx.body = {
         success: ctx.status < 400,
         data: ctx.body,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   });
@@ -174,11 +188,11 @@ function formatResponse(ctx, next) {
 
 // ============ 组装应用 ============
 const app = new KoaLike();
-app.use(errorHandler);      // 最外层（最先执行，最后结束）
-app.use(logger);            // 第二层
-app.use(auth);              // 第三层
-app.use(router);            // 第四层
-app.use(formatResponse);    // 最内层（最后执行，最先结束）
+app.use(errorHandler); // 最外层（最先执行，最后结束）
+app.use(logger); // 第二层
+app.use(auth); // 第三层
+app.use(router); // 第四层
+app.use(formatResponse); // 最内层（最后执行，最先结束）
 
 // ============ 测试 ============
 // 测试 1: 正常请求
@@ -199,7 +213,7 @@ app.listen(3000);
 function autobind(target) {
   const descriptor = Object.getOwnPropertyDescriptors(target.prototype);
   for (const [key, desc] of Object.entries(descriptor)) {
-    if (typeof desc.value === 'function' && key !== 'constructor') {
+    if (typeof desc.value === "function" && key !== "constructor") {
       desc.value = desc.value.bind(target.prototype);
       Object.defineProperty(target.prototype, key, desc);
     }
@@ -220,7 +234,7 @@ function serializable(target) {
   target.prototype.toJSON = function () {
     const result = {};
     for (const key of Object.keys(this)) {
-      if (typeof this[key] !== 'function') {
+      if (typeof this[key] !== "function") {
         result[key] = this[key];
       }
     }
@@ -231,7 +245,7 @@ function serializable(target) {
 
 // ============ 使用 ============
 @autobind
-@withStatic({ tableName: 'users' })
+@withStatic({ tableName: "users" })
 @serializable
 class User {
   constructor(name, email) {
@@ -239,14 +253,16 @@ class User {
     this.email = email;
   }
 
-  greet() { return `Hello, ${this.name}!`; }
+  greet() {
+    return `Hello, ${this.name}!`;
+  }
 }
 
 // 等价于手动装饰：
 // User = serializable(withStatic({ tableName: 'users' })(autobind(User)));
 
-const user = new User('Alice', 'alice@example.com');
-console.log(user.toJSON());  // { name: 'Alice', email: 'alice@example.com' }
+const user = new User("Alice", "alice@example.com");
+console.log(user.toJSON()); // { name: 'Alice', email: 'alice@example.com' }
 console.log(User.tableName); // "users"
 ```
 
@@ -257,47 +273,82 @@ console.log(User.tableName); // "users"
 
 // 组件接口
 class Coffee {
-  cost() { return 0; }
-  description() { return ''; }
+  cost() {
+    return 0;
+  }
+  description() {
+    return "";
+  }
 }
 
 // 具体组件
 class Espresso extends Coffee {
-  cost() { return 30; }
-  description() { return '浓缩咖啡'; }
+  cost() {
+    return 30;
+  }
+  description() {
+    return "浓缩咖啡";
+  }
 }
 
 class Latte extends Coffee {
-  cost() { return 35; }
-  description() { return '拿铁'; }
+  cost() {
+    return 35;
+  }
+  description() {
+    return "拿铁";
+  }
 }
 
 // 装饰器基类
 class CoffeeDecorator extends Coffee {
-  constructor(coffee) { super(); this.coffee = coffee; }
-  cost() { return this.coffee.cost(); }
-  description() { return this.coffee.description(); }
+  constructor(coffee) {
+    super();
+    this.coffee = coffee;
+  }
+  cost() {
+    return this.coffee.cost();
+  }
+  description() {
+    return this.coffee.description();
+  }
 }
 
 // 具体装饰器
 class Milk extends CoffeeDecorator {
-  cost() { return super.cost() + 5; }
-  description() { return `${super.description()} + 牛奶`; }
+  cost() {
+    return super.cost() + 5;
+  }
+  description() {
+    return `${super.description()} + 牛奶`;
+  }
 }
 
 class Sugar extends CoffeeDecorator {
-  cost() { return super.cost() + 2; }
-  description() { return `${super.description()} + 糖`; }
+  cost() {
+    return super.cost() + 2;
+  }
+  description() {
+    return `${super.description()} + 糖`;
+  }
 }
 
 class WhippedCream extends CoffeeDecorator {
-  cost() { return super.cost() + 8; }
-  description() { return `${super.description()} + 奶油`; }
+  cost() {
+    return super.cost() + 8;
+  }
+  description() {
+    return `${super.description()} + 奶油`;
+  }
 }
 
 class Caramel extends CoffeeDecorator {
-  cost() { return super.cost() + 10; }
-  description() { return `${super.description()} + 焦糖`; }
+  cost() {
+    return super.cost() + 10;
+  }
+  description() {
+    return `${super.description()} + 焦糖`;
+  }
 }
 
 // ============ 使用 ============
@@ -315,13 +366,7 @@ console.log(`${coffee.description()} = ¥${coffee.cost()}`);
 // 拿铁 + 牛奶 + 焦糖 + 奶油 = ¥58
 
 // 链式写法
-const fancyCoffee = new WhippedCream(
-  new Caramel(
-    new Milk(
-      new Espresso()
-    )
-  )
-);
+const fancyCoffee = new WhippedCream(new Caramel(new Milk(new Espresso())));
 console.log(`${fancyCoffee.description()} = ¥${fancyCoffee.cost()}`);
 // 浓缩咖啡 + 牛奶 + 焦糖 + 奶油 = ¥53
 ```
@@ -376,7 +421,9 @@ function requireRole(role) {
 
 // ============ 使用 ============
 class SearchController {
-  constructor() { this.user = { role: 'admin' }; }
+  constructor() {
+    this.user = { role: "admin" };
+  }
 
   @debounce(300)
   onSearchInput(query) {
@@ -386,10 +433,10 @@ class SearchController {
 
   @throttle(1000)
   onScroll() {
-    console.log('[Scroll] 加载更多数据');
+    console.log("[Scroll] 加载更多数据");
   }
 
-  @requireRole('admin')
+  @requireRole("admin")
   deleteUser(userId) {
     console.log(`[Admin] 删除用户 ${userId}`);
   }
@@ -404,12 +451,13 @@ function applyDecorators(proto, key, ...decorators) {
   }
 }
 
-applyDecorators(SearchController.prototype, 'onSearchInput', debounce(300));
-applyDecorators(SearchController.prototype, 'onScroll', throttle(1000));
-applyDecorators(SearchController.prototype, 'deleteUser', requireRole('admin'));
+applyDecorators(SearchController.prototype, "onSearchInput", debounce(300));
+applyDecorators(SearchController.prototype, "onScroll", throttle(1000));
+applyDecorators(SearchController.prototype, "deleteUser", requireRole("admin"));
 ```
 
 ## 要点总结
+
 1. **装饰器 vs 代理**: 装饰器增强功能（加法），代理控制访问（门卫）
 2. **装饰器可叠加**: 多个装饰器组合使用，洋葱模型是经典应用
 3. **Koa 中间件 = 装饰器链**: `compose` 将数组变成嵌套 Promise 链

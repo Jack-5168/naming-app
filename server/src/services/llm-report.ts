@@ -3,7 +3,7 @@
  * 负责调用 GPT-4o-mini 生成个性化人格报告
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 import {
   COST_CONTROL,
   recordUsage,
@@ -13,13 +13,13 @@ import {
   getFallbackModel,
   getMaxRetries,
   costEvents,
-} from './cost-control';
+} from "./cost-control";
 
 export interface ReportGenerationParams {
   userId: string;
   clientIp: string;
   resultId: number;
-  reportType: 'basic' | 'pro' | 'master';
+  reportType: "basic" | "pro" | "master";
   includeSections: string[];
 }
 
@@ -52,8 +52,8 @@ const ipRateLimits = new Map<string, RateLimitRecord>();
 
 // 成本计算（GPT-4o-mini 定价：$0.15/1M input tokens, $0.60/1M output tokens）
 const PRICING = {
-  'gpt-4o-mini': { input: 0.15, output: 0.60 }, // 美元 per 1M tokens
-  'claude-haiku': { input: 0.25, output: 1.25 }, // 美元 per 1M tokens
+  "gpt-4o-mini": { input: 0.15, output: 0.6 }, // 美元 per 1M tokens
+  "claude-haiku": { input: 0.25, output: 1.25 }, // 美元 per 1M tokens
 };
 
 const USD_TO_CNY = 7.2; // 美元转人民币汇率
@@ -237,21 +237,31 @@ function renderTemplate(template: string, data: any): string {
   let rendered = template;
 
   // 简单变量替换
-  rendered = rendered.replace(/{{(\w+)}}/g, (_, key) => (data[key] !== undefined ? String(data[key]) : ''));
+  rendered = rendered.replace(/{{(\w+)}}/g, (_, key) =>
+    data[key] !== undefined ? String(data[key]) : "",
+  );
 
   // 数组处理（生活事件）
   if (data.lifeEvents && Array.isArray(data.lifeEvents)) {
-    const sectionMatch = rendered.match(/{{#lifeEvents}}([\s\S]*?){{\/lifeEvents}}/);
+    const sectionMatch = rendered.match(
+      /{{#lifeEvents}}([\s\S]*?){{\/lifeEvents}}/,
+    );
 
     if (sectionMatch) {
       const itemTemplate = sectionMatch[1];
-      const items = data.lifeEvents.map((event: any) => itemTemplate.replace(/{{(\w+)}}/g, (_, key) => (event[key] !== undefined ? String(event[key]) : ''))).join('');
+      const items = data.lifeEvents
+        .map((event: any) =>
+          itemTemplate.replace(/{{(\w+)}}/g, (_, key) =>
+            event[key] !== undefined ? String(event[key]) : "",
+          ),
+        )
+        .join("");
 
       rendered = rendered.replace(sectionMatch[0], items);
     }
   } else {
     // 移除未使用的 lifeEvents 块
-    rendered = rendered.replace(/{{#lifeEvents}}[\s\S]*?{{\/lifeEvents}}/g, '');
+    rendered = rendered.replace(/{{#lifeEvents}}[\s\S]*?{{\/lifeEvents}}/g, "");
   }
 
   return rendered;
@@ -260,7 +270,10 @@ function renderTemplate(template: string, data: any): string {
 /**
  * 质量验证
  */
-function validateQuality(content: string, reportType: string): { valid: boolean; issues: string[] } {
+function validateQuality(
+  content: string,
+  reportType: string,
+): { valid: boolean; issues: string[] } {
   const issues: string[] = [];
 
   // 字数检查
@@ -273,7 +286,7 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
     master: { min: 4000, max: 5000 },
   };
 
-  const limit = wordLimits[reportType as 'basic' | 'pro' | 'master'];
+  const limit = wordLimits[reportType as "basic" | "pro" | "master"];
 
   if (wordCount < limit.min) {
     issues.push(`字数不足：${wordCount}/${limit.min}`);
@@ -282,7 +295,7 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
   }
 
   // 禁止词检测
-  const forbiddenWords = ['保证', '一定', '绝对', '肯定', '必然', '无疑'];
+  const forbiddenWords = ["保证", "一定", "绝对", "肯定", "必然", "无疑"];
 
   for (const word of forbiddenWords) {
     if (content.includes(word)) {
@@ -291,18 +304,27 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
   }
 
   // 免责声明检查
-  if (!content.includes('免责声明') && !content.includes('仅供参考')) {
-    issues.push('缺少免责声明');
+  if (!content.includes("免责声明") && !content.includes("仅供参考")) {
+    issues.push("缺少免责声明");
   }
 
   // 结构完整性检查（检查关键章节标题）
   const requiredSections = {
-    basic: ['核心特质', '优势', '成长建议'],
-    pro: ['人格核心', '生活事件', '优势', '挑战', '职业', '人际', '行动建议'],
-    master: ['人格本质', '生命历程', '认知功能', '优势', '阴影', '关系', '职业', '成长'],
+    basic: ["核心特质", "优势", "成长建议"],
+    pro: ["人格核心", "生活事件", "优势", "挑战", "职业", "人际", "行动建议"],
+    master: [
+      "人格本质",
+      "生命历程",
+      "认知功能",
+      "优势",
+      "阴影",
+      "关系",
+      "职业",
+      "成长",
+    ],
   };
 
-  const sections = requiredSections[reportType as 'basic' | 'pro' | 'master'];
+  const sections = requiredSections[reportType as "basic" | "pro" | "master"];
 
   for (const section of sections) {
     if (!content.includes(section)) {
@@ -319,27 +341,34 @@ function validateQuality(content: string, reportType: string): { valid: boolean;
 /**
  * 模拟 LLM 调用（实际应调用 OpenAI API）
  */
-async function callLLM(prompt: string, model: string, maxTokens: number): Promise<{ content: string; tokens: number }> {
+async function callLLM(
+  prompt: string,
+  model: string,
+  maxTokens: number,
+): Promise<{ content: string; tokens: number }> {
   // Seed 2.0 Pro (火山引擎)
   const apiKey = process.env.SEED_API_KEY || process.env.VOLCANO_API_KEY;
 
   if (!apiKey) {
-    throw new Error('SEED_API_KEY not configured');
+    throw new Error("SEED_API_KEY not configured");
   }
 
-  const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
+  const response = await fetch(
+    "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "seed-2-0-pro",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: maxTokens,
+        temperature: 0.7,
+      }),
     },
-    body: JSON.stringify({
-      model: 'seed-2-0-pro',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: maxTokens,
-      temperature: 0.7,
-    }),
-  });
+  );
 
   if (!response.ok) {
     const err = await response.text();
@@ -358,12 +387,19 @@ async function callLLM(prompt: string, model: string, maxTokens: number): Promis
 /**
  * 计算成本（人民币）
  */
-function calculateCost(tokens: number, model: string, inputRatio = 0.3): number {
-  const pricing = PRICING[model as keyof typeof PRICING] || PRICING['gpt-4o-mini'];
+function calculateCost(
+  tokens: number,
+  model: string,
+  inputRatio = 0.3,
+): number {
+  const pricing =
+    PRICING[model as keyof typeof PRICING] || PRICING["gpt-4o-mini"];
   const inputTokens = tokens * inputRatio;
   const outputTokens = tokens * (1 - inputRatio);
 
-  const costUSD = (inputTokens / 1000000) * pricing.input + (outputTokens / 1000000) * pricing.output;
+  const costUSD =
+    (inputTokens / 1000000) * pricing.input +
+    (outputTokens / 1000000) * pricing.output;
 
   return costUSD * USD_TO_CNY; // 转换为人民币
 }
@@ -371,22 +407,24 @@ function calculateCost(tokens: number, model: string, inputRatio = 0.3): number 
 /**
  * 生成报告（主函数）
  */
-export async function generateReport(params: ReportGenerationParams): Promise<ReportGenerationResult> {
+export async function generateReport(
+  params: ReportGenerationParams,
+): Promise<ReportGenerationResult> {
   const requestId = generateRequestId();
   const startTime = Date.now();
 
-  reportEvents.emit('reportStarted', { requestId, params });
+  reportEvents.emit("reportStarted", { requestId, params });
 
   try {
     // 1. 检查限流
     const rateLimit = checkRateLimit(params.userId, params.clientIp);
 
     if (rateLimit.userRemaining <= 0) {
-      throw new Error('用户每日生成次数已达上限（3 次/日）');
+      throw new Error("用户每日生成次数已达上限（3 次/日）");
     }
 
     if (rateLimit.ipRemaining <= 0) {
-      throw new Error('IP 每日请求次数已达上限（50 次/日）');
+      throw new Error("IP 每日请求次数已达上限（50 次/日）");
     }
 
     // 2. 获取模型策略
@@ -398,18 +436,21 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
     if (!isWithinBudget(estimatedCost)) {
       const status = getBudgetStatus();
 
-      throw new Error(`预算不足。今日剩余：$${status.dailyRemaining.toFixed(2)}`);
+      throw new Error(
+        `预算不足。今日剩余：$${status.dailyRemaining.toFixed(2)}`,
+      );
     }
 
     // 4. 准备数据
-    const template = params.reportType === 'basic'
-      ? BASIC_REPORT_TEMPLATE
-      : params.reportType === 'pro'
-        ? PRO_REPORT_TEMPLATE
-        : MASTER_REPORT_TEMPLATE;
+    const template =
+      params.reportType === "basic"
+        ? BASIC_REPORT_TEMPLATE
+        : params.reportType === "pro"
+          ? PRO_REPORT_TEMPLATE
+          : MASTER_REPORT_TEMPLATE;
 
     const data = {
-      mbtiType: 'INTJ', // 实际应从数据库获取
+      mbtiType: "INTJ", // 实际应从数据库获取
       eScore: 45,
       nScore: 72,
       tScore: 68,
@@ -428,9 +469,11 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const timeoutPromise = new Promise<{ content: string; tokens: number }>((_, reject) => {
-          setTimeout(() => reject(new Error('LLM 调用超时（30 秒）')), 30000);
-        });
+        const timeoutPromise = new Promise<{ content: string; tokens: number }>(
+          (_, reject) => {
+            setTimeout(() => reject(new Error("LLM 调用超时（30 秒）")), 30000);
+          },
+        );
 
         result = await Promise.race([
           callLLM(prompt, strategy.model, strategy.maxTokens),
@@ -439,14 +482,22 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
         break;
       } catch (error) {
         lastError = error as Error;
-        reportEvents.emit('reportRetry', { requestId, attempt, error: (error as Error).message });
+        reportEvents.emit("reportRetry", {
+          requestId,
+          attempt,
+          error: (error as Error).message,
+        });
 
         if (attempt === maxRetries) {
           // 尝试降级
           const fallbackModel = getFallbackModel();
 
           if (fallbackModel) {
-            reportEvents.emit('reportFallback', { requestId, from: strategy.model, to: fallbackModel });
+            reportEvents.emit("reportFallback", {
+              requestId,
+              from: strategy.model,
+              to: fallbackModel,
+            });
 
             try {
               result = await callLLM(prompt, fallbackModel, strategy.maxTokens);
@@ -459,14 +510,17 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
     }
 
     if (!result) {
-      throw lastError || new Error('LLM 调用失败');
+      throw lastError || new Error("LLM 调用失败");
     }
 
     // 7. 质量验证
     const validation = validateQuality(result.content, params.reportType);
 
     if (!validation.valid) {
-      reportEvents.emit('reportQualityWarning', { requestId, issues: validation.issues });
+      reportEvents.emit("reportQualityWarning", {
+        requestId,
+        issues: validation.issues,
+      });
       // 不抛出错误，仅记录警告
     }
 
@@ -494,11 +548,14 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
       cost,
     };
 
-    reportEvents.emit('reportCompleted', { requestId, result: reportResult });
+    reportEvents.emit("reportCompleted", { requestId, result: reportResult });
 
     return reportResult;
   } catch (error) {
-    reportEvents.emit('reportFailed', { requestId, error: (error as Error).message });
+    reportEvents.emit("reportFailed", {
+      requestId,
+      error: (error as Error).message,
+    });
     throw error;
   }
 }
@@ -506,7 +563,10 @@ export async function generateReport(params: ReportGenerationParams): Promise<Re
 /**
  * 获取限流状态
  */
-export function getRateLimitStatus(userId: string, clientIp: string): RateLimitStatus {
+export function getRateLimitStatus(
+  userId: string,
+  clientIp: string,
+): RateLimitStatus {
   return checkRateLimit(userId, clientIp);
 }
 

@@ -23,15 +23,18 @@ ddf00a70 🚀 添加服务器部署脚本
 ### 新增推送的文件
 
 #### 部署工具（4 个）
+
 - ✅ deploy.sh - 自动化部署脚本（可执行）
 - ✅ .deploy.config - 服务器配置（39.107.136.38）
 - ✅ .deploy.config.example - 配置模板
 - ✅ .deployignore - 排除文件列表
 
 #### GitHub Actions（1 个）
+
 - ✅ .github/workflows/deploy.yml - 服务器自动部署
 
 #### 文档（1 个）
+
 - ✅ 部署指南.md - 完整部署教程
 
 ---
@@ -39,25 +42,29 @@ ddf00a70 🚀 添加服务器部署脚本
 ## 📊 完整文件清单（GitHub 上）
 
 ### 移动端 H5 Web 站
+
 - ✅ mobile.html - 移动端主页面（4 个 Tab）
 - ✅ css/mobile.css - 移动端样式
 - ✅ js/data.js - 典籍 + 案例数据
 - ✅ js/mobile.js - Tab 切换 + 弹窗
 
 ### PC 版 Web 站（8 个页面）
+
 - ✅ index.html - PC 版首页
 - ✅ about.html, services.html, classics.html
 - ✅ cases.html, blog.html, contact.html, naming.html
-- ✅ css/*.css (10 个样式文件)
-- ✅ js/*.js (7 个功能模块)
+- ✅ css/\*.css (10 个样式文件)
+- ✅ js/\*.js (7 个功能模块)
 
 ### 部署工具
+
 - ✅ deploy.sh - 一键部署脚本
 - ✅ .deploy.config - 服务器配置
 - ✅ .github/workflows/deploy.yml - CI/CD
 - ✅ 部署指南.md - 部署教程
 
 ### 文档
+
 - ✅ README.md
 - ✅ VERSION.md
 - ✅ V28.0-V30.0 版本报告
@@ -68,15 +75,18 @@ ddf00a70 🚀 添加服务器部署脚本
 ## 🌐 访问地址
 
 ### GitHub
+
 - **仓库**: https://github.com/Jack-5168/naming-app
 - **最新提交**: https://github.com/Jack-5168/naming-app/commit/d4774a0c
 - **文件列表**: https://github.com/Jack-5168/naming-app/files
 
 ### GitHub Pages
+
 - **PC 版**: https://jack-5168.github.io/naming-app/
 - **移动端**: https://jack-5168.github.io/naming-app/mobile.html
 
 ### 服务器部署后
+
 - **PC 版**: http://39.107.136.38/
 - **移动端**: http://39.107.136.38/mobile.html
 
@@ -123,6 +133,7 @@ ssh root@39.107.136.38 "chmod -R 755 /var/www/naming-app"
 ## 🎯 核心功能确认
 
 ### 移动端 H5（mobile.html）
+
 - ✅ 底部 4 个 Tab 导航
 - ✅ Tab 切换无刷新（SPA）
 - ✅ 22 部典籍卡片展示
@@ -132,6 +143,7 @@ ssh root@39.107.136.38 "chmod -R 755 /var/www/naming-app"
 - ✅ 统计数字动画
 
 ### PC 版（index.html 等）
+
 - ✅ 多页架构（8 个页面）
 - ✅ 响应式设计
 - ✅ 完整功能模块
@@ -140,12 +152,12 @@ ssh root@39.107.136.38 "chmod -R 755 /var/www/naming-app"
 
 ## 📈 代码统计
 
-| 类型 | 文件数 | 总大小 |
-|------|--------|--------|
-| HTML | 9 个 | ~90KB |
-| CSS | 10 个 | ~40KB |
-| JS | 7 个 | ~40KB |
-| 文档 | 多个 | ~50KB |
+| 类型     | 文件数     | 总大小     |
+| -------- | ---------- | ---------- |
+| HTML     | 9 个       | ~90KB      |
+| CSS      | 10 个      | ~40KB      |
+| JS       | 7 个       | ~40KB      |
+| 文档     | 多个       | ~50KB      |
 | **总计** | **30+ 个** | **~220KB** |
 
 ---

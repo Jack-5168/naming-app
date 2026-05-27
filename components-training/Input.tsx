@@ -1,17 +1,27 @@
-import React, { InputHTMLAttributes, forwardRef, useState } from 'react';
-import './Input.css';
+import React, { InputHTMLAttributes, forwardRef, useState } from "react";
+import "./Input.css";
 
 // ============ Types ============
 
-export type InputType = 
-  | 'text' | 'password' | 'email' | 'number' 
-  | 'tel' | 'url' | 'search' | 'time' | 'date';
+export type InputType =
+  | "text"
+  | "password"
+  | "email"
+  | "number"
+  | "tel"
+  | "url"
+  | "search"
+  | "time"
+  | "date";
 
-export type InputSize = 'sm' | 'md' | 'lg';
+export type InputSize = "sm" | "md" | "lg";
 
-export type InputStatus = 'default' | 'error' | 'success' | 'warning';
+export type InputStatus = "default" | "error" | "success" | "warning";
 
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface InputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> {
   /** 输入类型 */
   type?: InputType;
   /** 输入框尺寸 */
@@ -36,40 +46,42 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
-    type = 'text',
-    size = 'md',
-    status = 'default',
+    type = "text",
+    size = "md",
+    status = "default",
     prefix,
     suffix,
     allowClear = false,
-    className = '',
+    className = "",
     value,
     onChange,
     disabled,
     errorMessage,
     ...props
   },
-  ref
+  ref,
 ) {
   const [isFocused, setIsFocused] = useState(false);
-  const hasValue = value !== undefined ? value !== '' && value !== null : false;
+  const hasValue = value !== undefined ? value !== "" && value !== null : false;
 
   const classes = [
-    'input-wrapper',
+    "input-wrapper",
     `input-${size}`,
     `input-${status}`,
-    isFocused && 'input-focused',
-    disabled && 'input-disabled',
-    prefix && 'input-has-prefix',
-    suffix && 'input-has-suffix',
+    isFocused && "input-focused",
+    disabled && "input-disabled",
+    prefix && "input-has-prefix",
+    suffix && "input-has-suffix",
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   const handleClear = () => {
     if (onChange) {
-      onChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>);
+      onChange({
+        target: { value: "" },
+      } as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
@@ -91,8 +103,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           props.onBlur?.(e);
         }}
         disabled={disabled}
-        aria-invalid={status === 'error'}
-        aria-describedby={status === 'error' && errorMessage ? 'input-error' : undefined}
+        aria-invalid={status === "error"}
+        aria-describedby={
+          status === "error" && errorMessage ? "input-error" : undefined
+        }
         {...props}
       />
       {allowClear && hasValue && !disabled && (
@@ -106,7 +120,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         </button>
       )}
       {suffix && <span className="input-suffix">{suffix}</span>}
-      {status === 'error' && errorMessage && (
+      {status === "error" && errorMessage && (
         <span id="input-error" className="input-error-message" role="alert">
           {errorMessage}
         </span>
@@ -120,12 +134,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 export const InputGroup: React.FC<{
   children: React.ReactNode;
   className?: string;
-}> = ({ children, className = '' }) => {
-  return (
-    <div className={`input-group ${className}`}>
-      {children}
-    </div>
-  );
+}> = ({ children, className = "" }) => {
+  return <div className={`input-group ${className}`}>{children}</div>;
 };
 
 Input.Group = InputGroup;

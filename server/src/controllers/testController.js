@@ -138,7 +138,9 @@ exports.submitAnswer = async (req, res) => {
     const { questionId, optionId, timeSpent } = req.body;
 
     if (!questionId || !optionId) {
-      return res.status(400).json({ error: 'Question ID and option ID required' });
+      return res
+        .status(400)
+        .json({ error: 'Question ID and option ID required' });
     }
 
     // Find test result
@@ -274,9 +276,7 @@ exports.getTestResults = async (req, res) => {
     const normalizedScores = {};
     Object.keys(dimensionScores).forEach((dim) => {
       const maxScore = dimensionCounts[dim] * 4; // max 4 points per question
-      normalizedScores[dim] = maxScore > 0
-        ? Math.round((dimensionScores[dim] / maxScore) * 100)
-        : 50;
+      normalizedScores[dim] = maxScore > 0 ? Math.round((dimensionScores[dim] / maxScore) * 100) : 50;
     });
 
     // Determine personality type (simplified MBTI-like)

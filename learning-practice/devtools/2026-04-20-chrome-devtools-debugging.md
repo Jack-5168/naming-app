@@ -22,28 +22,31 @@
 ## DevTools 概览
 
 ### 打开方式
+
 - **Windows/Linux:** `F12` 或 `Ctrl+Shift+I`
 - **Mac:** `Cmd+Option+I`
 - **右键菜单:** 页面右键 → "检查"
 - **快捷键:** `Ctrl+Shift+C` (元素选择器)
 
 ### 核心面板
-| 面板 | 用途 | 快捷键 |
-|------|------|--------|
-| Elements | DOM/CSS 检查与编辑 | - |
-| Console | 日志输出/交互式执行 | `Ctrl+`` |
-| Sources | 断点调试/代码查看 | - |
-| Network | 网络请求分析 | - |
-| Performance | 性能分析/火焰图 | - |
-| Memory | 内存分析/泄漏检测 | - |
-| Application | 存储/Cookie/Service Worker | - |
-| Lighthouse | 性能/可访问性审计 | - |
+
+| 面板        | 用途                       | 快捷键   |
+| ----------- | -------------------------- | -------- |
+| Elements    | DOM/CSS 检查与编辑         | -        |
+| Console     | 日志输出/交互式执行        | `Ctrl+`` |
+| Sources     | 断点调试/代码查看          | -        |
+| Network     | 网络请求分析               | -        |
+| Performance | 性能分析/火焰图            | -        |
+| Memory      | 内存分析/泄漏检测          | -        |
+| Application | 存储/Cookie/Service Worker | -        |
+| Lighthouse  | 性能/可访问性审计          | -        |
 
 ---
 
 ## 性能分析 (Performance)
 
 ### 使用场景
+
 - 页面加载慢
 - 滚动卡顿
 - 动画不流畅
@@ -52,6 +55,7 @@
 ### 操作步骤
 
 #### 1. 开始录制
+
 ```
 1. 打开 Performance 面板
 2. 点击左上角录制按钮 (●) 或 Ctrl+E
@@ -99,67 +103,68 @@
 ```javascript
 // ❌ 问题 1: 长任务 (Long Task > 50ms)
 function processLargeArray(arr) {
-    for (let i = 0; i < arr.length; i++) {
-        // 同步处理大量数据
-        heavyComputation(arr[i]);
-    }
+  for (let i = 0; i < arr.length; i++) {
+    // 同步处理大量数据
+    heavyComputation(arr[i]);
+  }
 }
 
 // ✅ 优化：分块处理
 async function processLargeArray(arr) {
-    const chunkSize = 100;
-    for (let i = 0; i < arr.length; i += chunkSize) {
-        const chunk = arr.slice(i, i + chunkSize);
-        chunk.forEach(item => heavyComputation(item));
-        await new Promise(resolve => setTimeout(resolve, 0)); // 让出主线程
-    }
+  const chunkSize = 100;
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    const chunk = arr.slice(i, i + chunkSize);
+    chunk.forEach((item) => heavyComputation(item));
+    await new Promise((resolve) => setTimeout(resolve, 0)); // 让出主线程
+  }
 }
 ```
 
 ```javascript
 // ❌ 问题 2: 强制同步布局 (Forced Synchronous Layout)
 function updateElements() {
-    elements.forEach(el => {
-        el.style.width = '100px';
-        const height = el.offsetHeight; // 强制读取，触发重排
-        el.style.height = height + 'px';
-    });
+  elements.forEach((el) => {
+    el.style.width = "100px";
+    const height = el.offsetHeight; // 强制读取，触发重排
+    el.style.height = height + "px";
+  });
 }
 
 // ✅ 优化：批量读写分离
 function updateElements() {
-    // 第一批：所有写操作
-    elements.forEach(el => {
-        el.style.width = '100px';
-    });
-    // 第二批：所有读操作
-    const heights = elements.map(el => el.offsetHeight);
-    // 第三批：所有写操作
-    elements.forEach((el, i) => {
-        el.style.height = heights[i] + 'px';
-    });
+  // 第一批：所有写操作
+  elements.forEach((el) => {
+    el.style.width = "100px";
+  });
+  // 第二批：所有读操作
+  const heights = elements.map((el) => el.offsetHeight);
+  // 第三批：所有写操作
+  elements.forEach((el, i) => {
+    el.style.height = heights[i] + "px";
+  });
 }
 ```
 
 ```javascript
 // ❌ 问题 3: 过度重绘
 function animate() {
-    element.style.top = `${position}px`;  // 触发重排
-    element.style.left = `${position}px`; // 触发重排
-    element.style.width = `${size}px`;    // 触发重排
-    element.style.height = `${size}px`;   // 触发重排
+  element.style.top = `${position}px`; // 触发重排
+  element.style.left = `${position}px`; // 触发重排
+  element.style.width = `${size}px`; // 触发重排
+  element.style.height = `${size}px`; // 触发重排
 }
 
 // ✅ 优化：使用 transform
 function animate() {
-    element.style.transform = `translate(${position}px, ${position}px) scale(${size})`;
-    // transform 和 opacity 触发合成层，不触发重排
+  element.style.transform = `translate(${position}px, ${position}px) scale(${size})`;
+  // transform 和 opacity 触发合成层，不触发重排
 }
 ```
 
 #### 4. Performance 面板实战技巧
 
 **录制特定操作：**
+
 ```
 1. 点击 "Web Vitals" 启用核心性能指标
 2. 勾选 "Screenshots" 查看操作截图
@@ -168,6 +173,7 @@ function animate() {
 ```
 
 **分析火焰图：**
+
 ```
 - 红色/黄色条：长任务，需要优化
 - 灰色条：系统空闲
@@ -181,6 +187,7 @@ function animate() {
 ## 内存泄漏检测 (Memory)
 
 ### 使用场景
+
 - 页面使用时间越长越卡
 - 内存占用持续增长
 - 单页应用切换路由后内存不释放
@@ -213,6 +220,7 @@ function animate() {
 ### 堆快照分析步骤
 
 #### 步骤 1: 拍摄快照
+
 ```
 1. 打开 Memory 面板
 2. 选择 "Heap snapshot"
@@ -221,6 +229,7 @@ function animate() {
 ```
 
 #### 步骤 2: 对比快照
+
 ```
 1. 执行可疑操作 (如：切换路由、打开关闭模态框)
 2. 拍摄第二张快照
@@ -233,6 +242,7 @@ function animate() {
 #### 步骤 3: 分析结果
 
 **快照视图说明：**
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  快照视图类型                                            │
@@ -262,16 +272,17 @@ function animate() {
 ### 常见内存泄漏模式
 
 #### 1. 全局变量泄漏
+
 ```javascript
 // ❌ 泄漏：全局变量持续增长
 var cache = [];
 
 function fetchData() {
-    fetch('/api/data')
-        .then(res => res.json())
-        .then(data => {
-            cache.push(data); // 无限增长
-        });
+  fetch("/api/data")
+    .then((res) => res.json())
+    .then((data) => {
+      cache.push(data); // 无限增长
+    });
 }
 
 // ✅ 修复：限制缓存大小或使用 WeakMap
@@ -279,14 +290,15 @@ const cache = new WeakMap(); // 或使用 LRU 缓存
 ```
 
 #### 2. 定时器未清理
+
 ```javascript
 // ❌ 泄漏：组件销毁后定时器仍在运行
 let intervalId;
 
 function startTimer() {
-    intervalId = setInterval(() => {
-        updateUI();
-    }, 1000);
+  intervalId = setInterval(() => {
+    updateUI();
+  }, 1000);
 }
 
 // 忘记清理
@@ -294,60 +306,62 @@ function startTimer() {
 
 // ✅ 修复：组件卸载时清理
 class Component {
-    constructor() {
-        this.intervalId = null;
+  constructor() {
+    this.intervalId = null;
+  }
+
+  startTimer() {
+    this.intervalId = setInterval(() => {
+      this.updateUI();
+    }, 1000);
+  }
+
+  destroy() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
-    
-    startTimer() {
-        this.intervalId = setInterval(() => {
-            this.updateUI();
-        }, 1000);
-    }
-    
-    destroy() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-        }
-    }
+  }
 }
 ```
 
 #### 3. 事件监听器未移除
+
 ```javascript
 // ❌ 泄漏：事件监听器累积
 function setupListener() {
-    window.addEventListener('scroll', handleScroll);
-    // 忘记移除
+  window.addEventListener("scroll", handleScroll);
+  // 忘记移除
 }
 
 // ✅ 修复：成对添加/移除
 class ScrollHandler {
-    constructor() {
-        this.handleScroll = this.handleScroll.bind(this);
-    }
-    
-    init() {
-        window.addEventListener('scroll', this.handleScroll);
-    }
-    
-    destroy() {
-        window.removeEventListener('scroll', this.handleScroll);
-    }
-    
-    handleScroll() {
-        // 处理滚动
-    }
+  constructor() {
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  init() {
+    window.addEventListener("scroll", this.handleScroll);
+  }
+
+  destroy() {
+    window.removeEventListener("scroll", this.handleScroll);
+  }
+
+  handleScroll() {
+    // 处理滚动
+  }
 }
 ```
 
 #### 4. 闭包引用
+
 ```javascript
 // ❌ 泄漏：闭包持有大对象引用
 function createHandler(largeData) {
-    return function() {
-        console.log(largeData); // largeData 被闭包引用
-    };
+  return function () {
+    console.log(largeData); // largeData 被闭包引用
+  };
 }
 
 const handler = createHandler(hugeArray);
@@ -355,43 +369,45 @@ const handler = createHandler(hugeArray);
 
 // ✅ 修复：及时清除引用
 function createHandler(largeData) {
-    let dataRef = largeData;
-    return function() {
-        console.log(dataRef);
-        dataRef = null; // 使用后清除
-    };
+  let dataRef = largeData;
+  return function () {
+    console.log(dataRef);
+    dataRef = null; // 使用后清除
+  };
 }
 ```
 
 #### 5. DOM 引用泄漏
+
 ```javascript
 // ❌ 泄漏：JS 持有已删除 DOM 的引用
 let cachedElement;
 
 function cacheElement() {
-    cachedElement = document.getElementById('temp');
-    cachedElement.remove(); // DOM 已删除
-    // 但 JS 仍持有引用，整个子树无法 GC
+  cachedElement = document.getElementById("temp");
+  cachedElement.remove(); // DOM 已删除
+  // 但 JS 仍持有引用，整个子树无法 GC
 }
 
 // ✅ 修复：DOM 删除后清除引用
 function cacheElement() {
-    cachedElement = document.getElementById('temp');
-    const data = cachedElement.dataset;
-    cachedElement.remove();
-    cachedElement = null; // 清除引用
+  cachedElement = document.getElementById("temp");
+  const data = cachedElement.dataset;
+  cachedElement.remove();
+  cachedElement = null; // 清除引用
 }
 ```
 
 ### 内存分析实战技巧
 
 **使用 Console 辅助分析：**
+
 ```javascript
 // 查看全局变量数量
 console.log(Object.keys(window).length);
 
 // 查看特定对象数量
-console.log(document.querySelectorAll('.item').length);
+console.log(document.querySelectorAll(".item").length);
 
 // 强制垃圾回收 (需要在 DevTools 设置中启用)
 // 1. DevTools 设置 → Preferences → Console
@@ -484,9 +500,10 @@ console.performance.memory;
 ### 调试技巧
 
 #### 1. 使用 Console 作为调试工具
+
 ```javascript
 // 打印变量
-console.log('value:', value);
+console.log("value:", value);
 
 // 打印对象详情
 console.dir(object);
@@ -495,28 +512,29 @@ console.dir(object);
 console.table(users);
 
 // 分组输出
-console.group('User Data');
-console.log('name:', user.name);
-console.log('age:', user.age);
+console.group("User Data");
+console.log("name:", user.name);
+console.log("age:", user.age);
 console.groupEnd();
 
 // 性能计时
-console.time('fetchData');
+console.time("fetchData");
 await fetchData();
-console.timeEnd('fetchData');
+console.timeEnd("fetchData");
 
 // 断言
-console.assert(value > 0, 'Value should be positive');
+console.assert(value > 0, "Value should be positive");
 
 // 追踪调用栈
 console.trace();
 
 // 计数
-console.count('function called');
-console.countReset('function called');
+console.count("function called");
+console.countReset("function called");
 ```
 
 #### 2. 使用 Sources 面板编辑代码
+
 ```
 1. 在 Sources 面板找到文件
 2. 直接编辑代码
@@ -527,6 +545,7 @@ console.countReset('function called');
 ```
 
 #### 3. 使用 Watch 表达式
+
 ```
 1. Sources 面板右侧 "Watch" 区域
 2. 点击 "+" 添加表达式
@@ -535,6 +554,7 @@ console.countReset('function called');
 ```
 
 #### 4. 使用 Scope 查看作用域
+
 ```
 - Local: 当前作用域变量
 - Closure: 闭包中的变量
@@ -544,6 +564,7 @@ console.countReset('function called');
 ```
 
 #### 5. 使用 Blackbox 跳过库代码
+
 ```
 1. Sources 面板设置 → Blackboxing
 2. 添加模式：node_modules/.*
@@ -556,29 +577,29 @@ console.countReset('function called');
 ```
 1. 复现问题
    - 确定问题发生的操作步骤
-   
+
 2. 定位代码
    - 使用 Elements 面板找到相关元素
    - 查看事件监听器
    - 定位到 Sources 中的代码
-   
+
 3. 设置断点
    - 在可疑代码处设置断点
    - 或使用事件监听器断点
-   
+
 4. 执行到断点
    - 执行操作步骤
    - 代码在断点处暂停
-   
+
 5. 检查状态
    - 查看 Scope 中的变量
    - 使用 Watch 跟踪表达式
    - Console 中执行表达式
-   
+
 6. 单步调试
    - Step Over / Step Into / Step Out
    - 观察代码执行流程
-   
+
 7. 修复验证
    - 在 Sources 中临时修改代码
    - 验证修复效果
@@ -590,6 +611,7 @@ console.countReset('function called');
 ## 网络分析 (Network)
 
 ### 使用场景
+
 - 页面加载慢
 - API 请求失败
 - 资源加载错误
@@ -674,6 +696,7 @@ console.countReset('function called');
 ### 网络调试技巧
 
 **模拟慢速网络：**
+
 ```
 1. Network 面板 → "No throttling" 下拉
 2. 选择预设：Fast 3G, Slow 3G, Offline
@@ -681,6 +704,7 @@ console.countReset('function called');
 ```
 
 **禁用缓存：**
+
 ```
 - 勾选 "Disable cache"
 - 强制每次请求都从服务器获取
@@ -688,6 +712,7 @@ console.countReset('function called');
 ```
 
 **拦截和修改请求：**
+
 ```
 1. Sources 面板 → Overrides
 2. 选择本地文件夹
@@ -698,6 +723,7 @@ console.countReset('function called');
 ```
 
 **重放请求：**
+
 ```
 1. Network 面板右键请求
 2. 选择 "Replay XHR" 或 "Replay Fetch"
@@ -705,6 +731,7 @@ console.countReset('function called');
 ```
 
 **复制请求为代码：**
+
 ```
 1. Network 面板右键请求
 2. Copy → "Copy as fetch" / "Copy as cURL"
@@ -719,18 +746,18 @@ console.countReset('function called');
 
 ```javascript
 // 基础输出
-console.log('普通日志');
-console.info('信息');
-console.warn('警告');
-console.error('错误');
-console.debug('调试');
+console.log("普通日志");
+console.info("信息");
+console.warn("警告");
+console.error("错误");
+console.debug("调试");
 
 // 格式化输出
-console.log('用户：%s, 年龄：%d', name, age);
+console.log("用户：%s, 年龄：%d", name, age);
 // %s 字符串，%d 数字，%o 对象，%O 对象详情，%c CSS 样式
 
 // CSS 样式输出
-console.log('%c 重要消息 ', 'background: red; color: white; font-size: 20px');
+console.log("%c 重要消息 ", "background: red; color: white; font-size: 20px");
 
 // 对象详情
 console.dir(element); // DOM 元素详情
@@ -738,46 +765,52 @@ console.dirxml(element); // XML 格式
 
 // 表格输出
 console.table([
-    { name: 'Alice', age: 25 },
-    { name: 'Bob', age: 30 }
+  { name: "Alice", age: 25 },
+  { name: "Bob", age: 30 },
 ]);
 
 // 分组
-console.group('用户信息');
-console.log('name:', user.name);
-console.log('email:', user.email);
+console.group("用户信息");
+console.log("name:", user.name);
+console.log("email:", user.email);
 console.groupEnd();
 
 // 嵌套分组
-console.group('Level 1');
-console.group('Level 2');
-console.log('Deep log');
+console.group("Level 1");
+console.group("Level 2");
+console.log("Deep log");
 console.groupEnd();
 console.groupEnd();
 
 // 计时
-console.time('operation');
+console.time("operation");
 // ... 执行代码
-console.timeEnd('operation'); // 输出：operation: 12.345ms
+console.timeEnd("operation"); // 输出：operation: 12.345ms
 
 // 多次计时
-console.time('loop');
+console.time("loop");
 for (let i = 0; i < 1000; i++) {}
-console.timeEnd('loop');
+console.timeEnd("loop");
 
 // 计数
-console.count('点击次数');
-console.count('点击次数');
-console.countReset('点击次数');
+console.count("点击次数");
+console.count("点击次数");
+console.countReset("点击次数");
 
 // 断言
-console.assert(age >= 0, '年龄不能为负数');
+console.assert(age >= 0, "年龄不能为负数");
 // 只在条件为 false 时输出
 
 // 调用栈追踪
-function a() { b(); }
-function b() { c(); }
-function c() { console.trace(); }
+function a() {
+  b();
+}
+function b() {
+  c();
+}
+function c() {
+  console.trace();
+}
 a();
 // 输出完整调用栈
 
@@ -788,15 +821,16 @@ console.clear();
 ### Console 实用功能
 
 **$ 系列快捷命令：**
+
 ```javascript
 // 选择元素
-$('selector'); // 等同于 document.querySelector()
-$$('selector'); // 等同于 document.querySelectorAll()
+$("selector"); // 等同于 document.querySelector()
+$$("selector"); // 等同于 document.querySelectorAll()
 
 // 最近选中的元素
 $0; // 当前在 Elements 面板选中的元素
 $1; // 上一个选中的元素
-$2, $3, $4; // 更早选中的元素
+($2, $3, $4); // 更早选中的元素
 
 // 查看事件监听器
 getEventListeners(element);
@@ -817,14 +851,15 @@ console.performance.memory;
 ```
 
 **条件输出：**
+
 ```javascript
 // 只在开发环境输出
-if (process.env.NODE_ENV === 'development') {
-    console.log('Debug info:', data);
+if (process.env.NODE_ENV === "development") {
+  console.log("Debug info:", data);
 }
 
 // 只在满足条件时输出
-console.log(condition ? '满足条件' : '');
+console.log(condition ? "满足条件" : "");
 ```
 
 ---
@@ -836,6 +871,7 @@ console.log(condition ? '满足条件' : '');
 **问题：** 首页加载需要 5 秒
 
 **诊断步骤：**
+
 ```
 1. 打开 Network 面板，勾选 "Disable cache"
 2. 刷新页面，记录总加载时间
@@ -847,6 +883,7 @@ console.log(condition ? '满足条件' : '');
 ```
 
 **常见问题和解决方案：**
+
 ```
 - 大图片 → 压缩图片，使用 WebP 格式
 - 未压缩 JS/CSS → 启用 Gzip/Brotli
@@ -860,6 +897,7 @@ console.log(condition ? '满足条件' : '');
 **问题：** 单页应用使用 10 分钟后变卡
 
 **诊断步骤：**
+
 ```
 1. 打开 Memory 面板
 2. 拍摄第一张堆快照 (初始状态)
@@ -878,6 +916,7 @@ console.log(condition ? '满足条件' : '');
 **问题：** 数据有时加载失败，难以复现
 
 **调试方法：**
+
 ```javascript
 // 方法 1: 添加条件断点
 // 在 Promise 的 then/catch 处右键 → Add conditional breakpoint
@@ -885,21 +924,21 @@ console.log(condition ? '满足条件' : '');
 
 // 方法 2: 使用 async/await + try/catch
 async function fetchData() {
-    try {
-        const response = await fetch('/api/data');
-        const data = await response.json();
-        console.log('成功:', data);
-    } catch (error) {
-        console.error('失败:', error);
-        debugger; // 自动断点
-        throw error;
-    }
+  try {
+    const response = await fetch("/api/data");
+    const data = await response.json();
+    console.log("成功:", data);
+  } catch (error) {
+    console.error("失败:", error);
+    debugger; // 自动断点
+    throw error;
+  }
 }
 
 // 方法 3: 使用 Promise 的全局错误处理
-window.addEventListener('unhandledrejection', event => {
-    console.error('未处理的 Promise 拒绝:', event.reason);
-    debugger;
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("未处理的 Promise 拒绝:", event.reason);
+  debugger;
 });
 ```
 
@@ -908,6 +947,7 @@ window.addEventListener('unhandledrejection', event => {
 **问题：** 元素位置不对，但看不出原因
 
 **调试方法：**
+
 ```
 1. Elements 面板选中元素
 2. 查看 Computed 面板
@@ -930,6 +970,7 @@ window.addEventListener('unhandledrejection', event => {
 **问题：** 点击按钮没反应
 
 **调试方法：**
+
 ```
 1. Elements 面板选中按钮
 2. 右侧 "Event Listeners" 面板
@@ -955,13 +996,13 @@ window.addEventListener('unhandledrejection', event => {
 
 ### 核心技能掌握
 
-| 技能 | 掌握程度 | 关键要点 |
-|------|---------|---------|
-| Performance 分析 | ⭐⭐⭐⭐ | 火焰图解读、长任务识别、优化建议 |
-| Memory 泄漏检测 | ⭐⭐⭐⭐ | 堆快照对比、Retainers 分析、常见泄漏模式 |
-| Sources 断点调试 | ⭐⭐⭐⭐⭐ | 各类断点、单步调试、Watch/Scope |
-| Network 分析 | ⭐⭐⭐⭐ | Timing 分析、过滤、模拟网络 |
-| Console 高级用法 | ⭐⭐⭐⭐⭐ | 格式化输出、$命令、调试技巧 |
+| 技能             | 掌握程度   | 关键要点                                 |
+| ---------------- | ---------- | ---------------------------------------- |
+| Performance 分析 | ⭐⭐⭐⭐   | 火焰图解读、长任务识别、优化建议         |
+| Memory 泄漏检测  | ⭐⭐⭐⭐   | 堆快照对比、Retainers 分析、常见泄漏模式 |
+| Sources 断点调试 | ⭐⭐⭐⭐⭐ | 各类断点、单步调试、Watch/Scope          |
+| Network 分析     | ⭐⭐⭐⭐   | Timing 分析、过滤、模拟网络              |
+| Console 高级用法 | ⭐⭐⭐⭐⭐ | 格式化输出、$命令、调试技巧              |
 
 ### 常用快捷键速查
 
@@ -1004,4 +1045,4 @@ Ctrl+Shift+F - 全局搜索
 
 ---
 
-*下一专项：17:00 Git 进阶*
+_下一专项：17:00 Git 进阶_

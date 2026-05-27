@@ -1,4 +1,5 @@
 # Persona-Lab 集成检查报告
+
 **时间**: 2026-05-27 07:00 (UTC+8)
 **检查项**: 前后端集成、API 契约一致性、状态管理数据流、错误传播
 
@@ -6,12 +7,12 @@
 
 ## 检查摘要
 
-| 检查项 | 状态 | 问题数 |
-|--------|------|--------|
-| 后端构建 | ❌ Failed | ~60 TS 错误 |
-| 前端构建 | ⚠️ Warning | 需 legacy provider |
-| API 契约 | ❌ Mismatch | 2处 |
-| 状态管理 | ✅ OK | 0 |
+| 检查项   | 状态        | 问题数             |
+| -------- | ----------- | ------------------ |
+| 后端构建 | ❌ Failed   | ~60 TS 错误        |
+| 前端构建 | ⚠️ Warning  | 需 legacy provider |
+| API 契约 | ❌ Mismatch | 2处                |
+| 状态管理 | ✅ OK       | 0                  |
 
 ---
 
@@ -23,14 +24,15 @@
 
 #### 主要错误类型:
 
-| 错误类型 | 文件数 | 典型错误 |
-|----------|--------|----------|
-| `Cannot find name 'prisma'` | 11个文件 | memberships, payments, share, reports |
-| `Module has no exported member` | share.ts | ShareChannel, ShareType |
-| `Parameter implicitly 'any'` | 多个文件 | 参数类型注解缺失 |
-| Property missing | memberships-v2.ts | autoRenew |
+| 错误类型                        | 文件数            | 典型错误                              |
+| ------------------------------- | ----------------- | ------------------------------------- |
+| `Cannot find name 'prisma'`     | 11个文件          | memberships, payments, share, reports |
+| `Module has no exported member` | share.ts          | ShareChannel, ShareType               |
+| `Parameter implicitly 'any'`    | 多个文件          | 参数类型注解缺失                      |
+| Property missing                | memberships-v2.ts | autoRenew                             |
 
 **具体受影响的控制器**:
+
 - `memberships.ts` - 17处 prisma 引用无法解析
 - `payments.ts` - 13处 prisma 引用无法解析
 - `share.ts` - 24处 prisma 引用 + 缺失类型导出
@@ -63,6 +65,7 @@ miniapp/build $ npm run build:weapp
 ```
 
 **注意事项**:
+
 - 需设置 `NODE_OPTIONS=--openssl-legacy-provider` (Node.js v24 兼容性问题)
 - 两个警告来自 Taro 依赖，预计下个版本修复
 
@@ -70,14 +73,15 @@ miniapp/build $ npm run build:weapp
 
 ### 3. API 契约检查
 
-| 前端调用 | 后端路由 | 状态 |
-|----------|----------|------|
-| `/quiz/questions` | `/api/v1/tests/sessions/:id/next` | ❌ 路径不匹配 |
-| `/quiz/answers` | `/api/v1/tests/sessions/:id/answer` | ❌ 路径不匹配 |
-| `/quiz/submit` | 无对应 | ❌ 缺失 |
-| `/quiz/results` | `/api/v1/tests/results/:id` | ⚠️ GET vs POST |
+| 前端调用          | 后端路由                            | 状态           |
+| ----------------- | ----------------------------------- | -------------- |
+| `/quiz/questions` | `/api/v1/tests/sessions/:id/next`   | ❌ 路径不匹配  |
+| `/quiz/answers`   | `/api/v1/tests/sessions/:id/answer` | ❌ 路径不匹配  |
+| `/quiz/submit`    | 无对应                              | ❌ 缺失        |
+| `/quiz/results`   | `/api/v1/tests/results/:id`         | ⚠️ GET vs POST |
 
 **前端文件** (`miniapp/src/services/quiz-api.ts`):
+
 ```typescript
 fetchQuestions() → GET /quiz/questions
 saveAnswer() → POST /quiz/answers
@@ -86,6 +90,7 @@ getQuizResults() → GET /quiz/results
 ```
 
 **后端路由** (`server/src/routes/index.ts`):
+
 ```typescript
 POST /api/v1/tests/sessions       // 创建会话
 GET  /api/v1/tests/sessions/:id/next  // 获取下一题
@@ -99,11 +104,12 @@ POST /api/v1/tests/sessions/:id/answer  // 提交答案
 
 ### 4. 状态管理检查
 
-| Store | 技术栈 | 持久化 | 状态 |
-|-------|--------|--------|------|
+| Store      | 技术栈  | 持久化       | 状态  |
+| ---------- | ------- | ------------ | ----- |
 | quiz-store | Zustand | localStorage | ✅ OK |
 
 **审查结果**:
+
 - 数据结构与后端兼容
 - Answer 接口类型匹配
 - Progress 进度计算正确
@@ -113,24 +119,25 @@ POST /api/v1/tests/sessions/:id/answer  // 提交答案
 
 ### 5. 错误传播链
 
-| 场景 | 预期行为 | 实际 | 备注 |
-|------|----------|------|------|
-| API 超时 | 返回错误提示 | ✅ 降级 mock | 正常 |
-| 字段缺失 | 400 Bad Request | ❌ 500 崩溃 | 构建失败阻塞 |
-| Schema 不同步 | N/A | ❌ 编译失败 | 待修复 |
+| 场景          | 预期行为        | 实际         | 备注         |
+| ------------- | --------------- | ------------ | ------------ |
+| API 超时      | 返回错误提示    | ✅ 降级 mock | 正常         |
+| 字段缺失      | 400 Bad Request | ❌ 500 崩溃  | 构建失败阻塞 |
+| Schema 不同步 | N/A             | ❌ 编译失败  | 待修复       |
 
 ---
 
 ## 与昨日对比
 
-| 指标 | 2026-05-26 | 2026-05-27 | 趋势 |
-|------|------------|------------|------|
-| 后端 TS 错误 | ~80 | ~60 | ⬇️ -20 |
-| 前端构建 | Pending | ⚠️ Warning | ➡️ 需 Legacy |
-| API ��一致 | 2处 | 2处 | ➡️ 无变化 |
-| 状态管理 | OK | OK | ➡️ 稳定 |
+| 指标         | 2026-05-26 | 2026-05-27 | 趋势         |
+| ------------ | ---------- | ---------- | ------------ |
+| 后端 TS 错误 | ~80        | ~60        | ⬇️ -20       |
+| 前端构建     | Pending    | ⚠️ Warning | ➡️ 需 Legacy |
+| API ��一致   | 2处        | 2处        | ➡️ 无变化    |
+| 状态管理     | OK         | OK         | ➡️ 稳定      |
 
 **变化说明**:
+
 - 后端错误略有减少（部分自动消失或累积）
 - 前端从"未运行"变为"可运行但需 workaround"
 
@@ -139,7 +146,9 @@ POST /api/v1/tests/sessions/:id/answer  // 提交答案
 ## 行动项
 
 ### P0 - 阻塞
+
 1. 🔴 **修复 Prisma 导入** - 生成/导入 prisma client
+
    ```bash
    cd server && npx prisma generate
    ```
@@ -147,10 +156,12 @@ POST /api/v1/tests/sessions/:id/answer  // 提交答案
 2. 🔴 **统一 API 路径** - 修改前端 quiz-api.ts 路由适配后端
 
 ### P1 - 高优先级
+
 3. 🟠 **补充缺失 endpoint** - `/api/v1/tests/submit` (批量提交)
 4. 🟠 **导出 ShareChannel/ShareType** - 从 schema 或创建类型定义
 
 ### P2 - 中优先级
+
 5. 🟡 **修复 implicit any** - 为回调参数添加类型
 6. 🟡 **处理 NODE_OPTIONS** - 在 CI 中设置 legacy provider
 
@@ -158,15 +169,15 @@ POST /api/v1/tests/sessions/:id/answer  // 提交答案
 
 ## 跟踪日志
 
-| 时间 | 事件 |
-|------|------|
-| 07:00 | 集成检查开始 |
+| 时间  | 事件                                     |
+| ----- | ---------------------------------------- |
+| 07:00 | 集成检查开始                             |
 | 07:01 | 后端构建检查: ~60 错误 (Prisma 导入失败) |
-| 07:02 | 前端构建检查: 成功 (需 legacy provider) |
-| 07:03 | API 契约: 2处不匹配 (同上) |
-| 07:04 | 状态管理: OK |
-| 07:05 | 报告生成 |
+| 07:02 | 前端构建检查: 成功 (需 legacy provider)  |
+| 07:03 | API 契约: 2处不匹配 (同上)               |
+| 07:04 | 状态管理: OK                             |
+| 07:05 | 报告生成                                 |
 
 ---
 
-*Generated by pl-integration-0700 cron*
+_Generated by pl-integration-0700 cron_

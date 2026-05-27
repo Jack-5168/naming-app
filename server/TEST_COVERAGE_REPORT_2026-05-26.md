@@ -4,12 +4,12 @@
 
 ## Summary
 
-| Metric | Current | Previous (May 25) | Threshold | Status |
-|--------|---------|------------------|-----------|--------|
-| Lines | 20.99% | 15.61% | 70% | ❌ FAIL |
-| Statements | 21.59% | 16.16% | 70% | ❌ FAIL |
-| Branches | 24.23% | 14.36% | 70% | ❌ FAIL |
-| Functions | 31.05% | 26.25% | 70% | ❌ FAIL |
+| Metric     | Current | Previous (May 25) | Threshold | Status  |
+| ---------- | ------- | ----------------- | --------- | ------- |
+| Lines      | 20.99%  | 15.61%            | 70%       | ❌ FAIL |
+| Statements | 21.59%  | 16.16%            | 70%       | ❌ FAIL |
+| Branches   | 24.23%  | 14.36%            | 70%       | ❌ FAIL |
+| Functions  | 31.05%  | 26.25%            | 70%       | ❌ FAIL |
 
 ## Test Results
 
@@ -33,13 +33,13 @@
 
 ### integration.test.ts
 
-| Test | Issue |
-|------|-------|
+| Test                                              | Issue                       |
+| ------------------------------------------------- | --------------------------- |
 | should calculate MBTI type from ability estimates | Expected "ENTJ", got "ENFJ" |
-| should handle neutral ability estimates | Expected "ISFP", got "ENTJ" |
-| should calculate complete test result | Expected "ETFP", got "ESTP" |
-| should calculate high stability | Non-causal claim |
-| should calculate low stability | Non-causal claim |
+| should handle neutral ability estimates           | Expected "ISFP", got "ENTJ" |
+| should calculate complete test result             | Expected "ETFP", got "ESTP" |
+| should calculate high stability                   | Non-causal claim            |
+| should calculate low stability                    | Non-causal claim            |
 
 ### cost-control.test.ts
 
@@ -49,23 +49,23 @@ All 4 getModelStrategy tests fail — likely assertion mismatch with actual beha
 
 ### Well-Covered (>70%)
 
-| Module | Coverage |
-|--------|----------|
-| cat-engine.ts | 100% |
-| cost-control.ts | 79.41% |
-| result-calculator.ts | 94.73% |
-| stability-calculator.ts | 92.5% |
+| Module                  | Coverage |
+| ----------------------- | -------- |
+| cat-engine.ts           | 100%     |
+| cost-control.ts         | 79.41%   |
+| result-calculator.ts    | 94.73%   |
+| stability-calculator.ts | 92.5%    |
 
 ### Uncovered (0%)
 
-| Module | Priority |
-|--------|----------|
-| auth.ts (controller) | P0 |
-| encryption.ts | P0 |
-| payments.ts | P0 |
-| rate-limiter.ts | P1 |
-| ab-testing.ts | P0 |
-| big5-to-mbti.ts | P1 |
+| Module               | Priority |
+| -------------------- | -------- |
+| auth.ts (controller) | P0       |
+| encryption.ts        | P0       |
+| payments.ts          | P0       |
+| rate-limiter.ts      | P1       |
+| ab-testing.ts        | P0       |
+| big5-to-mbti.ts      | P1       |
 
 ## Root Cause: Compilation Errors
 
@@ -80,6 +80,7 @@ integration.test.ts              → Some imports may be broken
 ```
 
 This indicates either:
+
 1. Source files were refactored but tests weren't updated
 2. Test files reference renamed/moved exports
 
@@ -92,11 +93,11 @@ This indicates either:
 
 ### Add Tests for Critical Paths
 
-| Module | Test Coverage Goal |
-|--------|-------------------|
+| Module               | Test Coverage Goal      |
+| -------------------- | ----------------------- |
 | auth.ts (controller) | JWT, session, auth flow |
-| encryption.ts | AES encrypt/decrypt |
-| ab-testing.ts | Variant selection |
+| encryption.ts        | AES encrypt/decrypt     |
+| ab-testing.ts        | Variant selection       |
 
 ### Next Cron Check
 

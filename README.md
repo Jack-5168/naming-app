@@ -41,19 +41,19 @@ npm run dev
 
 ### 必需的环境变量
 
-| 变量名 | 说明 | 示例 |
-|--------|------|------|
-| `NODE_ENV` | 运行环境 | `development` / `production` |
-| `PORT` | 服务端口 | `3000` |
-| `DATABASE_URL` | MySQL 连接字符串 | `mysql://root:password@localhost:3306/persona_lab` |
-| `REDIS_URL` | Redis 连接字符串 | `redis://localhost:6379` |
-| `JWT_SECRET` | JWT 访问令牌密钥 | 至少 32 字符 |
-| `JWT_REFRESH_SECRET` | JWT 刷新令牌密钥 | 至少 32 字符 |
-| `WECHAT_APP_ID` | 微信小程序 AppID | `wx_xxx` |
-| `WECHAT_APP_SECRET` | 微信小程序密钥 | `xxx` |
-| `WECHAT_MCH_ID` | 微信支付商户号 | `xxx` |
-| `WECHAT_API_KEY` | 微信支付 API 密钥 | `xxx` |
-| `OPENAI_API_KEY` | LLM API 密钥 (用于报告生成) | `sk-xxx` |
+| 变量名               | 说明                        | 示例                                               |
+| -------------------- | --------------------------- | -------------------------------------------------- |
+| `NODE_ENV`           | 运行环境                    | `development` / `production`                       |
+| `PORT`               | 服务端口                    | `3000`                                             |
+| `DATABASE_URL`       | MySQL 连接字符串            | `mysql://root:password@localhost:3306/persona_lab` |
+| `REDIS_URL`          | Redis 连接字符串            | `redis://localhost:6379`                           |
+| `JWT_SECRET`         | JWT 访问令牌密钥            | 至少 32 字符                                       |
+| `JWT_REFRESH_SECRET` | JWT 刷新令牌密钥            | 至少 32 字符                                       |
+| `WECHAT_APP_ID`      | 微信小程序 AppID            | `wx_xxx`                                           |
+| `WECHAT_APP_SECRET`  | 微信小程序密钥              | `xxx`                                              |
+| `WECHAT_MCH_ID`      | 微信支付商户号              | `xxx`                                              |
+| `WECHAT_API_KEY`     | 微信支付 API 密钥           | `xxx`                                              |
+| `OPENAI_API_KEY`     | LLM API 密钥 (用于报告生成) | `sk-xxx`                                           |
 
 ### 配置文件位置
 
@@ -81,11 +81,11 @@ docker-compose down
 
 ### 服务说明
 
-| 服务 | 端口 | 说明 |
-|------|------|------|
-| `api` | 3000 | Node.js 后端 API |
-| `mysql` | 3306 | MySQL 数据库 |
-| `redis` | 6379 | Redis 缓存 |
+| 服务    | 端口 | 说明             |
+| ------- | ---- | ---------------- |
+| `api`   | 3000 | Node.js 后端 API |
+| `mysql` | 3306 | MySQL 数据库     |
+| `redis` | 6379 | Redis 缓存       |
 
 ### 生产环境部署
 
@@ -106,89 +106,89 @@ docker-compose exec api npx prisma migrate deploy
 
 ### 认证模块 `/api/v1/auth`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/wechat/login` | 微信小程序登录 |
-| POST | `/refresh` | 刷新访问令牌 |
-| POST | `/logout` | 登出 |
-| GET | `/me` | 获取当前用户信息 |
+| 方法 | 路径            | 说明             |
+| ---- | --------------- | ---------------- |
+| POST | `/wechat/login` | 微信小程序登录   |
+| POST | `/refresh`      | 刷新访问令牌     |
+| POST | `/logout`       | 登出             |
+| GET  | `/me`           | 获取当前用户信息 |
 
 ### 测试模块 `/api/v1/tests`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/sessions` | 创建测试会话 |
-| GET | `/sessions/:id/next` | 获取下一题 |
-| POST | `/sessions/:id/answer` | 提交答案 |
-| GET | `/results/:id` | 获取测试结果 |
+| 方法 | 路径                   | 说明         |
+| ---- | ---------------------- | ------------ |
+| POST | `/sessions`            | 创建测试会话 |
+| GET  | `/sessions/:id/next`   | 获取下一题   |
+| POST | `/sessions/:id/answer` | 提交答案     |
+| GET  | `/results/:id`         | 获取测试结果 |
 
 ### 报告模块 `/api/v1/reports`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/` | 生成报告 |
-| GET | `/:id` | 获取报告 |
-| GET | `/` | 获取报告列表 |
+| 方法 | 路径   | 说明         |
+| ---- | ------ | ------------ |
+| POST | `/`    | 生成报告     |
+| GET  | `/:id` | 获取报告     |
+| GET  | `/`    | 获取报告列表 |
 
 ### 支付模块 `/api/v1/payments`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/memberships/products` | 获取会员产品 |
-| POST | `/create-order` | 创建订单 |
-| POST | `/wechat/callback` | 微信支付回调 |
-| GET | `/orders/:id` | 获取订单详情 |
+| 方法 | 路径                    | 说明         |
+| ---- | ----------------------- | ------------ |
+| GET  | `/memberships/products` | 获取会员产品 |
+| POST | `/create-order`         | 创建订单     |
+| POST | `/wechat/callback`      | 微信支付回调 |
+| GET  | `/orders/:id`           | 获取订单详情 |
 
 ### 会员模块 `/api/v1/memberships`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/products` | 获取会员产品 |
-| GET | `/me` | 获取会员状态 |
-| POST | `/upgrade` | 升级会员 |
-| GET | `/benefits` | 获取会员权益 |
+| 方法 | 路径        | 说明         |
+| ---- | ----------- | ------------ |
+| GET  | `/products` | 获取会员产品 |
+| GET  | `/me`       | 获取会员状态 |
+| POST | `/upgrade`  | 升级会员     |
+| GET  | `/benefits` | 获取会员权益 |
 
 > **注意：** 双人合测功能已整合到 Growth 模块，见 `/api/v1/growth/dual-test-*`
 
 ### 分享模块 `/api/v1/share`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/invite-code/:code` | 验证邀请码 |
-| POST | `/invite-code` | 创建邀请码 |
-| GET | `/card/personality` | 生成人格分享卡片 |
-| GET | `/card/stability` | 生成稳定性分享卡片 |
+| 方法 | 路径                 | 说明               |
+| ---- | -------------------- | ------------------ |
+| GET  | `/invite-code/:code` | 验证邀请码         |
+| POST | `/invite-code`       | 创建邀请码         |
+| GET  | `/card/personality`  | 生成人格分享卡片   |
+| GET  | `/card/stability`    | 生成稳定性分享卡片 |
 
 ### 成长模块 `/api/v1/growth`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/dual-test/create` | 创建双人合测邀请 |
-| POST | `/dual-test/accept` | 接受合测邀请 |
-| POST | `/dual-test/complete` | 完成双人测试 |
-| GET | `/share-card/personality` | 人格分享卡片 |
-| GET | `/share-card/stability` | 稳定性卡片 |
-| GET | `/koc/referral-link` | 获取推广链接 |
-| GET | `/koc/commissions` | 佣金记录 |
-| POST | `/koc/withdraw` | 提现申请 |
-| GET | `/koc/dashboard` | KOC 数据面板 |
+| 方法 | 路径                      | 说明             |
+| ---- | ------------------------- | ---------------- |
+| POST | `/dual-test/create`       | 创建双人合测邀请 |
+| POST | `/dual-test/accept`       | 接受合测邀请     |
+| POST | `/dual-test/complete`     | 完成双人测试     |
+| GET  | `/share-card/personality` | 人格分享卡片     |
+| GET  | `/share-card/stability`   | 稳定性卡片       |
+| GET  | `/koc/referral-link`      | 获取推广链接     |
+| GET  | `/koc/commissions`        | 佣金记录         |
+| POST | `/koc/withdraw`           | 提现申请         |
+| GET  | `/koc/dashboard`          | KOC 数据面板     |
 
 ### 用户模块 `/api/v1/users`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/me` | 获取当前用户信息 |
+| 方法 | 路径  | 说明             |
+| ---- | ----- | ---------------- |
+| GET  | `/me` | 获取当前用户信息 |
 
 ### 生活事件模块 `/api/v1/life-events`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/` | 创建生活事件 |
-| GET | `/` | 获取事件列表 |
-| GET | `/:id` | 获取事件详情 |
-| PUT | `/:id` | 更新事件 |
-| DELETE | `/:id` | 删除事件 |
-| POST | `/:id/analyze` | 分析事件影响 |
+| 方法   | 路径           | 说明         |
+| ------ | -------------- | ------------ |
+| POST   | `/`            | 创建生活事件 |
+| GET    | `/`            | 获取事件列表 |
+| GET    | `/:id`         | 获取事件详情 |
+| PUT    | `/:id`         | 更新事件     |
+| DELETE | `/:id`         | 删除事件     |
+| POST   | `/:id/analyze` | 分析事件影响 |
 
 ### 健康检查
 
@@ -315,12 +315,15 @@ npx prisma studio
 ## 常见问题
 
 ### Q: 无法连接数据库？
+
 A: 确保 MySQL 和 Redis 容器已启动：`docker-compose ps`
 
 ### Q: 登录失败？
+
 A: 检查微信小程序 AppID 和 Secret 配置是否正确
 
 ### Q: 支付回调不生效？
+
 A: 确保回调 URL 可公网访问，开发环境可使用 ngrok 内网穿透
 
 ## License

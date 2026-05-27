@@ -46,7 +46,9 @@ exports.generateReport = async (req, res) => {
     // Determine free vs premium sections
     const isMember = testResult.user.isMember;
     const freeSections = generateFreeSections(reportContent, isMember);
-    const premiumSections = isMember ? [] : generatePremiumSections(reportContent);
+    const premiumSections = isMember
+      ? []
+      : generatePremiumSections(reportContent);
 
     // Create report
     const report = await prisma.report.create({
@@ -69,7 +71,9 @@ exports.generateReport = async (req, res) => {
     });
 
     // Update test result stability index
-    const stabilityIndex = calculateStabilityIndex(testResult.user.testCount + 1);
+    const stabilityIndex = calculateStabilityIndex(
+      testResult.user.testCount + 1,
+    );
     await prisma.testResult.update({
       where: { id: testResultId },
       data: { stabilityIndex },

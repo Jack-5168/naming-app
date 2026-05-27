@@ -225,10 +225,7 @@ function initFeature() {
   const intervalId = setInterval(() => {}, 1000);
 
   // 注册清理函数
-  resourceManager.register(
-    () => clearInterval(intervalId),
-    'feature-interval',
-  );
+  resourceManager.register(() => clearInterval(intervalId), 'feature-interval');
 
   const handler = () => {};
   window.addEventListener('scroll', handler);
@@ -364,7 +361,11 @@ class ObjectPool {
 // 使用示例：粒子系统
 const particlePool = new ObjectPool(
   () => ({
-    x: 0, y: 0, vx: 0, vy: 0, life: 0,
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    life: 0,
   }),
   (p) => {
     p.x = p.y = p.vx = p.vy = p.life = 0;
@@ -449,7 +450,9 @@ class MemoryMonitor {
       // 检测内存泄漏（持续增长）
       this.detectLeak();
 
-      console.log(`Memory: ${(used / 1024 / 1024).toFixed(2)}MB / ${(limit / 1024 / 1024).toFixed(2)}MB (${snapshot.percent.toFixed(1)}%)`);
+      console.log(
+        `Memory: ${(used / 1024 / 1024).toFixed(2)}MB / ${(limit / 1024 / 1024).toFixed(2)}MB (${snapshot.percent.toFixed(1)}%)`,
+      );
     }
   }
 

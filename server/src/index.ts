@@ -3,24 +3,24 @@
  * Main entry point
  */
 
-import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import winston from 'winston';
-import path from 'path';
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import winston from "winston";
+import path from "path";
 
 // Import routes
-import fs from 'fs';
-import { prisma } from './lib/prisma';
-import authRoutes from './routes/auth';
-import userRoutes from './routes/users';
-import testRoutes from './routes/tests';
-import reportRoutes from './routes/reports';
-import membershipRoutes from './routes/memberships';
-import paymentRoutes from './routes/payments';
-import growthRoutes from './routes/growth';
-import { shareRoutes } from './routes/share';
+import fs from "fs";
+import { prisma } from "./lib/prisma";
+import authRoutes from "./routes/auth";
+import userRoutes from "./routes/users";
+import testRoutes from "./routes/tests";
+import reportRoutes from "./routes/reports";
+import membershipRoutes from "./routes/memberships";
+import paymentRoutes from "./routes/payments";
+import growthRoutes from "./routes/growth";
+import { shareRoutes } from "./routes/share";
 // Note: life-events routes are defined in controllers but not yet exposed as standalone routes
 // They integrate with existing /api/v1/life-events endpoints
 
@@ -30,22 +30,24 @@ import { shareRoutes } from './routes/share';
 
 // Initialize logger
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.json(),
   ),
   transports: [
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
+    new winston.transports.File({ filename: "logs/error.log", level: "error" }),
+    new winston.transports.File({ filename: "logs/combined.log" }),
   ],
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+if (process.env.NODE_ENV !== "production") {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  );
 }
 
 const app = express();
@@ -53,109 +55,122 @@ const PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
+    credentials: true,
+  }),
+);
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
-  max: parseInt(process.env.RATE_LIMIT_USER || '100'), // per user
-  keyGenerator: (req: Request) => (req as any).user?.id?.toString() || req.ip || 'unknown',
+  max: parseInt(process.env.RATE_LIMIT_USER || "100"), // per user
+  keyGenerator: (req: Request) =>
+    (req as any).user?.id?.toString() || req.ip || "unknown",
 });
 
-app.use('/api/', limiter);
+app.use("/api/", limiter);
 
 const ipLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: parseInt(process.env.RATE_LIMIT_IP || '500'), // per IP
-  keyGenerator: (req: Request) => req.ip || 'unknown',
+  max: parseInt(process.env.RATE_LIMIT_IP || "500"), // per IP
+  keyGenerator: (req: Request) => req.ip || "unknown",
 });
 
-app.use('/api/', ipLimiter);
+app.use("/api/", ipLimiter);
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use((req: Request, res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.path}`, {
     ip: req.ip,
-    userAgent: req.get('user-agent'),
+    userAgent: req.get("user-agent"),
   });
   next();
 });
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get("/health", (req: Request, res: Response) => {
   res.json({
-    status: 'ok',
+    status: "ok",
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
+    version: process.env.npm_package_version || "1.0.0",
   });
 });
 
 // API Documentation (Swagger placeholder)
-app.get('/api', (req: Request, res: Response) => {
+app.get("/api", (req: Request, res: Response) => {
   res.json({
-    name: 'Persona Lab API',
-    version: '1.0.0',
-    documentation: '/api/docs',
+    name: "Persona Lab API",
+    version: "1.0.0",
+    documentation: "/api/docs",
     endpoints: {
-      auth: '/api/v1/auth',
-      users: '/api/v1/users',
-      tests: '/api/v1/tests',
-      reports: '/api/v1/reports',
-      memberships: '/api/v1/memberships',
-      payments: '/api/v1/payments',
-      growth: '/api/v1/growth',
+      auth: "/api/v1/auth",
+      users: "/api/v1/users",
+      tests: "/api/v1/tests",
+      reports: "/api/v1/reports",
+      memberships: "/api/v1/memberships",
+      payments: "/api/v1/payments",
+      growth: "/api/v1/growth",
     },
   });
 });
 
 // API routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/tests', testRoutes);
-app.use('/api/v1/reports', reportRoutes);
-app.use('/api/v1/memberships', membershipRoutes);
-app.use('/api/v1/payments', paymentRoutes);
-app.use('/api/v1/growth', growthRoutes);
-app.use('/api/v1/share', shareRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/tests", testRoutes);
+app.use("/api/v1/reports", reportRoutes);
+app.use("/api/v1/memberships", membershipRoutes);
+app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/growth", growthRoutes);
+app.use("/api/v1/share", shareRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
-    error: 'Not found',
+    error: "Not found",
     path: req.path,
   });
 });
 
 // Error handler
-app.use((err: Error & { status?: number }, req: Request, res: Response, next: NextFunction) => {
-  logger.error('Unhandled error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
-  });
-});
+app.use(
+  (
+    err: Error & { status?: number },
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    logger.error("Unhandled error:", err);
+    res.status(err.status || 500).json({
+      success: false,
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
+  },
+);
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received. Shutting down gracefully...');
+process.on("SIGTERM", async () => {
+  logger.info("SIGTERM received. Shutting down gracefully...");
   await prisma.$disconnect();
   process.exit(0);
 });
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received. Shutting down gracefully...');
+process.on("SIGINT", async () => {
+  logger.info("SIGINT received. Shutting down gracefully...");
   await prisma.$disconnect();
   process.exit(0);
 });
-const logsDir = path.join(__dirname, '../../logs');
+const logsDir = path.join(__dirname, "../../logs");
 
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
@@ -163,7 +178,7 @@ if (!fs.existsSync(logsDir)) {
 
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
 export { app, prisma, logger };

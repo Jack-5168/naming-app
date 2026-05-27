@@ -31,14 +31,14 @@ REST = Representational State Transfer
 核心：资源（Resource）+ 统一接口（Uniform Interface）+ 无状态（Stateless）
 ```
 
-| 原则 | 说明 | 示例 |
-|------|------|------|
-| **资源导向** | URL 表示资源，用名词 | `/users` ✅, `/getUsers` ❌ |
+| 原则              | 说明                      | 示例                                  |
+| ----------------- | ------------------------- | ------------------------------------- |
+| **资源导向**      | URL 表示资源，用名词      | `/users` ✅, `/getUsers` ❌           |
 | **HTTP 方法语义** | GET/POST/PUT/PATCH/DELETE | `GET /users` 查询, `POST /users` 创建 |
-| **无状态** | 每次请求包含全部信息 | Token 在 Header, 不依赖 Session |
-| **分层系统** | 客户端不关心中间层 | CDN → API Gateway → Service |
-| **可缓存** | 响应标明缓存策略 | `Cache-Control`, `ETag` |
-| **统一接口** | 标准化交互方式 | 超媒体链接 (HATEOAS) |
+| **无状态**        | 每次请求包含全部信息      | Token 在 Header, 不依赖 Session       |
+| **分层系统**      | 客户端不关心中间层        | CDN → API Gateway → Service           |
+| **可缓存**        | 响应标明缓存策略          | `Cache-Control`, `ETag`               |
+| **统一接口**      | 标准化交互方式            | 超媒体链接 (HATEOAS)                  |
 
 ### 1.2 URL 设计规范
 
@@ -68,12 +68,12 @@ GET    /api/v1/Users                 # 大小写混用
 ```typescript
 // URL 命名规则
 const URL_RULES = {
-  nouns: '使用复数名词',           // /users ✅, /user ❌
-  kebabCase: '使用连字符',         // /user-profiles ✅, /user_profiles ❌
-  lowercase: '全小写',             // /users ✅, /Users ❌
-  noExtensions: '不使用文件扩展名', // /users ✅, /users.json ❌
-  hierarchy: '资源层级不超过 3 层', // /users/123/orders ✅, /users/123/orders/456/items ❌
-  actions: '动作用查询参数',       // /users?status=active ✅, /users/active ❌
+  nouns: "使用复数名词", // /users ✅, /user ❌
+  kebabCase: "使用连字符", // /user-profiles ✅, /user_profiles ❌
+  lowercase: "全小写", // /users ✅, /Users ❌
+  noExtensions: "不使用文件扩展名", // /users ✅, /users.json ❌
+  hierarchy: "资源层级不超过 3 层", // /users/123/orders ✅, /users/123/orders/456/items ❌
+  actions: "动作用查询参数", // /users?status=active ✅, /users/active ❌
 };
 ```
 
@@ -82,44 +82,38 @@ const URL_RULES = {
 ```typescript
 interface HttpMethodSemantics {
   GET: {
-    description: '获取资源（安全 + 幂等）';
-    body: '不应包含请求体';
-    caching: '可缓存';
+    description: "获取资源（安全 + 幂等）";
+    body: "不应包含请求体";
+    caching: "可缓存";
     examples: [
-      'GET /products          → 200 OK + 产品列表',
-      'GET /products/42       → 200 OK + 单个产品',
-      'GET /products?cat=1    → 200 OK + 筛选结果',
+      "GET /products          → 200 OK + 产品列表",
+      "GET /products/42       → 200 OK + 单个产品",
+      "GET /products?cat=1    → 200 OK + 筛选结果",
     ];
   };
   POST: {
-    description: '创建资源（不安全 + 非幂等）';
-    body: '必须包含请求体';
-    response: '201 Created + Location header';
+    description: "创建资源（不安全 + 非幂等）";
+    body: "必须包含请求体";
+    response: "201 Created + Location header";
     examples: [
-      'POST /products         → 201 Created + 新资源',
-      'POST /products/42/reviews → 201 Created + 评论',
+      "POST /products         → 201 Created + 新资源",
+      "POST /products/42/reviews → 201 Created + 评论",
     ];
   };
   PUT: {
-    description: '全量替换资源（安全 + 幂等）';
-    body: '必须包含完整资源';
-    examples: [
-      'PUT /products/42       → 200 OK (或 204 No Content)',
-    ];
+    description: "全量替换资源（安全 + 幂等）";
+    body: "必须包含完整资源";
+    examples: ["PUT /products/42       → 200 OK (或 204 No Content)"];
   };
   PATCH: {
-    description: '部分更新资源（安全 + 非幂等）';
-    body: '只包含需要更新的字段';
-    examples: [
-      'PATCH /products/42     → 200 OK + 更新后资源',
-    ];
+    description: "部分更新资源（安全 + 非幂等）";
+    body: "只包含需要更新的字段";
+    examples: ["PATCH /products/42     → 200 OK + 更新后资源"];
   };
   DELETE: {
-    description: '删除资源（安全 + 幂等）';
-    response: '204 No Content (或 200 OK)';
-    examples: [
-      'DELETE /products/42    → 204 No Content',
-    ];
+    description: "删除资源（安全 + 幂等）";
+    response: "204 No Content (或 200 OK)";
+    examples: ["DELETE /products/42    → 204 No Content"];
   };
 }
 ```
@@ -346,28 +340,28 @@ subscription OnNotificationCreated($userId: ID!) {
 ```typescript
 const GRAPHQL_RULES = {
   schema: {
-    strongTyping: '所有字段强类型，非空用 ! 标注',
-    inputTypes: 'Mutation 使用 Input 类型，不直接用标量',
-    connectionPattern: '列表使用 Relay Connection 模式（分页标准）',
-    errorHandling: '使用统一错误包装器，不在 data 中混入错误',
-    naming: '类型用 PascalCase, 字段用 camelCase, 枚举用 PascalCase',
+    strongTyping: "所有字段强类型，非空用 ! 标注",
+    inputTypes: "Mutation 使用 Input 类型，不直接用标量",
+    connectionPattern: "列表使用 Relay Connection 模式（分页标准）",
+    errorHandling: "使用统一错误包装器，不在 data 中混入错误",
+    naming: "类型用 PascalCase, 字段用 camelCase, 枚举用 PascalCase",
   },
   query: {
-    avoidNPlusOne: '使用 DataLoader 批量加载，避免 N+1 问题',
-    complexityLimit: '设置查询复杂度限制（如 max 1000）',
-    depthLimit: '设置查询深度限制（如 max 7）',
-    fieldLevelAuth: '字段级权限控制，敏感字段按需暴露',
+    avoidNPlusOne: "使用 DataLoader 批量加载，避免 N+1 问题",
+    complexityLimit: "设置查询复杂度限制（如 max 1000）",
+    depthLimit: "设置查询深度限制（如 max 7）",
+    fieldLevelAuth: "字段级权限控制，敏感字段按需暴露",
   },
   mutation: {
-    singleResource: '每个 Mutation 只操作一个资源',
-    inputValidation: 'Input 类型做服务端验证',
-    optimisticUpdates: '客户端支持乐观更新',
+    singleResource: "每个 Mutation 只操作一个资源",
+    inputValidation: "Input 类型做服务端验证",
+    optimisticUpdates: "客户端支持乐观更新",
   },
   performance: {
-    caching: '持久查询（Persisted Queries）+ CDN 缓存',
-    batching: 'DataLoader 批量 + 缓存',
-    pagination: '游标分页 > 偏移分页（大数据量）',
-    introspection: '生产环境关闭 introspection',
+    caching: "持久查询（Persisted Queries）+ CDN 缓存",
+    batching: "DataLoader 批量 + 缓存",
+    pagination: "游标分页 > 偏移分页（大数据量）",
+    introspection: "生产环境关闭 introspection",
   },
 };
 ```
@@ -764,22 +758,14 @@ type Query {
 
   # Widget
   widget(id: ID!): Widget
-  widgetData(
-    id: ID!
-    timeRange: TimeRangeInput
-    refresh: Boolean
-  ): WidgetData!
+  widgetData(id: ID!, timeRange: TimeRangeInput, refresh: Boolean): WidgetData!
 
   # 数据源
   dataSource(id: ID!): DataSource
   dataSources(workspaceId: ID!): [DataSource!]!
 
   # 搜索（跨资源）
-  search(
-    query: String!
-    types: [SearchType!]
-    limit: Int
-  ): [SearchResult!]!
+  search(query: String!, types: [SearchType!], limit: Int): [SearchResult!]!
 }
 
 # ---- Mutation ----
@@ -801,7 +787,10 @@ type Mutation {
   removeMember(workspaceId: ID!, memberId: ID!): DeletePayload!
 
   # 仪表盘
-  createDashboard(workspaceId: ID!, input: CreateDashboardInput!): DashboardPayload!
+  createDashboard(
+    workspaceId: ID!
+    input: CreateDashboardInput!
+  ): DashboardPayload!
   updateDashboard(id: ID!, input: UpdateDashboardInput!): DashboardPayload!
   deleteDashboard(id: ID!): DeletePayload!
   duplicateDashboard(id: ID!, title: String!): DashboardPayload!
@@ -810,10 +799,16 @@ type Mutation {
   createWidget(dashboardId: ID!, input: CreateWidgetInput!): WidgetPayload!
   updateWidget(id: ID!, input: UpdateWidgetInput!): WidgetPayload!
   deleteWidget(id: ID!): DeletePayload!
-  batchUpdateWidgets(dashboardId: ID!, updates: [WidgetPositionUpdate!]!): [Widget!]!
+  batchUpdateWidgets(
+    dashboardId: ID!
+    updates: [WidgetPositionUpdate!]!
+  ): [Widget!]!
 
   # 数据源
-  createDataSource(workspaceId: ID!, input: CreateDataSourceInput!): DataSourcePayload!
+  createDataSource(
+    workspaceId: ID!
+    input: CreateDataSourceInput!
+  ): DataSourcePayload!
   testDataSource(id: ID!): TestResultPayload!
   syncDataSource(id: ID!): SyncPayload!
 
@@ -1279,38 +1274,38 @@ scalar JSON
 // RBAC: 基于角色的访问控制
 const ROLES = {
   ADMIN: {
-    workspaces: ['create', 'read', 'update', 'delete'],
-    dashboards: ['create', 'read', 'update', 'delete', 'share'],
-    widgets: ['create', 'read', 'update', 'delete'],
-    members: ['invite', 'update', 'remove'],
-    dataSources: ['create', 'read', 'update', 'delete', 'sync'],
+    workspaces: ["create", "read", "update", "delete"],
+    dashboards: ["create", "read", "update", "delete", "share"],
+    widgets: ["create", "read", "update", "delete"],
+    members: ["invite", "update", "remove"],
+    dataSources: ["create", "read", "update", "delete", "sync"],
   },
   EDITOR: {
-    workspaces: ['read'],
-    dashboards: ['create', 'read', 'update'],
-    widgets: ['create', 'read', 'update', 'delete'],
+    workspaces: ["read"],
+    dashboards: ["create", "read", "update"],
+    widgets: ["create", "read", "update", "delete"],
     members: [],
-    dataSources: ['create', 'read', 'update', 'sync'],
+    dataSources: ["create", "read", "update", "sync"],
   },
   VIEWER: {
-    workspaces: ['read'],
-    dashboards: ['read'],
-    widgets: ['read'],
+    workspaces: ["read"],
+    dashboards: ["read"],
+    widgets: ["read"],
     members: [],
-    dataSources: ['read'],
+    dataSources: ["read"],
   },
 };
 
 // ABAC: 基于属性的访问控制（补充规则）
 const ABAC_RULES = {
   // 只能操作自己创建的仪表盘（非 ADMIN）
-  'dashboard:delete': 'resource.ownerId == user.id || user.role == ADMIN',
+  "dashboard:delete": "resource.ownerId == user.id || user.role == ADMIN",
   // 只能查看有权限的工作区
-  'workspace:read': 'user.workspaces.contains(resource.id)',
+  "workspace:read": "user.workspaces.contains(resource.id)",
   // 分享链接过期后不可访问
-  'share:view': 'resource.expiresAt > now()',
+  "share:view": "resource.expiresAt > now()",
   // 敏感数据需要额外权限
-  'widget:data': 'resource.config.sensitive == false || user.role == ADMIN',
+  "widget:data": "resource.config.sensitive == false || user.role == ADMIN",
 };
 ```
 
@@ -1320,25 +1315,25 @@ const ABAC_RULES = {
 const RATE_LIMITS = {
   // 全局限流
   global: {
-    window: '1m',
+    window: "1m",
     max: 1000,
   },
   // 认证端点（更严格）
   auth: {
-    '/api/v1/auth/login': { window: '15m', max: 10 },
-    '/api/v1/auth/register': { window: '1h', max: 5 },
-    '/api/v1/auth/forgot-password': { window: '1h', max: 3 },
+    "/api/v1/auth/login": { window: "15m", max: 10 },
+    "/api/v1/auth/register": { window: "1h", max: 5 },
+    "/api/v1/auth/forgot-password": { window: "1h", max: 3 },
   },
   // 用户级别
   user: {
-    window: '1m',
+    window: "1m",
     max: 100,
   },
   // GraphQL 复杂度限流
   graphql: {
     maxComplexity: 1000,
     maxDepth: 7,
-    window: '1m',
+    window: "1m",
     max: 200,
   },
 };
@@ -1506,9 +1501,9 @@ paths:
           schema:
             type: string
             format: uuid
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/SortParam'
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/SortParam"
         - name: search
           in: query
           schema:
@@ -1529,21 +1524,21 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Dashboard'
+                      $ref: "#/components/schemas/Dashboard"
                   meta:
-                    $ref: '#/components/schemas/PaginationMeta'
+                    $ref: "#/components/schemas/PaginationMeta"
         "401":
           description: 未认证
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "403":
           description: 无权限
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     post:
       operationId: createDashboard
@@ -1593,7 +1588,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/Dashboard'
+                    $ref: "#/components/schemas/Dashboard"
 ```
 
 ### 7.2 文档生成工具链
@@ -1726,38 +1721,38 @@ interface ErrorResponse {
 ```typescript
 const ERROR_CODES = {
   // 认证相关
-  UNAUTHORIZED: '认证失败',
-  TOKEN_EXPIRED: '令牌已过期',
-  TOKEN_INVALID: '令牌无效',
-  INVALID_CREDENTIALS: '邮箱或密码错误',
-  ACCOUNT_DISABLED: '账号已被禁用',
+  UNAUTHORIZED: "认证失败",
+  TOKEN_EXPIRED: "令牌已过期",
+  TOKEN_INVALID: "令牌无效",
+  INVALID_CREDENTIALS: "邮箱或密码错误",
+  ACCOUNT_DISABLED: "账号已被禁用",
 
   // 权限相关
-  FORBIDDEN: '无权限',
-  INSUFFICIENT_ROLE: '角色权限不足',
+  FORBIDDEN: "无权限",
+  INSUFFICIENT_ROLE: "角色权限不足",
 
   // 资源相关
-  NOT_FOUND: '资源不存在',
-  CONFLICT: '资源冲突',
-  ALREADY_EXISTS: '资源已存在',
+  NOT_FOUND: "资源不存在",
+  CONFLICT: "资源冲突",
+  ALREADY_EXISTS: "资源已存在",
 
   // 验证相关
-  VALIDATION_ERROR: '参数验证失败',
-  INVALID_FORMAT: '格式错误',
-  INVALID_ENUM_VALUE: '枚举值无效',
+  VALIDATION_ERROR: "参数验证失败",
+  INVALID_FORMAT: "格式错误",
+  INVALID_ENUM_VALUE: "枚举值无效",
 
   // 业务相关
-  WORKSPACE_FULL: '工作区成员已达上限',
-  DASHBOARD_LIMIT_EXCEEDED: '仪表盘数量超限',
-  WIDGET_TYPE_NOT_SUPPORTED: '不支持的 Widget 类型',
-  DATA_SOURCE_UNAVAILABLE: '数据源不可用',
+  WORKSPACE_FULL: "工作区成员已达上限",
+  DASHBOARD_LIMIT_EXCEEDED: "仪表盘数量超限",
+  WIDGET_TYPE_NOT_SUPPORTED: "不支持的 Widget 类型",
+  DATA_SOURCE_UNAVAILABLE: "数据源不可用",
 
   // 限流相关
-  RATE_LIMIT_EXCEEDED: '请求过于频繁',
+  RATE_LIMIT_EXCEEDED: "请求过于频繁",
 
   // 服务端
-  INTERNAL_ERROR: '服务器内部错误',
-  SERVICE_UNAVAILABLE: '服务暂时不可用',
+  INTERNAL_ERROR: "服务器内部错误",
+  SERVICE_UNAVAILABLE: "服务暂时不可用",
 };
 ```
 
@@ -1831,8 +1826,8 @@ query {
 ```typescript
 // ==================== REST API 实现 ====================
 
-import express, { Request, Response, NextFunction } from 'express';
-import { body, param, query, validationResult } from 'express-validator';
+import express, { Request, Response, NextFunction } from "express";
+import { body, param, query, validationResult } from "express-validator";
 
 const app = express();
 app.use(express.json());
@@ -1847,7 +1842,7 @@ function errorResponse(
   code: string,
   message: string,
   status: number,
-  details?: any[]
+  details?: any[],
 ) {
   return res.status(status).json({
     code,
@@ -1862,14 +1857,14 @@ function errorResponse(
 function validate(request: any) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const results = await Promise.all(request.map((v: any) => v.run(req)));
-    const errors = results.flatMap(r => r.array());
+    const errors = results.flatMap((r) => r.array());
     if (errors.length > 0) {
       return errorResponse(
         res,
-        'VALIDATION_ERROR',
-        '请求参数验证失败',
+        "VALIDATION_ERROR",
+        "请求参数验证失败",
         422,
-        errors.map(e => ({ field: e.path, message: e.msg }))
+        errors.map((e) => ({ field: e.path, message: e.msg })),
       );
     }
     next();
@@ -1878,16 +1873,16 @@ function validate(request: any) {
 
 // ---- 认证中间件 ----
 function authenticate(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.replace('Bearer ', '');
+  const token = req.headers.authorization?.replace("Bearer ", "");
   if (!token) {
-    return errorResponse(res, 'UNAUTHORIZED', '未提供认证令牌', 401);
+    return errorResponse(res, "UNAUTHORIZED", "未提供认证令牌", 401);
   }
   try {
     const user = verifyToken(token);
     res.locals.user = user;
     next();
   } catch {
-    return errorResponse(res, 'TOKEN_INVALID', '令牌无效', 401);
+    return errorResponse(res, "TOKEN_INVALID", "令牌无效", 401);
   }
 }
 
@@ -1898,34 +1893,41 @@ function authorize(...actions: string[]) {
     const workspaceId = req.params.workspaceId;
     const hasPermission = await checkPermission(user, workspaceId, actions);
     if (!hasPermission) {
-      return errorResponse(res, 'FORBIDDEN', '无权限执行此操作', 403);
+      return errorResponse(res, "FORBIDDEN", "无权限执行此操作", 403);
     }
     next();
   };
 }
 
 // ---- 错误处理中间件 ----
-function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+function errorHandler(
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   console.error(`[${res.locals.requestId}] ${err.stack}`);
-  if (err.name === 'ValidationError') {
-    return errorResponse(res, 'VALIDATION_ERROR', err.message, 400);
+  if (err.name === "ValidationError") {
+    return errorResponse(res, "VALIDATION_ERROR", err.message, 400);
   }
-  return errorResponse(res, 'INTERNAL_ERROR', '服务器内部错误', 500);
+  return errorResponse(res, "INTERNAL_ERROR", "服务器内部错误", 500);
 }
 
 // ---- 仪表盘 API ----
 
 // GET /api/v1/workspaces/:workspaceId/dashboards
 app.get(
-  '/api/v1/workspaces/:workspaceId/dashboards',
+  "/api/v1/workspaces/:workspaceId/dashboards",
   authenticate,
-  authorize('dashboard:read'),
+  authorize("dashboard:read"),
   validate([
-    param('workspaceId').isUUID(),
-    query('page').optional().isInt({ min: 1 }),
-    query('limit').optional().isInt({ min: 1, max: 100 }),
-    query('search').optional().isString().isLength({ max: 100 }),
-    query('sort').optional().matches(/^[a-zA-Z]+:(asc|desc)$/),
+    param("workspaceId").isUUID(),
+    query("page").optional().isInt({ min: 1 }),
+    query("limit").optional().isInt({ min: 1, max: 100 }),
+    query("search").optional().isString().isLength({ max: 100 }),
+    query("sort")
+      .optional()
+      .matches(/^[a-zA-Z]+:(asc|desc)$/),
   ]),
   async (req: Request, res: Response) => {
     try {
@@ -1939,7 +1941,7 @@ app.get(
         db.dashboards.find({
           workspaceId,
           search,
-          sort: sort ? parseSort(sort) : { createdAt: 'desc' },
+          sort: sort ? parseSort(sort) : { createdAt: "desc" },
           offset: (page - 1) * limit,
           limit,
         }),
@@ -1955,20 +1957,20 @@ app.get(
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 // POST /api/v1/workspaces/:workspaceId/dashboards
 app.post(
-  '/api/v1/workspaces/:workspaceId/dashboards',
+  "/api/v1/workspaces/:workspaceId/dashboards",
   authenticate,
-  authorize('dashboard:create'),
+  authorize("dashboard:create"),
   validate([
-    param('workspaceId').isUUID(),
-    body('title').isString().isLength({ min: 1, max: 100 }),
-    body('description').optional().isString().isLength({ max: 500 }),
-    body('tags').optional().isArray({ max: 10 }),
-    body('tags.*').optional().isString().isLength({ max: 30 }),
+    param("workspaceId").isUUID(),
+    body("title").isString().isLength({ min: 1, max: 100 }),
+    body("description").optional().isString().isLength({ max: 500 }),
+    body("tags").optional().isArray({ max: 10 }),
+    body("tags.*").optional().isString().isLength({ max: 30 }),
   ]),
   async (req: Request, res: Response) => {
     try {
@@ -1984,29 +1986,24 @@ app.post(
         ownerId: userId,
       });
 
-      return successResponse(
-        res,
-        dashboard,
-        undefined,
-        201
-      );
+      return successResponse(res, dashboard, undefined, 201);
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 // PATCH /api/v1/workspaces/:workspaceId/dashboards/:id
 app.patch(
-  '/api/v1/workspaces/:workspaceId/dashboards/:id',
+  "/api/v1/workspaces/:workspaceId/dashboards/:id",
   authenticate,
-  authorize('dashboard:update'),
+  authorize("dashboard:update"),
   validate([
-    param('workspaceId').isUUID(),
-    param('id').isUUID(),
-    body('title').optional().isString().isLength({ min: 1, max: 100 }),
-    body('description').optional().isString().isLength({ max: 500 }),
-    body('tags').optional().isArray({ max: 10 }),
+    param("workspaceId").isUUID(),
+    param("id").isUUID(),
+    body("title").optional().isString().isLength({ min: 1, max: 100 }),
+    body("description").optional().isString().isLength({ max: 500 }),
+    body("tags").optional().isArray({ max: 10 }),
   ]),
   async (req: Request, res: Response) => {
     try {
@@ -2019,39 +2016,36 @@ app.patch(
       });
 
       if (!dashboard) {
-        return errorResponse(res, 'NOT_FOUND', '仪表盘不存在', 404);
+        return errorResponse(res, "NOT_FOUND", "仪表盘不存在", 404);
       }
 
       return successResponse(res, dashboard);
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 // DELETE /api/v1/workspaces/:workspaceId/dashboards/:id
 app.delete(
-  '/api/v1/workspaces/:workspaceId/dashboards/:id',
+  "/api/v1/workspaces/:workspaceId/dashboards/:id",
   authenticate,
-  authorize('dashboard:delete'),
-  validate([
-    param('workspaceId').isUUID(),
-    param('id').isUUID(),
-  ]),
+  authorize("dashboard:delete"),
+  validate([param("workspaceId").isUUID(), param("id").isUUID()]),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const deleted = await db.dashboards.delete(id);
 
       if (!deleted) {
-        return errorResponse(res, 'NOT_FOUND', '仪表盘不存在', 404);
+        return errorResponse(res, "NOT_FOUND", "仪表盘不存在", 404);
       }
 
       return res.status(204).send();
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 app.use(errorHandler);
@@ -2062,8 +2056,8 @@ app.use(errorHandler);
 ```typescript
 // ==================== GraphQL Resolver 实现 ====================
 
-import { GraphQLResolveInfo } from 'graphql';
-import { DataLoader } from './dataloader';
+import { GraphQLResolveInfo } from "graphql";
+import { DataLoader } from "./dataloader";
 
 interface Context {
   user: User;
@@ -2082,12 +2076,16 @@ const resolvers = {
     me: (_, __, { user }: Context) => user,
 
     // 获取工作区
-    workspace: async (_, { id }: { id: string }, { loaders, user }: Context) => {
+    workspace: async (
+      _,
+      { id }: { id: string },
+      { loaders, user }: Context,
+    ) => {
       const workspace = await loaders.workspaceLoader.load(id);
       if (!workspace) return null;
       // 权限检查
-      if (!hasAccess(user, workspace, 'read')) {
-        throw new ForbiddenError('无权限访问此工作区');
+      if (!hasAccess(user, workspace, "read")) {
+        throw new ForbiddenError("无权限访问此工作区");
       }
       return workspace;
     },
@@ -2096,12 +2094,12 @@ const resolvers = {
     workspaces: async (
       _,
       { filter, pagination, sort }: WorkspaceQueryArgs,
-      { user }: Context
+      { user }: Context,
     ) => {
       const result = await db.workspaces.findWithPagination({
         filter: { ...filter, memberUserId: user.id },
         pagination: pagination || { first: 20 },
-        sort: sort || [{ field: 'createdAt', direction: 'DESC' }],
+        sort: sort || [{ field: "createdAt", direction: "DESC" }],
       });
       return toConnection(result);
     },
@@ -2110,19 +2108,19 @@ const resolvers = {
     dashboard: async (
       _,
       { id, include }: { id: string; include?: string[] },
-      { loaders, user }: Context
+      { loaders, user }: Context,
     ) => {
       const dashboard = await loaders.dashboardLoader.load(id);
       if (!dashboard) return null;
-      if (!hasAccess(user, dashboard, 'read')) {
-        throw new ForbiddenError('无权限访问此仪表盘');
+      if (!hasAccess(user, dashboard, "read")) {
+        throw new ForbiddenError("无权限访问此仪表盘");
       }
 
       // 按需加载关联数据
-      if (include?.includes('widgets')) {
+      if (include?.includes("widgets")) {
         dashboard.widgets = await db.widgets.findByDashboard(id);
       }
-      if (include?.includes('shares')) {
+      if (include?.includes("shares")) {
         dashboard.shares = await db.shares.findByDashboard(id);
       }
       return dashboard;
@@ -2132,12 +2130,12 @@ const resolvers = {
     widgetData: async (
       _,
       { id, timeRange, refresh }: WidgetDataArgs,
-      { user }: Context
+      { user }: Context,
     ) => {
       const widget = await db.widgets.findById(id);
-      if (!widget) throw new NotFoundError('Widget 不存在');
-      if (!hasAccess(user, widget, 'read')) {
-        throw new ForbiddenError('无权限');
+      if (!widget) throw new NotFoundError("Widget 不存在");
+      if (!hasAccess(user, widget, "read")) {
+        throw new ForbiddenError("无权限");
       }
 
       // 缓存策略
@@ -2167,20 +2165,20 @@ const resolvers = {
     search: async (
       _,
       { query, types, limit }: SearchArgs,
-      { user }: Context
+      { user }: Context,
     ) => {
-      const searchTypes = types || ['WORKSPACE', 'DASHBOARD', 'WIDGET'];
+      const searchTypes = types || ["WORKSPACE", "DASHBOARD", "WIDGET"];
       const results: SearchResult[] = [];
 
-      if (searchTypes.includes('WORKSPACE')) {
+      if (searchTypes.includes("WORKSPACE")) {
         const workspaces = await db.workspaces.search(query, user.id, limit);
         results.push(...workspaces);
       }
-      if (searchTypes.includes('DASHBOARD')) {
+      if (searchTypes.includes("DASHBOARD")) {
         const dashboards = await db.dashboards.search(query, user.id, limit);
         results.push(...dashboards);
       }
-      if (searchTypes.includes('WIDGET')) {
+      if (searchTypes.includes("WIDGET")) {
         const widgets = await db.widgets.search(query, user.id, limit);
         results.push(...widgets);
       }
@@ -2193,14 +2191,14 @@ const resolvers = {
     // 登录
     login: async (_, { email, password }: LoginArgs) => {
       const user = await db.users.findByEmail(email);
-      if (!user || !await bcrypt.compare(password, user.passwordHash)) {
-        throw new AuthenticationError('邮箱或密码错误');
+      if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+        throw new AuthenticationError("邮箱或密码错误");
       }
       if (user.disabled) {
-        throw new ForbiddenError('账号已被禁用');
+        throw new ForbiddenError("账号已被禁用");
       }
 
-      const accessToken = generateJWT(user, '15m');
+      const accessToken = generateJWT(user, "15m");
       const refreshToken = generateRefreshToken(user);
 
       await db.refreshTokens.create({
@@ -2221,19 +2219,19 @@ const resolvers = {
     createDashboard: async (
       _,
       { workspaceId, input }: CreateDashboardArgs,
-      { user }: Context
+      { user }: Context,
     ) => {
       // 权限检查
       const workspace = await db.workspaces.findById(workspaceId);
-      if (!workspace) throw new NotFoundError('工作区不存在');
-      if (!hasAccess(user, workspace, 'dashboard:create')) {
-        throw new ForbiddenError('无权限创建工作区');
+      if (!workspace) throw new NotFoundError("工作区不存在");
+      if (!hasAccess(user, workspace, "dashboard:create")) {
+        throw new ForbiddenError("无权限创建工作区");
       }
 
       // 数量限制
       const count = await db.dashboards.countByWorkspace(workspaceId);
       if (count >= 100) {
-        throw new BusinessError('仪表盘数量已达上限 (100)');
+        throw new BusinessError("仪表盘数量已达上限 (100)");
       }
 
       const dashboard = await db.dashboards.create({
@@ -2251,18 +2249,24 @@ const resolvers = {
     createWidget: async (
       _,
       { dashboardId, input }: CreateWidgetArgs,
-      { user }: Context
+      { user }: Context,
     ) => {
       const dashboard = await db.dashboards.findById(dashboardId);
-      if (!dashboard) throw new NotFoundError('仪表盘不存在');
-      if (!hasAccess(user, dashboard, 'widget:create')) {
-        throw new ForbiddenError('无权限');
+      if (!dashboard) throw new NotFoundError("仪表盘不存在");
+      if (!hasAccess(user, dashboard, "widget:create")) {
+        throw new ForbiddenError("无权限");
       }
 
       // Widget 类型验证
       const validTypes = [
-        'LINE_CHART', 'BAR_CHART', 'PIE_CHART', 'TABLE',
-        'STAT_CARD', 'MAP', 'TEXT', 'IFRAME',
+        "LINE_CHART",
+        "BAR_CHART",
+        "PIE_CHART",
+        "TABLE",
+        "STAT_CARD",
+        "MAP",
+        "TEXT",
+        "IFRAME",
       ];
       if (!validTypes.includes(input.type)) {
         throw new ValidationError(`不支持的 Widget 类型: ${input.type}`);
@@ -2282,7 +2286,7 @@ const resolvers = {
         widgetUpdated: {
           widgetId: widget.id,
           dashboardId,
-          type: 'CREATED',
+          type: "CREATED",
           data: widget,
           updatedAt: new Date().toISOString(),
         },
@@ -2295,26 +2299,24 @@ const resolvers = {
     batchUpdateWidgets: async (
       _,
       { dashboardId, updates }: BatchUpdateWidgetsArgs,
-      { user }: Context
+      { user }: Context,
     ) => {
       const dashboard = await db.dashboards.findById(dashboardId);
-      if (!dashboard) throw new NotFoundError('仪表盘不存在');
-      if (!hasAccess(user, dashboard, 'widget:update')) {
-        throw new ForbiddenError('无权限');
+      if (!dashboard) throw new NotFoundError("仪表盘不存在");
+      if (!hasAccess(user, dashboard, "widget:update")) {
+        throw new ForbiddenError("无权限");
       }
 
       const results = await Promise.all(
-        updates.map(({ id, position }) =>
-          db.widgets.update(id, { position })
-        )
+        updates.map(({ id, position }) => db.widgets.update(id, { position })),
       );
 
       // 发布事件
       pubsub.publish(`WIDGET_UPDATED:${dashboardId}`, {
         widgetUpdated: {
-          widgetId: 'batch',
+          widgetId: "batch",
           dashboardId,
-          type: 'MOVED',
+          type: "MOVED",
           updatedAt: new Date().toISOString(),
         },
       });
@@ -2325,7 +2327,11 @@ const resolvers = {
 
   Subscription: {
     widgetUpdated: {
-      subscribe: (_, { dashboardId }: { dashboardId: string }, { user }: Context) => {
+      subscribe: (
+        _,
+        { dashboardId }: { dashboardId: string },
+        { user }: Context,
+      ) => {
         // 权限检查
         return pubsub.asyncIterator(`WIDGET_UPDATED:${dashboardId}`);
       },
@@ -2344,7 +2350,7 @@ const resolvers = {
 ```typescript
 // ==================== 客户端 API 封装 ====================
 
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 
 // ---- REST API 客户端 ----
 class CloudBoardRESTClient {
@@ -2356,7 +2362,7 @@ class CloudBoardRESTClient {
     this.client = axios.create({
       baseURL: baseUrl,
       timeout: 30000,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
 
     // 请求拦截器
@@ -2364,7 +2370,7 @@ class CloudBoardRESTClient {
       if (this.accessToken) {
         config.headers.Authorization = `Bearer ${this.accessToken}`;
       }
-      config.headers['X-Request-ID'] = crypto.randomUUID();
+      config.headers["X-Request-ID"] = crypto.randomUUID();
       return config;
     });
 
@@ -2387,7 +2393,7 @@ class CloudBoardRESTClient {
             return this.client(originalRequest);
           } catch {
             // Refresh 也失败 → 跳转登录
-            window.location.href = '/login';
+            window.location.href = "/login";
             return Promise.reject(error);
           }
         }
@@ -2395,43 +2401,47 @@ class CloudBoardRESTClient {
         // 统一错误处理
         const { code, message, details } = error.response?.data || {};
         throw new ApiError(code, message, details, error.response?.status);
-      }
+      },
     );
   }
 
   // ---- 认证 ----
   async login(email: string, password: string) {
-    const { data } = await this.client.post('/auth/login', { email, password });
+    const { data } = await this.client.post("/auth/login", { email, password });
     this.accessToken = data.accessToken;
     this.refreshToken = data.refreshToken;
     return data;
   }
 
   async logout() {
-    await this.client.post('/auth/logout');
+    await this.client.post("/auth/logout");
     this.accessToken = null;
     this.refreshToken = null;
   }
 
   // ---- 工作区 ----
-  async getWorkspaces(params?: { page?: number; limit?: number; sort?: string }) {
-    const { data } = await this.client.get('/workspaces', { params });
+  async getWorkspaces(params?: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+  }) {
+    const { data } = await this.client.get("/workspaces", { params });
     return data;
   }
 
   async createWorkspace(input: CreateWorkspaceInput) {
-    const { data } = await this.client.post('/workspaces', input);
+    const { data } = await this.client.post("/workspaces", input);
     return data;
   }
 
   // ---- 仪表盘 ----
   async getDashboards(
     workspaceId: string,
-    params?: { page?: number; limit?: number; search?: string; sort?: string }
+    params?: { page?: number; limit?: number; search?: string; sort?: string },
   ) {
     const { data } = await this.client.get(
       `/workspaces/${workspaceId}/dashboards`,
-      { params }
+      { params },
     );
     return data;
   }
@@ -2439,15 +2449,19 @@ class CloudBoardRESTClient {
   async createDashboard(workspaceId: string, input: CreateDashboardInput) {
     const { data } = await this.client.post(
       `/workspaces/${workspaceId}/dashboards`,
-      input
+      input,
     );
     return data;
   }
 
-  async updateDashboard(workspaceId: string, id: string, input: Partial<UpdateDashboardInput>) {
+  async updateDashboard(
+    workspaceId: string,
+    id: string,
+    input: Partial<UpdateDashboardInput>,
+  ) {
     const { data } = await this.client.patch(
       `/workspaces/${workspaceId}/dashboards/${id}`,
-      input
+      input,
     );
     return data;
   }
@@ -2459,7 +2473,7 @@ class CloudBoardRESTClient {
   // ---- Widget ----
   async getWidgets(workspaceId: string, dashboardId: string) {
     const { data } = await this.client.get(
-      `/workspaces/${workspaceId}/dashboards/${dashboardId}/widgets`
+      `/workspaces/${workspaceId}/dashboards/${dashboardId}/widgets`,
     );
     return data;
   }
@@ -2467,11 +2481,11 @@ class CloudBoardRESTClient {
   async createWidget(
     workspaceId: string,
     dashboardId: string,
-    input: CreateWidgetInput
+    input: CreateWidgetInput,
   ) {
     const { data } = await this.client.post(
       `/workspaces/${workspaceId}/dashboards/${dashboardId}/widgets`,
-      input
+      input,
     );
     return data;
   }
@@ -2479,11 +2493,11 @@ class CloudBoardRESTClient {
   async batchUpdateWidgets(
     workspaceId: string,
     dashboardId: string,
-    updates: WidgetPositionUpdate[]
+    updates: WidgetPositionUpdate[],
   ) {
     const { data } = await this.client.patch(
       `/workspaces/${workspaceId}/dashboards/${dashboardId}/widgets/batch`,
-      updates
+      updates,
     );
     return data;
   }
@@ -2492,11 +2506,11 @@ class CloudBoardRESTClient {
     workspaceId: string,
     dashboardId: string,
     widgetId: string,
-    params?: { timeRange?: string; refresh?: boolean }
+    params?: { timeRange?: string; refresh?: boolean },
   ) {
     const { data } = await this.client.get(
       `/workspaces/${workspaceId}/dashboards/${dashboardId}/widgets/${widgetId}/data`,
-      { params }
+      { params },
     );
     return data;
   }
@@ -2513,10 +2527,12 @@ class CloudBoardGraphQLClient {
 
   private async request<T>(query: string, variables?: any): Promise<T> {
     const response = await fetch(this.url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        ...(this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {}),
+        "Content-Type": "application/json",
+        ...(this.accessToken
+          ? { Authorization: `Bearer ${this.accessToken}` }
+          : {}),
       },
       body: JSON.stringify({ query, variables }),
     });
@@ -2526,9 +2542,9 @@ class CloudBoardGraphQLClient {
     if (result.errors) {
       const error = result.errors[0];
       throw new ApiError(
-        error.extensions?.code || 'GRAPHQL_ERROR',
+        error.extensions?.code || "GRAPHQL_ERROR",
         error.message,
-        error.extensions?.details
+        error.extensions?.details,
       );
     }
 
@@ -2537,7 +2553,8 @@ class CloudBoardGraphQLClient {
 
   // ---- 查询 ----
   async getDashboard(id: string, include?: string[]) {
-    return this.request<{ dashboard: Dashboard }>(`
+    return this.request<{ dashboard: Dashboard }>(
+      `
       query GetDashboard($id: ID!, $include: [String!]) {
         dashboard(id: $id, include: $include) {
           id
@@ -2568,11 +2585,14 @@ class CloudBoardGraphQLClient {
           updatedAt
         }
       }
-    `, { id, include });
+    `,
+      { id, include },
+    );
   }
 
   async getDashboards(workspaceId: string, filter?: any, pagination?: any) {
-    return this.request<{ dashboards: DashboardConnection }>(`
+    return this.request<{ dashboards: DashboardConnection }>(
+      `
       query GetDashboards($workspaceId: ID!, $filter: DashboardFilter, $pagination: PaginationInput) {
         dashboards(workspaceId: $workspaceId, filter: $filter, pagination: $pagination) {
           pageInfo {
@@ -2597,11 +2617,14 @@ class CloudBoardGraphQLClient {
           }
         }
       }
-    `, { workspaceId, filter, pagination });
+    `,
+      { workspaceId, filter, pagination },
+    );
   }
 
   async getWidgetData(id: string, timeRange?: any, refresh = false) {
-    return this.request<{ widgetData: WidgetData }>(`
+    return this.request<{ widgetData: WidgetData }>(
+      `
       query GetWidgetData($id: ID!, $timeRange: TimeRangeInput, $refresh: Boolean) {
         widgetData(id: $id, timeRange: $timeRange, refresh: $refresh) {
           data
@@ -2613,12 +2636,15 @@ class CloudBoardGraphQLClient {
           }
         }
       }
-    `, { id, timeRange, refresh });
+    `,
+      { id, timeRange, refresh },
+    );
   }
 
   // ---- 变更 ----
   async createDashboard(workspaceId: string, input: CreateDashboardInput) {
-    return this.request<{ createDashboard: { data: Dashboard } }>(`
+    return this.request<{ createDashboard: { data: Dashboard } }>(
+      `
       mutation CreateDashboard($workspaceId: ID!, $input: CreateDashboardInput!) {
         createDashboard(workspaceId: $workspaceId, input: $input) {
           data {
@@ -2630,11 +2656,14 @@ class CloudBoardGraphQLClient {
           }
         }
       }
-    `, { workspaceId, input });
+    `,
+      { workspaceId, input },
+    );
   }
 
   async createWidget(dashboardId: string, input: CreateWidgetInput) {
-    return this.request<{ createWidget: { data: Widget } }>(`
+    return this.request<{ createWidget: { data: Widget } }>(
+      `
       mutation CreateWidget($dashboardId: ID!, $input: CreateWidgetInput!) {
         createWidget(dashboardId: $dashboardId, input: $input) {
           data {
@@ -2647,11 +2676,17 @@ class CloudBoardGraphQLClient {
           }
         }
       }
-    `, { dashboardId, input });
+    `,
+      { dashboardId, input },
+    );
   }
 
-  async batchUpdateWidgets(dashboardId: string, updates: WidgetPositionUpdate[]) {
-    return this.request<{ batchUpdateWidgets: Widget[] }>(`
+  async batchUpdateWidgets(
+    dashboardId: string,
+    updates: WidgetPositionUpdate[],
+  ) {
+    return this.request<{ batchUpdateWidgets: Widget[] }>(
+      `
       mutation BatchUpdateWidgets($dashboardId: ID!, $updates: [WidgetPositionUpdate!]!) {
         batchUpdateWidgets(dashboardId: $dashboardId, updates: $updates) {
           id
@@ -2659,16 +2694,18 @@ class CloudBoardGraphQLClient {
           updatedAt
         }
       }
-    `, { dashboardId, updates });
+    `,
+      { dashboardId, updates },
+    );
   }
 
   // ---- 订阅 ----
   subscribeWidgetUpdated(
     dashboardId: string,
-    onData: (event: WidgetUpdateEvent) => void
+    onData: (event: WidgetUpdateEvent) => void,
   ) {
     // 使用 WebSocket (Apollo Client / graphql-ws)
-    const client = new GraphQLClient(this.url.replace('http', 'ws'));
+    const client = new GraphQLClient(this.url.replace("http", "ws"));
     return client.subscribe(
       `subscription OnWidgetUpdated($dashboardId: ID!) {
         widgetUpdated(dashboardId: $dashboardId) {
@@ -2680,7 +2717,7 @@ class CloudBoardGraphQLClient {
         }
       }`,
       { dashboardId },
-      onData
+      onData,
     );
   }
 }
@@ -2691,10 +2728,10 @@ class ApiError extends Error {
     public code: string,
     message: string,
     public details?: any[],
-    public status?: number
+    public status?: number,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 ```
@@ -2704,11 +2741,11 @@ class ApiError extends Error {
 ```typescript
 // ==================== API 测试用例 ====================
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import request from 'supertest';
-import { app } from '../app';
+import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
+import request from "supertest";
+import { app } from "../app";
 
-describe('Dashboard API', () => {
+describe("Dashboard API", () => {
   let accessToken: string;
   let workspaceId: string;
   let dashboardId: string;
@@ -2716,61 +2753,61 @@ describe('Dashboard API', () => {
   beforeAll(async () => {
     // 登录获取 Token
     const res = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email: 'test@example.com', password: 'password123' });
+      .post("/api/v1/auth/login")
+      .send({ email: "test@example.com", password: "password123" });
     accessToken = res.body.accessToken;
 
     // 创建工作区
     const wsRes = await request(app)
-      .post('/api/v1/workspaces')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ name: '测试工作区', visibility: 'private' });
+      .post("/api/v1/workspaces")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .send({ name: "测试工作区", visibility: "private" });
     workspaceId = wsRes.body.data.id;
   });
 
-  describe('POST /api/v1/workspaces/:id/dashboards', () => {
-    it('应成功创建仪表盘', async () => {
+  describe("POST /api/v1/workspaces/:id/dashboards", () => {
+    it("应成功创建仪表盘", async () => {
       const res = await request(app)
         .post(`/api/v1/workspaces/${workspaceId}/dashboards`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set("Authorization", `Bearer ${accessToken}`)
         .send({
-          title: '销售数据看板',
-          description: '实时销售数据',
-          tags: ['销售', '实时'],
+          title: "销售数据看板",
+          description: "实时销售数据",
+          tags: ["销售", "实时"],
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.data.title).toBe('销售数据看板');
-      expect(res.body.data.tags).toContain('销售');
+      expect(res.body.data.title).toBe("销售数据看板");
+      expect(res.body.data.tags).toContain("销售");
       expect(res.body.data.ownerId).toBeDefined();
       dashboardId = res.body.data.id;
     });
 
-    it('标题为空时应返回 422', async () => {
+    it("标题为空时应返回 422", async () => {
       const res = await request(app)
         .post(`/api/v1/workspaces/${workspaceId}/dashboards`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: '' });
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ title: "" });
 
       expect(res.status).toBe(422);
-      expect(res.body.code).toBe('VALIDATION_ERROR');
+      expect(res.body.code).toBe("VALIDATION_ERROR");
     });
 
-    it('未认证时应返回 401', async () => {
+    it("未认证时应返回 401", async () => {
       const res = await request(app)
         .post(`/api/v1/workspaces/${workspaceId}/dashboards`)
-        .send({ title: '测试' });
+        .send({ title: "测试" });
 
       expect(res.status).toBe(401);
-      expect(res.body.code).toBe('UNAUTHORIZED');
+      expect(res.body.code).toBe("UNAUTHORIZED");
     });
   });
 
-  describe('GET /api/v1/workspaces/:id/dashboards', () => {
-    it('应返回仪表盘列表', async () => {
+  describe("GET /api/v1/workspaces/:id/dashboards", () => {
+    it("应返回仪表盘列表", async () => {
       const res = await request(app)
         .get(`/api/v1/workspaces/${workspaceId}/dashboards`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set("Authorization", `Bearer ${accessToken}`)
         .query({ page: 1, limit: 10 });
 
       expect(res.status).toBe(200);
@@ -2780,42 +2817,42 @@ describe('Dashboard API', () => {
       expect(res.body.meta.limit).toBe(10);
     });
 
-    it('应支持搜索过滤', async () => {
+    it("应支持搜索过滤", async () => {
       const res = await request(app)
         .get(`/api/v1/workspaces/${workspaceId}/dashboards`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .query({ search: '销售' });
+        .set("Authorization", `Bearer ${accessToken}`)
+        .query({ search: "销售" });
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBeGreaterThan(0);
-      expect(res.body.data[0].title).toContain('销售');
+      expect(res.body.data[0].title).toContain("销售");
     });
   });
 
-  describe('PATCH /api/v1/workspaces/:wid/dashboards/:did', () => {
-    it('应成功更新仪表盘', async () => {
+  describe("PATCH /api/v1/workspaces/:wid/dashboards/:did", () => {
+    it("应成功更新仪表盘", async () => {
       const res = await request(app)
         .patch(`/api/v1/workspaces/${workspaceId}/dashboards/${dashboardId}`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: '更新后的标题' });
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ title: "更新后的标题" });
 
       expect(res.status).toBe(200);
-      expect(res.body.data.title).toBe('更新后的标题');
+      expect(res.body.data.title).toBe("更新后的标题");
     });
   });
 
-  describe('DELETE /api/v1/workspaces/:wid/dashboards/:did', () => {
-    it('应成功删除仪表盘', async () => {
+  describe("DELETE /api/v1/workspaces/:wid/dashboards/:did", () => {
+    it("应成功删除仪表盘", async () => {
       const res = await request(app)
         .delete(`/api/v1/workspaces/${workspaceId}/dashboards/${dashboardId}`)
-        .set('Authorization', `Bearer ${accessToken}`);
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(res.status).toBe(204);
 
       // 确认删除
       const getRes = await request(app)
         .get(`/api/v1/workspaces/${workspaceId}/dashboards/${dashboardId}`)
-        .set('Authorization', `Bearer ${accessToken}`);
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(getRes.status).toBe(404);
     });
@@ -2829,16 +2866,16 @@ describe('Dashboard API', () => {
 
 ### 关键要点
 
-| 领域 | 核心原则 |
-|------|----------|
-| **RESTful** | 资源导向、HTTP 语义、无状态、可缓存 |
-| **GraphQL** | Schema 驱动、精确查询、Relay 分页、DataLoader |
-| **安全** | JWT + Refresh Token、RBAC + ABAC、限流、输入验证 |
-| **版本** | URL 路径版本化 (REST)、向后兼容 (GraphQL) |
-| **文档** | OpenAPI 3.0、Swagger UI、代码即文档 |
-| **错误** | 统一格式、机器可读错误码、请求 ID 追踪 |
-| **分页** | Offset (小数据)、Cursor (大数据/GraphQL) |
-| **测试** | 集成测试覆盖、Mock Server、契约测试 |
+| 领域        | 核心原则                                         |
+| ----------- | ------------------------------------------------ |
+| **RESTful** | 资源导向、HTTP 语义、无状态、可缓存              |
+| **GraphQL** | Schema 驱动、精确查询、Relay 分页、DataLoader    |
+| **安全**    | JWT + Refresh Token、RBAC + ABAC、限流、输入验证 |
+| **版本**    | URL 路径版本化 (REST)、向后兼容 (GraphQL)        |
+| **文档**    | OpenAPI 3.0、Swagger UI、代码即文档              |
+| **错误**    | 统一格式、机器可读错误码、请求 ID 追踪           |
+| **分页**    | Offset (小数据)、Cursor (大数据/GraphQL)         |
+| **测试**    | 集成测试覆盖、Mock Server、契约测试              |
 
 ### CloudBoard API 架构决策
 
@@ -2868,5 +2905,5 @@ describe('Dashboard API', () => {
 
 ---
 
-*文档大小: ~45KB | 代码示例: 15+ | 设计资源: 8 个核心资源*
-*完成时间: 2026-04-25 21:00*
+_文档大小: ~45KB | 代码示例: 15+ | 设计资源: 8 个核心资源_
+_完成时间: 2026-04-25 21:00_

@@ -1,10 +1,10 @@
-import React, { ReactNode, forwardRef } from 'react';
-import './Card.css';
+import React, { ReactNode, forwardRef } from "react";
+import "./Card.css";
 
 // ============ Types ============
 
-export type CardSize = 'sm' | 'md' | 'lg';
-export type CardVariant = 'default' | 'bordered' | 'shadow';
+export type CardSize = "sm" | "md" | "lg";
+export type CardVariant = "default" | "bordered" | "shadow";
 
 export interface CardProps {
   /** 标题 */
@@ -65,29 +65,31 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
     extra,
     cover,
     children,
-    size = 'md',
-    variant = 'default',
+    size = "md",
+    variant = "default",
     hoverable = false,
     clickable = false,
     loading = false,
     bordered = true,
     onClick,
     actions,
-    className = '',
+    className = "",
     style,
   },
-  ref
+  ref,
 ) {
   const classes = [
-    'card',
+    "card",
     `card-${size}`,
     `card-${variant}`,
-    bordered && 'card-bordered',
-    hoverable && 'card-hoverable',
-    clickable && 'card-clickable',
-    loading && 'card-loading',
+    bordered && "card-bordered",
+    hoverable && "card-hoverable",
+    clickable && "card-clickable",
+    loading && "card-loading",
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const handleClick = (e: React.MouseEvent) => {
     if (clickable && onClick) {
@@ -116,10 +118,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
       className={classes}
       style={style}
       onClick={handleClick}
-      role={clickable ? 'button' : undefined}
+      role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       onKeyDown={(e) => {
-        if (clickable && (e.key === 'Enter' || e.key === ' ')) {
+        if (clickable && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
           onClick?.(e as any);
         }
@@ -179,10 +181,10 @@ export const CardGrid: React.FC<CardGridProps> = ({
   children,
   columns = 3,
   gap = 16,
-  className = '',
+  className = "",
 }) => {
   const style: React.CSSProperties = {
-    display: 'grid',
+    display: "grid",
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
     gap: `${gap}px`,
   };

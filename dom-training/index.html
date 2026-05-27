@@ -1,60 +1,205 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DOM 操作专项训练 — 原生 DOM API 深度练习</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, "Segoe UI", sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
-  h1 { text-align: center; margin-bottom: 24px; color: #38bdf8; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
-  .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
-  .card h2 { color: #38bdf8; font-size: 16px; margin-bottom: 12px; }
-  .card h2 span { color: #64748b; font-size: 12px; }
-  .card pre { background: #0f172a; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 12px; color: #94a3b8; }
-  .card .demo { margin-top: 12px; padding: 12px; background: #0f172a; border-radius: 8px; min-height: 40px; }
-  .card .demo button { background: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin: 4px; }
-  .card .demo button:hover { background: #2563eb; }
-  .card .demo .item { padding: 6px 10px; margin: 4px 0; background: #1e293b; border-radius: 6px; cursor: pointer; }
-  .card .demo .highlight { background: #065f46 !important; }
-  .card .demo .red { background: #7f1d1d !important; }
-  .card .demo .green { background: #065f46 !important; }
-  .card .demo .yellow { background: #713f12 !important; }
-  .card .demo input { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 6px 10px; border-radius: 6px; width: 100%; margin-bottom: 8px; }
-  .card .demo .log { font-size: 11px; color: #64748b; max-height: 80px; overflow-y: auto; }
-  .card .demo .perf-bar { height: 20px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 4px 0; }
-  .card .demo .perf-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
-  .card .demo .perf-fill.blue { background: #3b82f6; }
-  .card .demo .perf-fill.green { background: #22c55e; }
-  .card .demo .perf-fill.red { background: #ef4444; }
-  .card .demo .node { display: inline-block; padding: 4px 8px; margin: 2px; background: #334155; border-radius: 4px; font-size: 11px; }
-  .card .demo .node.added { background: #065f46; }
-  .card .demo .node.removed { background: #7f1d1d; text-decoration: line-through; }
-  .card .demo .node.unchanged { background: #334155; }
-  .card .demo .node.updated { background: #713f12; }
-  .card .demo .observer-box { width: 60px; height: 60px; background: #334155; border-radius: 8px; transition: all 0.3s; }
-  .card .demo .observer-box.expanded { width: 120px; height: 80px; background: #3b82f6; }
-  .card .demo .virtual-item { padding: 8px; margin: 2px 0; background: #1e293b; border-radius: 4px; }
-  .card .demo .shadow-host { border: 1px solid #334155; border-radius: 8px; padding: 12px; }
-  .card .demo .mutation-box { padding: 10px; background: #1e293b; border-radius: 8px; min-height: 30px; }
-  .card .demo .intersection-target { height: 100px; background: #334155; border-radius: 8px; margin: 20px 0; display: flex; align-items: center; justify-content: center; }
-  .card .demo .intersection-target.visible { background: #065f46; }
-</style>
-</head>
-<body>
-<h1>🎯 DOM 操作专项训练 — 15 个原生 API 深度示例</h1>
-<div class="grid" id="cards"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM 操作专项训练 — 原生 DOM API 深度练习</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, "Segoe UI", sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 24px;
+        color: #38bdf8;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .card h2 {
+        color: #38bdf8;
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+      .card h2 span {
+        color: #64748b;
+        font-size: 12px;
+      }
+      .card pre {
+        background: #0f172a;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      .card .demo {
+        margin-top: 12px;
+        padding: 12px;
+        background: #0f172a;
+        border-radius: 8px;
+        min-height: 40px;
+      }
+      .card .demo button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 4px;
+      }
+      .card .demo button:hover {
+        background: #2563eb;
+      }
+      .card .demo .item {
+        padding: 6px 10px;
+        margin: 4px 0;
+        background: #1e293b;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .card .demo .highlight {
+        background: #065f46 !important;
+      }
+      .card .demo .red {
+        background: #7f1d1d !important;
+      }
+      .card .demo .green {
+        background: #065f46 !important;
+      }
+      .card .demo .yellow {
+        background: #713f12 !important;
+      }
+      .card .demo input {
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: #e2e8f0;
+        padding: 6px 10px;
+        border-radius: 6px;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .card .demo .log {
+        font-size: 11px;
+        color: #64748b;
+        max-height: 80px;
+        overflow-y: auto;
+      }
+      .card .demo .perf-bar {
+        height: 20px;
+        background: #1e293b;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 4px 0;
+      }
+      .card .demo .perf-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s;
+      }
+      .card .demo .perf-fill.blue {
+        background: #3b82f6;
+      }
+      .card .demo .perf-fill.green {
+        background: #22c55e;
+      }
+      .card .demo .perf-fill.red {
+        background: #ef4444;
+      }
+      .card .demo .node {
+        display: inline-block;
+        padding: 4px 8px;
+        margin: 2px;
+        background: #334155;
+        border-radius: 4px;
+        font-size: 11px;
+      }
+      .card .demo .node.added {
+        background: #065f46;
+      }
+      .card .demo .node.removed {
+        background: #7f1d1d;
+        text-decoration: line-through;
+      }
+      .card .demo .node.unchanged {
+        background: #334155;
+      }
+      .card .demo .node.updated {
+        background: #713f12;
+      }
+      .card .demo .observer-box {
+        width: 60px;
+        height: 60px;
+        background: #334155;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+      .card .demo .observer-box.expanded {
+        width: 120px;
+        height: 80px;
+        background: #3b82f6;
+      }
+      .card .demo .virtual-item {
+        padding: 8px;
+        margin: 2px 0;
+        background: #1e293b;
+        border-radius: 4px;
+      }
+      .card .demo .shadow-host {
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .card .demo .mutation-box {
+        padding: 10px;
+        background: #1e293b;
+        border-radius: 8px;
+        min-height: 30px;
+      }
+      .card .demo .intersection-target {
+        height: 100px;
+        background: #334155;
+        border-radius: 8px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card .demo .intersection-target.visible {
+        background: #065f46;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎯 DOM 操作专项训练 — 15 个原生 API 深度示例</h1>
+    <div class="grid" id="cards"></div>
 
-<script>
-// ============================================================
-// 示例 1: 事件委托 — 动态列表
-// ============================================================
-(function example1() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+    <script>
+      // ============================================================
+      // 示例 1: 事件委托 — 动态列表
+      // ============================================================
+      (function example1() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>① 事件委托 — 动态列表 <span>Event Delegation</span></h2>
     <pre>
 // 核心思想：在父元素上监听，通过 event.target 判断来源
@@ -68,32 +213,32 @@ ul.addEventListener('click', (e) => {
       <button onclick="window.demo1_add()">添加项</button>
       <ul id="list1" style="list-style:none;padding:0;"></ul>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  let count = 0;
-  const ul = document.getElementById('list1');
-  ul.addEventListener('click', (e) => {
-    const item = e.target.closest('.list-item');
-    if (!item) return;
-    item.classList.toggle('highlight');
-  });
-  window.demo1_add = () => {
-    const li = document.createElement('li');
-    li.className = 'list-item';
-    li.textContent = `项目 ${++count}（点击切换高亮）`;
-    ul.appendChild(li);
-  };
-  for (let i = 0; i < 3; i++) window.demo1_add();
-})();
+        let count = 0;
+        const ul = document.getElementById("list1");
+        ul.addEventListener("click", (e) => {
+          const item = e.target.closest(".list-item");
+          if (!item) return;
+          item.classList.toggle("highlight");
+        });
+        window.demo1_add = () => {
+          const li = document.createElement("li");
+          li.className = "list-item";
+          li.textContent = `项目 ${++count}（点击切换高亮）`;
+          ul.appendChild(li);
+        };
+        for (let i = 0; i < 3; i++) window.demo1_add();
+      })();
 
-// ============================================================
-// 示例 2: 事件委托 — 多级嵌套
-// ============================================================
-(function example2() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 2: 事件委托 — 多级嵌套
+      // ============================================================
+      (function example2() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>② 事件委托 — 多级嵌套 <span>Nested Delegation</span></h2>
     <pre>
 // 同一容器处理多种子元素的不同操作
@@ -105,54 +250,64 @@ tree.addEventListener('click', (e) => {
     <div class="demo" id="demo2">
       <div id="tree2" style="padding-left:10px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const tree = document.getElementById('tree2');
-  const data = [
-    { name: 'src', children: [
-      { name: 'components', children: [{ name: 'Header.jsx' }, { name: 'Footer.jsx' }] },
-      { name: 'utils', children: [{ name: 'helpers.js' }] }
-    ]},
-    { name: 'package.json' }
-  ];
+        const tree = document.getElementById("tree2");
+        const data = [
+          {
+            name: "src",
+            children: [
+              {
+                name: "components",
+                children: [{ name: "Header.jsx" }, { name: "Footer.jsx" }],
+              },
+              { name: "utils", children: [{ name: "helpers.js" }] },
+            ],
+          },
+          { name: "package.json" },
+        ];
 
-  function renderTree(items, depth = 0) {
-    let html = '';
-    items.forEach(item => {
-      const hasChildren = item.children;
-      html += `<div style="padding-left:${depth*16}px">
-        <span class="node-text" style="cursor:pointer">${hasChildren ? '📁' : '📄'} ${item.name}</span>
+        function renderTree(items, depth = 0) {
+          let html = "";
+          items.forEach((item) => {
+            const hasChildren = item.children;
+            html += `<div style="padding-left:${depth * 16}px">
+        <span class="node-text" style="cursor:pointer">${hasChildren ? "📁" : "📄"} ${item.name}</span>
         <button class="delete-btn" style="background:#ef4444;padding:2px 6px;border:none;color:white;border-radius:3px;cursor:pointer;margin-left:4px;font-size:10px">✕</button>
-        ${hasChildren ? `<button class="expand-btn" style="background:#3b82f6;padding:2px 6px;border:none;color:white;border-radius:3px;cursor:pointer;margin-left:4px;font-size:10px">▼</button>` : ''}
+        ${hasChildren ? `<button class="expand-btn" style="background:#3b82f6;padding:2px 6px;border:none;color:white;border-radius:3px;cursor:pointer;margin-left:4px;font-size:10px">▼</button>` : ""}
       </div>`;
-      if (hasChildren) html += `<div class="subtree">${renderTree(item.children, depth + 1)}</div>`;
-    });
-    return html;
-  }
-  tree.innerHTML = renderTree(data);
+            if (hasChildren)
+              html += `<div class="subtree">${renderTree(item.children, depth + 1)}</div>`;
+          });
+          return html;
+        }
+        tree.innerHTML = renderTree(data);
 
-  tree.addEventListener('click', (e) => {
-    const btn = e.target;
-    if (btn.classList.contains('delete-btn')) {
-      btn.closest('div[style]').remove();
-    } else if (btn.classList.contains('expand-btn')) {
-      const subtree = btn.closest('div[style]').nextElementSibling;
-      if (subtree) subtree.style.display = subtree.style.display === 'none' ? '' : 'none';
-      btn.textContent = subtree && subtree.style.display === 'none' ? '▶' : '▼';
-    } else if (btn.classList.contains('node-text')) {
-      btn.classList.toggle('highlight');
-    }
-  });
-})();
+        tree.addEventListener("click", (e) => {
+          const btn = e.target;
+          if (btn.classList.contains("delete-btn")) {
+            btn.closest("div[style]").remove();
+          } else if (btn.classList.contains("expand-btn")) {
+            const subtree = btn.closest("div[style]").nextElementSibling;
+            if (subtree)
+              subtree.style.display =
+                subtree.style.display === "none" ? "" : "none";
+            btn.textContent =
+              subtree && subtree.style.display === "none" ? "▶" : "▼";
+          } else if (btn.classList.contains("node-text")) {
+            btn.classList.toggle("highlight");
+          }
+        });
+      })();
 
-// ============================================================
-// 示例 3: DOM Diff 算法 — 最小化更新
-// ============================================================
-(function example3() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 3: DOM Diff 算法 — 最小化更新
+      // ============================================================
+      (function example3() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>③ DOM Diff — 最小化更新 <span>Diff Algorithm</span></h2>
     <pre>
 // 对比新旧节点列表，只更新变化的部分
@@ -169,42 +324,45 @@ function diff(oldList, newList) {
       <button onclick="window.demo3_diff()">执行 Diff</button>
       <div id="diff-result3" style="margin-top:8px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  let oldList = ['A', 'B', 'C', 'D', 'E'];
-  let step = 0;
-  const scenarios = [
-    { old: ['A','B','C','D','E'], new: ['A','C','E','F','G'] },
-    { old: ['A','C','E','F','G'], new: ['A','B','C','D','E','F'] },
-    { old: ['A','B','C','D','E','F'], new: ['Z','Y','X'] },
-  ];
+        let oldList = ["A", "B", "C", "D", "E"];
+        let step = 0;
+        const scenarios = [
+          { old: ["A", "B", "C", "D", "E"], new: ["A", "C", "E", "F", "G"] },
+          {
+            old: ["A", "C", "E", "F", "G"],
+            new: ["A", "B", "C", "D", "E", "F"],
+          },
+          { old: ["A", "B", "C", "D", "E", "F"], new: ["Z", "Y", "X"] },
+        ];
 
-  window.demo3_diff = () => {
-    const { old, new: newList } = scenarios[step % scenarios.length];
-    const oldSet = new Set(old);
-    const newSet = new Set(newList);
-    const added = newList.filter(i => !oldSet.has(i));
-    const removed = old.filter(i => !newSet.has(i));
-    const unchanged = old.filter(i => newSet.has(i));
+        window.demo3_diff = () => {
+          const { old, new: newList } = scenarios[step % scenarios.length];
+          const oldSet = new Set(old);
+          const newSet = new Set(newList);
+          const added = newList.filter((i) => !oldSet.has(i));
+          const removed = old.filter((i) => !newSet.has(i));
+          const unchanged = old.filter((i) => newSet.has(i));
 
-    const result = document.getElementById('diff-result3');
-    result.innerHTML = `
-      <div style="margin-bottom:8px;font-size:11px;color:#64748b">旧: [${old.join(', ')}] → 新: [${newList.join(', ')}]</div>
-      <div>未变: ${unchanged.map(i => `<span class="node unchanged">${i}</span>`).join('')}</div>
-      <div>新增: ${added.map(i => `<span class="node added">${i}</span>`).join('')}</div>
-      <div>移除: ${removed.map(i => `<span class="node removed">${i}</span>`).join('')}</div>`;
-    step++;
-  };
-})();
+          const result = document.getElementById("diff-result3");
+          result.innerHTML = `
+      <div style="margin-bottom:8px;font-size:11px;color:#64748b">旧: [${old.join(", ")}] → 新: [${newList.join(", ")}]</div>
+      <div>未变: ${unchanged.map((i) => `<span class="node unchanged">${i}</span>`).join("")}</div>
+      <div>新增: ${added.map((i) => `<span class="node added">${i}</span>`).join("")}</div>
+      <div>移除: ${removed.map((i) => `<span class="node removed">${i}</span>`).join("")}</div>`;
+          step++;
+        };
+      })();
 
-// ============================================================
-// 示例 4: DOM Diff — 元素级对比
-// ============================================================
-(function example4() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 4: DOM Diff — 元素级对比
+      // ============================================================
+      (function example4() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>④ DOM Diff — 元素级对比 <span>Element Diff</span></h2>
     <pre>
 // 对比两个 DOM 节点树，找出需要 patch 的部分
@@ -221,33 +379,47 @@ function patchNode(oldNode, newNode) {
       <button onclick="window.demo4_patch()">执行 Patch</button>
       <div id="patch-result4" style="margin-top:8px;font-size:12px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const vdom = [
-    { tag: 'div', props: { class: 'box' }, children: ['Hello'] },
-    { tag: 'div', props: { class: 'box active' }, children: ['Hello World'] }
-  ];
+        const vdom = [
+          { tag: "div", props: { class: "box" }, children: ["Hello"] },
+          {
+            tag: "div",
+            props: { class: "box active" },
+            children: ["Hello World"],
+          },
+        ];
 
-  window.demo4_patch = () => {
-    const oldV = vdom[0], newV = vdom[1];
-    const changes = [];
-    if (oldV.tag !== newV.tag) changes.push(`标签变更: ${oldV.tag} → ${newV.tag}`);
-    if (oldV.props.class !== newV.props.class) changes.push(`属性变更: class="${oldV.props.class}" → "${newV.props.class}"`);
-    if (oldV.children[0] !== newV.children[0]) changes.push(`文本变更: "${oldV.children[0]}" → "${newV.children[0]}"`);
+        window.demo4_patch = () => {
+          const oldV = vdom[0],
+            newV = vdom[1];
+          const changes = [];
+          if (oldV.tag !== newV.tag)
+            changes.push(`标签变更: ${oldV.tag} → ${newV.tag}`);
+          if (oldV.props.class !== newV.props.class)
+            changes.push(
+              `属性变更: class="${oldV.props.class}" → "${newV.props.class}"`,
+            );
+          if (oldV.children[0] !== newV.children[0])
+            changes.push(
+              `文本变更: "${oldV.children[0]}" → "${newV.children[0]}"`,
+            );
 
-    const result = document.getElementById('patch-result4');
-    result.innerHTML = changes.map(c => `<div style="padding:4px 0;color:#38bdf8">→ ${c}</div>`).join('');
-  };
-})();
+          const result = document.getElementById("patch-result4");
+          result.innerHTML = changes
+            .map((c) => `<div style="padding:4px 0;color:#38bdf8">→ ${c}</div>`)
+            .join("");
+        };
+      })();
 
-// ============================================================
-// 示例 5: 性能优化 — DocumentFragment
-// ============================================================
-(function example5() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 5: 性能优化 — DocumentFragment
+      // ============================================================
+      (function example5() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑤ 性能优化 — DocumentFragment <span>Batch Insert</span></h2>
     <pre>
 // 使用 DocumentFragment 批量插入，只触发一次 reflow
@@ -264,47 +436,49 @@ container.appendChild(frag); // 仅 1 次 reflow</pre>
       <div id="perf-result5" style="margin-top:8px;font-size:12px;"></div>
       <div id="list5" style="display:none;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const list5 = document.getElementById('list5');
+        const list5 = document.getElementById("list5");
 
-  window.demo5_fragment = () => {
-    list5.innerHTML = '';
-    const start = performance.now();
-    const frag = document.createDocumentFragment();
-    for (let i = 0; i < 1000; i++) {
-      const div = document.createElement('div');
-      div.className = 'virtual-item';
-      div.textContent = `Item ${i}`;
-      frag.appendChild(div);
-    }
-    list5.appendChild(frag);
-    const elapsed = (performance.now() - start).toFixed(2);
-    document.getElementById('perf-result5').innerHTML = `<span style="color:#22c55e">✅ DocumentFragment: ${elapsed}ms</span>`;
-  };
+        window.demo5_fragment = () => {
+          list5.innerHTML = "";
+          const start = performance.now();
+          const frag = document.createDocumentFragment();
+          for (let i = 0; i < 1000; i++) {
+            const div = document.createElement("div");
+            div.className = "virtual-item";
+            div.textContent = `Item ${i}`;
+            frag.appendChild(div);
+          }
+          list5.appendChild(frag);
+          const elapsed = (performance.now() - start).toFixed(2);
+          document.getElementById("perf-result5").innerHTML =
+            `<span style="color:#22c55e">✅ DocumentFragment: ${elapsed}ms</span>`;
+        };
 
-  window.demo5_direct = () => {
-    list5.innerHTML = '';
-    const start = performance.now();
-    for (let i = 0; i < 1000; i++) {
-      const div = document.createElement('div');
-      div.className = 'virtual-item';
-      div.textContent = `Item ${i}`;
-      list5.appendChild(div);
-    }
-    const elapsed = (performance.now() - start).toFixed(2);
-    document.getElementById('perf-result5').innerHTML = `<span style="color:#ef4444">⚠️ 直接插入: ${elapsed}ms</span>`;
-  };
-})();
+        window.demo5_direct = () => {
+          list5.innerHTML = "";
+          const start = performance.now();
+          for (let i = 0; i < 1000; i++) {
+            const div = document.createElement("div");
+            div.className = "virtual-item";
+            div.textContent = `Item ${i}`;
+            list5.appendChild(div);
+          }
+          const elapsed = (performance.now() - start).toFixed(2);
+          document.getElementById("perf-result5").innerHTML =
+            `<span style="color:#ef4444">⚠️ 直接插入: ${elapsed}ms</span>`;
+        };
+      })();
 
-// ============================================================
-// 示例 6: 性能优化 — requestAnimationFrame
-// ============================================================
-(function example6() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 6: 性能优化 — requestAnimationFrame
+      // ============================================================
+      (function example6() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑥ 性能优化 — requestAnimationFrame <span>rAF Scheduling</span></h2>
     <pre>
 // 将 DOM 操作对齐到浏览器帧，避免布局抖动
@@ -321,32 +495,32 @@ requestAnimationFrame(animate);</pre>
       </div>
       <div id="raf-counter6" style="font-size:11px;color:#64748b;margin-top:4px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  window.demo6_raf = () => {
-    let x = 0;
-    let frames = 0;
-    const box = document.getElementById('anim-box6');
-    const counter = document.getElementById('raf-counter6');
-    function step() {
-      box.style.transform = `translateX(${x}px)`;
-      x += 3;
-      frames++;
-      counter.textContent = `帧数: ${frames} | 位置: ${x}px`;
-      if (x < 300) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  };
-})();
+        window.demo6_raf = () => {
+          let x = 0;
+          let frames = 0;
+          const box = document.getElementById("anim-box6");
+          const counter = document.getElementById("raf-counter6");
+          function step() {
+            box.style.transform = `translateX(${x}px)`;
+            x += 3;
+            frames++;
+            counter.textContent = `帧数: ${frames} | 位置: ${x}px`;
+            if (x < 300) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        };
+      })();
 
-// ============================================================
-// 示例 7: 性能优化 — 防抖 & 节流
-// ============================================================
-(function example7() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 7: 性能优化 — 防抖 & 节流
+      // ============================================================
+      (function example7() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑦ 性能优化 — 防抖 & 节流 <span>Debounce & Throttle</span></h2>
     <pre>
 // 防抖：等待用户停止操作后才执行
@@ -371,39 +545,52 @@ function throttle(fn, ms) {
       <input id="throttle-input7" placeholder="输入测试节流（500ms）">
       <div class="log" id="log7"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const log7 = document.getElementById('log7');
-  function log(msg) {
-    const div = document.createElement('div');
-    div.textContent = msg;
-    log7.prepend(div);
-    if (log7.children.length > 20) log7.removeChild(log7.lastChild);
-  }
+        const log7 = document.getElementById("log7");
+        function log(msg) {
+          const div = document.createElement("div");
+          div.textContent = msg;
+          log7.prepend(div);
+          if (log7.children.length > 20) log7.removeChild(log7.lastChild);
+        }
 
-  function debounce(fn, ms) {
-    let timer;
-    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
-  }
-  function throttle(fn, ms) {
-    let last = 0;
-    return (...args) => { const now = Date.now(); if (now - last >= ms) { last = now; fn(...args); } };
-  }
+        function debounce(fn, ms) {
+          let timer;
+          return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), ms);
+          };
+        }
+        function throttle(fn, ms) {
+          let last = 0;
+          return (...args) => {
+            const now = Date.now();
+            if (now - last >= ms) {
+              last = now;
+              fn(...args);
+            }
+          };
+        }
 
-  document.getElementById('debounce-input7').addEventListener('input',
-    debounce((e) => log(`🔵 防抖触发: "${e.target.value}"`), 500));
-  document.getElementById('throttle-input7').addEventListener('input',
-    throttle((e) => log(`🟢 节流触发: "${e.target.value}"`), 500));
-})();
+        document.getElementById("debounce-input7").addEventListener(
+          "input",
+          debounce((e) => log(`🔵 防抖触发: "${e.target.value}"`), 500),
+        );
+        document.getElementById("throttle-input7").addEventListener(
+          "input",
+          throttle((e) => log(`🟢 节流触发: "${e.target.value}"`), 500),
+        );
+      })();
 
-// ============================================================
-// 示例 8: IntersectionObserver — 懒加载 & 可见性检测
-// ============================================================
-(function example8() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 8: IntersectionObserver — 懒加载 & 可见性检测
+      // ============================================================
+      (function example8() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑧ IntersectionObserver — 可见性检测 <span>Lazy Load</span></h2>
     <pre>
 // 监听元素进入视口
@@ -423,31 +610,39 @@ observer.observe(targetElement);</pre>
       <div class="intersection-target" id="target8b">目标 B</div>
       <div class="intersection-target" id="target8c">目标 C</div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        entry.target.textContent = '✅ 可见！';
-      } else {
-        entry.target.classList.remove('visible');
-        entry.target.textContent = entry.target.id.replace('target', '目标 ');
-      }
-    });
-  }, { root: document.getElementById('demo8'), threshold: 0.5 });
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                entry.target.textContent = "✅ 可见！";
+              } else {
+                entry.target.classList.remove("visible");
+                entry.target.textContent = entry.target.id.replace(
+                  "target",
+                  "目标 ",
+                );
+              }
+            });
+          },
+          { root: document.getElementById("demo8"), threshold: 0.5 },
+        );
 
-  ['target8a', 'target8b', 'target8c'].forEach(id => observer.observe(document.getElementById(id)));
-})();
+        ["target8a", "target8b", "target8c"].forEach((id) =>
+          observer.observe(document.getElementById(id)),
+        );
+      })();
 
-// ============================================================
-// 示例 9: MutationObserver — DOM 变更监听
-// ============================================================
-(function example9() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 9: MutationObserver — DOM 变更监听
+      // ============================================================
+      (function example9() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑨ MutationObserver — DOM 变更监听 <span>Mutation Tracking</span></h2>
     <pre>
 // 监听 DOM 树的变更（子节点、属性、字符数据）
@@ -471,46 +666,53 @@ observer.observe(target, {
       <div class="mutation-box" id="mutation-target9"></div>
       <div class="log" id="mutation-log9" style="margin-top:8px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const target9 = document.getElementById('mutation-target9');
-  const log9 = document.getElementById('mutation-log9');
-  let childCount = 0;
+        const target9 = document.getElementById("mutation-target9");
+        const log9 = document.getElementById("mutation-log9");
+        let childCount = 0;
 
-  const observer9 = new MutationObserver((mutations) => {
-    mutations.forEach(m => {
-      const div = document.createElement('div');
-      div.textContent = `[${m.type}] ${m.addedNodes.length > 0 ? `+${m.addedNodes.length}节点` : ''} ${m.removedNodes.length > 0 ? `-${m.removedNodes.length}节点` : ''} ${m.attributeName ? `属性:${m.attributeName}` : ''}`;
-      log9.prepend(div);
-      if (log9.children.length > 15) log9.removeChild(log9.lastChild);
-    });
-  });
-  observer9.observe(target9, { childList: true, attributes: true, subtree: true, attributeOldValue: true, characterDataOldValue: true });
+        const observer9 = new MutationObserver((mutations) => {
+          mutations.forEach((m) => {
+            const div = document.createElement("div");
+            div.textContent = `[${m.type}] ${m.addedNodes.length > 0 ? `+${m.addedNodes.length}节点` : ""} ${m.removedNodes.length > 0 ? `-${m.removedNodes.length}节点` : ""} ${m.attributeName ? `属性:${m.attributeName}` : ""}`;
+            log9.prepend(div);
+            if (log9.children.length > 15) log9.removeChild(log9.lastChild);
+          });
+        });
+        observer9.observe(target9, {
+          childList: true,
+          attributes: true,
+          subtree: true,
+          attributeOldValue: true,
+          characterDataOldValue: true,
+        });
 
-  window.demo9_add = () => {
-    const span = document.createElement('span');
-    span.className = 'node';
-    span.textContent = `节点 ${++childCount}`;
-    target9.appendChild(span);
-  };
-  window.demo9_attr = () => {
-    if (target9.firstChild) {
-      target9.firstChild.className = target9.firstChild.className === 'node' ? 'node green' : 'node';
-    }
-  };
-  window.demo9_remove = () => {
-    if (target9.lastChild) target9.removeChild(target9.lastChild);
-  };
-})();
+        window.demo9_add = () => {
+          const span = document.createElement("span");
+          span.className = "node";
+          span.textContent = `节点 ${++childCount}`;
+          target9.appendChild(span);
+        };
+        window.demo9_attr = () => {
+          if (target9.firstChild) {
+            target9.firstChild.className =
+              target9.firstChild.className === "node" ? "node green" : "node";
+          }
+        };
+        window.demo9_remove = () => {
+          if (target9.lastChild) target9.removeChild(target9.lastChild);
+        };
+      })();
 
-// ============================================================
-// 示例 10: ResizeObserver — 元素尺寸监听
-// ============================================================
-(function example10() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 10: ResizeObserver — 元素尺寸监听
+      // ============================================================
+      (function example10() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑩ ResizeObserver — 元素尺寸监听 <span>Element Resize</span></h2>
     <pre>
 // 监听元素尺寸变化（比 window.resize 更精确）
@@ -527,32 +729,32 @@ observer.observe(element);</pre>
       <div class="observer-box" id="resize-target10" style="width:60px;height:60px;"></div>
       <div id="resize-info10" style="font-size:11px;color:#64748b;margin-top:4px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const resizeTarget = document.getElementById('resize-target10');
-  const resizeInfo = document.getElementById('resize-info10');
+        const resizeTarget = document.getElementById("resize-target10");
+        const resizeInfo = document.getElementById("resize-info10");
 
-  const observer10 = new ResizeObserver((entries) => {
-    for (const entry of entries) {
-      const { width, height } = entry.contentRect;
-      resizeInfo.textContent = `尺寸: ${width.toFixed(0)} × ${height.toFixed(0)}px`;
-    }
-  });
-  observer10.observe(resizeTarget);
+        const observer10 = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            const { width, height } = entry.contentRect;
+            resizeInfo.textContent = `尺寸: ${width.toFixed(0)} × ${height.toFixed(0)}px`;
+          }
+        });
+        observer10.observe(resizeTarget);
 
-  window.demo10_toggle = () => {
-    resizeTarget.classList.toggle('expanded');
-  };
-})();
+        window.demo10_toggle = () => {
+          resizeTarget.classList.toggle("expanded");
+        };
+      })();
 
-// ============================================================
-// 示例 11: Shadow DOM — 封装样式
-// ============================================================
-(function example11() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 11: Shadow DOM — 封装样式
+      // ============================================================
+      (function example11() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑪ Shadow DOM — 样式封装 <span>Style Encapsulation</span></h2>
     <pre>
 // 创建 Shadow Root，样式完全隔离
@@ -569,11 +771,11 @@ document.body.appendChild(host);</pre>
       <p style="color:#e2e8f0;">这是外部 p 标签（白色）</p>
       <div id="shadow-host11" class="shadow-host"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const host11 = document.getElementById('shadow-host11');
-  const shadow11 = host11.attachShadow({ mode: 'open' });
-  shadow11.innerHTML = `
+        const host11 = document.getElementById("shadow-host11");
+        const shadow11 = host11.attachShadow({ mode: "open" });
+        shadow11.innerHTML = `
     <style>
       p { color: #22c55e; font-weight: bold; }
       .inner { background: #0f172a; padding: 8px; border-radius: 4px; }
@@ -582,16 +784,16 @@ document.body.appendChild(host);</pre>
       <p>Shadow DOM 内部 p 标签（绿色）</p>
       <p>外部样式无法影响这里</p>
     </div>`;
-})();
+      })();
 
-// ============================================================
-// 示例 12: 虚拟滚动 — 只渲染可见区域
-// ============================================================
-(function example12() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 12: 虚拟滚动 — 只渲染可见区域
+      // ============================================================
+      (function example12() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑫ 虚拟滚动 — 只渲染可见区域 <span>Virtual Scrolling</span></h2>
     <pre>
 // 只渲染视口内的 DOM 节点
@@ -607,43 +809,46 @@ function renderVisible() {
       </div>
       <div id="virtual-info12" style="font-size:11px;color:#64748b;margin-top:4px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const scrollEl = document.getElementById('virtual-scroll12');
-  const contentEl = document.getElementById('virtual-content12');
-  const infoEl = document.getElementById('virtual-info12');
-  const ITEM_HEIGHT = 32;
-  const TOTAL = 10000;
-  const VIEWPORT_HEIGHT = 150;
+        const scrollEl = document.getElementById("virtual-scroll12");
+        const contentEl = document.getElementById("virtual-content12");
+        const infoEl = document.getElementById("virtual-info12");
+        const ITEM_HEIGHT = 32;
+        const TOTAL = 10000;
+        const VIEWPORT_HEIGHT = 150;
 
-  contentEl.style.height = `${TOTAL * ITEM_HEIGHT}px`;
+        contentEl.style.height = `${TOTAL * ITEM_HEIGHT}px`;
 
-  function render() {
-    const scrollTop = scrollEl.scrollTop;
-    const startIdx = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 2);
-    const endIdx = Math.min(TOTAL, Math.ceil((scrollTop + VIEWPORT_HEIGHT) / ITEM_HEIGHT) + 2);
-    const visibleCount = endIdx - startIdx;
+        function render() {
+          const scrollTop = scrollEl.scrollTop;
+          const startIdx = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 2);
+          const endIdx = Math.min(
+            TOTAL,
+            Math.ceil((scrollTop + VIEWPORT_HEIGHT) / ITEM_HEIGHT) + 2,
+          );
+          const visibleCount = endIdx - startIdx;
 
-    let html = '';
-    for (let i = startIdx; i < endIdx; i++) {
-      html += `<div style="position:absolute;top:${i * ITEM_HEIGHT}px;height:${ITEM_HEIGHT}px;left:0;right:0;display:flex;align-items:center;padding:0 12px;font-size:12px;" class="virtual-item">行 ${i} — 数据内容</div>`;
-    }
-    contentEl.innerHTML = html;
-    infoEl.textContent = `总数据: ${TOTAL.toLocaleString()} | 实际 DOM 节点: ${visibleCount} | 可见范围: ${startIdx} ~ ${endIdx}`;
-  }
+          let html = "";
+          for (let i = startIdx; i < endIdx; i++) {
+            html += `<div style="position:absolute;top:${i * ITEM_HEIGHT}px;height:${ITEM_HEIGHT}px;left:0;right:0;display:flex;align-items:center;padding:0 12px;font-size:12px;" class="virtual-item">行 ${i} — 数据内容</div>`;
+          }
+          contentEl.innerHTML = html;
+          infoEl.textContent = `总数据: ${TOTAL.toLocaleString()} | 实际 DOM 节点: ${visibleCount} | 可见范围: ${startIdx} ~ ${endIdx}`;
+        }
 
-  scrollEl.addEventListener('scroll', render, { passive: true });
-  render();
-})();
+        scrollEl.addEventListener("scroll", render, { passive: true });
+        render();
+      })();
 
-// ============================================================
-// 示例 13: 事件委托 — 表格操作
-// ============================================================
-(function example13() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 13: 事件委托 — 表格操作
+      // ============================================================
+      (function example13() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑬ 事件委托 — 表格 CRUD <span>Table Delegation</span></h2>
     <pre>
 // 一个事件监听器处理整张表格的所有交互
@@ -664,54 +869,61 @@ table.addEventListener('click', (e) => {
         <tbody id="table-body13"></tbody>
       </table>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  const tbody = document.getElementById('table-body13');
-  let rowId = 0;
+        const tbody = document.getElementById("table-body13");
+        let rowId = 0;
 
-  function addRow(name, value) {
-    const tr = document.createElement('tr');
-    tr.style.borderBottom = '1px solid #1e293b';
-    tr.innerHTML = `
-      <td style="padding:6px;" class="name-cell">${name || '项目 ' + ++rowId}</td>
+        function addRow(name, value) {
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid #1e293b";
+          tr.innerHTML = `
+      <td style="padding:6px;" class="name-cell">${name || "项目 " + ++rowId}</td>
       <td style="padding:6px;" class="value-cell">${value || Math.floor(Math.random() * 100)}</td>
       <td style="padding:6px;">
         <button data-action="edit" style="background:#3b82f6;border:none;color:white;padding:2px 8px;border-radius:3px;cursor:pointer;font-size:10px;">编辑</button>
         <button data-action="delete" style="background:#ef4444;border:none;color:white;padding:2px 8px;border-radius:3px;cursor:pointer;font-size:10px;margin-left:4px;">删除</button>
       </td>`;
-    tbody.appendChild(tr);
-  }
+          tbody.appendChild(tr);
+        }
 
-  addRow('Alpha', '100');
-  addRow('Beta', '200');
-  addRow('Gamma', '300');
+        addRow("Alpha", "100");
+        addRow("Beta", "200");
+        addRow("Gamma", "300");
 
-  window.demo13_add = () => addRow();
+        window.demo13_add = () => addRow();
 
-  tbody.addEventListener('click', (e) => {
-    const action = e.target.dataset.action;
-    const row = e.target.closest('tr');
-    if (action === 'delete') { row.style.opacity = '0'; setTimeout(() => row.remove(), 200); }
-    if (action === 'edit') {
-      const nameCell = row.querySelector('.name-cell');
-      const current = nameCell.textContent;
-      nameCell.innerHTML = `<input value="${current}" style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:2px 6px;border-radius:3px;width:80px;font-size:11px;" />`;
-      const input = nameCell.querySelector('input');
-      input.focus();
-      input.addEventListener('blur', () => { nameCell.textContent = input.value; });
-      input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); });
-    }
-  });
-})();
+        tbody.addEventListener("click", (e) => {
+          const action = e.target.dataset.action;
+          const row = e.target.closest("tr");
+          if (action === "delete") {
+            row.style.opacity = "0";
+            setTimeout(() => row.remove(), 200);
+          }
+          if (action === "edit") {
+            const nameCell = row.querySelector(".name-cell");
+            const current = nameCell.textContent;
+            nameCell.innerHTML = `<input value="${current}" style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:2px 6px;border-radius:3px;width:80px;font-size:11px;" />`;
+            const input = nameCell.querySelector("input");
+            input.focus();
+            input.addEventListener("blur", () => {
+              nameCell.textContent = input.value;
+            });
+            input.addEventListener("keydown", (ev) => {
+              if (ev.key === "Enter") input.blur();
+            });
+          }
+        });
+      })();
 
-// ============================================================
-// 示例 14: 性能对比 — innerHTML vs createElement vs Fragment
-// ============================================================
-(function example14() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 14: 性能对比 — innerHTML vs createElement vs Fragment
+      // ============================================================
+      (function example14() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑭ 性能对比 — 三种渲染方式 <span>Performance Benchmark</span></h2>
     <pre>
 // 对比 innerHTML / createElement / DocumentFragment
@@ -724,62 +936,67 @@ table.addEventListener('click', (e) => {
       <button onclick="window.demo14_bench()">运行基准测试</button>
       <div id="bench-result14" style="margin-top:8px;font-size:12px;"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  window.demo14_bench = () => {
-    const N = 5000;
-    const results = {};
+        window.demo14_bench = () => {
+          const N = 5000;
+          const results = {};
 
-    // innerHTML
-    let start = performance.now();
-    let html = '';
-    for (let i = 0; i < N; i++) html += `<div class="virtual-item">Item ${i}</div>`;
-    const frag1 = document.createElement('div');
-    frag1.innerHTML = html;
-    results.innerHTML = performance.now() - start;
+          // innerHTML
+          let start = performance.now();
+          let html = "";
+          for (let i = 0; i < N; i++)
+            html += `<div class="virtual-item">Item ${i}</div>`;
+          const frag1 = document.createElement("div");
+          frag1.innerHTML = html;
+          results.innerHTML = performance.now() - start;
 
-    // createElement
-    start = performance.now();
-    const frag2 = document.createElement('div');
-    for (let i = 0; i < N; i++) {
-      const div = document.createElement('div');
-      div.className = 'virtual-item';
-      div.textContent = `Item ${i}`;
-      frag2.appendChild(div);
-    }
-    results.createElement = performance.now() - start;
+          // createElement
+          start = performance.now();
+          const frag2 = document.createElement("div");
+          for (let i = 0; i < N; i++) {
+            const div = document.createElement("div");
+            div.className = "virtual-item";
+            div.textContent = `Item ${i}`;
+            frag2.appendChild(div);
+          }
+          results.createElement = performance.now() - start;
 
-    // DocumentFragment
-    start = performance.now();
-    const frag3 = document.createDocumentFragment();
-    for (let i = 0; i < N; i++) {
-      const div = document.createElement('div');
-      div.className = 'virtual-item';
-      div.textContent = `Item ${i}`;
-      frag3.appendChild(div);
-    }
-    results.fragment = performance.now() - start;
+          // DocumentFragment
+          start = performance.now();
+          const frag3 = document.createDocumentFragment();
+          for (let i = 0; i < N; i++) {
+            const div = document.createElement("div");
+            div.className = "virtual-item";
+            div.textContent = `Item ${i}`;
+            frag3.appendChild(div);
+          }
+          results.fragment = performance.now() - start;
 
-    const max = Math.max(results.innerHTML, results.createElement, results.fragment);
-    const resultEl = document.getElementById('bench-result14');
-    resultEl.innerHTML = `
+          const max = Math.max(
+            results.innerHTML,
+            results.createElement,
+            results.fragment,
+          );
+          const resultEl = document.getElementById("bench-result14");
+          resultEl.innerHTML = `
       <div style="margin-bottom:4px;">innerHTML: <span style="color:#3b82f6">${results.innerHTML.toFixed(2)}ms</span>
-        <div class="perf-bar"><div class="perf-fill blue" style="width:${(results.innerHTML/max*100).toFixed(0)}%"></div></div></div>
+        <div class="perf-bar"><div class="perf-fill blue" style="width:${((results.innerHTML / max) * 100).toFixed(0)}%"></div></div></div>
       <div style="margin-bottom:4px;">createElement: <span style="color:#22c55e">${results.createElement.toFixed(2)}ms</span>
-        <div class="perf-bar"><div class="perf-fill green" style="width:${(results.createElement/max*100).toFixed(0)}%"></div></div></div>
+        <div class="perf-bar"><div class="perf-fill green" style="width:${((results.createElement / max) * 100).toFixed(0)}%"></div></div></div>
       <div>Fragment: <span style="color:#ef4444">${results.fragment.toFixed(2)}ms</span>
-        <div class="perf-bar"><div class="perf-fill red" style="width:${(results.fragment/max*100).toFixed(0)}%"></div></div></div>`;
-  };
-})();
+        <div class="perf-bar"><div class="perf-fill red" style="width:${((results.fragment / max) * 100).toFixed(0)}%"></div></div></div>`;
+        };
+      })();
 
-// ============================================================
-// 示例 15: 综合 — 组件化 DOM 构建器
-// ============================================================
-(function example15() {
-  const container = document.getElementById('cards');
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+      // ============================================================
+      // 示例 15: 综合 — 组件化 DOM 构建器
+      // ============================================================
+      (function example15() {
+        const container = document.getElementById("cards");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
     <h2>⑮ 综合 — 轻量级 DOM 构建器 <span>DOM Builder Pattern</span></h2>
     <pre>
 // 用函数式 API 构建 DOM 树
@@ -798,47 +1015,95 @@ function h(tag, props = {}, ...children) {
     <div class="demo" id="demo15">
       <div id="builder-output15"></div>
     </div>`;
-  container.appendChild(card);
+        container.appendChild(card);
 
-  function h(tag, props = {}, ...children) {
-    const el = document.createElement(tag);
-    Object.entries(props).forEach(([k, v]) => {
-      if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
-      else if (k === 'className') el.className = v;
-      else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
-      else el.setAttribute(k, v);
-    });
-    children.flat().forEach(child => {
-      if (typeof child === 'string') child = document.createTextNode(child);
-      el.appendChild(child);
-    });
-    return el;
-  }
+        function h(tag, props = {}, ...children) {
+          const el = document.createElement(tag);
+          Object.entries(props).forEach(([k, v]) => {
+            if (k.startsWith("on"))
+              el.addEventListener(k.slice(2).toLowerCase(), v);
+            else if (k === "className") el.className = v;
+            else if (k === "style" && typeof v === "object")
+              Object.assign(el.style, v);
+            else el.setAttribute(k, v);
+          });
+          children.flat().forEach((child) => {
+            if (typeof child === "string")
+              child = document.createTextNode(child);
+            el.appendChild(child);
+          });
+          return el;
+        }
 
-  const output = document.getElementById('builder-output15');
-  let counter = 0;
+        const output = document.getElementById("builder-output15");
+        let counter = 0;
 
-  const app = h('div', {},
-    h('h3', { style: { color: '#38bdf8', margin: '0 0 8px 0' } }, '🧩 DOM 构建器示例'),
-    h('p', { className: 'desc', style: { fontSize: '12px', color: '#94a3b8' } }, '用 h() 函数声明式构建 DOM'),
-    h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px' } },
-      h('button', {
-        style: { background: '#3b82f6', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer' },
-        onClick: () => { counter++; countEl.textContent = counter; }
-      }, '点击 +1'),
-      h('button', {
-        style: { background: '#ef4444', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer' },
-        onClick: () => { counter = 0; countEl.textContent = 0; }
-      }, '重置')
-    ),
-    h('div', { style: { marginTop: '8px', fontSize: '20px', color: '#22c55e' } },
-      h('span', { id: 'count-display' }, '0')
-    )
-  );
+        const app = h(
+          "div",
+          {},
+          h(
+            "h3",
+            { style: { color: "#38bdf8", margin: "0 0 8px 0" } },
+            "🧩 DOM 构建器示例",
+          ),
+          h(
+            "p",
+            {
+              className: "desc",
+              style: { fontSize: "12px", color: "#94a3b8" },
+            },
+            "用 h() 函数声明式构建 DOM",
+          ),
+          h(
+            "div",
+            { style: { display: "flex", gap: "8px", marginTop: "8px" } },
+            h(
+              "button",
+              {
+                style: {
+                  background: "#3b82f6",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 14px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                },
+                onClick: () => {
+                  counter++;
+                  countEl.textContent = counter;
+                },
+              },
+              "点击 +1",
+            ),
+            h(
+              "button",
+              {
+                style: {
+                  background: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 14px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                },
+                onClick: () => {
+                  counter = 0;
+                  countEl.textContent = 0;
+                },
+              },
+              "重置",
+            ),
+          ),
+          h(
+            "div",
+            { style: { marginTop: "8px", fontSize: "20px", color: "#22c55e" } },
+            h("span", { id: "count-display" }, "0"),
+          ),
+        );
 
-  const countEl = app.querySelector('#count-display');
-  output.appendChild(app);
-})();
-</script>
-</body>
+        const countEl = app.querySelector("#count-display");
+        output.appendChild(app);
+      })();
+    </script>
+  </body>
 </html>

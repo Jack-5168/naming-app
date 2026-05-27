@@ -1,18 +1,18 @@
-import React, { 
-  FormHTMLAttributes, 
-  forwardRef, 
-  createContext, 
-  useContext, 
+import React, {
+  FormHTMLAttributes,
+  forwardRef,
+  createContext,
+  useContext,
   useState,
   useCallback,
-  ReactNode 
-} from 'react';
-import './Form.css';
+  ReactNode,
+} from "react";
+import "./Form.css";
 
 // ============ Types ============
 
-export type FormLayout = 'horizontal' | 'vertical' | 'inline';
-export type FormStatus = 'default' | 'error' | 'success';
+export type FormLayout = "horizontal" | "vertical" | "inline";
+export type FormStatus = "default" | "error" | "success";
 
 export interface FormFieldContextValue {
   name?: string;
@@ -57,53 +57,56 @@ export interface FieldProps {
 export interface FormActionsProps {
   children?: ReactNode;
   className?: string;
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
 }
 
 // ============ Component ============
 
 export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
   {
-    layout = 'vertical',
+    layout = "vertical",
     labelWidth,
     onSubmit,
     formData,
-    className = '',
+    className = "",
     children,
     ...props
   },
-  ref
+  ref,
 ) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!onSubmit) return;
-    
-    setIsSubmitting(true);
-    try {
-      // 收集表单数据
-      const formElement = e.target as HTMLFormElement;
-      const form = new FormData(formElement);
-      const data = Object.fromEntries(form.entries());
-      
-      await onSubmit(data);
-    } catch (error) {
-      console.error('Form submission error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [onSubmit]);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-  const classes = [
-    'form',
-    `form-${layout}`,
-    className,
-  ].filter(Boolean).join(' ');
+      if (!onSubmit) return;
 
-  const style = labelWidth ? { '--form-label-width': labelWidth } as React.CSSProperties : undefined;
+      setIsSubmitting(true);
+      try {
+        // 收集表单数据
+        const formElement = e.target as HTMLFormElement;
+        const form = new FormData(formElement);
+        const data = Object.fromEntries(form.entries());
+
+        await onSubmit(data);
+      } catch (error) {
+        console.error("Form submission error:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [onSubmit],
+  );
+
+  const classes = ["form", `form-${layout}`, className]
+    .filter(Boolean)
+    .join(" ");
+
+  const style = labelWidth
+    ? ({ "--form-label-width": labelWidth } as React.CSSProperties)
+    : undefined;
 
   return (
     <form
@@ -114,7 +117,9 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(function Form(
       noValidate
       {...props}
     >
-      <FormContext.Provider value={{ isSubmitting, fieldErrors, setFieldErrors }}>
+      <FormContext.Provider
+        value={{ isSubmitting, fieldErrors, setFieldErrors }}
+      >
         {children}
       </FormContext.Provider>
     </form>
@@ -144,33 +149,41 @@ export const Field = forwardRef<HTMLDivElement, FieldProps>(function Field(
     name,
     label,
     required = false,
-    status = 'default',
+    status = "default",
     errorMessage,
     helpText,
     children,
-    className = '',
+    className = "",
   },
-  ref
+  ref,
 ) {
   const { fieldErrors } = useFormContext();
-  
-  const fieldStatus = status || (fieldErrors[name || ''] ? 'error' : 'default');
-  const fieldError = errorMessage || fieldErrors[name || ''];
+
+  const fieldStatus = status || (fieldErrors[name || ""] ? "error" : "default");
+  const fieldError = errorMessage || fieldErrors[name || ""];
 
   const classes = [
-    'form-field',
+    "form-field",
     `form-field-${fieldStatus}`,
-    required && 'form-field-required',
+    required && "form-field-required",
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <FormFieldContext.Provider value={{ name, status: fieldStatus, errorMessage: fieldError }}>
+    <FormFieldContext.Provider
+      value={{ name, status: fieldStatus, errorMessage: fieldError }}
+    >
       <div ref={ref} className={classes}>
         {label && (
           <label className="form-label">
             {label}
-            {required && <span className="form-required-mark" aria-hidden="true">*</span>}
+            {required && (
+              <span className="form-required-mark" aria-hidden="true">
+                *
+              </span>
+            )}
           </label>
         )}
         <div className="form-control">
@@ -193,10 +206,10 @@ Form.Field = Field;
 
 // ============ Actions Component ============
 
-export const Actions: React.FC<FormActionsProps> = ({ 
-  children, 
-  className = '', 
-  align = 'right' 
+export const Actions: React.FC<FormActionsProps> = ({
+  children,
+  className = "",
+  align = "right",
 }) => {
   return (
     <div className={`form-actions form-actions-${align} ${className}`}>
@@ -215,41 +228,47 @@ export function useForm<T extends Record<string, unknown>>(options?: {
   validate?: (values: T) => Record<string, string>;
 }) {
   const { initialValues, onSubmit, validate } = options || {};
-  const [values, setValues] = useState<T>(initialValues || {} as T);
+  const [values, setValues] = useState<T>(initialValues || ({} as T));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = useCallback((name: keyof T, value: unknown) => {
-    setValues(prev => ({ ...prev, [name]: value }));
-    // 清除错误
-    if (errors[name]) {
-      setErrors(prev => {
-        const { [name]: _, ...rest } = prev;
-        return rest;
-      });
-    }
-  }, [errors]);
-
-  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    
-    if (validate) {
-      const validationErrors = validate(values);
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
+  const handleChange = useCallback(
+    (name: keyof T, value: unknown) => {
+      setValues((prev) => ({ ...prev, [name]: value }));
+      // 清除错误
+      if (errors[name]) {
+        setErrors((prev) => {
+          const { [name]: _, ...rest } = prev;
+          return rest;
+        });
       }
-    }
+    },
+    [errors],
+  );
 
-    if (!onSubmit) return;
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
 
-    setIsSubmitting(true);
-    try {
-      await onSubmit(values);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [values, validate, onSubmit]);
+      if (validate) {
+        const validationErrors = validate(values);
+        if (Object.keys(validationErrors).length > 0) {
+          setErrors(validationErrors);
+          return;
+        }
+      }
+
+      if (!onSubmit) return;
+
+      setIsSubmitting(true);
+      try {
+        await onSubmit(values);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [values, validate, onSubmit],
+  );
 
   return {
     values,

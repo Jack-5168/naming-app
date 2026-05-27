@@ -1,5 +1,5 @@
 // 简化的 A/B 测试服务 - 修复类型错误
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -41,7 +41,10 @@ export function initializeABTest(testId: string): void {
   // 简化实现
 }
 
-export function assignUserToVariant(userId: string, variants: ABTestVariant[]): string {
+export function assignUserToVariant(
+  userId: string,
+  variants: ABTestVariant[],
+): string {
   // 简化实现，返回第一个 variant
-  return variants[0]?.variantId || 'control';
+  return variants[0]?.variantId || "control";
 }

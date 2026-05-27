@@ -3,7 +3,7 @@
  * 负责监控 LLM 使用成本，提供预算控制和降级策略
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export interface CostControlConfig {
   budget: {
@@ -48,14 +48,14 @@ export const COST_CONTROL: CostControlConfig = {
     alertThreshold: 0.8, // 80% 时告警
   },
   modelStrategy: {
-    basic_report: { model: 'seed-2-0-pro', maxTokens: 1500 },
-    pro_report: { model: 'seed-2-0-pro', maxTokens: 3500 },
-    master_report: { model: 'seed-2-0-pro', maxTokens: 5000 },
+    basic_report: { model: "seed-2-0-pro", maxTokens: 1500 },
+    pro_report: { model: "seed-2-0-pro", maxTokens: 3500 },
+    master_report: { model: "seed-2-0-pro", maxTokens: 5000 },
   },
   fallback: {
     enabled: true,
     maxRetries: 2,
-    fallbackModel: 'claude-haiku',
+    fallbackModel: "claude-haiku",
   },
 };
 
@@ -105,8 +105,8 @@ export function recordUsage(record: UsageRecord): void {
 
     if (!dailyAlertsSent.has(alertKey)) {
       dailyAlertsSent.add(alertKey);
-      costEvents.emit('budgetAlert', {
-        type: 'daily',
+      costEvents.emit("budgetAlert", {
+        type: "daily",
         percentage: status.dailyPercentage,
         used: status.dailyUsed,
         limit: COST_CONTROL.budget.dailyLimit,
@@ -117,8 +117,8 @@ export function recordUsage(record: UsageRecord): void {
 
     if (!monthlyAlertsSent.has(monthKey)) {
       monthlyAlertsSent.add(monthKey);
-      costEvents.emit('budgetAlert', {
-        type: 'monthly',
+      costEvents.emit("budgetAlert", {
+        type: "monthly",
         percentage: status.monthlyPercentage,
         used: status.monthlyUsed,
         limit: COST_CONTROL.budget.monthlyLimit,
@@ -153,8 +153,9 @@ export function getBudgetStatus(): BudgetStatus {
     monthlyRemaining: COST_CONTROL.budget.monthlyLimit - monthlyUsed,
     dailyPercentage,
     monthlyPercentage,
-    isAlertTriggered: dailyPercentage >= COST_CONTROL.budget.alertThreshold
-                      || monthlyPercentage >= COST_CONTROL.budget.alertThreshold,
+    isAlertTriggered:
+      dailyPercentage >= COST_CONTROL.budget.alertThreshold ||
+      monthlyPercentage >= COST_CONTROL.budget.alertThreshold,
   };
 }
 
@@ -164,14 +165,23 @@ export function getBudgetStatus(): BudgetStatus {
 export function isWithinBudget(estimatedCost: number): boolean {
   const status = getBudgetStatus();
 
-  return status.dailyRemaining >= estimatedCost && status.monthlyRemaining >= estimatedCost;
+  return (
+    status.dailyRemaining >= estimatedCost &&
+    status.monthlyRemaining >= estimatedCost
+  );
 }
 
 /**
  * 获取报告类型的模型策略
  */
-export function getModelStrategy(reportType: string): { model: string; maxTokens: number } {
-  const strategy = COST_CONTROL.modelStrategy[`${reportType}_report` as keyof typeof COST_CONTROL.modelStrategy];
+export function getModelStrategy(reportType: string): {
+  model: string;
+  maxTokens: number;
+} {
+  const strategy =
+    COST_CONTROL.modelStrategy[
+      `${reportType}_report` as keyof typeof COST_CONTROL.modelStrategy
+    ];
 
   return strategy || COST_CONTROL.modelStrategy.basic_report;
 }
@@ -180,7 +190,9 @@ export function getModelStrategy(reportType: string): { model: string; maxTokens
  * 获取降级模型
  */
 export function getFallbackModel(): string | null {
-  return COST_CONTROL.fallback.enabled ? COST_CONTROL.fallback.fallbackModel : null;
+  return COST_CONTROL.fallback.enabled
+    ? COST_CONTROL.fallback.fallbackModel
+    : null;
 }
 
 /**
@@ -194,7 +206,7 @@ export function getMaxRetries(): number {
  * 清理旧数据（保留最近 30 天）
  */
 export function cleanupOldRecords(): void {
-  const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
   const index = usageRecords.findIndex((r) => r.timestamp >= thirtyDaysAgo);
 
   if (index > 0) {
@@ -214,7 +226,10 @@ export function cleanupOldRecords(): void {
 /**
  * 导出使用记录（用于分析）
  */
-export function exportUsageRecords(startDate?: number, endDate?: number): UsageRecord[] {
+export function exportUsageRecords(
+  startDate?: number,
+  endDate?: number,
+): UsageRecord[] {
   return usageRecords.filter((r) => {
     if (startDate && r.timestamp < startDate) {
       return false;
@@ -229,9 +244,12 @@ export function exportUsageRecords(startDate?: number, endDate?: number): UsageR
 }
 
 // 每天午夜自动清理
-setInterval(() => {
-  cleanupOldRecords();
-}, 24 * 60 * 60 * 1000);
+setInterval(
+  () => {
+    cleanupOldRecords();
+  },
+  24 * 60 * 60 * 1000,
+);
 
 export default {
   COST_CONTROL,

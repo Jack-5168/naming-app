@@ -8,14 +8,14 @@
  * 4. 边界条件处理正确性
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from "@jest/globals";
 import {
   StabilityCalculator,
   calculateStability,
-} from '../src/services/stability-calculator';
-import { TestResult, StabilityResult } from '../src/services/stability-types';
+} from "../src/services/stability-calculator";
+import { TestResult, StabilityResult } from "../src/services/stability-types";
 
-describe('StabilityCalculator', () => {
+describe("StabilityCalculator", () => {
   let calculator: StabilityCalculator;
 
   beforeEach(() => {
@@ -78,8 +78,8 @@ describe('StabilityCalculator', () => {
     return tests;
   }
 
-  describe('边界条件处理', () => {
-    it('测试次数 < 3 时返回 insufficient_data', async () => {
+  describe("边界条件处理", () => {
+    it("测试次数 < 3 时返回 insufficient_data", async () => {
       const userId = 1;
       const tests: TestResult[] = [
         createTestResult(userId, Date.now(), {
@@ -100,37 +100,37 @@ describe('StabilityCalculator', () => {
 
       const result = await calculator.calculateStability(userId, tests);
 
-      expect(result.status).toBe('insufficient_data');
-      expect(result.stabilityWarning).toContain('测试次数不足');
-      expect(result.stabilityProbabilityDisplay).toBe('数据不足');
+      expect(result.status).toBe("insufficient_data");
+      expect(result.stabilityWarning).toContain("测试次数不足");
+      expect(result.stabilityProbabilityDisplay).toBe("数据不足");
     });
 
-    it('测试次数 3-5 次时返回 evolving 状态和范围值', async () => {
+    it("测试次数 3-5 次时返回 evolving 状态和范围值", async () => {
       const userId = 2;
       const tests = createStableTestData(userId, 4);
 
       const result = await calculator.calculateStability(userId, tests);
 
-      expect(result.status).toBe('evolving');
+      expect(result.status).toBe("evolving");
       expect(result.isRange).toBe(true);
       expect(result.stabilityProbabilityDisplay).toMatch(/\d+%~\d+%/);
-      expect(result.stabilityWarning).toContain('测试次数较少');
+      expect(result.stabilityWarning).toContain("测试次数较少");
     });
 
-    it('测试次数 >= 6 次时返回精确值', async () => {
+    it("测试次数 >= 6 次时返回精确值", async () => {
       const userId = 3;
       const tests = createStableTestData(userId, 10);
 
       const result = await calculator.calculateStability(userId, tests);
 
-      expect(['stable', 'evolving', 'unstable']).toContain(result.status);
+      expect(["stable", "evolving", "unstable"]).toContain(result.status);
       expect(result.isRange).toBe(false);
       expect(result.stabilityProbabilityDisplay).toMatch(/\d+%/);
     });
   });
 
-  describe('稳定性指数计算', () => {
-    it('稳定数据的稳定性指数应接近 1', async () => {
+  describe("稳定性指数计算", () => {
+    it("稳定数据的稳定性指数应接近 1", async () => {
       const userId = 4;
       const tests = createStableTestData(userId, 10);
 
@@ -140,7 +140,7 @@ describe('StabilityCalculator', () => {
       expect(result.stabilityIndex).toBeLessThanOrEqual(1);
     });
 
-    it('不稳定数据的稳定性指数应较低', async () => {
+    it("不稳定数据的稳定性指数应较低", async () => {
       const userId = 5;
       const tests = createUnstableTestData(userId, 10);
 
@@ -150,7 +150,7 @@ describe('StabilityCalculator', () => {
       expect(result.stabilityIndex).toBeGreaterThanOrEqual(0);
     });
 
-    it('稳定性指数范围在 0-1 之间', async () => {
+    it("稳定性指数范围在 0-1 之间", async () => {
       const userId = 6;
       const tests = createStableTestData(userId, 10);
 
@@ -161,8 +161,8 @@ describe('StabilityCalculator', () => {
     });
   });
 
-  describe('Monte Carlo 模拟', () => {
-    it('Bootstrap 重采样次数正确', async () => {
+  describe("Monte Carlo 模拟", () => {
+    it("Bootstrap 重采样次数正确", async () => {
       const userId = 7;
       const tests = createStableTestData(userId, 10);
       const testCalculator = new StabilityCalculator({
@@ -174,7 +174,7 @@ describe('StabilityCalculator', () => {
       expect(result.metadata.bootstrapIterations).toBe(500);
     });
 
-    it('模拟结果具有合理的分布', async () => {
+    it("模拟结果具有合理的分布", async () => {
       const userId = 8;
       const tests = createStableTestData(userId, 20);
 
@@ -190,16 +190,16 @@ describe('StabilityCalculator', () => {
       // 稳定性指数的标准差应该较小 (结果一致)
       const mean = results.reduce((a, b) => a + b, 0) / results.length;
       const std = Math.sqrt(
-        results.reduce((sum, val) => sum + (val - mean) ** 2, 0)
-          / results.length,
+        results.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
+          results.length,
       );
 
       expect(std).toBeLessThan(0.05); // 波动应小于 5%
     });
   });
 
-  describe('置信区间计算', () => {
-    it('置信区间范围合理', async () => {
+  describe("置信区间计算", () => {
+    it("置信区间范围合理", async () => {
       const userId = 9;
       const tests = createStableTestData(userId, 20);
 
@@ -213,7 +213,7 @@ describe('StabilityCalculator', () => {
       expect(upper - lower).toBeLessThan(0.5); // 区间宽度应合理
     });
 
-    it('置信区间覆盖真实值', async () => {
+    it("置信区间覆盖真实值", async () => {
       const userId = 10;
       const tests = createStableTestData(userId, 30);
 
@@ -227,8 +227,8 @@ describe('StabilityCalculator', () => {
     });
   });
 
-  describe('稳定性概率计算', () => {
-    it('稳定数据的稳定性概率应较高', async () => {
+  describe("稳定性概率计算", () => {
+    it("稳定数据的稳定性概率应较高", async () => {
       const userId = 11;
       const tests = createStableTestData(userId, 20);
 
@@ -237,7 +237,7 @@ describe('StabilityCalculator', () => {
       expect(result.stabilityProbability).toBeGreaterThan(70);
     });
 
-    it('不稳定数据的稳定性概率应较低', async () => {
+    it("不稳定数据的稳定性概率应较低", async () => {
       const userId = 12;
       const tests = createUnstableTestData(userId, 20);
 
@@ -247,46 +247,47 @@ describe('StabilityCalculator', () => {
     });
   });
 
-  describe('各维度统计', () => {
-    it('返回所有五个维度的统计信息', async () => {
+  describe("各维度统计", () => {
+    it("返回所有五个维度的统计信息", async () => {
       const userId = 13;
       const tests = createStableTestData(userId, 10);
 
       const result = await calculator.calculateStability(userId, tests);
 
-      expect(result.perDimension).toHaveProperty('O');
-      expect(result.perDimension).toHaveProperty('C');
-      expect(result.perDimension).toHaveProperty('E');
-      expect(result.perDimension).toHaveProperty('A');
-      expect(result.perDimension).toHaveProperty('N');
+      expect(result.perDimension).toHaveProperty("O");
+      expect(result.perDimension).toHaveProperty("C");
+      expect(result.perDimension).toHaveProperty("E");
+      expect(result.perDimension).toHaveProperty("A");
+      expect(result.perDimension).toHaveProperty("N");
 
       // 每个维度都应包含 mean, std, cv
-      for (const dim of ['O', 'C', 'E', 'A', 'N']) {
+      for (const dim of ["O", "C", "E", "A", "N"]) {
         const dimStats = (result.perDimension as any)[dim];
 
-        expect(dimStats).toHaveProperty('mean');
-        expect(dimStats).toHaveProperty('std');
-        expect(dimStats).toHaveProperty('cv');
+        expect(dimStats).toHaveProperty("mean");
+        expect(dimStats).toHaveProperty("std");
+        expect(dimStats).toHaveProperty("cv");
       }
     });
 
-    it('变异系数计算正确 (CV = std / mean)', async () => {
+    it("变异系数计算正确 (CV = std / mean)", async () => {
       const userId = 14;
       const tests = createStableTestData(userId, 10);
 
       const result = await calculator.calculateStability(userId, tests);
 
-      for (const dim of ['O', 'C', 'E', 'A', 'N']) {
+      for (const dim of ["O", "C", "E", "A", "N"]) {
         const dimStats = (result.perDimension as any)[dim];
-        const expectedCV = dimStats.mean !== 0 ? dimStats.std / dimStats.mean : 0;
+        const expectedCV =
+          dimStats.mean !== 0 ? dimStats.std / dimStats.mean : 0;
 
         expect(Math.abs(dimStats.cv - expectedCV)).toBeLessThan(0.0001);
       }
     });
   });
 
-  describe('性能测试', () => {
-    it('计算时间 < 500ms', async () => {
+  describe("性能测试", () => {
+    it("计算时间 < 500ms", async () => {
       const userId = 15;
       const tests = createStableTestData(userId, 50);
 
@@ -298,7 +299,7 @@ describe('StabilityCalculator', () => {
       expect(calculationTime).toBeLessThan(500);
     });
 
-    it('支持并发计算', async () => {
+    it("支持并发计算", async () => {
       const promises = [];
 
       for (let i = 0; i < 10; i++) {
@@ -317,21 +318,21 @@ describe('StabilityCalculator', () => {
     });
   });
 
-  describe('便捷函数', () => {
-    it('calculateStability 函数正常工作', async () => {
+  describe("便捷函数", () => {
+    it("calculateStability 函数正常工作", async () => {
       const userId = 16;
       const tests = createStableTestData(userId, 10);
 
       const result = await calculateStability(userId, tests);
 
-      expect(result).toHaveProperty('stabilityIndex');
-      expect(result).toHaveProperty('stabilityProbability');
-      expect(result).toHaveProperty('status');
+      expect(result).toHaveProperty("stabilityIndex");
+      expect(result).toHaveProperty("stabilityProbability");
+      expect(result).toHaveProperty("status");
     });
   });
 
-  describe('警告信息', () => {
-    it('数据不足时生成警告', async () => {
+  describe("警告信息", () => {
+    it("数据不足时生成警告", async () => {
       const userId = 17;
       const tests: TestResult[] = [
         createTestResult(userId, Date.now(), {
@@ -346,10 +347,10 @@ describe('StabilityCalculator', () => {
       const result = await calculator.calculateStability(userId, tests);
 
       expect(result.stabilityWarning).not.toBeNull();
-      expect(result.stabilityWarning).toContain('测试次数不足');
+      expect(result.stabilityWarning).toContain("测试次数不足");
     });
 
-    it('稳定数据无警告', async () => {
+    it("稳定数据无警告", async () => {
       const userId = 18;
       const tests = createStableTestData(userId, 20);
 
@@ -360,8 +361,8 @@ describe('StabilityCalculator', () => {
   });
 });
 
-describe('精度验证', () => {
-  it('与真实重测数据一致性 > 80%', async () => {
+describe("精度验证", () => {
+  it("与真实重测数据一致性 > 80%", async () => {
     // 模拟真实重测数据：同一用户多次测试结果应高度相关
     const calculator = new StabilityCalculator({
       bootstrapIterations: 5000,
@@ -393,7 +394,7 @@ describe('精度验证', () => {
     expect(result.stabilityIndex).toBeGreaterThan(0.8);
   });
 
-  it('置信区间覆盖率 > 95%', async () => {
+  it("置信区间覆盖率 > 95%", async () => {
     const calculator = new StabilityCalculator({
       bootstrapIterations: 10000,
     });
@@ -409,10 +410,7 @@ describe('精度验证', () => {
       const result = await calculator.calculateStability(userId, tests);
       const [lower, upper] = result.confidenceBand;
 
-      if (
-        result.stabilityIndex >= lower
-        && result.stabilityIndex <= upper
-      ) {
+      if (result.stabilityIndex >= lower && result.stabilityIndex <= upper) {
         coveredCount++;
       }
     }

@@ -1,8 +1,8 @@
-import { View, Text, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
-import Paywall from '../../components/Paywall';
-import './report.css';
+import { View, Text, Button, ScrollView } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { useState, useEffect } from "react";
+import Paywall from "../../components/Paywall";
+import "./report.css";
 
 const Report = () => {
   const [report, setReport] = useState(null);
@@ -18,7 +18,7 @@ const Report = () => {
 
   const fetchReport = async (id) => {
     try {
-      const token = Taro.getStorageSync('accessToken');
+      const token = Taro.getStorageSync("accessToken");
       const res = await Taro.request({
         url: `http://localhost:3000/api/v1/reports/${id}`,
         header: {
@@ -34,8 +34,8 @@ const Report = () => {
       }
     } catch (error) {
       Taro.showToast({
-        title: '加载报告失败',
-        icon: 'none',
+        title: "加载报告失败",
+        icon: "none",
       });
       setLoading(false);
     }

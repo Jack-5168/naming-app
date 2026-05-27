@@ -107,9 +107,7 @@ class ModuleLoader {
 
   // 预加载多个模块
   async preload(modulePaths) {
-    return Promise.all(
-      modulePaths.map((path) => this.load(path)),
-    );
+    return Promise.all(modulePaths.map((path) => this.load(path)));
   }
 
   // 清除缓存
@@ -133,11 +131,7 @@ async function initChart() {
 
 // 预加载（用户可能需要的模块）
 async function preloadUserActions() {
-  await loader.preload([
-    './analytics.js',
-    './export.js',
-    './print.js',
-  ]);
+  await loader.preload(['./analytics.js', './export.js', './print.js']);
 }
 
 // ============================================
@@ -157,15 +151,17 @@ class ImageLoader {
   // 预加载关键图片
   preload(sources) {
     return Promise.all(
-      sources.map((src) => new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          this.loaded.add(src);
-          resolve(img);
-        };
-        img.onerror = reject;
-        img.src = src;
-      })),
+      sources.map(
+        (src) => new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            this.loaded.add(src);
+            resolve(img);
+          };
+          img.onerror = reject;
+          img.src = src;
+        }),
+      ),
     );
   }
 
@@ -221,10 +217,7 @@ class ImageLoader {
 const imageLoader = new ImageLoader();
 
 // 预加载首屏关键图片
-imageLoader.preload([
-  '/images/hero.jpg',
-  '/images/logo.png',
-]);
+imageLoader.preload(['/images/hero.jpg', '/images/logo.png']);
 
 // 懒加载其他图片
 document.querySelectorAll('img[data-src]').forEach((img) => {

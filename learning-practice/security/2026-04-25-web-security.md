@@ -52,12 +52,12 @@ const storedXssVulnerable = {
   // 后端：直接存入
   saveComment(userId, comment) {
     // ❌ 危险：未做任何处理
-    db.run('INSERT INTO comments VALUES (?, ?)', [userId, comment]);
+    db.run("INSERT INTO comments VALUES (?, ?)", [userId, comment]);
   },
 
   // 前端：直接渲染
   renderComments(comments) {
-    const container = document.getElementById('comments');
+    const container = document.getElementById("comments");
     comments.forEach((c) => {
       // ❌ 危险：innerHTML 执行脚本
       container.innerHTML += `<div class="comment">${c.content}</div>`;
@@ -113,11 +113,11 @@ const domBasedXssVulnerable = {
   init() {
     // ❌ 危险：从 hash 读取并直接插入
     const hash = decodeURIComponent(location.hash.slice(1));
-    document.getElementById('content').innerHTML = hash;
+    document.getElementById("content").innerHTML = hash;
 
     // ❌ 危险：从 URL 参数读取
     const params = new URLSearchParams(location.search);
-    const name = params.get('name');
+    const name = params.get("name");
     document.write(`<h1>欢迎, ${name}!</h1>`);
 
     // ❌ 危险：eval location 数据
@@ -125,7 +125,7 @@ const domBasedXssVulnerable = {
     eval(action);
 
     // ❌ 危险：动态创建脚本
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = location.search.slice(1); // ?https://evil.com/malware.js
     document.head.appendChild(script);
   },
@@ -220,26 +220,26 @@ const XSSVectors = {
  * HTML 实体编码 — 防御 HTML 内容和属性注入
  */
 function htmlEncode(str) {
-  if (typeof str !== 'string') return '';
+  if (typeof str !== "string") return "";
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /**
  * JavaScript 字符串编码 — 防御 JS 上下文注入
  */
 function jsEncode(str) {
-  if (typeof str !== 'string') return '';
+  if (typeof str !== "string") return "";
   return str.replace(/[^\w]/g, (char) => {
     const code = char.charCodeAt(0);
     if (code < 256) {
-      return `\\x${code.toString(16).padStart(2, '0')}`;
+      return `\\x${code.toString(16).padStart(2, "0")}`;
     }
-    return `\\u${code.toString(16).padStart(4, '0')}`;
+    return `\\u${code.toString(16).padStart(4, "0")}`;
   });
 }
 
@@ -247,7 +247,7 @@ function jsEncode(str) {
  * URL 编码 — 防御 URL 上下文注入
  */
 function urlEncode(str) {
-  if (typeof str !== 'string') return '';
+  if (typeof str !== "string") return "";
   return encodeURIComponent(str);
 }
 
@@ -255,7 +255,7 @@ function urlEncode(str) {
  * CSS 编码 — 防御 CSS 上下文注入
  */
 function cssEncode(str) {
-  if (typeof str !== 'string') return '';
+  if (typeof str !== "string") return "";
   return str.replace(/[^\w-]/g, (char) => {
     const code = char.charCodeAt(0);
     return `\\${code.toString(16)} `;
@@ -285,7 +285,7 @@ const SafeDOM = {
     }
     for (const [key, value] of Object.entries(attributes)) {
       // ✅ 使用 setAttribute（比直接赋值属性安全）
-      if (key.startsWith('on')) {
+      if (key.startsWith("on")) {
         // ❌ 禁止动态设置事件处理器
         console.warn(`Blocked event handler: ${key}`);
         continue;
@@ -301,7 +301,7 @@ const SafeDOM = {
   renderTemplate(template, data) {
     // ✅ 使用 DOMParser 解析模板，然后安全填充
     const parser = new DOMParser();
-    const doc = parser.parseFromString(template, 'text/html');
+    const doc = parser.parseFromString(template, "text/html");
 
     for (const [key, value] of Object.entries(data)) {
       const placeholders = doc.querySelectorAll(`[data-bind="${key}"]`);
@@ -317,18 +317,18 @@ const SafeDOM = {
    * 安全 URL 设置（验证协议白名单）
    */
   setHref(element, url) {
-    const allowedProtocols = ['http:', 'https:', 'mailto:', 'tel:'];
+    const allowedProtocols = ["http:", "https:", "mailto:", "tel:"];
     try {
       const parsed = new URL(url, location.href);
       if (allowedProtocols.includes(parsed.protocol)) {
         element.href = url; // ✅ 协议白名单验证通过
       } else {
         console.warn(`Blocked URL protocol: ${parsed.protocol}`);
-        element.href = '#';
+        element.href = "#";
       }
     } catch {
-      console.warn('Invalid URL');
-      element.href = '#';
+      console.warn("Invalid URL");
+      element.href = "#";
     }
   },
 };
@@ -353,19 +353,25 @@ const CSPHeaders = {
     base-uri 'self';
     form-action 'self';
     upgrade-insecure-requests;
-  `.replace(/\s+/g, ' ').trim(),
+  `
+    .replace(/\s+/g, " ")
+    .trim(),
 
   // 宽松 CSP — 开发环境
   development: `
     default-src 'self' 'unsafe-inline' 'unsafe-eval';
-  `.replace(/\s+/g, ' ').trim(),
+  `
+    .replace(/\s+/g, " ")
+    .trim(),
 
   // 仅报告模式 — 迁移期使用
   reportOnly: `
     default-src 'self';
     script-src 'self';
     report-uri /csp-report;
-  `.replace(/\s+/g, ' ').trim(),
+  `
+    .replace(/\s+/g, " ")
+    .trim(),
 };
 
 // ==================== XSS 防御：输入验证 + 输出编码 ====================
@@ -383,7 +389,7 @@ class XSSDefense {
       url: (v) => {
         try {
           const url = new URL(v);
-          return ['http:', 'https:'].includes(url.protocol);
+          return ["http:", "https:"].includes(url.protocol);
         } catch {
           return false;
         }
@@ -407,15 +413,15 @@ class XSSDefense {
   encode(context, value) {
     const str = String(value);
     switch (context) {
-      case 'html':
+      case "html":
         return htmlEncode(str);
-      case 'js':
+      case "js":
         return jsEncode(str);
-      case 'url':
+      case "url":
         return urlEncode(str);
-      case 'css':
+      case "css":
         return cssEncode(str);
-      case 'attribute':
+      case "attribute":
         return htmlEncode(str); // 属性值也用 HTML 编码
       default:
         return htmlEncode(str);
@@ -427,8 +433,8 @@ class XSSDefense {
    */
   safeRender(template, data, contextMap) {
     return template.replace(/\{(\w+)\}/g, (_, key) => {
-      const context = contextMap[key] || 'html';
-      const value = data[key] ?? '';
+      const context = contextMap[key] || "html";
+      const value = data[key] ?? "";
       return this.encode(context, value);
     });
   }
@@ -438,26 +444,26 @@ class XSSDefense {
 const defense = new XSSDefense();
 
 // 输入验证
-console.log(defense.validate('username', 'alice123')); // true
-console.log(defense.validate('username', '<script>')); // false
-console.log(defense.validate('email', 'test@example.com')); // true
+console.log(defense.validate("username", "alice123")); // true
+console.log(defense.validate("username", "<script>")); // false
+console.log(defense.validate("email", "test@example.com")); // true
 
 // 输出编码
-console.log(defense.encode('html', '<script>alert(1)</script>'));
+console.log(defense.encode("html", "<script>alert(1)</script>"));
 // → &lt;script&gt;alert(1)&lt;/script&gt;
 
-console.log(defense.encode('js', "'; alert('xss'); //"));
+console.log(defense.encode("js", "'; alert('xss'); //"));
 // → \\x27\\x3b alert(\\x27xss\\x27)\\x3b \\x2f\\x2f
 
 // 安全模板渲染
 const result = defense.safeRender(
   '<h1>{title}</h1><p>{content}</p><a href="{link}">Link</a>',
   {
-    title: '<b>Hello</b>',
-    content: '<script>alert(1)</script>',
-    link: 'javascript:alert(1)',
+    title: "<b>Hello</b>",
+    content: "<script>alert(1)</script>",
+    link: "javascript:alert(1)",
   },
-  { title: 'html', content: 'html', link: 'url' }
+  { title: "html", content: "html", link: "url" },
 );
 console.log(result);
 // → <h1>&lt;b&gt;Hello&lt;/b&gt;</h1><p>&lt;script&gt;alert(1)&lt;/script&gt;</p><a href="javascript:alert(1)">Link</a>
@@ -475,14 +481,14 @@ const Exercise1 = {
 
     // ❌ 漏洞代码
     function vulnerableSave(comment) {
-      db.run('INSERT INTO comments (content) VALUES (?)', [comment]);
+      db.run("INSERT INTO comments (content) VALUES (?)", [comment]);
     }
 
     function vulnerableRender(comments) {
-      const container = document.getElementById('comments');
+      const container = document.getElementById("comments");
       container.innerHTML = comments
         .map((c) => `<div class="comment">${c.content}</div>`)
-        .join('');
+        .join("");
     }
 
     return { maliciousComment, vulnerableSave, vulnerableRender };
@@ -493,19 +499,19 @@ const Exercise1 = {
     // ✅ 防御 1: 输入净化
     function sanitizeInput(comment) {
       return comment
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     // ✅ 防御 2: 安全渲染
     function safeRender(comments) {
-      const container = document.getElementById('comments');
+      const container = document.getElementById("comments");
       comments.forEach((c) => {
-        const div = document.createElement('div');
-        div.className = 'comment';
+        const div = document.createElement("div");
+        div.className = "comment";
         div.textContent = c.content; // ✅ textContent 自动转义
         container.appendChild(div);
       });
@@ -525,12 +531,12 @@ const Exercise2 = {
   attack() {
     // 攻击者构造恶意 URL
     const maliciousUrl =
-      'https://example.com/page#<img src=x onerror=alert(document.cookie)>';
+      "https://example.com/page#<img src=x onerror=alert(document.cookie)>";
 
     // ❌ 漏洞代码
     function vulnerableInit() {
       const hash = decodeURIComponent(location.hash.slice(1));
-      document.getElementById('content').innerHTML = hash;
+      document.getElementById("content").innerHTML = hash;
     }
 
     return { maliciousUrl, vulnerableInit };
@@ -540,7 +546,7 @@ const Exercise2 = {
     // ✅ 防御: 永远不要将 URL 数据直接插入 DOM
     function safeInit() {
       const hash = decodeURIComponent(location.hash.slice(1));
-      const content = document.getElementById('content');
+      const content = document.getElementById("content");
 
       // ✅ 方案 1: 使用 textContent
       content.textContent = hash;
@@ -552,7 +558,6 @@ const Exercise2 = {
     return { safeInit };
   },
 };
-
 ```
 
 ---
@@ -630,17 +635,17 @@ const SameSiteDefense = {
    * Express 中设置 SameSite Cookie
    */
   setupExpressSession(app) {
-    const session = require('express-session');
+    const session = require("express-session");
     app.use(
       session({
-        secret: 'your-secret-key',
+        secret: "your-secret-key",
         cookie: {
-          sameSite: 'lax', // ✅ 推荐 Lax
+          sameSite: "lax", // ✅ 推荐 Lax
           secure: true, // ✅ 仅 HTTPS
           httpOnly: true, // ✅ 禁止 JS 访问
           maxAge: 24 * 60 * 60 * 1000,
         },
-      })
+      }),
     );
   },
 
@@ -649,8 +654,8 @@ const SameSiteDefense = {
    */
   setCookie(res, name, value) {
     res.setHeader(
-      'Set-Cookie',
-      `${name}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/`
+      "Set-Cookie",
+      `${name}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/`,
     );
   },
 };
@@ -671,35 +676,33 @@ const CSRFToken = {
    * 生成 CSRF Token
    */
   generate() {
-    const crypto = require('crypto');
-    return crypto.randomBytes(32).toString('hex');
+    const crypto = require("crypto");
+    return crypto.randomBytes(32).toString("hex");
   },
 
   /**
    * Express 中间件：生成并验证 Token
    */
   middleware() {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
 
     return (req, res, next) => {
       // 生成 Token（如果不存在）
       if (!req.session.csrfToken) {
-        req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+        req.session.csrfToken = crypto.randomBytes(32).toString("hex");
       }
 
       // 将 Token 暴露给模板
       res.locals.csrfToken = req.session.csrfToken;
 
       // 验证非安全方法的请求
-      const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+      const unsafeMethods = ["POST", "PUT", "PATCH", "DELETE"];
       if (unsafeMethods.includes(req.method)) {
         const token =
-          req.body._csrf ||
-          req.headers['x-csrf-token'] ||
-          req.query._csrf;
+          req.body._csrf || req.headers["x-csrf-token"] || req.query._csrf;
 
         if (!token || token !== req.session.csrfToken) {
-          return res.status(403).json({ error: 'Invalid CSRF token' });
+          return res.status(403).json({ error: "Invalid CSRF token" });
         }
       }
 
@@ -728,11 +731,11 @@ const CSRFToken = {
     const token = document.querySelector('meta[name="csrf-token"]')?.content;
     return fetch(url, {
       ...options,
-      credentials: 'same-origin',
+      credentials: "same-origin",
       headers: {
         ...options.headers,
-        'Content-Type': 'application/json',
-        'x-csrf-token': token || '',
+        "Content-Type": "application/json",
+        "x-csrf-token": token || "",
       },
     });
   },
@@ -752,25 +755,25 @@ const OriginDefense = {
    */
   middleware(allowedOrigins = []) {
     return (req, res, next) => {
-      const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+      const unsafeMethods = ["POST", "PUT", "PATCH", "DELETE"];
       if (!unsafeMethods.includes(req.method)) {
         return next();
       }
 
       const origin = req.headers.origin || req.headers.referer;
       if (!origin) {
-        return res.status(403).json({ error: 'Missing Origin header' });
+        return res.status(403).json({ error: "Missing Origin header" });
       }
 
       const originHost = new URL(origin).hostname;
       const isAllowed = allowedOrigins.some(
         (allowed) =>
           originHost === new URL(allowed).hostname ||
-          originHost.endsWith('.' + new URL(allowed).hostname)
+          originHost.endsWith("." + new URL(allowed).hostname),
       );
 
       if (!isAllowed) {
-        return res.status(403).json({ error: 'Invalid origin' });
+        return res.status(403).json({ error: "Invalid origin" });
       }
 
       next();
@@ -797,12 +800,12 @@ const DoubleSubmitDefense = {
    * 设置 CSRF Cookie
    */
   init(res) {
-    const crypto = require('crypto');
-    const token = crypto.randomBytes(32).toString('hex');
-    res.cookie('XSRF-TOKEN', token, {
+    const crypto = require("crypto");
+    const token = crypto.randomBytes(32).toString("hex");
+    res.cookie("XSRF-TOKEN", token, {
       httpOnly: false, // 需要 JS 读取
       secure: true,
-      sameSite: 'lax',
+      sameSite: "lax",
     });
     return token;
   },
@@ -812,16 +815,16 @@ const DoubleSubmitDefense = {
    */
   middleware() {
     return (req, res, next) => {
-      const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+      const unsafeMethods = ["POST", "PUT", "PATCH", "DELETE"];
       if (!unsafeMethods.includes(req.method)) {
         return next();
       }
 
-      const cookieToken = req.cookies['XSRF-TOKEN'];
-      const headerToken = req.headers['x-xsrf-token'];
+      const cookieToken = req.cookies["XSRF-TOKEN"];
+      const headerToken = req.headers["x-xsrf-token"];
 
       if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-        return res.status(403).json({ error: 'Invalid CSRF token' });
+        return res.status(403).json({ error: "Invalid CSRF token" });
       }
 
       next();
@@ -834,11 +837,11 @@ const DoubleSubmitDefense = {
   setupAxiosInterceptor(axiosInstance) {
     axiosInstance.interceptors.request.use((config) => {
       const token = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('XSRF-TOKEN='))
-        ?.split('=')[1];
+        .split("; ")
+        .find((row) => row.startsWith("XSRF-TOKEN="))
+        ?.split("=")[1];
       if (token) {
-        config.headers['x-xsrf-token'] = token;
+        config.headers["x-xsrf-token"] = token;
       }
       return config;
     });
@@ -867,21 +870,27 @@ const CSRFExercise = {
     // 2. 银行接口没有 CSRF 保护
     // 3. 用户访问了恶意页面
 
-    return { evilPage, successConditions: ['valid_cookie', 'no_csrf_protection', 'user_visits_evil'] };
+    return {
+      evilPage,
+      successConditions: [
+        "valid_cookie",
+        "no_csrf_protection",
+        "user_visits_evil",
+      ],
+    };
   },
 
   // 防御者视角 — 纵深防御
   defend() {
     return {
-      layer1: 'SameSite=Lax Cookie（阻止大部分跨站请求）',
-      layer2: 'CSRF Token（表单/AJAX 必须携带有效 Token）',
-      layer3: 'Origin 验证（检查请求来源）',
-      layer4: 'Double Submit Cookie（无状态 Token 验证）',
-      layer5: '二次确认（敏感操作要求密码/验证码）',
+      layer1: "SameSite=Lax Cookie（阻止大部分跨站请求）",
+      layer2: "CSRF Token（表单/AJAX 必须携带有效 Token）",
+      layer3: "Origin 验证（检查请求来源）",
+      layer4: "Double Submit Cookie（无状态 Token 验证）",
+      layer5: "二次确认（敏感操作要求密码/验证码）",
     };
   },
 };
-
 ```
 
 ---
@@ -1330,43 +1339,43 @@ console.log(validationResult);
 
 const CSPDirectives = {
   // 默认回退 — 未指定指令时的默认值
-  'default-src': "'self'",
+  "default-src": "'self'",
 
   // 脚本来源
-  'script-src': "'self' https://cdn.example.com",
+  "script-src": "'self' https://cdn.example.com",
 
   // 样式来源
-  'style-src': "'self' 'unsafe-inline'",
+  "style-src": "'self' 'unsafe-inline'",
 
   // 图片来源
-  'img-src': "'self' data: https:",
+  "img-src": "'self' data: https:",
 
   // 字体来源
-  'font-src': "'self' https://fonts.gstatic.com",
+  "font-src": "'self' https://fonts.gstatic.com",
 
   // AJAX/Fetch 目标
-  'connect-src': "'self' https://api.example.com",
+  "connect-src": "'self' https://api.example.com",
 
   // iframe 来源
-  'frame-src': "'none'",
+  "frame-src": "'none'",
 
   // object/embed 来源（Flash 等）
-  'object-src': "'none'",
+  "object-src": "'none'",
 
   // base 标签来源
-  'base-uri': "'self'",
+  "base-uri": "'self'",
 
   // 表单提交目标
-  'form-action': "'self'",
+  "form-action": "'self'",
 
   // 框架嵌入限制（替代 X-Frame-Options）
-  'frame-ancestors': "'self'",
+  "frame-ancestors": "'self'",
 
   // 报告端点
-  'report-uri': '/csp-report',
+  "report-uri": "/csp-report",
 
   // 报告端点（新版）
-  'report-to': 'csp-endpoint',
+  "report-to": "csp-endpoint",
 };
 
 // ==================== CSP 策略生成器 ====================
@@ -1384,7 +1393,7 @@ class CSPBuilder {
    * 设置默认来源
    */
   defaultSrc(...sources) {
-    this.directives['default-src'] = sources;
+    this.directives["default-src"] = sources;
     return this;
   }
 
@@ -1392,7 +1401,7 @@ class CSPBuilder {
    * 设置脚本来源
    */
   scriptSrc(...sources) {
-    this.directives['script-src'] = sources;
+    this.directives["script-src"] = sources;
     return this;
   }
 
@@ -1400,7 +1409,7 @@ class CSPBuilder {
    * 设置样式来源
    */
   styleSrc(...sources) {
-    this.directives['style-src'] = sources;
+    this.directives["style-src"] = sources;
     return this;
   }
 
@@ -1408,7 +1417,7 @@ class CSPBuilder {
    * 设置图片来源
    */
   imgSrc(...sources) {
-    this.directives['img-src'] = sources;
+    this.directives["img-src"] = sources;
     return this;
   }
 
@@ -1416,7 +1425,7 @@ class CSPBuilder {
    * 设置连接目标
    */
   connectSrc(...sources) {
-    this.directives['connect-src'] = sources;
+    this.directives["connect-src"] = sources;
     return this;
   }
 
@@ -1424,7 +1433,7 @@ class CSPBuilder {
    * 设置 iframe 来源
    */
   frameSrc(...sources) {
-    this.directives['frame-src'] = sources;
+    this.directives["frame-src"] = sources;
     return this;
   }
 
@@ -1432,7 +1441,7 @@ class CSPBuilder {
    * 禁止 object/embed
    */
   blockObjects() {
-    this.directives['object-src'] = ["'none'"];
+    this.directives["object-src"] = ["'none'"];
     return this;
   }
 
@@ -1440,7 +1449,7 @@ class CSPBuilder {
    * 设置表单提交目标
    */
   formAction(...sources) {
-    this.directives['form-action'] = sources;
+    this.directives["form-action"] = sources;
     return this;
   }
 
@@ -1448,7 +1457,7 @@ class CSPBuilder {
    * 设置框架嵌入限制
    */
   frameAncestors(...sources) {
-    this.directives['frame-ancestors'] = sources;
+    this.directives["frame-ancestors"] = sources;
     return this;
   }
 
@@ -1456,7 +1465,7 @@ class CSPBuilder {
    * 设置报告端点
    */
   reportTo(url) {
-    this.directives['report-to'] = [`"${url}"`];
+    this.directives["report-to"] = [`"${url}"`];
     return this;
   }
 
@@ -1464,11 +1473,11 @@ class CSPBuilder {
    * 使用 nonce 允许内联脚本
    */
   useNonce() {
-    if (!this.directives['script-src']) {
-      this.directives['script-src'] = [];
+    if (!this.directives["script-src"]) {
+      this.directives["script-src"] = [];
     }
-    this.directives['script-src'].push("'nonce-{NONCE}'");
-    this.directives['script-src'].push("'strict-dynamic'");
+    this.directives["script-src"].push("'nonce-{NONCE}'");
+    this.directives["script-src"].push("'strict-dynamic'");
     return this;
   }
 
@@ -1476,7 +1485,7 @@ class CSPBuilder {
    * 升级为 HTTPS
    */
   upgradeInsecure() {
-    this.directives['upgrade-insecure-requests'] = [];
+    this.directives["upgrade-insecure-requests"] = [];
     return this;
   }
 
@@ -1484,7 +1493,7 @@ class CSPBuilder {
    * 禁止 base 标签
    */
   blockBase() {
-    this.directives['base-uri'] = ["'self'"];
+    this.directives["base-uri"] = ["'self'"];
     return this;
   }
 
@@ -1497,10 +1506,10 @@ class CSPBuilder {
       if (sources.length === 0) {
         parts.push(directive);
       } else {
-        parts.push(`${directive} ${sources.join(' ')}`);
+        parts.push(`${directive} ${sources.join(" ")}`);
       }
     }
-    return parts.join('; ');
+    return parts.join("; ");
   }
 
   /**
@@ -1511,16 +1520,16 @@ class CSPBuilder {
 
     return (req, res, next) => {
       // 生成 nonce
-      const crypto = require('crypto');
-      const nonce = crypto.randomBytes(16).toString('base64');
+      const crypto = require("crypto");
+      const nonce = crypto.randomBytes(16).toString("base64");
 
       // 替换 nonce 占位符
       const finalPolicy = policy.replace(/\{NONCE\}/g, nonce);
 
       // 设置响应头
       const headerName = this.reportOnly
-        ? 'Content-Security-Policy-Report-Only'
-        : 'Content-Security-Policy';
+        ? "Content-Security-Policy-Report-Only"
+        : "Content-Security-Policy";
       res.setHeader(headerName, finalPolicy);
 
       // 将 nonce 暴露给模板
@@ -1543,7 +1552,7 @@ const CSPPresets = {
       .defaultSrc("'self'")
       .scriptSrc("'self'")
       .styleSrc("'self'")
-      .imgSrc("'self'", 'data:', 'https:')
+      .imgSrc("'self'", "data:", "https:")
       .fontSrc("'self'")
       .connectSrc("'self'")
       .frameSrc("'none'")
@@ -1563,7 +1572,7 @@ const CSPPresets = {
       .defaultSrc("'self'")
       .useNonce()
       .styleSrc("'self'", "'nonce-{NONCE}'")
-      .imgSrc("'self'", 'data:', 'https:')
+      .imgSrc("'self'", "data:", "https:")
       .connectSrc("'self'")
       .frameSrc("'none'")
       .blockObjects()
@@ -1589,7 +1598,7 @@ const CSPPresets = {
     return builder
       .defaultSrc("'self'")
       .scriptSrc("'self'")
-      .reportTo('/csp-report')
+      .reportTo("/csp-report")
       .build();
   },
 };
@@ -1611,16 +1620,16 @@ const NonceExample = {
    * Express 路由示例
    */
   route(app) {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
 
-    app.get('/page', (req, res) => {
+    app.get("/page", (req, res) => {
       // 生成 nonce
-      const nonce = crypto.randomBytes(16).toString('base64');
+      const nonce = crypto.randomBytes(16).toString("base64");
 
       // 设置 CSP 头
       res.setHeader(
-        'Content-Security-Policy',
-        `default-src 'self'; script-src 'self' 'nonce-${nonce}'`
+        "Content-Security-Policy",
+        `default-src 'self'; script-src 'self' 'nonce-${nonce}'`,
       );
 
       // 渲染页面，内联脚本带 nonce
@@ -1681,15 +1690,15 @@ const CSPReportHandler = {
    * Express 路由：接收 CSP 违规报告
    */
   setup(app) {
-    app.post('/csp-report', (req, res) => {
-      const report = req.body?.['csp-report'] || req.body;
+    app.post("/csp-report", (req, res) => {
+      const report = req.body?.["csp-report"] || req.body;
 
-      console.log('CSP Violation Report:', {
-        violatedDirective: report['violated-directive'],
-        blockedURI: report['blocked-uri'],
-        lineNumber: report['line-number'],
-        sourceFile: report['source-file'],
-        userAgent: req.headers['user-agent'],
+      console.log("CSP Violation Report:", {
+        violatedDirective: report["violated-directive"],
+        blockedURI: report["blocked-uri"],
+        lineNumber: report["line-number"],
+        sourceFile: report["source-file"],
+        userAgent: req.headers["user-agent"],
         referrer: req.headers.referer,
       });
 
@@ -1732,7 +1741,6 @@ const CSPExercise = {
     // - 阻止 eval() ✅
   },
 };
-
 ```
 
 ---
@@ -1763,30 +1771,33 @@ const SecurityMiddleware = {
   headers() {
     return (req, res, next) => {
       // 禁止 MIME 类型嗅探
-      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader("X-Content-Type-Options", "nosniff");
 
       // XSS 保护（旧浏览器）
-      res.setHeader('X-XSS-Protection', '0'); // 现代浏览器用 CSP 替代
+      res.setHeader("X-XSS-Protection", "0"); // 现代浏览器用 CSP 替代
 
       // 禁止嵌入框架
-      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader("X-Frame-Options", "DENY");
 
       // 内容安全策略
       res.setHeader(
-        'Content-Security-Policy',
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+        "Content-Security-Policy",
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
       );
 
       // 强制 HTTPS
-      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+      res.setHeader(
+        "Strict-Transport-Security",
+        "max-age=31536000; includeSubDomains; preload",
+      );
 
       // 引用策略
-      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
       // 权限策略
       res.setHeader(
-        'Permissions-Policy',
-        'camera=(), microphone=(), geolocation=(), payment=()'
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), payment=()",
       );
 
       next();
@@ -1803,7 +1814,7 @@ const SecurityMiddleware = {
         originalCookie(name, value, {
           httpOnly: true, // 禁止 JS 访问
           secure: true, // 仅 HTTPS
-          sameSite: 'lax', // CSRF 保护
+          sameSite: "lax", // CSRF 保护
           maxAge: 24 * 60 * 60 * 1000, // 24 小时
           ...options,
         });
@@ -1815,11 +1826,11 @@ const SecurityMiddleware = {
   /**
    * 请求大小限制
    */
-  bodyLimit(maxSize = '1mb') {
+  bodyLimit(maxSize = "1mb") {
     return (req, res, next) => {
-      const contentLength = parseInt(req.headers['content-length'], 10);
+      const contentLength = parseInt(req.headers["content-length"], 10);
       if (contentLength > parseInt(maxSize, 10) * 1024 * 1024) {
-        return res.status(413).json({ error: 'Request body too large' });
+        return res.status(413).json({ error: "Request body too large" });
       }
       next();
     };
@@ -1830,21 +1841,21 @@ const SecurityMiddleware = {
    */
   safeJSON() {
     return (req, res, next) => {
-      if (req.headers['content-type']?.includes('application/json')) {
-        let body = '';
-        req.on('data', (chunk) => {
+      if (req.headers["content-type"]?.includes("application/json")) {
+        let body = "";
+        req.on("data", (chunk) => {
           body += chunk;
           // 限制 JSON 大小
           if (body.length > 1024 * 1024) {
             req.destroy();
-            return res.status(413).json({ error: 'JSON too large' });
+            return res.status(413).json({ error: "JSON too large" });
           }
         });
-        req.on('end', () => {
+        req.on("end", () => {
           try {
             req.body = JSON.parse(body);
           } catch {
-            return res.status(400).json({ error: 'Invalid JSON' });
+            return res.status(400).json({ error: "Invalid JSON" });
           }
           next();
         });
@@ -1865,7 +1876,8 @@ const SecureAPI = {
    * 安全路由模板
    */
   secureRoute(app, path, handler) {
-    app.post(path,
+    app.post(
+      path,
       // 1. 速率限制
       // rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }),
       // 2. 输入验证
@@ -1876,7 +1888,7 @@ const SecureAPI = {
       // authorize('admin'),
       // 5. CSRF 保护
       // csrfProtection,
-      handler
+      handler,
     );
   },
 
@@ -1884,7 +1896,7 @@ const SecureAPI = {
    * 安全响应 — 不泄露敏感信息
    */
   safeResponse(res, data, options = {}) {
-    const { excludeFields = ['password', 'token', 'secret'] } = options;
+    const { excludeFields = ["password", "token", "secret"] } = options;
 
     // 移除敏感字段
     const safeData = JSON.parse(JSON.stringify(data));
@@ -1901,14 +1913,14 @@ const SecureAPI = {
    * 递归移除字段
    */
   removeFields(obj, fields) {
-    if (!obj || typeof obj !== 'object') return;
+    if (!obj || typeof obj !== "object") return;
     for (const field of fields) {
       delete obj[field];
     }
     for (const value of Object.values(obj)) {
       if (Array.isArray(value)) {
         value.forEach((item) => this.removeFields(item, fields));
-      } else if (value && typeof value === 'object') {
+      } else if (value && typeof value === "object") {
         this.removeFields(value, fields);
       }
     }
@@ -1919,15 +1931,13 @@ const SecureAPI = {
    */
   errorHandler(err, req, res, next) {
     // 记录详细错误（仅服务器日志）
-    console.error('Internal Error:', err);
+    console.error("Internal Error:", err);
 
     // 返回通用错误消息（客户端）
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === "production";
     res.status(err.status || 500).json({
       success: false,
-      error: isProduction
-        ? 'An internal error occurred'
-        : err.message,
+      error: isProduction ? "An internal error occurred" : err.message,
       // 生产环境不返回: stack, code, details
     });
   },
@@ -1943,7 +1953,7 @@ const PasswordSecurity = {
    * 密码哈希（使用 bcrypt）
    */
   async hashPassword(password) {
-    const bcrypt = require('bcrypt');
+    const bcrypt = require("bcrypt");
     const saltRounds = 12; // 推荐 12+
     return bcrypt.hash(password, saltRounds);
   },
@@ -1952,7 +1962,7 @@ const PasswordSecurity = {
    * 验证密码
    */
   async verifyPassword(password, hash) {
-    const bcrypt = require('bcrypt');
+    const bcrypt = require("bcrypt");
     return bcrypt.compare(password, hash);
   },
 
@@ -1981,8 +1991,15 @@ const PasswordSecurity = {
    */
   isCommonPassword(password) {
     const commonPasswords = new Set([
-      'password', '123456', '12345678', 'qwerty', 'abc123',
-      'password123', 'admin', 'letmein', 'welcome',
+      "password",
+      "123456",
+      "12345678",
+      "qwerty",
+      "abc123",
+      "password123",
+      "admin",
+      "letmein",
+      "welcome",
     ]);
     return commonPasswords.has(password.toLowerCase());
   },
@@ -1998,24 +2015,24 @@ const SecureSession = {
    * Express Session 安全配置
    */
   config(app, secret) {
-    const session = require('express-session');
-    const MongoStore = require('connect-mongo'); // 或 RedisStore
+    const session = require("express-session");
+    const MongoStore = require("connect-mongo"); // 或 RedisStore
 
     app.use(
       session({
         store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
         secret: secret,
-        name: '__session', // 不暴露技术栈
+        name: "__session", // 不暴露技术栈
         resave: false,
         saveUninitialized: false,
         cookie: {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
           maxAge: 24 * 60 * 60 * 1000,
         },
         rolling: false, // 不每次请求刷新
-      })
+      }),
     );
   },
 
@@ -2040,7 +2057,6 @@ const SecureSession = {
     req.session.lastActivity = Date.now();
   },
 };
-
 ```
 
 ---
@@ -2522,94 +2538,94 @@ const Lab7_InfoLeak = {
 const SecurityAuditChecklist = {
   // ==================== XSS 防护 ====================
   xss: [
-    '✅ 所有用户输入在输出到 HTML 时都经过编码',
-    '✅ 不使用 innerHTML 插入不可信数据',
-    '✅ 使用 textContent 代替 innerHTML',
-    '✅ URL 参数不直接插入 DOM',
-    '✅ location.hash 不直接用于 DOM 操作',
-    '✅ 富文本使用 DOMPurify 净化',
-    '✅ CSP 头已配置',
-    '✅ 不使用 eval() 执行用户数据',
-    '✅ 不使用 setTimeout/setInterval 传入字符串',
-    '✅ 模板引擎使用自动转义模式',
+    "✅ 所有用户输入在输出到 HTML 时都经过编码",
+    "✅ 不使用 innerHTML 插入不可信数据",
+    "✅ 使用 textContent 代替 innerHTML",
+    "✅ URL 参数不直接插入 DOM",
+    "✅ location.hash 不直接用于 DOM 操作",
+    "✅ 富文本使用 DOMPurify 净化",
+    "✅ CSP 头已配置",
+    "✅ 不使用 eval() 执行用户数据",
+    "✅ 不使用 setTimeout/setInterval 传入字符串",
+    "✅ 模板引擎使用自动转义模式",
   ],
 
   // ==================== CSRF 防护 ====================
   csrf: [
-    '✅ Cookie 设置 SameSite 属性',
-    '✅ 状态变更请求（POST/PUT/DELETE）有 CSRF Token',
-    '✅ AJAX 请求携带 CSRF Token',
-    '✅ 敏感操作有二次确认',
-    '✅ 重要操作验证 Origin/Referer',
-    '✅ GET 请求不执行状态变更',
+    "✅ Cookie 设置 SameSite 属性",
+    "✅ 状态变更请求（POST/PUT/DELETE）有 CSRF Token",
+    "✅ AJAX 请求携带 CSRF Token",
+    "✅ 敏感操作有二次确认",
+    "✅ 重要操作验证 Origin/Referer",
+    "✅ GET 请求不执行状态变更",
   ],
 
   // ==================== 输入验证 ====================
   input: [
-    '✅ 所有输入经过类型验证',
-    '✅ 字符串输入有长度限制',
-    '✅ 文件上传验证 Magic Number',
-    '✅ 文件上传重命名（不保留原始文件名）',
-    '✅ SQL 查询使用参数化',
-    '✅ 命令执行使用参数数组（非字符串拼接）',
-    '✅ URL 输入验证协议白名单',
-    '✅ 邮箱/电话等格式验证',
+    "✅ 所有输入经过类型验证",
+    "✅ 字符串输入有长度限制",
+    "✅ 文件上传验证 Magic Number",
+    "✅ 文件上传重命名（不保留原始文件名）",
+    "✅ SQL 查询使用参数化",
+    "✅ 命令执行使用参数数组（非字符串拼接）",
+    "✅ URL 输入验证协议白名单",
+    "✅ 邮箱/电话等格式验证",
   ],
 
   // ==================== 认证与授权 ====================
   auth: [
-    '✅ 密码使用 bcrypt/Argon2 哈希',
-    '✅ 登录失败不泄露具体原因（统一消息）',
-    '✅ 会话 ID 随机且足够长',
-    '✅ 登录后轮换会话 ID',
-    '✅ 敏感操作要求重新认证',
-    '✅ API 有认证中间件',
-    '✅ 资源访问有授权检查',
-    '✅ Token 有过期时间',
-    '✅ 支持注销（清除服务端会话）',
+    "✅ 密码使用 bcrypt/Argon2 哈希",
+    "✅ 登录失败不泄露具体原因（统一消息）",
+    "✅ 会话 ID 随机且足够长",
+    "✅ 登录后轮换会话 ID",
+    "✅ 敏感操作要求重新认证",
+    "✅ API 有认证中间件",
+    "✅ 资源访问有授权检查",
+    "✅ Token 有过期时间",
+    "✅ 支持注销（清除服务端会话）",
   ],
 
   // ==================== 安全 Headers ====================
   headers: [
-    '✅ Content-Security-Policy 已配置',
-    '✅ Strict-Transport-Security 已配置',
-    '✅ X-Content-Type-Options: nosniff',
-    '✅ X-Frame-Options: DENY',
-    '✅ Referrer-Policy 已配置',
-    '✅ Permissions-Policy 已配置',
-    '✅ 移除 X-Powered-By 头',
-    '✅ 移除 Server 头（或自定义）',
+    "✅ Content-Security-Policy 已配置",
+    "✅ Strict-Transport-Security 已配置",
+    "✅ X-Content-Type-Options: nosniff",
+    "✅ X-Frame-Options: DENY",
+    "✅ Referrer-Policy 已配置",
+    "✅ Permissions-Policy 已配置",
+    "✅ 移除 X-Powered-By 头",
+    "✅ 移除 Server 头（或自定义）",
   ],
 
   // ==================== 数据安全 ====================
   data: [
-    '✅ API 不返回敏感字段（密码、Token）',
-    '✅ 错误消息不泄露内部信息',
-    '✅ 日志不记录密码/Token',
-    '✅ 敏感数据传输使用 HTTPS',
-    '✅ 敏感数据静态加密',
-    '✅ 数据库连接字符串不硬编码',
-    '✅ 使用环境变量管理密钥',
-    '✅ .env 文件在 .gitignore 中',
+    "✅ API 不返回敏感字段（密码、Token）",
+    "✅ 错误消息不泄露内部信息",
+    "✅ 日志不记录密码/Token",
+    "✅ 敏感数据传输使用 HTTPS",
+    "✅ 敏感数据静态加密",
+    "✅ 数据库连接字符串不硬编码",
+    "✅ 使用环境变量管理密钥",
+    "✅ .env 文件在 .gitignore 中",
   ],
 
   // ==================== 依赖安全 ====================
   dependencies: [
-    '✅ 定期运行 npm audit',
-    '✅ 及时更新依赖',
-    '✅ 锁定依赖版本（package-lock.json）',
-    '✅ 不使用来源不明的包',
-    '✅ 生产环境不安装 devDependencies',
+    "✅ 定期运行 npm audit",
+    "✅ 及时更新依赖",
+    "✅ 锁定依赖版本（package-lock.json）",
+    "✅ 不使用来源不明的包",
+    "✅ 生产环境不安装 devDependencies",
   ],
 
   // ==================== 其他 ====================
   other: [
-    '✅ 速率限制已配置',
-    '✅ CORS 策略最小化',
-    '✅ 文件上传限制大小和类型',
-    '✅ 上传文件不直接可执行',
-    '✅ 定期安全扫描',
-    '✅ 有安全事件响应计划',
+    "✅ 速率限制已配置",
+    "✅ CORS 策略最小化",
+    "✅ 文件上传限制大小和类型",
+    "✅ 上传文件不直接可执行",
+    "✅ 定期安全扫描",
+    "✅ 有安全事件响应计划",
   ],
 };
 
@@ -2627,41 +2643,85 @@ const SecurityScanner = {
 
     // XSS 检测
     const xssPatterns = [
-      { regex: /\.innerHTML\s*=/, severity: 'high', message: 'innerHTML 赋值可能引发 XSS' },
-      { regex: /document\.write\(/, severity: 'high', message: 'document.write 可能引发 XSS' },
-      { regex: /eval\(/, severity: 'high', message: 'eval 执行可能引发代码注入' },
-      { regex: /new\s+Function\(/, severity: 'medium', message: 'Function 构造函数可能引发代码注入' },
-      { regex: /setTimeout\(['"`]/, severity: 'medium', message: 'setTimeout 传入字符串可能引发代码注入' },
-      { regex: /location\.hash/, severity: 'low', message: 'location.hash 使用需验证' },
-      { regex: /location\.search/, severity: 'low', message: 'location.search 使用需验证' },
+      {
+        regex: /\.innerHTML\s*=/,
+        severity: "high",
+        message: "innerHTML 赋值可能引发 XSS",
+      },
+      {
+        regex: /document\.write\(/,
+        severity: "high",
+        message: "document.write 可能引发 XSS",
+      },
+      {
+        regex: /eval\(/,
+        severity: "high",
+        message: "eval 执行可能引发代码注入",
+      },
+      {
+        regex: /new\s+Function\(/,
+        severity: "medium",
+        message: "Function 构造函数可能引发代码注入",
+      },
+      {
+        regex: /setTimeout\(['"`]/,
+        severity: "medium",
+        message: "setTimeout 传入字符串可能引发代码注入",
+      },
+      {
+        regex: /location\.hash/,
+        severity: "low",
+        message: "location.hash 使用需验证",
+      },
+      {
+        regex: /location\.search/,
+        severity: "low",
+        message: "location.search 使用需验证",
+      },
     ];
 
     // SQL 注入检测
     const sqlPatterns = [
       {
         regex: /query\s*\(\s*`[^`]*\$\{[^}]*\}/,
-        severity: 'critical',
-        message: '模板字符串拼接 SQL 可能引发 SQL 注入',
+        severity: "critical",
+        message: "模板字符串拼接 SQL 可能引发 SQL 注入",
       },
       {
         regex: /query\s*\([^)]*\+\s*\w+/,
-        severity: 'critical',
-        message: '字符串拼接 SQL 可能引发 SQL 注入',
+        severity: "critical",
+        message: "字符串拼接 SQL 可能引发 SQL 注入",
       },
     ];
 
     // 敏感信息检测
     const infoPatterns = [
-      { regex: /password\s*[:=]\s*['"][^'"]*['"]/, severity: 'high', message: '硬编码密码' },
-      { regex: /secret\s*[:=]\s*['"][^'"]*['"]/, severity: 'high', message: '硬编码密钥' },
-      { regex: /api[_-]?key\s*[:=]\s*['"][^'"]*['"]/, severity: 'high', message: '硬编码 API Key' },
-      { regex: /token\s*[:=]\s*['"][^'"]*['"]/, severity: 'medium', message: '硬编码 Token' },
+      {
+        regex: /password\s*[:=]\s*['"][^'"]*['"]/,
+        severity: "high",
+        message: "硬编码密码",
+      },
+      {
+        regex: /secret\s*[:=]\s*['"][^'"]*['"]/,
+        severity: "high",
+        message: "硬编码密钥",
+      },
+      {
+        regex: /api[_-]?key\s*[:=]\s*['"][^'"]*['"]/,
+        severity: "high",
+        message: "硬编码 API Key",
+      },
+      {
+        regex: /token\s*[:=]\s*['"][^'"]*['"]/,
+        severity: "medium",
+        message: "硬编码 Token",
+      },
     ];
 
     const allPatterns = [...xssPatterns, ...sqlPatterns, ...infoPatterns];
 
     for (const pattern of allPatterns) {
-      const matches = sourceCode.match(new RegExp(pattern.regex.source, 'g'));
+      const matches = sourceCode.match(new RegExp(pattern.regex.source, "g"));
       if (matches) {
         issues.push({
           ...pattern,
@@ -2678,14 +2738,16 @@ const SecurityScanner = {
    */
   generateReport(issues) {
     const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-    const sorted = issues.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+    const sorted = issues.sort(
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
+    );
 
     const summary = {
       total: issues.length,
-      critical: issues.filter((i) => i.severity === 'critical').length,
-      high: issues.filter((i) => i.severity === 'high').length,
-      medium: issues.filter((i) => i.severity === 'medium').length,
-      low: issues.filter((i) => i.severity === 'low').length,
+      critical: issues.filter((i) => i.severity === "critical").length,
+      high: issues.filter((i) => i.severity === "high").length,
+      medium: issues.filter((i) => i.severity === "medium").length,
+      low: issues.filter((i) => i.severity === "low").length,
     };
 
     return { summary, issues: sorted };
@@ -2700,7 +2762,7 @@ const report = SecurityScanner.generateReport(
     eval(userInput);
     db.query(\`SELECT * FROM users WHERE id = \${userId}\`);
     const password = "admin123";
-  `)
+  `),
 );
 console.log(JSON.stringify(report, null, 2));
 // {
@@ -2712,7 +2774,6 @@ console.log(JSON.stringify(report, null, 2));
 //     { severity: 'medium', message: 'eval 执行可能引发代码注入', count: 1 }
 //   ]
 // }
-
 ```
 
 ---
@@ -2729,15 +2790,15 @@ console.log(JSON.stringify(report, null, 2));
 
 ### 攻击 → 防御速查表
 
-| 攻击类型 | 核心防御 | 辅助防御 |
-|---------|---------|---------|
-| Stored XSS | 输入净化 + textContent | CSP |
-| Reflected XSS | 输出编码 | CSP |
-| DOM-based XSS | 不操作不可信 URL 数据 | CSP |
-| CSRF | SameSite Cookie + CSRF Token | Origin 验证 |
-| SQL 注入 | 参数化查询 | ORM + 输入验证 |
-| 文件上传 | Magic Number 验证 + 重命名 | 沙箱隔离 |
-| 信息泄露 | 选择性返回 + 安全错误处理 | 日志脱敏 |
+| 攻击类型      | 核心防御                     | 辅助防御       |
+| ------------- | ---------------------------- | -------------- |
+| Stored XSS    | 输入净化 + textContent       | CSP            |
+| Reflected XSS | 输出编码                     | CSP            |
+| DOM-based XSS | 不操作不可信 URL 数据        | CSP            |
+| CSRF          | SameSite Cookie + CSRF Token | Origin 验证    |
+| SQL 注入      | 参数化查询                   | ORM + 输入验证 |
+| 文件上传      | Magic Number 验证 + 重命名   | 沙箱隔离       |
+| 信息泄露      | 选择性返回 + 安全错误处理    | 日志脱敏       |
 
 ### 安全 Headers 速查
 
@@ -2758,4 +2819,4 @@ Set-Cookie: session=xxx; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400
 
 ---
 
-*安全不是一次性的任务，而是持续的过程。定期审计、及时更新、保持警惕。*
+_安全不是一次性的任务，而是持续的过程。定期审计、及时更新、保持警惕。_

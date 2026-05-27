@@ -1,17 +1,17 @@
-import React, { 
-  ReactNode, 
-  forwardRef, 
-  useEffect, 
+import React, {
+  ReactNode,
+  forwardRef,
+  useEffect,
   useCallback,
   useRef,
-  useState
-} from 'react';
-import { createPortal } from 'react-dom';
-import './Modal.css';
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import "./Modal.css";
 
 // ============ Types ============
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "fullscreen";
 
 export interface ModalProps {
   /** 是否显示 */
@@ -68,23 +68,23 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     closable = true,
     maskClosable = true,
     keyboard = true,
-    size = 'md',
+    size = "md",
     mask = true,
     centered = false,
     footer,
-    cancelText = '取消',
-    okText = '确定',
+    cancelText = "取消",
+    okText = "确定",
     onOk,
     okLoading = false,
     okButtonDisabled = false,
     showFooter = true,
-    className = '',
-    maskClassName = '',
+    className = "",
+    maskClassName = "",
     children,
     animationDuration = 300,
     destroyOnClose = false,
   },
-  ref
+  ref,
 ) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(open);
@@ -107,24 +107,24 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     if (!keyboard || !open) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [keyboard, open, onClose]);
 
   // 阻止背景滚动
   useEffect(() => {
     if (open) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [open]);
 
@@ -132,7 +132,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   useEffect(() => {
     if (open && modalRef.current) {
       const focusable = modalRef.current.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
       focusable?.focus();
     }
@@ -150,7 +150,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   const handleOk = useCallback(async () => {
     if (okLoading || okButtonDisabled) return;
-    
+
     if (onOk) {
       await onOk();
     }
@@ -158,22 +158,25 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   }, [onOk, okLoading, okButtonDisabled, onClose]);
 
   const classes = [
-    'modal',
+    "modal",
     `modal-${size}`,
-    centered && 'modal-centered',
+    centered && "modal-centered",
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const maskClasses = [
-    'modal-mask',
-    animate && 'modal-mask-visible',
+    "modal-mask",
+    animate && "modal-mask-visible",
     maskClassName,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  const modalClasses = [
-    'modal-content',
-    animate && 'modal-content-visible',
-  ].filter(Boolean).join(' ');
+  const modalClasses = ["modal-content", animate && "modal-content-visible"]
+    .filter(Boolean)
+    .join(" ");
 
   // 销毁时不渲染
   if (destroyOnClose && !visible) {
@@ -181,7 +184,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   }
 
   // 只在挂载后渲染到 portal
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
@@ -190,7 +193,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
       className="modal-wrapper"
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
+      aria-labelledby={title ? "modal-title" : undefined}
     >
       {mask && (
         <div
@@ -200,11 +203,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
         />
       )}
       <div className={classes}>
-        <div
-          ref={modalRef}
-          className={modalClasses}
-          onClick={handleModalClick}
-        >
+        <div ref={modalRef} className={modalClasses} onClick={handleModalClick}>
           {/* Header */}
           {(title || closable) && (
             <div className="modal-header">
@@ -220,7 +219,12 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                   aria-label="关闭"
                   type="button"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M18 6L6 18M6 6l12 12" />
                   </svg>
                 </button>
@@ -229,9 +233,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
           )}
 
           {/* Body */}
-          <div className="modal-body">
-            {children}
-          </div>
+          <div className="modal-body">{children}</div>
 
           {/* Footer */}
           {showFooter && (
@@ -257,7 +259,14 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                     {okLoading ? (
                       <span className="modal-btn-loading">
                         <svg viewBox="0 0 24 24" fill="none">
-                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="30 70" />
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeDasharray="30 70"
+                          />
                         </svg>
                         加载中...
                       </span>
@@ -284,14 +293,16 @@ export interface ModalInstance {
   update: (config: Partial<ModalProps>) => void;
 }
 
-export function modal(config: Omit<ModalProps, 'open' | 'onClose'>): ModalInstance {
+export function modal(
+  config: Omit<ModalProps, "open" | "onClose">,
+): ModalInstance {
   // 简化实现 - 实际项目中需要更复杂的状态管理
-  const container = document.createElement('div');
+  const container = document.createElement("div");
   document.body.appendChild(container);
-  
+
   // 这里应该使用 React 渲染
   // 简化版本仅作为 API 设计示例
-  
+
   return {
     destroy: () => {
       document.body.removeChild(container);
@@ -302,27 +313,43 @@ export function modal(config: Omit<ModalProps, 'open' | 'onClose'>): ModalInstan
   };
 }
 
-Modal.info = (config: { title?: ReactNode; content?: ReactNode; onOk?: () => void }) => {
-  return modal({ ...config, type: 'info' });
+Modal.info = (config: {
+  title?: ReactNode;
+  content?: ReactNode;
+  onOk?: () => void;
+}) => {
+  return modal({ ...config, type: "info" });
 };
 
-Modal.success = (config: { title?: ReactNode; content?: ReactNode; onOk?: () => void }) => {
-  return modal({ ...config, type: 'success' });
+Modal.success = (config: {
+  title?: ReactNode;
+  content?: ReactNode;
+  onOk?: () => void;
+}) => {
+  return modal({ ...config, type: "success" });
 };
 
-Modal.warning = (config: { title?: ReactNode; content?: ReactNode; onOk?: () => void }) => {
-  return modal({ ...config, type: 'warning' });
+Modal.warning = (config: {
+  title?: ReactNode;
+  content?: ReactNode;
+  onOk?: () => void;
+}) => {
+  return modal({ ...config, type: "warning" });
 };
 
-Modal.error = (config: { title?: ReactNode; content?: ReactNode; onOk?: () => void }) => {
-  return modal({ ...config, type: 'error' });
+Modal.error = (config: {
+  title?: ReactNode;
+  content?: ReactNode;
+  onOk?: () => void;
+}) => {
+  return modal({ ...config, type: "error" });
 };
 
-Modal.confirm = (config: { 
-  title?: ReactNode; 
-  content?: ReactNode; 
-  onOk?: () => void; 
+Modal.confirm = (config: {
+  title?: ReactNode;
+  content?: ReactNode;
+  onOk?: () => void;
   onCancel?: () => void;
 }) => {
-  return modal({ ...config, type: 'confirm' });
+  return modal({ ...config, type: "confirm" });
 };

@@ -244,7 +244,11 @@ class OfflineQueue {
   notifyListeners() {
     this.getQueueStatus().then((status) => {
       this.listeners.forEach((cb) => {
-        try { cb(status); } catch (e) { console.error(e); }
+        try {
+          cb(status);
+        } catch (e) {
+          console.error(e);
+        }
       });
     });
   }
@@ -282,7 +286,9 @@ function setupFetchInterceptor(queue) {
 
     // 只拦截写操作 (POST/PUT/DELETE/PATCH)
     const method = (init && init.method) || 'GET';
-    const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase());
+    const isWrite = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(
+      method.toUpperCase(),
+    );
 
     if (!navigator.onLine && isWrite) {
       console.log(`[FetchInterceptor] 离线，请求入队: ${method} ${url}`);
@@ -292,14 +298,17 @@ function setupFetchInterceptor(queue) {
         headers: init?.headers || {},
         body: init?.body,
       });
-      return new Response(JSON.stringify({
-        queued: true,
-        entryId,
-        message: '请求已入队，将在网络恢复后发送',
-      }), {
-        status: 202,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({
+          queued: true,
+          entryId,
+          message: '请求已入队，将在网络恢复后发送',
+        }),
+        {
+          status: 202,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
     }
 
     return originalFetch.apply(this, arguments);

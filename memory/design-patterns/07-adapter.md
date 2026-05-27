@@ -1,22 +1,26 @@
 # 适配器模式 (Adapter Pattern)
 
 ## 核心思想
+
 将一个类的接口转换成客户端期望的另一个接口，使原本因接口不兼容而无法一起工作的类可以协同工作。
 
 ## 适用场景
+
 - 第三方 SDK 封装（不同支付/地图/短信 API 统一接口）
 - 旧系统迁移（新旧 API 过渡期）
 - 多数据源统一（REST/GraphQL/gRPC 统一调用）
 - 浏览器 API 兼容（fetch 适配旧版 XMLHttpRequest）
 
 ## JS 原生体现
+
 - `Array.prototype.map` → 将数组适配为映射后的新数组
 - `JSON.stringify` → 将对象适配为字符串
 - `Promise.then` → 将回调适配为链式调用
 
 ## 与装饰器的区别
-| 维度 | 适配器 | 装饰器 |
-|------|--------|--------|
+
+| 维度 | 适配器   | 装饰器   |
+| ---- | -------- | -------- |
 | 目的 | 接口转换 | 功能增强 |
 | 接口 | 改变接口 | 保持接口 |
 | 关系 | "翻译官" | "化妆师" |
@@ -37,11 +41,13 @@ class AlipaySDK {
 
   // 支付宝的支付方法名和参数格式
   tradePay(bizContent) {
-    console.log(`[AlipaySDK] tradePay, appId=${this.appId}, bizContent=${JSON.stringify(bizContent)}`);
+    console.log(
+      `[AlipaySDK] tradePay, appId=${this.appId}, bizContent=${JSON.stringify(bizContent)}`,
+    );
     return {
       success: true,
       tradeNo: `ALI${Date.now()}`,
-      payUrl: `https://openapi.alipay.com/gateway.do?out_trade_no=${bizContent.out_trade_no}`
+      payUrl: `https://openapi.alipay.com/gateway.do?out_trade_no=${bizContent.out_trade_no}`,
     };
   }
 
@@ -61,11 +67,13 @@ class WechatPaySDK {
 
   // 微信的支付方法名和参数完全不同
   unifiedOrder(params) {
-    console.log(`[WechatPaySDK] unifiedOrder, mchId=${this.mchId}, params=${JSON.stringify(params)}`);
+    console.log(
+      `[WechatPaySDK] unifiedOrder, mchId=${this.mchId}, params=${JSON.stringify(params)}`,
+    );
     return {
       success: true,
       prepayId: `WX${Date.now()}`,
-      payUrl: `weixin://wxpay/bizpayurl?sr=${Date.now()}`
+      payUrl: `weixin://wxpay/bizpayurl?sr=${Date.now()}`,
     };
   }
 
@@ -85,11 +93,13 @@ class UnionPaySDK {
 
   // 银联又是另一套接口
   doOrder(orderInfo) {
-    console.log(`[UnionPaySDK] doOrder, merId=${this.merId}, orderInfo=${JSON.stringify(orderInfo)}`);
+    console.log(
+      `[UnionPaySDK] doOrder, merId=${this.merId}, orderInfo=${JSON.stringify(orderInfo)}`,
+    );
     return {
       success: true,
       orderId: `UP${Date.now()}`,
-      payUrl: `https://gateway.95516.com/gateway/api/frontTransReq.do?orderId=${Date.now()}`
+      payUrl: `https://gateway.95516.com/gateway/api/frontTransReq.do?orderId=${Date.now()}`,
     };
   }
 
@@ -108,16 +118,16 @@ class PaymentAdapter {
 
   // 统一支付接口：所有适配器对外暴露相同的 pay 方法
   pay(amount, orderId, extra = {}) {
-    throw new Error('子类必须实现 pay 方法');
+    throw new Error("子类必须实现 pay 方法");
   }
 
   // 统一退款接口
   refund(orderId, amount) {
-    throw new Error('子类必须实现 refund 方法');
+    throw new Error("子类必须实现 refund 方法");
   }
 
   getPayUrl() {
-    throw new Error('子类必须实现 getPayUrl 方法');
+    throw new Error("子类必须实现 getPayUrl 方法");
   }
 }
 
@@ -131,27 +141,33 @@ class AlipayAdapter extends PaymentAdapter {
     const bizContent = {
       out_trade_no: orderId,
       total_amount: amount,
-      subject: extra.subject || '商品购买',
-      body: extra.body || ''
+      subject: extra.subject || "商品购买",
+      body: extra.body || "",
     };
     const result = this.sdk.tradePay(bizContent);
     return {
       success: result.success,
       transactionId: result.tradeNo,
       payUrl: result.payUrl,
-      channel: 'alipay'
+      channel: "alipay",
     };
   }
 
   refund(orderId, amount) {
     const result = this.sdk.tradeRefund({
       out_trade_no: orderId,
-      refund_fee: amount.toString()
+      refund_fee: amount.toString(),
     });
-    return { success: result.success, refundAmount: result.refundFee, channel: 'alipay' };
+    return {
+      success: result.success,
+      refundAmount: result.refundFee,
+      channel: "alipay",
+    };
   }
 
-  getPayUrl(result) { return result.payUrl; }
+  getPayUrl(result) {
+    return result.payUrl;
+  }
 }
 
 // --- 微信适配器 ---
@@ -162,19 +178,19 @@ class WechatPayAdapter extends PaymentAdapter {
 
   pay(amount, orderId, extra = {}) {
     const params = {
-      body: extra.subject || '商品购买',
+      body: extra.subject || "商品购买",
       out_trade_no: orderId,
       total_fee: Math.round(amount * 100), // 微信用分
-      spbill_create_ip: extra.ip || '127.0.0.1',
-      notify_url: extra.notifyUrl || 'https://example.com/notify',
-      trade_type: 'JSAPI'
+      spbill_create_ip: extra.ip || "127.0.0.1",
+      notify_url: extra.notifyUrl || "https://example.com/notify",
+      trade_type: "JSAPI",
     };
     const result = this.sdk.unifiedOrder(params);
     return {
       success: result.success,
       transactionId: result.prepayId,
       payUrl: result.payUrl,
-      channel: 'wechat'
+      channel: "wechat",
     };
   }
 
@@ -182,12 +198,18 @@ class WechatPayAdapter extends PaymentAdapter {
     const result = this.sdk.refund({
       out_trade_no: orderId,
       total_fee: Math.round(amount * 100),
-      refund_fee: Math.round(amount * 100)
+      refund_fee: Math.round(amount * 100),
     });
-    return { success: result.success, refundAmount: result.refundFee / 100, channel: 'wechat' };
+    return {
+      success: result.success,
+      refundAmount: result.refundFee / 100,
+      channel: "wechat",
+    };
   }
 
-  getPayUrl(result) { return result.payUrl; }
+  getPayUrl(result) {
+    return result.payUrl;
+  }
 }
 
 // --- 银联适配器 ---
@@ -200,25 +222,31 @@ class UnionPayAdapter extends PaymentAdapter {
     const orderInfo = {
       orderId: orderId,
       txnAmt: amount.toString(),
-      currencyCode: '156',
-      txnTime: new Date().toISOString().replace(/[-:]/g, '').split('.')[0],
-      orderDesc: extra.subject || '商品购买'
+      currencyCode: "156",
+      txnTime: new Date().toISOString().replace(/[-:]/g, "").split(".")[0],
+      orderDesc: extra.subject || "商品购买",
     };
     const result = this.sdk.doOrder(orderInfo);
     return {
       success: result.success,
       transactionId: result.orderId,
       payUrl: result.payUrl,
-      channel: 'unionpay'
+      channel: "unionpay",
     };
   }
 
   refund(orderId, amount) {
     const result = this.sdk.doRefund(orderId, amount.toString());
-    return { success: result.success, refundAmount: result.refundFee, channel: 'unionpay' };
+    return {
+      success: result.success,
+      refundAmount: result.refundFee,
+      channel: "unionpay",
+    };
   }
 
-  getPayUrl(result) { return result.payUrl; }
+  getPayUrl(result) {
+    return result.payUrl;
+  }
 }
 
 // ============ 使用：业务层只依赖统一接口 ============
@@ -232,7 +260,9 @@ class CheckoutService {
     console.log(`\n=== 结算订单 ${orderId}, 金额 ¥${amount} ===`);
     const result = this.payment.pay(amount, orderId, extra);
     if (result.success) {
-      console.log(`✅ 支付成功, 渠道: ${result.channel}, 交易号: ${result.transactionId}`);
+      console.log(
+        `✅ 支付成功, 渠道: ${result.channel}, 交易号: ${result.transactionId}`,
+      );
       console.log(`   支付链接: ${result.payUrl}`);
     }
     return result;
@@ -242,24 +272,32 @@ class CheckoutService {
     console.log(`\n=== 退款订单 ${orderId}, 金额 ¥${amount} ===`);
     const result = this.payment.refund(orderId, amount);
     if (result.success) {
-      console.log(`✅ 退款成功, 渠道: ${result.channel}, 金额: ¥${result.refundAmount}`);
+      console.log(
+        `✅ 退款成功, 渠道: ${result.channel}, 金额: ¥${result.refundAmount}`,
+      );
     }
     return result;
   }
 }
 
 // 测试三种支付方式
-const checkout = new CheckoutService(new AlipayAdapter('app123', 'privateKey456'));
-checkout.checkout('ORD-001', 99.90, { subject: '机械键盘' });
+const checkout = new CheckoutService(
+  new AlipayAdapter("app123", "privateKey456"),
+);
+checkout.checkout("ORD-001", 99.9, { subject: "机械键盘" });
 
-const checkout2 = new CheckoutService(new WechatPayAdapter('mch789', 'apiKey000'));
-checkout2.checkout('ORD-002', 199.00, { subject: '显示器' });
+const checkout2 = new CheckoutService(
+  new WechatPayAdapter("mch789", "apiKey000"),
+);
+checkout2.checkout("ORD-002", 199.0, { subject: "显示器" });
 
-const checkout3 = new CheckoutService(new UnionPayAdapter('mer001', '/cert/union.pem'));
-checkout3.checkout('ORD-003', 599.00, { subject: '笔记本' });
+const checkout3 = new CheckoutService(
+  new UnionPayAdapter("mer001", "/cert/union.pem"),
+);
+checkout3.checkout("ORD-003", 599.0, { subject: "笔记本" });
 
 // 退款也统一
-checkout.refund('ORD-001', 99.90);
+checkout.refund("ORD-001", 99.9);
 ```
 
 ## 实现二：数据源适配器（REST → GraphQL 统一）
@@ -269,42 +307,59 @@ checkout.refund('ORD-001', 99.90);
 
 // --- REST 数据源 ---
 class RestDataSource {
-  constructor(baseURL) { this.baseURL = baseURL; }
+  constructor(baseURL) {
+    this.baseURL = baseURL;
+  }
 
   async fetchUsers() {
     console.log(`[REST] GET ${this.baseURL}/users`);
     return [
-      { id: 1, name: 'Alice', email: 'alice@example.com' },
-      { id: 2, name: 'Bob', email: 'bob@example.com' }
+      { id: 1, name: "Alice", email: "alice@example.com" },
+      { id: 2, name: "Bob", email: "bob@example.com" },
     ];
   }
 
   async fetchUserById(id) {
     console.log(`[REST] GET ${this.baseURL}/users/${id}`);
-    return { id, name: 'Alice', email: 'alice@example.com', role: 'admin' };
+    return { id, name: "Alice", email: "alice@example.com", role: "admin" };
   }
 
   async fetchPosts(userId) {
     console.log(`[REST] GET ${this.baseURL}/users/${userId}/posts`);
-    return [{ id: 101, title: 'Hello World', userId }];
+    return [{ id: 101, title: "Hello World", userId }];
   }
 }
 
 // --- GraphQL 数据源 ---
 class GraphQLDataSource {
-  constructor(endpoint) { this.endpoint = endpoint; }
+  constructor(endpoint) {
+    this.endpoint = endpoint;
+  }
 
   async query(queryString, variables = {}) {
-    console.log(`[GraphQL] POST ${this.endpoint}, query: ${queryString.substring(0, 50)}...`);
+    console.log(
+      `[GraphQL] POST ${this.endpoint}, query: ${queryString.substring(0, 50)}...`,
+    );
     // 模拟 GraphQL 响应
-    if (queryString.includes('users')) {
-      return { data: { users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] } };
+    if (queryString.includes("users")) {
+      return {
+        data: {
+          users: [
+            { id: 1, name: "Alice" },
+            { id: 2, name: "Bob" },
+          ],
+        },
+      };
     }
-    if (queryString.includes('user')) {
-      return { data: { user: { id: variables.id, name: 'Alice', email: 'alice@example.com' } } };
+    if (queryString.includes("user")) {
+      return {
+        data: {
+          user: { id: variables.id, name: "Alice", email: "alice@example.com" },
+        },
+      };
     }
-    if (queryString.includes('posts')) {
-      return { data: { posts: [{ id: 101, title: 'Hello World' }] } };
+    if (queryString.includes("posts")) {
+      return { data: { posts: [{ id: 101, title: "Hello World" }] } };
     }
     return { data: {} };
   }
@@ -313,9 +368,15 @@ class GraphQLDataSource {
 // ============ 适配器层 ============
 
 class DataAdapter {
-  async getUsers() { throw new Error('子类实现'); }
-  async getUser(id) { throw new Error('子类实现'); }
-  async getPosts(userId) { throw new Error('子类实现'); }
+  async getUsers() {
+    throw new Error("子类实现");
+  }
+  async getUser(id) {
+    throw new Error("子类实现");
+  }
+  async getPosts(userId) {
+    throw new Error("子类实现");
+  }
 }
 
 class RestDataAdapter extends DataAdapter {
@@ -324,9 +385,15 @@ class RestDataAdapter extends DataAdapter {
     this.source = new RestDataSource(baseURL);
   }
 
-  async getUsers() { return this.source.fetchUsers(); }
-  async getUser(id) { return this.source.fetchUserById(id); }
-  async getPosts(userId) { return this.source.fetchPosts(userId); }
+  async getUsers() {
+    return this.source.fetchUsers();
+  }
+  async getUser(id) {
+    return this.source.fetchUserById(id);
+  }
+  async getPosts(userId) {
+    return this.source.fetchPosts(userId);
+  }
 }
 
 class GraphQLDataAdapter extends DataAdapter {
@@ -336,17 +403,22 @@ class GraphQLDataAdapter extends DataAdapter {
   }
 
   async getUsers() {
-    const res = await this.source.query('{ users { id name email } }');
+    const res = await this.source.query("{ users { id name email } }");
     return res.data.users;
   }
 
   async getUser(id) {
-    const res = await this.source.query('{ user(id: $id) { id name email role } }', { id });
+    const res = await this.source.query(
+      "{ user(id: $id) { id name email role } }",
+      { id },
+    );
     return res.data.user;
   }
 
   async getPosts(userId) {
-    const res = await this.source.query(`{ posts(userId: ${userId}) { id title body } }`);
+    const res = await this.source.query(
+      `{ posts(userId: ${userId}) { id title body } }`,
+    );
     return res.data.posts;
   }
 }
@@ -354,18 +426,30 @@ class GraphQLDataAdapter extends DataAdapter {
 // ============ 使用：业务层不关心底层数据源 ============
 
 class UserService {
-  constructor(adapter) { this.adapter = adapter; }
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
 
-  async listUsers() { return this.adapter.getUsers(); }
-  async findUser(id) { return this.adapter.getUser(id); }
-  async userPosts(userId) { return this.adapter.getPosts(userId); }
+  async listUsers() {
+    return this.adapter.getUsers();
+  }
+  async findUser(id) {
+    return this.adapter.getUser(id);
+  }
+  async userPosts(userId) {
+    return this.adapter.getPosts(userId);
+  }
 }
 
 // 切换数据源只需换适配器
-const restService = new UserService(new RestDataAdapter('https://api.example.com'));
+const restService = new UserService(
+  new RestDataAdapter("https://api.example.com"),
+);
 restService.listUsers();
 
-const graphqlService = new UserService(new GraphQLDataAdapter('https://graphql.example.com'));
+const graphqlService = new UserService(
+  new GraphQLDataAdapter("https://graphql.example.com"),
+);
 graphqlService.listUsers();
 ```
 
@@ -377,16 +461,25 @@ graphqlService.listUsers();
 // 旧版日志接口
 class OldLogger {
   log(level, message) {
-    const timestamps = { info: new Date().toISOString(), error: new Date().toISOString() };
+    const timestamps = {
+      info: new Date().toISOString(),
+      error: new Date().toISOString(),
+    };
     console.log(`[${level.toUpperCase()}] ${message} [${timestamps[level]}]`);
   }
 }
 
 // 新版期望的日志接口
 class NewLogger {
-  info(message) { throw new Error('子类实现'); }
-  error(message) { throw new Error('子类实现'); }
-  warn(message) { throw new Error('子类实现'); }
+  info(message) {
+    throw new Error("子类实现");
+  }
+  error(message) {
+    throw new Error("子类实现");
+  }
+  warn(message) {
+    throw new Error("子类实现");
+  }
 }
 
 // 适配器：将旧版 log(level, msg) 适配为新版 info/error/warn
@@ -396,19 +489,26 @@ class LoggerAdapter extends NewLogger {
     this.oldLogger = oldLogger;
   }
 
-  info(message) { this.oldLogger.log('info', message); }
-  error(message) { this.oldLogger.log('error', message); }
-  warn(message) { this.oldLogger.log('warn', message); }
+  info(message) {
+    this.oldLogger.log("info", message);
+  }
+  error(message) {
+    this.oldLogger.log("error", message);
+  }
+  warn(message) {
+    this.oldLogger.log("warn", message);
+  }
 }
 
 // ============ 使用 ============
 const adapter = new LoggerAdapter(new OldLogger());
-adapter.info('应用启动');
-adapter.warn('内存使用率 80%');
-adapter.error('数据库连接失败');
+adapter.info("应用启动");
+adapter.warn("内存使用率 80%");
+adapter.error("数据库连接失败");
 ```
 
 ## 要点总结
+
 1. **接口转换**是适配器的核心 — 不改变原有类，通过中间层转换接口
 2. **对象适配器 vs 类适配器**: JS 中多用对象适配器（组合），因为 JS 单继承
 3. **常见场景**: 第三方 SDK 封装、新旧 API 过渡、多数据源统一

@@ -15,16 +15,17 @@
 
 ```typescript
 // ❌ 非 Point-Free — 显式提及 x
-const doubleAll = (xs: number[]) => xs.map(x => x * 2);
+const doubleAll = (xs: number[]) => xs.map((x) => x * 2);
 
 // ✅ Point-Free — 不提及参数
 const doubleAll = (xs: number[]) => xs.map(multiply(2));
 
 // 更彻底的 Point-Free
-const doubleAll = map(multiply(2));  // 完全不需要提及 xs
+const doubleAll = map(multiply(2)); // 完全不需要提及 xs
 ```
 
 **核心技巧**:
+
 - 柯里化 + 组合 = Point-Free 的基础
 - `flip` 交换参数顺序
 - `unary` 限制参数数量
@@ -44,10 +45,10 @@ Transducer: transduce(compose(tMap(f), tFilter(g)), h, init, arr)  →  1 次遍
 
 ```typescript
 // lens: 聚焦到对象的某个属性
-const nameLens = lensProp('name');
-nameLens.get(user);        // 读取
-nameLens.set('Alice', user);  // 不可变更新
-nameLens.modify(upper, user);  // 转换
+const nameLens = lensProp("name");
+nameLens.get(user); // 读取
+nameLens.set("Alice", user); // 不可变更新
+nameLens.modify(upper, user); // 转换
 ```
 
 ### 4. Reader Pattern (读取器模式)
@@ -83,46 +84,58 @@ interface Tree<T> {
 
 ```typescript
 // ===== 基础工具 =====
-const prop = <T, K extends keyof T>(key: K) => (obj: T): T[K] => obj[key];
-const method = (name: string, ...args: any[]) =>
-  (obj: any) => obj[name](...args);
+const prop =
+  <T, K extends keyof T>(key: K) =>
+  (obj: T): T[K] =>
+    obj[key];
+const method =
+  (name: string, ...args: any[]) =>
+  (obj: any) =>
+    obj[name](...args);
 const multiply = (a: number) => (b: number) => a * b;
-const filter = <T>(pred: (x: T) => boolean) => (xs: T[]) => xs.filter(pred);
-const map = <T, U>(fn: (x: T) => U) => (xs: T[]) => xs.map(fn);
-const sort = <T>(compare: (a: T, b: T) => number) => (xs: T[]) =>
-  [...xs].sort(compare);
-const pipe = <T>(...fns: ((x: any) => any)[]) =>
-  (x: T) => fns.reduce((v, f) => f(v), x);
-const compose = <T>(...fns: ((x: any) => any)[]) =>
-  (x: T) => fns.reduceRight((v, f) => f(v), x);
+const filter =
+  <T>(pred: (x: T) => boolean) =>
+  (xs: T[]) =>
+    xs.filter(pred);
+const map =
+  <T, U>(fn: (x: T) => U) =>
+  (xs: T[]) =>
+    xs.map(fn);
+const sort =
+  <T>(compare: (a: T, b: T) => number) =>
+  (xs: T[]) =>
+    [...xs].sort(compare);
+const pipe =
+  <T>(...fns: ((x: any) => any)[]) =>
+  (x: T) =>
+    fns.reduce((v, f) => f(v), x);
+const compose =
+  <T>(...fns: ((x: any) => any)[]) =>
+  (x: T) =>
+    fns.reduceRight((v, f) => f(v), x);
 
 // ===== 非 Point-Free vs Point-Free 对比 =====
 
 // ❌ 非 Point-Free — 每个函数都显式提及参数
 const getActiveUserNames = (users: any[]) =>
   users
-    .filter(u => u.active === true)
-    .map(u => u.name.toUpperCase())
+    .filter((u) => u.active === true)
+    .map((u) => u.name.toUpperCase())
     .sort();
 
 // ✅ Point-Free — 通过组合表达，不提及 users
 const getActive = filter((u: any) => u.active);
-const getNames = map(prop('name'));
-const toUpperNames = map(method('toUpperCase'));
+const getNames = map(prop("name"));
+const toUpperNames = map(method("toUpperCase"));
 const sorted = sort((a: string, b: string) => a.localeCompare(b));
 
-const getActiveUserNamesPF = pipe(
-  getActive,
-  getNames,
-  toUpperNames,
-  sorted
-);
+const getActiveUserNamesPF = pipe(getActive, getNames, toUpperNames, sorted);
 
 // 使用 — 完全相同的逻辑，但定义时不提及数据
 const users = [
-  { name: 'charlie', active: false },
-  { name: 'alice', active: true },
-  { name: 'bob', active: true },
+  { name: "charlie", active: false },
+  { name: "alice", active: true },
+  { name: "bob", active: true },
 ];
 
 console.log(getActiveUserNamesPF(users));
@@ -134,36 +147,38 @@ console.log(getActiveUserNamesPF(users));
 const average = (nums: number[]) =>
   nums.reduce((sum, n) => sum + n, 0) / nums.length;
 
-const getAges = map(prop('age'));
-const getActiveAges = pipe(
-  getActive,
-  getAges
-);
+const getAges = map(prop("age"));
+const getActiveAges = pipe(getActive, getAges);
 const avgActiveAge = compose(average, getActiveAges);
 
-console.log(avgActiveAge(users));  // 需要添加 age 字段
+console.log(avgActiveAge(users)); // 需要添加 age 字段
 
 // ===== Point-Free 的 flip 技巧 =====
 
 // flip: 交换二元函数的参数顺序
-const flip = <T, U, R>(fn: (a: T, b: U) => R) =>
-  (b: U) => (a: T) => fn(a, b);
+const flip =
+  <T, U, R>(fn: (a: T, b: U) => R) =>
+  (b: U) =>
+  (a: T) =>
+    fn(a, b);
 
 const includes = flip((arr: any[], val: any) => arr.includes(val));
-const roles = ['admin', 'editor', 'viewer'];
+const roles = ["admin", "editor", "viewer"];
 const isAdmin = includes(roles);
 
-const user1 = { name: 'Alice', role: 'admin' };
-const user2 = { name: 'Bob', role: 'viewer' };
+const user1 = { name: "Alice", role: "admin" };
+const user2 = { name: "Bob", role: "viewer" };
 
-console.log(isAdmin(user1.role));  // true
-console.log(isAdmin(user2.role));  // false
+console.log(isAdmin(user1.role)); // true
+console.log(isAdmin(user2.role)); // false
 
 // ===== Point-Free 的 unary 技巧 =====
 
 // unary: 只取第一个参数（解决 map 传递 index 导致的问题）
-const unary = <T, R>(fn: (x: T) => R) =>
-  (x: T) => fn(x);
+const unary =
+  <T, R>(fn: (x: T) => R) =>
+  (x: T) =>
+    fn(x);
 
 const parseIntSafe = unary(Number.parseInt);
 // ['1', '2', '3'].map(parseIntSafe) → [1, 2, 3] ✅
@@ -180,21 +195,25 @@ type Reducer<T, U> = (acc: U, value: T) => U;
 type Transducer<T, U> = <V>(reducer: Reducer<T, V>) => Reducer<U, V>;
 
 // map transducer
-const tMap = <T, U>(fn: (x: T) => U): Transducer<T, U> =>
+const tMap =
+  <T, U>(fn: (x: T) => U): Transducer<T, U> =>
   <V>(reducer: Reducer<T, V>) =>
-    (acc: V, value: U) => reducer(acc, fn(value));
+  (acc: V, value: U) =>
+    reducer(acc, fn(value));
 
 // filter transducer
-const tFilter = <T>(pred: (x: T) => boolean): Transducer<T, T> =>
+const tFilter =
+  <T>(pred: (x: T) => boolean): Transducer<T, T> =>
   <V>(reducer: Reducer<T, V>) =>
-    (acc: V, value: T) => pred(value) ? reducer(acc, value) : acc;
+  (acc: V, value: T) =>
+    pred(value) ? reducer(acc, value) : acc;
 
 // transduce: 单次遍历执行所有转换
 const transduce = <T, U, V>(
   transducer: Transducer<T, U>,
   reducer: Reducer<T, V>,
   init: V,
-  data: U[]
+  data: U[],
 ): V => {
   const combined = transducer(reducer);
   let acc = init;
@@ -214,27 +233,28 @@ interface Order {
 }
 
 const orders: Order[] = [
-  { id: 1, amount: 100, status: 'completed', region: 'CN' },
-  { id: 2, amount: 200, status: 'pending', region: 'US' },
-  { id: 3, amount: 150, status: 'completed', region: 'CN' },
-  { id: 4, amount: 300, status: 'completed', region: 'EU' },
-  { id: 5, amount: 50, status: 'completed', region: 'CN' },
+  { id: 1, amount: 100, status: "completed", region: "CN" },
+  { id: 2, amount: 200, status: "pending", region: "US" },
+  { id: 3, amount: 150, status: "completed", region: "CN" },
+  { id: 4, amount: 300, status: "completed", region: "EU" },
+  { id: 5, amount: 50, status: "completed", region: "CN" },
 ];
 
 // ❌ 传统方式 — 3 次遍历，创建 2 个中间数组
 const traditional = (orders: Order[]) =>
   orders
-    .filter(o => o.status === 'completed')
-    .filter(o => o.region === 'CN')
+    .filter((o) => o.status === "completed")
+    .filter((o) => o.region === "CN")
     .reduce((sum, o) => sum + o.amount, 0);
 
 // ✅ Transducer 方式 — 1 次遍历，零中间数组
-const completedCN = tFilter((o: Order) => o.status === 'completed');
-const cnRegion = tFilter((o: Order) => o.region === 'CN');
+const completedCN = tFilter((o: Order) => o.status === "completed");
+const cnRegion = tFilter((o: Order) => o.region === "CN");
 const sumAmount = (acc: number, o: Order) => acc + o.amount;
 
 // 组合 transducer (先 filter completed，再 filter CN)
-const composeTransducers = <T>(...transducers: Transducer<T, T>[]) =>
+const composeTransducers =
+  <T>(...transducers: Transducer<T, T>[]) =>
   <V>(reducer: Reducer<T, V>) =>
     transducers.reduceRight((r, t) => t(r), reducer);
 
@@ -242,11 +262,11 @@ const transduced = transduce(
   composeTransducers(completedCN, cnRegion),
   sumAmount,
   0,
-  orders
+  orders,
 );
 
-console.log(traditional(orders));  // 250
-console.log(transduced);            // 250
+console.log(traditional(orders)); // 250
+console.log(transduced); // 250
 
 // ===== Transducer 含 map 的完整管道 =====
 
@@ -254,20 +274,21 @@ console.log(transduced);            // 250
 const taxRate = 0.13;
 
 const tMapAmount = tMap((o: Order) => o.amount);
-const tMapTax = tMap((amount: number) => Math.round(amount * taxRate * 100) / 100);
-
-const totalTax = transduce(
-  (reducer: Reducer<number, number>) =>
-    (acc: number, o: Order) =>
-      o.status === 'completed' && o.region === 'CN'
-        ? reducer(acc, Math.round(o.amount * taxRate * 100) / 100)
-        : acc,
-  (acc: number, tax: number) => acc + tax,
-  0,
-  orders
+const tMapTax = tMap(
+  (amount: number) => Math.round(amount * taxRate * 100) / 100,
 );
 
-console.log(totalTax);  // 32.5
+const totalTax = transduce(
+  (reducer: Reducer<number, number>) => (acc: number, o: Order) =>
+    o.status === "completed" && o.region === "CN"
+      ? reducer(acc, Math.round(o.amount * taxRate * 100) / 100)
+      : acc,
+  (acc: number, tax: number) => acc + tax,
+  0,
+  orders,
+);
+
+console.log(totalTax); // 32.5
 
 // ===== Transducer 的提前终止 (Reduc / Reduced) =====
 
@@ -280,11 +301,11 @@ interface Reduced<T> {
 const reduced = <T>(value: T): Reduced<T> => ({ _reduced: true, value });
 const isReduced = <T>(x: Reduced<T> | T): x is Reduced<T> =>
   (x as any)?._reduced === true;
-const deref = <T>(x: Reduced<T> | T): T =>
-  isReduced(x) ? x.value : x;
+const deref = <T>(x: Reduced<T> | T): T => (isReduced(x) ? x.value : x);
 
 // take transducer — 取前 N 个元素后提前终止
-const tTake = <T>(n: number): Transducer<T, T> =>
+const tTake =
+  <T>(n: number): Transducer<T, T> =>
   <V>(reducer: Reducer<T, V>) => {
     let remaining = n;
     return (acc: V, value: T) => {
@@ -298,29 +319,29 @@ const tTake = <T>(n: number): Transducer<T, T> =>
 // 只取前 2 个 CN 已完成订单
 const take2 = tTake(2);
 const first2Amounts: number[] = transduce(
-  (reducer: Reducer<number, number[]>) =>
-    (acc: number[], o: Order) =>
-      o.status === 'completed' && o.region === 'CN'
-        ? reducer(acc, o.amount)
-        : acc,
+  (reducer: Reducer<number, number[]>) => (acc: number[], o: Order) =>
+    o.status === "completed" && o.region === "CN"
+      ? reducer(acc, o.amount)
+      : acc,
   (acc: number[], amount: number) => [...acc, amount],
   [],
-  orders
+  orders,
 );
 
 // 手动实现 take 2 的效果
 const first2 = transduce(
-  (reducer: Reducer<Order, Order[]>) =>
-    (acc: Order[], o: Order) =>
-      o.status === 'completed' && o.region === 'CN' && acc.length < 2
-        ? reducer(acc, o)
-        : acc.length >= 2 ? reduced(acc) : acc,
+  (reducer: Reducer<Order, Order[]>) => (acc: Order[], o: Order) =>
+    o.status === "completed" && o.region === "CN" && acc.length < 2
+      ? reducer(acc, o)
+      : acc.length >= 2
+        ? reduced(acc)
+        : acc,
   (acc: Order[], o: Order) => [...acc, o],
   [],
-  orders
+  orders,
 );
 
-console.log(first2.map(o => o.id));  // [1, 3]
+console.log(first2.map((o) => o.id)); // [1, 3]
 ```
 
 ### 示例 3: Lens (透镜) — 可组合的聚焦读写
@@ -503,26 +524,36 @@ console.log(formWithError.fields.email.error);  // "Invalid email"
 type Reader<R, A> = (env: R) => A;
 
 // of: 提升值到 Reader
-const readerOf = <R, A>(value: A): Reader<R, A> =>
-  (_env: R) => value;
+const readerOf =
+  <R, A>(value: A): Reader<R, A> =>
+  (_env: R) =>
+    value;
 
 // map: 转换 Reader 的输出
-const readerMap = <R, A, B>(fn: (a: A) => B) =>
+const readerMap =
+  <R, A, B>(fn: (a: A) => B) =>
   (reader: Reader<R, A>): Reader<R, B> =>
-    (env: R) => fn(reader(env));
+  (env: R) =>
+    fn(reader(env));
 
 // chain: 链式组合 Reader (flatMap)
-const readerChain = <R, A, B>(fn: (a: A) => Reader<R, B>) =>
+const readerChain =
+  <R, A, B>(fn: (a: A) => Reader<R, B>) =>
   (reader: Reader<R, A>): Reader<R, B> =>
-    (env: R) => fn(reader(env))(env);
+  (env: R) =>
+    fn(reader(env))(env);
 
 // ask: 读取整个环境
-const ask = <R>(): Reader<R, R> =>
-  (env: R) => env;
+const ask =
+  <R>(): Reader<R, R> =>
+  (env: R) =>
+    env;
 
 // asks: 读取环境的某个属性
-const asks = <R, K extends keyof R>(key: K): Reader<R, R[K]> =>
-  (env: R) => env[key];
+const asks =
+  <R, K extends keyof R>(key: K): Reader<R, R[K]> =>
+  (env: R) =>
+    env[key];
 
 // ===== 使用场景：配置驱动的服务层 =====
 
@@ -550,10 +581,10 @@ interface AppEnv {
 
 // 获取用户 — 先查缓存，未命中查数据库
 const getUser = (userId: number): Reader<AppEnv, Promise<any>> =>
-  readerChain((cache: AppEnv['cache']) =>
-    readerChain((db: AppEnv['db']) =>
-      readerChain((logger: AppEnv['logger']) =>
-        readerChain((config: AppEnv['config']) =>
+  readerChain((cache: AppEnv["cache"]) =>
+    readerChain((db: AppEnv["db"]) =>
+      readerChain((logger: AppEnv["logger"]) =>
+        readerChain((config: AppEnv["config"]) =>
           readerOf(
             (async () => {
               const cached = await cache.get(`user:${userId}`);
@@ -562,42 +593,56 @@ const getUser = (userId: number): Reader<AppEnv, Promise<any>> =>
                 return cached;
               }
               logger.info(`Cache miss: user:${userId}, querying DB`);
-              const results = await db.query(`SELECT * FROM users WHERE id = ${userId}`);
+              const results = await db.query(
+                `SELECT * FROM users WHERE id = ${userId}`,
+              );
               const user = results[0];
               if (user) {
                 await cache.set(`user:${userId}`, user, config.defaultTTL);
               }
               return user;
-            })()
-          )
-        )(logger)
-      )(db)
-    )(cache)
+            })(),
+          ),
+        )(logger),
+      )(db),
+    )(cache),
   )(ask());
 
 // 简化版：使用 helper
-const withDeps = <R, A>(
-  deps: (env: R) => any,
-  fn: (deps: any) => Promise<A>
-): Reader<R, Promise<A>> =>
-  (env: R) => fn(deps(env));
+const withDeps =
+  <R, A>(
+    deps: (env: R) => any,
+    fn: (deps: any) => Promise<A>,
+  ): Reader<R, Promise<A>> =>
+  (env: R) =>
+    fn(deps(env));
 
 const getUserSimple = (userId: number): Reader<AppEnv, Promise<any>> =>
   withDeps(
-    (env: AppEnv) => ({ cache: env.cache, db: env.db, logger: env.logger, config: env.config }),
+    (env: AppEnv) => ({
+      cache: env.cache,
+      db: env.db,
+      logger: env.logger,
+      config: env.config,
+    }),
     async ({ cache, db, logger, config }) => {
       const cached = await cache.get(`user:${userId}`);
       if (cached) return cached;
-      const results = await db.query(`SELECT * FROM users WHERE id = ${userId}`);
+      const results = await db.query(
+        `SELECT * FROM users WHERE id = ${userId}`,
+      );
       const user = results[0];
       if (user) await cache.set(`user:${userId}`, user, config.defaultTTL);
       return user;
-    }
+    },
   );
 
 // ===== 使用场景：分页查询 =====
 
-const getPaginatedUsers = (page: number, pageSize: number): Reader<AppEnv, Promise<any[]>> =>
+const getPaginatedUsers = (
+  page: number,
+  pageSize: number,
+): Reader<AppEnv, Promise<any[]>> =>
   withDeps(
     (env: AppEnv) => ({ db: env.db, config: env.config, logger: env.logger }),
     async ({ db, config, logger }) => {
@@ -605,9 +650,9 @@ const getPaginatedUsers = (page: number, pageSize: number): Reader<AppEnv, Promi
       const offset = (page - 1) * effectivePageSize;
       logger.info(`Fetching users page=${page}, size=${effectivePageSize}`);
       return db.query(
-        `SELECT * FROM users ORDER BY id LIMIT ${effectivePageSize} OFFSET ${offset}`
+        `SELECT * FROM users ORDER BY id LIMIT ${effectivePageSize} OFFSET ${offset}`,
       );
-    }
+    },
   );
 
 // ===== 使用场景：事务操作 =====
@@ -615,17 +660,23 @@ const getPaginatedUsers = (page: number, pageSize: number): Reader<AppEnv, Promi
 const transferMoney = (
   fromId: number,
   toId: number,
-  amount: number
+  amount: number,
 ): Reader<AppEnv, Promise<void>> =>
   withDeps(
     (env: AppEnv) => ({ db: env.db, logger: env.logger }),
     async ({ db, logger }) => {
       logger.info(`Transfer ${amount} from ${fromId} to ${toId}`);
       // 实际项目中这里会用真正的数据库事务
-      await db.execute(`UPDATE accounts SET balance = balance - ${amount} WHERE id = ${fromId}`, []);
-      await db.execute(`UPDATE accounts SET balance = balance + ${amount} WHERE id = ${toId}`, []);
+      await db.execute(
+        `UPDATE accounts SET balance = balance - ${amount} WHERE id = ${fromId}`,
+        [],
+      );
+      await db.execute(
+        `UPDATE accounts SET balance = balance + ${amount} WHERE id = ${toId}`,
+        [],
+      );
       logger.info(`Transfer complete: ${fromId} → ${toId}, amount: ${amount}`);
-    }
+    },
   );
 
 // ===== 运行 Reader：注入环境 =====
@@ -635,25 +686,25 @@ const mockEnv: AppEnv = {
   db: {
     query: async (sql: string) => {
       console.log(`[DB] ${sql}`);
-      return [{ id: 1, name: 'Alice', email: 'alice@example.com' }];
+      return [{ id: 1, name: "Alice", email: "alice@example.com" }];
     },
     execute: async (sql: string, _params: any[]) => {
       console.log(`[DB EXEC] ${sql}`);
       return 1;
-    }
+    },
   },
   cache: {
     get: async (_key: string) => null,
-    set: async (_key: string, _value: any, _ttl: number) => {}
+    set: async (_key: string, _value: any, _ttl: number) => {},
   },
   logger: {
     info: (msg: string) => console.log(`[INFO] ${msg}`),
-    error: (msg: string) => console.error(`[ERROR] ${msg}`)
+    error: (msg: string) => console.error(`[ERROR] ${msg}`),
   },
   config: {
     maxPageSize: 50,
-    defaultTTL: 3600
-  }
+    defaultTTL: 3600,
+  },
 };
 
 // 运行 — 注入环境
@@ -661,15 +712,15 @@ const mockEnv: AppEnv = {
 // const users = await getPaginatedUsers(1, 10)(mockEnv);
 // await transferMoney(1, 2, 100)(mockEnv);
 
-console.log('Reader pattern defined — inject env at runtime boundary');
+console.log("Reader pattern defined — inject env at runtime boundary");
 
 // ===== Reader 组合：管道式依赖 =====
 
 // 组合多个 Reader 操作
-const pipeline = <R, A>(
-  readers: Reader<R, A>[]
-): Reader<R, A[]> =>
-  (env: R) => readers.map(r => r(env));
+const pipeline =
+  <R, A>(readers: Reader<R, A>[]): Reader<R, A[]> =>
+  (env: R) =>
+    readers.map((r) => r(env));
 
 // 并行读取多个资源
 const loadDashboard = (userId: number): Reader<AppEnv, Promise<any>> =>
@@ -678,11 +729,16 @@ const loadDashboard = (userId: number): Reader<AppEnv, Promise<any>> =>
     async ({ cache, db, logger }) => {
       logger.info(`Loading dashboard for user ${userId}`);
       const [user, recentOrders] = await Promise.all([
-        cache.get(`user:${userId}`) ?? db.query(`SELECT * FROM users WHERE id = ${userId}`).then(r => r[0]),
-        db.query(`SELECT * FROM orders WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`)
+        cache.get(`user:${userId}`) ??
+          db
+            .query(`SELECT * FROM users WHERE id = ${userId}`)
+            .then((r) => r[0]),
+        db.query(
+          `SELECT * FROM orders WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`,
+        ),
       ]);
       return { user, recentOrders };
-    }
+    },
   );
 ```
 
@@ -697,25 +753,34 @@ const I = <T>(x: T): T => x;
 
 // K — 常量组合子 (Kestrel / Const)
 // K x y = x
-const K = <T>(x: T) => <U>(_y: U): T => x;
+const K =
+  <T>(x: T) =>
+  <U>(_y: U): T =>
+    x;
 
 // B — 组合组合子 (Bluebird / Composition)
 // B f g x = f (g x)
-const B = <T, U, V>(f: (y: U) => V) =>
+const B =
+  <T, U, V>(f: (y: U) => V) =>
   (g: (x: T) => U) =>
-    (x: T): V => f(g(x));
+  (x: T): V =>
+    f(g(x));
 
 // C — 翻转组合子 (Cardinal / Flip)
 // C f x y = f y x
-const C = <T, U, R>(f: (x: T, y: U) => R) =>
+const C =
+  <T, U, R>(f: (x: T, y: U) => R) =>
   (y: U) =>
-    (x: T): R => f(x, y);
+  (x: T): R =>
+    f(x, y);
 
 // S — 应用组合子 (Starling)
 // S f g x = f x (g x)
-const S = <T, U, R>(f: (x: T, y: U) => R) =>
+const S =
+  <T, U, R>(f: (x: T, y: U) => R) =>
   (g: (x: T) => U) =>
-    (x: T): R => f(x, g(x));
+  (x: T): R =>
+    f(x, g(x));
 
 // ===== 组合子的实际应用 =====
 
@@ -726,8 +791,8 @@ const alwaysTrue = K(true);
 const alwaysFalse = K(false);
 const zero = K(0);
 
-console.log(alwaysTrue('anything'));   // true
-console.log(alwaysFalse('anything'));  // false
+console.log(alwaysTrue("anything")); // true
+console.log(alwaysFalse("anything")); // false
 
 // 用 B (compose) 构建管道
 const add1 = (x: number) => x + 1;
@@ -736,19 +801,19 @@ const toString = (x: number) => String(x);
 
 // B(toString)(B(double)(add1))(5) = toString(double(add1(5))) = "12"
 const pipeline = B(toString)(B(double)(add1));
-console.log(pipeline(5));  // "12"
+console.log(pipeline(5)); // "12"
 
 // 用 C (flip) 交换参数
 const divide = (a: number, b: number) => a / b;
 const flippedDivide = C(divide);
 
-console.log(divide(10, 2));       // 5
+console.log(divide(10, 2)); // 5
 console.log(flippedDivide(2)(10)); // 5 (10 / 2)
 
 // 用 S 构建自应用
 // S(K)(K) x = K x (K x) = x
 const identityViaSK = S(K)(K);
-console.log(identityViaSK(42));  // 42
+console.log(identityViaSK(42)); // 42
 
 // ===== 实用组合子库 =====
 
@@ -757,41 +822,59 @@ const Combinators = {
   I: <T>(x: T): T => x,
 
   // K: 常量
-  K: <T>(x: T) => <U>(): T => x,
+  K:
+    <T>(x: T) =>
+    <U>(): T =>
+      x,
 
   // KI: 常量返回第二个参数 (Thrush)
   KI: <T, U>(_x: T, y: U): U => y,
 
   // B: 组合
-  B: <T, U, V>(f: (y: U) => V) =>
+  B:
+    <T, U, V>(f: (y: U) => V) =>
     (g: (x: T) => U) =>
-      (x: T): V => f(g(x)),
+    (x: T): V =>
+      f(g(x)),
 
   // C: 翻转
-  C: <T, U, R>(f: (x: T, y: U) => R) =>
+  C:
+    <T, U, R>(f: (x: T, y: U) => R) =>
     (y: U) =>
-      (x: T): R => f(x, y),
+    (x: T): R =>
+      f(x, y),
 
   // S: 应用
-  S: <T, U, R>(f: (x: T, y: U) => R) =>
+  S:
+    <T, U, R>(f: (x: T, y: U) => R) =>
     (g: (x: T) => U) =>
-      (x: T): R => f(x, g(x)),
+    (x: T): R =>
+      f(x, g(x)),
 
   // M: 自应用 (Mockingbird)
-  M: <T, R>(f: (x: T) => R) => (x: T): R => f(x),
+  M:
+    <T, R>(f: (x: T) => R) =>
+    (x: T): R =>
+      f(x),
 
   // T: 逆翻转 (Thrush)
-  T: <T, U>(x: T) =>
-    <R>(f: (x: T) => R): R => f(x),
+  T:
+    <T, U>(x: T) =>
+    <R>(f: (x: T) => R): R =>
+      f(x),
 
   // W: 复制 (Warbler)
-  W: <T, R>(f: (x: T, y: T) => R) =>
-    (x: T): R => f(x, x),
+  W:
+    <T, R>(f: (x: T, y: T) => R) =>
+    (x: T): R =>
+      f(x, x),
 
   // L: 左组合
-  L: <T, U, V, R>(f: (x: T, y: U) => R) =>
+  L:
+    <T, U, V, R>(f: (x: T, y: U) => R) =>
     (g: (x: T) => V) =>
-      (x: T, y: U): R => f(g(x), y),
+    (x: T, y: U): R =>
+      f(g(x), y),
 };
 
 // ===== 组合子实战：数据转换 =====
@@ -804,9 +887,21 @@ interface Person {
 }
 
 const persons: Person[] = [
-  { name: 'Alice', address: { city: 'Beijing', country: 'CN' }, scores: [90, 85, 95] },
-  { name: 'Bob', address: { city: 'New York', country: 'US' }, scores: [70, 80, 75] },
-  { name: 'Charlie', address: { city: 'London', country: 'UK' }, scores: [88, 92, 85] },
+  {
+    name: "Alice",
+    address: { city: "Beijing", country: "CN" },
+    scores: [90, 85, 95],
+  },
+  {
+    name: "Bob",
+    address: { city: "New York", country: "US" },
+    scores: [70, 80, 75],
+  },
+  {
+    name: "Charlie",
+    address: { city: "London", country: "UK" },
+    scores: [88, 92, 85],
+  },
 ];
 
 // 用组合子构建查询
@@ -821,20 +916,20 @@ console.log(persons.map(getCityUpper));
 // ['BEIJING', 'NEW YORK', 'LONDON']
 
 // S: 同时获取城市和平均分
-const getCityAndAvg = S(
-  (city: string, avg: number) => ({ city, avg })
-)(getCity)(getAvgScore);
+const getCityAndAvg = S((city: string, avg: number) => ({ city, avg }))(
+  getCity,
+)(getAvgScore);
 
 console.log(persons.map(getCityAndAvg));
 // [{ city: 'Beijing', avg: 90 }, { city: 'New York', avg: 75 }, { city: 'London', avg: 85 }]
 
 // T (Thrush): 管道风格的数据流
 const result = Combinators.T(persons)(
-  B(persons => persons.filter(p => getAvgScore(p) >= 85))(
-    persons => persons.filter(p => p.scores.length >= 3)
-  )
+  B((persons) => persons.filter((p) => getAvgScore(p) >= 85))((persons) =>
+    persons.filter((p) => p.scores.length >= 3),
+  ),
 );
-console.log(result.map(p => p.name));
+console.log(result.map((p) => p.name));
 // ['Alice', 'Charlie']
 ```
 
@@ -1050,19 +1145,21 @@ console.log('Find "Delete":', multiFind(v => v === 'Delete')(menuTree));  // nul
 type List<T> = Nil | Cons<T>;
 
 interface Nil {
-  readonly tag: 'Nil';
+  readonly tag: "Nil";
 }
 
 interface Cons<T> {
-  readonly tag: 'Cons';
+  readonly tag: "Cons";
   readonly head: T;
   readonly tail: List<T>;
 }
 
-const nil = { tag: 'Nil' as const };
+const nil = { tag: "Nil" as const };
 
 const cons = <T>(head: T, tail: List<T>): Cons<T> => ({
-  tag: 'Cons', head, tail
+  tag: "Cons",
+  head,
+  tail,
 });
 
 // ===== 链表操作 (全部纯函数) =====
@@ -1075,7 +1172,7 @@ const fromArray = <T>(arr: T[]): List<T> =>
 const toArray = <T>(list: List<T>): T[] => {
   const result: T[] = [];
   let current = list;
-  while (current.tag === 'Cons') {
+  while (current.tag === "Cons") {
     result.push(current.head);
     current = current.tail;
   }
@@ -1083,23 +1180,28 @@ const toArray = <T>(list: List<T>): T[] => {
 };
 
 // map
-const listMap = <T, U>(fn: (x: T) => U) =>
+const listMap =
+  <T, U>(fn: (x: T) => U) =>
   (list: List<T>): List<U> =>
-    list.tag === 'Nil' ? nil : cons(fn(list.head), listMap(fn)(list.tail));
+    list.tag === "Nil" ? nil : cons(fn(list.head), listMap(fn)(list.tail));
 
 // filter
-const listFilter = <T>(pred: (x: T) => boolean) =>
+const listFilter =
+  <T>(pred: (x: T) => boolean) =>
   (list: List<T>): List<T> =>
-    list.tag === 'Nil' ? nil :
-    pred(list.head) ? cons(list.head, listFilter(pred)(list.tail)) :
-    listFilter(pred)(list.tail);
+    list.tag === "Nil"
+      ? nil
+      : pred(list.head)
+        ? cons(list.head, listFilter(pred)(list.tail))
+        : listFilter(pred)(list.tail);
 
 // reduce
-const listReduce = <T, U>(fn: (acc: U, x: T) => U, init: U) =>
+const listReduce =
+  <T, U>(fn: (acc: U, x: T) => U, init: U) =>
   (list: List<T>): U => {
     let acc = init;
     let current = list;
-    while (current.tag === 'Cons') {
+    while (current.tag === "Cons") {
       acc = fn(acc, current.head);
       current = current.tail;
     }
@@ -1107,24 +1209,25 @@ const listReduce = <T, U>(fn: (acc: U, x: T) => U, init: U) =>
   };
 
 // take
-const listTake = <T>(n: number) =>
+const listTake =
+  <T>(n: number) =>
   (list: List<T>): List<T> =>
-    n <= 0 || list.tag === 'Nil' ? nil :
-    cons(list.head, listTake(n - 1)(list.tail));
+    n <= 0 || list.tag === "Nil"
+      ? nil
+      : cons(list.head, listTake(n - 1)(list.tail));
 
 // drop
-const listDrop = <T>(n: number) =>
+const listDrop =
+  <T>(n: number) =>
   (list: List<T>): List<T> =>
-    n <= 0 ? list :
-    list.tag === 'Nil' ? nil :
-    listDrop(n - 1)(list.tail);
+    n <= 0 ? list : list.tag === "Nil" ? nil : listDrop(n - 1)(list.tail);
 
 // length
 const listLength = listReduce<number | any, number>((acc, _x) => acc + 1, 0);
 
 // append
 const listAppend = <T>(a: List<T>, b: List<T>): List<T> =>
-  a.tag === 'Nil' ? b : cons(a.head, listAppend(a.tail, b));
+  a.tag === "Nil" ? b : cons(a.head, listAppend(a.tail, b));
 
 // reverse
 const listReverse = <T>(list: List<T>): List<T> =>
@@ -1134,28 +1237,28 @@ const listReverse = <T>(list: List<T>): List<T> =>
 
 const nums = fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
-console.log('Original:', toArray(nums));
+console.log("Original:", toArray(nums));
 // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 const doubledList = listMap((x: number) => x * 2)(nums);
-console.log('Doubled:', toArray(doubledList));
+console.log("Doubled:", toArray(doubledList));
 // [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 
 const evens = listFilter((x: number) => x % 2 === 0)(nums);
-console.log('Evens:', toArray(evens));
+console.log("Evens:", toArray(evens));
 // [2, 4, 6, 8, 10]
 
 const sum = listReduce((acc: number, x: number) => acc + x, 0)(nums);
-console.log('Sum:', sum);  // 55
+console.log("Sum:", sum); // 55
 
 const first3 = toArray(listTake(3)(nums));
-console.log('First 3:', first3);  // [1, 2, 3]
+console.log("First 3:", first3); // [1, 2, 3]
 
 const drop3 = toArray(listDrop(3)(nums));
-console.log('Drop 3:', drop3);  // [4, 5, 6, 7, 8, 9, 10]
+console.log("Drop 3:", drop3); // [4, 5, 6, 7, 8, 9, 10]
 
 const reversed = toArray(listReverse(nums));
-console.log('Reversed:', reversed);
+console.log("Reversed:", reversed);
 // [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
 // ===== 链式操作 (管道风格) =====
@@ -1171,12 +1274,12 @@ const pipeline = <T>(list: List<T>) => ({
 
 // 复杂查询：取偶数 → 翻倍 → 取前 3 个 → 求和
 const result = pipeline(nums)
-  .filter(x => x % 2 === 0)
-  .map(x => x * 2)
+  .filter((x) => x % 2 === 0)
+  .map((x) => x * 2)
   .take(3)
   .reduce((acc: number, x: number) => acc + x, 0);
 
-console.log('Pipeline result:', result);  // 2*2 + 4*2 + 6*2 = 4 + 8 + 12 = 24
+console.log("Pipeline result:", result); // 2*2 + 4*2 + 6*2 = 4 + 8 + 12 = 24
 
 // ===== 惰性链表 (Stream) =====
 
@@ -1188,30 +1291,33 @@ interface Stream<T> {
 // 自然数流
 const naturals = (n: number): Stream<number> => ({
   head: n,
-  tail: () => naturals(n + 1)
+  tail: () => naturals(n + 1),
 });
 
 // 流的 map
-const streamMap = <T, U>(fn: (x: T) => U) =>
+const streamMap =
+  <T, U>(fn: (x: T) => U) =>
   (stream: Stream<T>): Stream<U> => ({
     head: fn(stream.head),
-    tail: () => streamMap(fn)(stream.tail())
+    tail: () => streamMap(fn)(stream.tail()),
   });
 
 // 流取前 N 个
-const streamTake = <T>(n: number) =>
+const streamTake =
+  <T>(n: number) =>
   (stream: Stream<T>): T[] => {
     if (n <= 0) return [];
     return [stream.head, ...streamTake(n - 1)(stream.tail())];
   };
 
 // 流 filter
-const streamFilter = <T>(pred: (x: T) => boolean) =>
+const streamFilter =
+  <T>(pred: (x: T) => boolean) =>
   (stream: Stream<T>): Stream<T> => {
     if (pred(stream.head)) {
       return {
         head: stream.head,
-        tail: () => streamFilter(pred)(stream.tail())
+        tail: () => streamFilter(pred)(stream.tail()),
       };
     }
     return streamFilter(pred)(stream.tail());
@@ -1220,16 +1326,19 @@ const streamFilter = <T>(pred: (x: T) => boolean) =>
 // 斐波那契流
 const fibStream = (a: number, b: number): Stream<number> => ({
   head: a,
-  tail: () => fibStream(b, a + b)
+  tail: () => fibStream(b, a + b),
 });
 
-console.log('First 10 naturals:', streamTake(10)(naturals(0)));
+console.log("First 10 naturals:", streamTake(10)(naturals(0)));
 // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-console.log('First 10 fibs:', streamTake(10)(fibStream(0, 1)));
+console.log("First 10 fibs:", streamTake(10)(fibStream(0, 1)));
 // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
 
-console.log('First 5 even naturals:', streamTake(5)(streamFilter((n: number) => n % 2 === 0)(naturals(0))));
+console.log(
+  "First 5 even naturals:",
+  streamTake(5)(streamFilter((n: number) => n % 2 === 0)(naturals(0))),
+);
 // [0, 2, 4, 6, 8]
 ```
 
@@ -1602,12 +1711,12 @@ console.log('Valid:', validResult.valid);  // true
 
 // Action 类型 ( discriminated union)
 type Action =
-  | { type: 'ADD_TODO'; payload: { text: string } }
-  | { type: 'REMOVE_TODO'; payload: { id: number } }
-  | { type: 'TOGGLE_TODO'; payload: { id: number } }
-  | { type: 'SET_FILTER'; payload: 'all' | 'active' | 'completed' }
-  | { type: 'UNDO' }
-  | { type: 'REDO' };
+  | { type: "ADD_TODO"; payload: { text: string } }
+  | { type: "REMOVE_TODO"; payload: { id: number } }
+  | { type: "TOGGLE_TODO"; payload: { id: number } }
+  | { type: "SET_FILTER"; payload: "all" | "active" | "completed" }
+  | { type: "UNDO" }
+  | { type: "REDO" };
 
 interface Todo {
   id: number;
@@ -1618,7 +1727,7 @@ interface Todo {
 
 interface State {
   todos: Todo[];
-  filter: 'all' | 'active' | 'completed';
+  filter: "all" | "active" | "completed";
   nextId: number;
 }
 
@@ -1626,41 +1735,42 @@ interface State {
 
 const initialState: State = {
   todos: [],
-  filter: 'all',
-  nextId: 1
+  filter: "all",
+  nextId: 1,
 };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case 'ADD_TODO':
+    case "ADD_TODO":
       return {
         ...state,
-        todos: [...state.todos, {
-          id: state.nextId,
-          text: action.payload.text,
-          completed: false,
-          createdAt: Date.now()
-        }],
-        nextId: state.nextId + 1
+        todos: [
+          ...state.todos,
+          {
+            id: state.nextId,
+            text: action.payload.text,
+            completed: false,
+            createdAt: Date.now(),
+          },
+        ],
+        nextId: state.nextId + 1,
       };
 
-    case 'REMOVE_TODO':
+    case "REMOVE_TODO":
       return {
         ...state,
-        todos: state.todos.filter(t => t.id !== action.payload.id)
+        todos: state.todos.filter((t) => t.id !== action.payload.id),
       };
 
-    case 'TOGGLE_TODO':
+    case "TOGGLE_TODO":
       return {
         ...state,
-        todos: state.todos.map(t =>
-          t.id === action.payload.id
-            ? { ...t, completed: !t.completed }
-            : t
-        )
+        todos: state.todos.map((t) =>
+          t.id === action.payload.id ? { ...t, completed: !t.completed } : t,
+        ),
       };
 
-    case 'SET_FILTER':
+    case "SET_FILTER":
       return { ...state, filter: action.payload };
 
     default:
@@ -1675,21 +1785,26 @@ const getFilter = (state: State) => state.filter;
 
 const getFilteredTodos = (state: State): Todo[] => {
   switch (state.filter) {
-    case 'active': return state.todos.filter(t => !t.completed);
-    case 'completed': return state.todos.filter(t => t.completed);
-    default: return state.todos;
+    case "active":
+      return state.todos.filter((t) => !t.completed);
+    case "completed":
+      return state.todos.filter((t) => t.completed);
+    default:
+      return state.todos;
   }
 };
 
 const getTodoStats = (state: State) => ({
   total: state.todos.length,
-  completed: state.todos.filter(t => t.completed).length,
-  active: state.todos.filter(t => !t.completed).length
+  completed: state.todos.filter((t) => t.completed).length,
+  active: state.todos.filter((t) => !t.completed).length,
 });
 
 // 组合选择器
-const composeSelectors = <S, T>(...selectors: ((state: S) => T)[]) =>
-  (state: S): T[] => selectors.map(fn => fn(state));
+const composeSelectors =
+  <S, T>(...selectors: ((state: S) => T)[]) =>
+  (state: S): T[] =>
+    selectors.map((fn) => fn(state));
 
 // ===== Undo/Redo 包装器 (纯函数实现) =====
 
@@ -1702,7 +1817,7 @@ interface UndoableState<S> {
 const initUndoable = <S>(present: S): UndoableState<S> => ({
   past: [],
   present,
-  future: []
+  future: [],
 });
 
 const undo = <S>(state: UndoableState<S>): UndoableState<S> => {
@@ -1712,7 +1827,7 @@ const undo = <S>(state: UndoableState<S>): UndoableState<S> => {
   return {
     past: newPast,
     present: previous,
-    future: [state.present, ...state.future]
+    future: [state.present, ...state.future],
   };
 };
 
@@ -1723,23 +1838,23 @@ const redo = <S>(state: UndoableState<S>): UndoableState<S> => {
   return {
     past: [...state.past, state.present],
     present: next,
-    future: newFuture
+    future: newFuture,
   };
 };
 
 const undoableReducer = <S>(
   reducer: (state: S, action: Action) => S,
   undoableState: UndoableState<S>,
-  action: Action
+  action: Action,
 ): UndoableState<S> => {
-  if (action.type === 'UNDO') return undo(undoableState);
-  if (action.type === 'REDO') return redo(undoableState);
+  if (action.type === "UNDO") return undo(undoableState);
+  if (action.type === "REDO") return redo(undoableState);
 
   const newPresent = reducer(undoableState.present, action);
   return {
     past: [...undoableState.past, undoableState.present],
     present: newPresent,
-    future: []
+    future: [],
   };
 };
 
@@ -1754,51 +1869,53 @@ const dispatch = (action: Action) => {
 };
 
 // 操作
-dispatch({ type: 'ADD_TODO', payload: { text: '学习 FP' } });
-dispatch({ type: 'ADD_TODO', payload: { text: '写代码' } });
-dispatch({ type: 'ADD_TODO', payload: { text: '复习 FP' } });
-dispatch({ type: 'TOGGLE_TODO', payload: { id: 1 } });
+dispatch({ type: "ADD_TODO", payload: { text: "学习 FP" } });
+dispatch({ type: "ADD_TODO", payload: { text: "写代码" } });
+dispatch({ type: "ADD_TODO", payload: { text: "复习 FP" } });
+dispatch({ type: "TOGGLE_TODO", payload: { id: 1 } });
 
-console.log('Present:', getFilteredTodos(undoableState.present));
-console.log('Stats:', getTodoStats(undoableState.present));
-console.log('Undo steps:', undoableState.past.length);
+console.log("Present:", getFilteredTodos(undoableState.present));
+console.log("Stats:", getTodoStats(undoableState.present));
+console.log("Undo steps:", undoableState.past.length);
 
 // 撤销
-dispatch({ type: 'UNDO' });
-console.log('After undo:', getTodoStats(undoableState.present));
+dispatch({ type: "UNDO" });
+console.log("After undo:", getTodoStats(undoableState.present));
 
 // 重做
-dispatch({ type: 'REDO' });
-console.log('After redo:', getTodoStats(undoableState.present));
+dispatch({ type: "REDO" });
+console.log("After redo:", getTodoStats(undoableState.present));
 
 // ===== 中间件模式 (纯函数版) =====
 
-type Middleware<S> = (
-  store: { getState: () => S; dispatch: (action: Action) => void }
-) => (next: (action: Action) => void) => (action: Action) => void;
+type Middleware<S> = (store: {
+  getState: () => S;
+  dispatch: (action: Action) => void;
+}) => (next: (action: Action) => void) => (action: Action) => void;
 
 // Logger 中间件
-const loggerMiddleware: Middleware<any> = store => next => action => {
-  console.log('→ Dispatching:', action.type);
-  console.log('  Before:', store.getState());
+const loggerMiddleware: Middleware<any> = (store) => (next) => (action) => {
+  console.log("→ Dispatching:", action.type);
+  console.log("  Before:", store.getState());
   next(action);
-  console.log('  After:', store.getState());
+  console.log("  After:", store.getState());
 };
 
 // Validation 中间件
-const validationMiddleware: Middleware<any> = _store => next => action => {
-  if (action.type === 'ADD_TODO' && !action.payload.text.trim()) {
-    console.warn('⚠️ Empty todo text ignored');
-    return;
-  }
-  next(action);
-};
+const validationMiddleware: Middleware<any> =
+  (_store) => (next) => (action) => {
+    if (action.type === "ADD_TODO" && !action.payload.text.trim()) {
+      console.warn("⚠️ Empty todo text ignored");
+      return;
+    }
+    next(action);
+  };
 
 // 组合中间件
 const applyMiddleware = <S>(
   reducer: (state: S, action: Action) => S,
   initialState: S,
-  middlewares: Middleware<S>[]
+  middlewares: Middleware<S>[],
 ) => {
   let state = initialState;
   const listeners: (() => void)[] = [];
@@ -1812,17 +1929,17 @@ const applyMiddleware = <S>(
         const idx = listeners.indexOf(fn);
         if (idx >= 0) listeners.splice(idx, 1);
       };
-    }
+    },
   };
 
   let dispatch = (action: Action) => {
     state = reducer(state, action);
-    listeners.forEach(fn => fn());
+    listeners.forEach((fn) => fn());
   };
 
   // 应用中间件 (从右到左)
-  const chain = middlewares.map(mw => mw(store));
-  chain.reverse().forEach(mw => {
+  const chain = middlewares.map((mw) => mw(store));
+  chain.reverse().forEach((mw) => {
     const next = dispatch;
     dispatch = mw(next);
   });
@@ -1845,73 +1962,85 @@ const applyMiddleware = <S>(
 // ===== JSON 路径操作 =====
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
-interface JsonObject { [key: string]: JsonValue }
+interface JsonObject {
+  [key: string]: JsonValue;
+}
 interface JsonArray extends Array<JsonValue> {}
 
 // JSON Lens
 type JsonPath = (string | number)[];
 
 // 安全读取
-const jsonGet = (path: JsonPath) => (obj: JsonValue): JsonValue | undefined =>
-  path.reduce<JsonValue | undefined>((acc, key) => {
-    if (acc == null) return undefined;
-    if (typeof key === 'number' && Array.isArray(acc)) return acc[key];
-    if (typeof key === 'string' && typeof acc === 'object') return (acc as JsonObject)[key];
-    return undefined;
-  }, obj);
+const jsonGet =
+  (path: JsonPath) =>
+  (obj: JsonValue): JsonValue | undefined =>
+    path.reduce<JsonValue | undefined>((acc, key) => {
+      if (acc == null) return undefined;
+      if (typeof key === "number" && Array.isArray(acc)) return acc[key];
+      if (typeof key === "string" && typeof acc === "object")
+        return (acc as JsonObject)[key];
+      return undefined;
+    }, obj);
 
 // 不可变设置
-const jsonSet = (path: JsonPath, value: JsonValue) => (obj: JsonValue): JsonValue => {
-  if (path.length === 0) return value;
+const jsonSet =
+  (path: JsonPath, value: JsonValue) =>
+  (obj: JsonValue): JsonValue => {
+    if (path.length === 0) return value;
 
-  const [key, ...rest] = path;
+    const [key, ...rest] = path;
 
-  if (typeof key === 'number' && Array.isArray(obj)) {
-    const newArr = [...obj];
-    newArr[key] = rest.length === 0 ? value : jsonSet(rest, value)(obj[key] ?? null);
-    return newArr;
-  }
+    if (typeof key === "number" && Array.isArray(obj)) {
+      const newArr = [...obj];
+      newArr[key] =
+        rest.length === 0 ? value : jsonSet(rest, value)(obj[key] ?? null);
+      return newArr;
+    }
 
-  if (typeof key === 'string' && obj != null && typeof obj === 'object') {
-    const newObj = { ...(obj as JsonObject) };
-    newObj[key] = rest.length === 0 ? value : jsonSet(rest, value)(newObj[key] ?? {});
-    return newObj;
-  }
+    if (typeof key === "string" && obj != null && typeof obj === "object") {
+      const newObj = { ...(obj as JsonObject) };
+      newObj[key] =
+        rest.length === 0 ? value : jsonSet(rest, value)(newObj[key] ?? {});
+      return newObj;
+    }
 
-  return obj;
-};
+    return obj;
+  };
 
 // 删除
-const jsonDelete = (path: JsonPath) => (obj: JsonValue): JsonValue => {
-  if (path.length === 0) return obj;
+const jsonDelete =
+  (path: JsonPath) =>
+  (obj: JsonValue): JsonValue => {
+    if (path.length === 0) return obj;
 
-  const [key, ...rest] = path;
+    const [key, ...rest] = path;
 
-  if (typeof key === 'number' && Array.isArray(obj)) {
-    const newArr = [...obj];
-    if (rest.length === 0) {
-      newArr.splice(key, 1);
-    } else {
-      newArr[key] = jsonDelete(rest)(newArr[key] ?? null);
+    if (typeof key === "number" && Array.isArray(obj)) {
+      const newArr = [...obj];
+      if (rest.length === 0) {
+        newArr.splice(key, 1);
+      } else {
+        newArr[key] = jsonDelete(rest)(newArr[key] ?? null);
+      }
+      return newArr;
     }
-    return newArr;
-  }
 
-  if (typeof key === 'string' && obj != null && typeof obj === 'object') {
-    const newObj = { ...(obj as JsonObject) };
-    if (rest.length === 0) {
-      delete newObj[key];
-    } else {
-      newObj[key] = jsonDelete(rest)(newObj[key] ?? null);
+    if (typeof key === "string" && obj != null && typeof obj === "object") {
+      const newObj = { ...(obj as JsonObject) };
+      if (rest.length === 0) {
+        delete newObj[key];
+      } else {
+        newObj[key] = jsonDelete(rest)(newObj[key] ?? null);
+      }
+      return newObj;
     }
-    return newObj;
-  }
 
-  return obj;
-};
+    return obj;
+  };
 
 // 更新
-const jsonUpdate = (path: JsonPath, transformer: (v: JsonValue) => JsonValue) =>
+const jsonUpdate =
+  (path: JsonPath, transformer: (v: JsonValue) => JsonValue) =>
   (obj: JsonValue): JsonValue => {
     const current = jsonGet(path)(obj);
     return jsonSet(path, transformer(current))(obj);
@@ -1921,85 +2050,91 @@ const jsonUpdate = (path: JsonPath, transformer: (v: JsonValue) => JsonValue) =>
 
 const jsonData: JsonObject = {
   users: [
-    { id: 1, name: 'Alice', profile: { age: 25, city: 'Beijing' } },
-    { id: 2, name: 'Bob', profile: { age: 30, city: 'Shanghai' } },
-    { id: 3, name: 'Charlie', profile: { age: 28, city: 'Guangzhou' } }
+    { id: 1, name: "Alice", profile: { age: 25, city: "Beijing" } },
+    { id: 2, name: "Bob", profile: { age: 30, city: "Shanghai" } },
+    { id: 3, name: "Charlie", profile: { age: 28, city: "Guangzhou" } },
   ],
   metadata: {
     total: 3,
     page: 1,
-    version: '1.0'
-  }
+    version: "1.0",
+  },
 };
 
 // 读取
-console.log('Alice city:', jsonGet(['users', 0, 'profile', 'city'])(jsonData));
+console.log("Alice city:", jsonGet(["users", 0, "profile", "city"])(jsonData));
 // "Beijing"
 
-console.log('Total:', jsonGet(['metadata', 'total'])(jsonData));
+console.log("Total:", jsonGet(["metadata", "total"])(jsonData));
 // 3
 
 // 不可变更新
-const updated = jsonSet(['users', 0, 'profile', 'city'], 'Shenzhen')(jsonData);
-console.log('Updated:', (updated as JsonObject).users[0].profile.city);
+const updated = jsonSet(["users", 0, "profile", "city"], "Shenzhen")(jsonData);
+console.log("Updated:", (updated as JsonObject).users[0].profile.city);
 // "Shenzhen"
-console.log('Original:', (jsonData as JsonObject).users[0].profile.city);
+console.log("Original:", (jsonData as JsonObject).users[0].profile.city);
 // "Beijing" (不变)
 
 // 删除字段
-const deleted = jsonDelete(['metadata', 'version'])(jsonData);
-console.log('Has version:', 'version' in ((deleted as JsonObject).metadata as JsonObject));
+const deleted = jsonDelete(["metadata", "version"])(jsonData);
+console.log(
+  "Has version:",
+  "version" in ((deleted as JsonObject).metadata as JsonObject),
+);
 // false
 
 // 批量更新 (给所有用户加 1 岁)
-const aged = jsonUpdate(['users'], (users: JsonValue) =>
-  (users as JsonObject[]).map(user => ({
+const aged = jsonUpdate(["users"], (users: JsonValue) =>
+  (users as JsonObject[]).map((user) => ({
     ...user,
     profile: {
       ...(user.profile as JsonObject),
-      age: ((user.profile as JsonObject).age as number) + 1
-    }
-  }))
+      age: ((user.profile as JsonObject).age as number) + 1,
+    },
+  })),
 )(jsonData);
 
-console.log('Aged ages:', (aged as JsonObject).users.map(u => (u as JsonObject).profile.age));
+console.log(
+  "Aged ages:",
+  (aged as JsonObject).users.map((u) => (u as JsonObject).profile.age),
+);
 // [26, 31, 29]
 
 // ===== JSON 查询 (函数式过滤) =====
 
-const jsonQuery = <T extends JsonValue>(
-  pred: (value: JsonValue, path: JsonPath) => boolean
-) => (obj: T): { path: JsonPath; value: JsonValue }[] => {
-  const results: { path: JsonPath; value: JsonValue }[] = [];
+const jsonQuery =
+  <T extends JsonValue>(pred: (value: JsonValue, path: JsonPath) => boolean) =>
+  (obj: T): { path: JsonPath; value: JsonValue }[] => {
+    const results: { path: JsonPath; value: JsonValue }[] = [];
 
-  const walk = (current: JsonValue, path: JsonPath) => {
-    if (pred(current, path)) {
-      results.push({ path, value: current });
-    }
-    if (Array.isArray(current)) {
-      current.forEach((item, idx) => walk(item, [...path, idx]));
-    } else if (current != null && typeof current === 'object') {
-      Object.entries(current as JsonObject).forEach(([key, value]) =>
-        walk(value, [...path, key])
-      );
-    }
+    const walk = (current: JsonValue, path: JsonPath) => {
+      if (pred(current, path)) {
+        results.push({ path, value: current });
+      }
+      if (Array.isArray(current)) {
+        current.forEach((item, idx) => walk(item, [...path, idx]));
+      } else if (current != null && typeof current === "object") {
+        Object.entries(current as JsonObject).forEach(([key, value]) =>
+          walk(value, [...path, key]),
+        );
+      }
+    };
+
+    walk(obj, []);
+    return results;
   };
 
-  walk(obj, []);
-  return results;
-};
-
 // 查找所有 age 字段
-const ages = jsonQuery((value, path) =>
-  path[path.length - 1] === 'age' && typeof value === 'number'
+const ages = jsonQuery(
+  (value, path) => path[path.length - 1] === "age" && typeof value === "number",
 )(jsonData);
 
-console.log('All ages:', ages);
+console.log("All ages:", ages);
 // [{ path: ['users', 0, 'profile', 'age'], value: 25 }, ...]
 
 // 查找所有字符串值包含 'ing'
-const containingIng = jsonQuery((value) =>
-  typeof value === 'string' && value.includes('ing')
+const containingIng = jsonQuery(
+  (value) => typeof value === "string" && value.includes("ing"),
 )(jsonData);
 
 console.log('Strings with "ing":', containingIng);
@@ -2199,21 +2334,21 @@ console.log('Template parsed:', parsedTemplate?.value);
 
 ## 三、进阶概念对照表
 
-| 概念 | v1 覆盖 | v2 覆盖 | 核心思想 |
-|------|---------|---------|----------|
-| 纯函数 | ✅ | ✅ | 相同输入 → 相同输出 |
-| 不可变性 | ✅ | ✅ | 数据不修改，返回新数据 |
-| 函数组合 | ✅ | ✅ | 小函数 → 大功能 |
-| 柯里化 | ✅ | ✅ | 多参数 → 单参数链 |
-| Point-Free | ❌ | ✅ | 不提及参数的函数定义 |
-| Transducer | ❌ | ✅ | 单次遍历的转换管道 |
-| Lens | ❌ | ✅ | 可组合的聚焦读写 |
-| Reader Pattern | ❌ | ✅ | 延迟依赖注入 |
-| 函数组合子 | ❌ | ✅ | I/K/B/C/S 组合子代数 |
-| Functor | ✅ | ✅ | 可映射的容器 |
-| Monad | ✅ | ✅ | 可链式组合的容器 |
-| 递归数据结构 | ❌ | ✅ | 树/链表/流 |
-| 解析器组合子 | ❌ | ✅ | 组合式解析 |
+| 概念           | v1 覆盖 | v2 覆盖 | 核心思想               |
+| -------------- | ------- | ------- | ---------------------- |
+| 纯函数         | ✅      | ✅      | 相同输入 → 相同输出    |
+| 不可变性       | ✅      | ✅      | 数据不修改，返回新数据 |
+| 函数组合       | ✅      | ✅      | 小函数 → 大功能        |
+| 柯里化         | ✅      | ✅      | 多参数 → 单参数链      |
+| Point-Free     | ❌      | ✅      | 不提及参数的函数定义   |
+| Transducer     | ❌      | ✅      | 单次遍历的转换管道     |
+| Lens           | ❌      | ✅      | 可组合的聚焦读写       |
+| Reader Pattern | ❌      | ✅      | 延迟依赖注入           |
+| 函数组合子     | ❌      | ✅      | I/K/B/C/S 组合子代数   |
+| Functor        | ✅      | ✅      | 可映射的容器           |
+| Monad          | ✅      | ✅      | 可链式组合的容器       |
+| 递归数据结构   | ❌      | ✅      | 树/链表/流             |
+| 解析器组合子   | ❌      | ✅      | 组合式解析             |
 
 ---
 
@@ -2256,4 +2391,4 @@ v2 是**进阶篇**：Point-Free、Transducer、Lens、Reader、组合子、递�
 
 ---
 
-*专项训练完成。12 个进阶示例覆盖：Point-Free(1)、Transducer(2)、Lens(3)、Reader(4)、组合子(5)、树(6)、链表(7)、Reader+Either(8)、表单验证(9)、状态管理(10)、JSON操作(11)、解析器(12)。*
+_专项训练完成。12 个进阶示例覆盖：Point-Free(1)、Transducer(2)、Lens(3)、Reader(4)、组合子(5)、树(6)、链表(7)、Reader+Either(8)、表单验证(9)、状态管理(10)、JSON操作(11)、解析器(12)。_

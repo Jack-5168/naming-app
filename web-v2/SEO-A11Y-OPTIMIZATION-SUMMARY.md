@@ -10,14 +10,14 @@
 
 ### 1. Meta 标签增强
 
-| 优化项 | 优化前 | 优化后 |
-|--------|--------|--------|
-| `robots` meta | ❌ 缺失 | ✅ `index, follow, max-image-preview:large` |
-| `author` meta | ❌ 缺失 | ✅ `文昌赐名` |
-| `googlebot` / `baidu-spider` | ❌ 缺失 | ✅ 针对搜索引擎优化 |
-| `og:image:alt` | ❌ 缺失 | ✅ 图片无障碍描述 |
-| `twitter:image:alt` | ❌ 缺失 | ✅ 图片无障碍描述 |
-| `og:locale` / `og:site_name` | ❌ 缺失 | ✅ `zh_CN` / `文昌赐名` |
+| 优化项                       | 优化前  | 优化后                                      |
+| ---------------------------- | ------- | ------------------------------------------- |
+| `robots` meta                | ❌ 缺失 | ✅ `index, follow, max-image-preview:large` |
+| `author` meta                | ❌ 缺失 | ✅ `文昌赐名`                               |
+| `googlebot` / `baidu-spider` | ❌ 缺失 | ✅ 针对搜索引擎优化                         |
+| `og:image:alt`               | ❌ 缺失 | ✅ 图片无障碍描述                           |
+| `twitter:image:alt`          | ❌ 缺失 | ✅ 图片无障碍描述                           |
+| `og:locale` / `og:site_name` | ❌ 缺失 | ✅ `zh_CN` / `文昌赐名`                     |
 
 ### 2. 结构化数据 (Schema.org JSON-LD)
 
@@ -34,6 +34,7 @@
 ```
 
 **包含内容**:
+
 - 组织名称、Logo、联系方式
 - 营业时间 (9:00-21:00)
 - 社交媒体链接
@@ -59,51 +60,57 @@
 
 ### 1. 地标角色 (Landmark Roles)
 
-| 元素 | 优化前 | 优化后 |
-|------|--------|--------|
-| `<header>` | ❌ 无 role | ✅ `role="banner"` |
-| `<nav>` | ❌ 无 role | ✅ `role="navigation" aria-label` |
-| `<main>` | ❌ 缺失 | ✅ 新增 `<main id="main-content" role="main">` |
-| `<footer>` | ❌ 无 role | ✅ `role="contentinfo"` |
-| `<section>` | ❌ 无 aria | ✅ `aria-labelledby` 关联标题 |
+| 元素        | 优化前     | 优化后                                         |
+| ----------- | ---------- | ---------------------------------------------- |
+| `<header>`  | ❌ 无 role | ✅ `role="banner"`                             |
+| `<nav>`     | ❌ 无 role | ✅ `role="navigation" aria-label`              |
+| `<main>`    | ❌ 缺失    | ✅ 新增 `<main id="main-content" role="main">` |
+| `<footer>`  | ❌ 无 role | ✅ `role="contentinfo"`                        |
+| `<section>` | ❌ 无 aria | ✅ `aria-labelledby` 关联标题                  |
 
 ### 2. 跳过链接 (Skip Link)
 
 ```html
 <a href="#main-content" class="skip-link">跳转到主要内容</a>
 ```
+
 - ✅ 键盘用户可直接跳过导航进入主要内容
 - ✅ 聚焦时可见，平时隐藏
 
 ### 3. 交互元素无障碍
 
 **汉堡菜单按钮**:
+
 ```html
-<button 
-    aria-label="打开菜单"
-    aria-expanded="false"
-    aria-controls="mobileNavOverlay"
-    type="button">
+<button
+  aria-label="打开菜单"
+  aria-expanded="false"
+  aria-controls="mobileNavOverlay"
+  type="button"
+></button>
 ```
 
 **移动端导航面板**:
+
 ```html
-<div 
-    role="dialog"
-    aria-modal="true"
-    aria-label="移动导航菜单"
-    aria-hidden="true">
+<div
+  role="dialog"
+  aria-modal="true"
+  aria-label="移动导航菜单"
+  aria-hidden="true"
+></div>
 ```
 
 ### 4. 列表语义化
 
 ```html
 <div class="hero-features" role="list" aria-label="服务特色">
-    <div class="hero-feature" role="listitem">...</div>
+  <div class="hero-feature" role="listitem">...</div>
 </div>
 ```
 
 应用于:
+
 - ✅ Hero 特色列表
 - ✅ Trust 理由列表
 - ✅ Quick Links 导航列表
@@ -114,6 +121,7 @@
 ```html
 <svg aria-hidden="true" focusable="false">...</svg>
 ```
+
 - ✅ 装饰性图标标记为 `aria-hidden`
 - ✅ 添加 `focusable="false"` 避免 IE 聚焦问题
 
@@ -128,29 +136,30 @@
 
 ```html
 <div role="status" aria-live="polite" aria-atomic="true">
-    <!-- 统计数据会动态更新 -->
+  <!-- 统计数据会动态更新 -->
 </div>
 ```
+
 - ✅ 屏幕阅读器会朗读统计数字变化
 
 ### 8. 视觉辅助样式
 
 ```css
 .visually-hidden {
-    /* 视觉隐藏但屏幕阅读器可读 */
+  /* 视觉隐藏但屏幕阅读器可读 */
 }
 
 .skip-link:focus {
-    /* 聚焦时显示跳过链接 */
+  /* 聚焦时显示跳过链接 */
 }
 
 a:focus {
-    outline: 3px solid #8B4513;
-    outline-offset: 2px;
+  outline: 3px solid #8b4513;
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    /* 尊重用户动画偏好 */
+  /* 尊重用户动画偏好 */
 }
 ```
 
@@ -167,12 +176,14 @@ a:focus {
 ## 📈 预期效果
 
 ### SEO 收益
+
 - ✅ 搜索引擎更好理解页面内容结构
 - ✅ 结构化数据支持富搜索结果 (Rich Snippets)
 - ✅ 社交媒体分享预览更完整
 - ✅ 百度/Google 收录优化
 
 ### 无障碍收益
+
 - ✅ 符合 WCAG 2.1 AA 标准核心要求
 - ✅ 屏幕阅读器用户可完整导航
 - ✅ 键盘用户可无障碍操作

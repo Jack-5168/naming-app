@@ -130,7 +130,10 @@ const normalizedReducer = (state = normalized, action) => {
             ...state.posts.byId,
             [action.postId]: {
               ...state.posts.byId[action.postId],
-              comments: [...state.posts.byId[action.postId].comments, action.comment.id],
+              comments: [
+                ...state.posts.byId[action.postId].comments,
+                action.comment.id,
+              ],
             },
           },
         },
@@ -148,8 +151,14 @@ console.log('\n=== 规范化优势演示 ===');
 let state = normalized;
 
 // 更新用户名字 - 只需更新一处，所有引用自动更新
-state = normalizedReducer(state, { type: 'UPDATE_USER_NAME', userId: 1, name: 'Alice Updated' });
-console.log('\n更新用户 1 的名字后，posts[0].author 和 comments[0].author 都会反映新名字');
+state = normalizedReducer(state, {
+  type: 'UPDATE_USER_NAME',
+  userId: 1,
+  name: 'Alice Updated',
+});
+console.log(
+  '\n更新用户 1 的名字后，posts[0].author 和 comments[0].author 都会反映新名字',
+);
 console.log('Users:', state.users.byId[1]);
 
 // 添加评论 - 只需在 comments 和 posts.comments 引用中添加

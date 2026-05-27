@@ -1,860 +1,1305 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DOM 专项训练 — 原生 DOM API 深度练习</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'SF Mono', 'Fira Code', monospace; background: #0d1117; color: #c9d1d9; padding: 20px; line-height: 1.6; }
-  h1 { color: #58a6ff; margin-bottom: 8px; font-size: 22px; }
-  h2 { color: #7ee787; margin: 30px 0 10px; font-size: 16px; border-bottom: 1px solid #30363d; padding-bottom: 6px; }
-  .desc { color: #8b949e; margin-bottom: 12px; font-size: 13px; }
-  .demo { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
-  .demo pre { background: #0d1117; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; color: #ffa657; }
-  button { background: #238636; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin: 4px; font-size: 13px; }
-  button:hover { background: #2ea043; }
-  button.danger { background: #da3633; }
-  button.danger:hover { background: #f85149; }
-  .item { padding: 6px 10px; margin: 3px 0; background: #21262d; border-radius: 4px; cursor: pointer; }
-  .item:hover { background: #30363d; }
-  .item.active { background: #1f6feb; color: #fff; }
-  .log-area { background: #0d1117; padding: 8px; border-radius: 6px; max-height: 120px; overflow-y: auto; font-size: 12px; color: #79c0ff; }
-  .log-area div { padding: 2px 0; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 4px; }
-  .grid-cell { height: 40px; background: #21262d; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-  .grid-cell.highlight { background: #1f6feb; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 8px; text-align: left; border-bottom: 1px solid #30363d; }
-  th { color: #58a6ff; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
-  .badge-green { background: #238636; }
-  .badge-red { background: #da3633; }
-  .badge-yellow { background: #d29922; color: #000; }
-  .tab-bar { display: flex; gap: 4px; margin-bottom: 12px; }
-  .tab { padding: 6px 16px; background: #21262d; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 13px; }
-  .tab.active { background: #1f6feb; color: #fff; }
-  .tab-content { background: #21262d; padding: 12px; border-radius: 0 6px 6px 6px; }
-  .progress-bar { height: 8px; background: #21262d; border-radius: 4px; overflow: hidden; margin: 6px 0; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, #238636, #58a6ff); transition: width 0.3s; }
-  .tooltip { position: relative; display: inline-block; }
-  .tooltip .tip-text { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #30363d; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
-  .tooltip:hover .tip-text { display: block; }
-  .virtual-list { height: 200px; overflow-y: auto; position: relative; }
-  .virtual-list .spacer { position: absolute; width: 1px; }
-  .virtual-list .row { position: absolute; width: 100%; padding: 8px; background: #21262d; margin: 2px 0; border-radius: 4px; }
-  .sort-col { cursor: pointer; user-select: none; }
-  .sort-col:hover { color: #ffa657; }
-  .sort-col::after { content: ' ↕'; opacity: 0.4; }
-  .sort-col.asc::after { content: ' ↑'; }
-  .sort-col.desc::after { content: ' ↓'; }
-</style>
-</head>
-<body>
-
-<h1>🎯 DOM 专项训练 — 原生 DOM API 深度练习</h1>
-<p class="desc">2026-04-27 · 事件委托 / DOM Diff / 性能优化 · 12 个完整示例</p>
-
-<!-- ==================== 事件委托 ==================== -->
-
-<h2>示例 1：事件委托 — 动态列表项点击</h2>
-<p class="desc">利用冒泡机制，在父元素上监听子元素事件，避免为每个子元素绑定监听器。</p>
-<div class="demo">
-  <div id="task-list" style="min-height:100px;">
-    <div class="item" data-id="1">📋 完成 DOM 训练任务</div>
-    <div class="item" data-id="2">📋 复习事件委托模式</div>
-    <div class="item" data-id="3">📋 实现虚拟列表</div>
-  </div>
-  <button id="add-task">➕ 添加任务</button>
-  <button id="clear-done" class="danger">🗑️ 清除全部</button>
-  <div class="log-area" id="task-log"></div>
-</div>
-
-<h2>示例 2：事件委托 — 表格行内操作（编辑/删除）</h2>
-<p class="desc">表格中每行有编辑和删除按钮，通过事件委托统一处理。</p>
-<div class="demo">
-  <table id="user-table">
-    <thead><tr><th>姓名</th><th>角色</th><th>操作</th></tr></thead>
-    <tbody>
-      <tr data-id="1"><td>Alice</td><td><span class="badge badge-green">Admin</span></td><td><button class="edit-btn">编辑</button><button class="delete-btn danger">删除</button></td></tr>
-      <tr data-id="2"><td>Bob</td><td><span class="badge badge-yellow">Editor</span></td><td><button class="edit-btn">编辑</button><button class="delete-btn danger">删除</button></td></tr>
-      <tr data-id="3"><td>Charlie</td><td><span class="badge badge-red">Viewer</span></td><td><button class="edit-btn">编辑</button><button class="delete-btn danger">删除</button></td></tr>
-    </tbody>
-  </table>
-  <div class="log-area" id="table-log"></div>
-</div>
-
-<h2>示例 3：事件委托 — 键盘快捷键全局监听</h2>
-<p class="desc">使用事件委托在 document 上监听全局快捷键组合。</p>
-<div class="demo">
-  <p>试试快捷键：<kbd>Ctrl+S</kbd> 保存 · <kbd>Ctrl+Z</kbd> 撤销 · <kbd>Ctrl+Shift+K</kbd> 命令面板 · <kbd>?</kbd> 帮助</p>
-  <div class="log-area" id="shortcut-log"></div>
-</div>
-
-<h2>示例 4：事件委托 — 动态表单验证</h2>
-<p class="desc">通过事件委托在表单容器上统一处理输入框的 blur/change 事件。</p>
-<div class="demo">
-  <form id="signup-form" style="display:grid;gap:8px;max-width:300px;">
-    <div><label>用户名：</label><input class="validate-input" data-rule="required" placeholder="必填"></div>
-    <div><label>邮箱：</label><input class="validate-input" data-rule="email" placeholder="email@example.com"></div>
-    <div><label>年龄：</label><input class="validate-input" data-rule="number" placeholder="18-99"></div>
-    <button type="button" id="submit-form">提交</button>
-  </form>
-  <div class="log-area" id="form-log"></div>
-</div>
-
-<!-- ==================== DOM Diff ==================== -->
-
-<h2>示例 5：简易 DOM Diff 引擎</h2>
-<p class="desc">实现一个最小化的 VDOM → Real DOM 的 diff/patch 算法。</p>
-<div class="demo">
-  <div id="diff-container"></div>
-  <button id="diff-step1">状态 1</button>
-  <button id="diff-step2">状态 2（修改+新增）</button>
-  <button id="diff-step3">状态 3（重排+删除）</button>
-  <div class="log-area" id="diff-log"></div>
-</div>
-
-<h2>示例 6：列表 Diff — 同层节点对比</h2>
-<p class="desc">对比两组列表数据，计算最小 DOM 操作集（新增/移动/删除）。</p>
-<div class="demo">
-  <div id="list-diff-container" class="grid"></div>
-  <button id="list-step1">列表 A</button>
-  <button id="list-step2">列表 B（增/删/移）</button>
-  <button id="list-step3">列表 C（大幅变化）</button>
-  <div class="log-area" id="list-diff-log"></div>
-</div>
-
-<h2>示例 7：组件级 Diff — 状态树对比</h2>
-<p class="desc">模拟组件树 diff，只更新变化的属性/子节点。</p>
-<div class="demo">
-  <div id="component-container"></div>
-  <button id="comp-step1">初始状态</button>
-  <button id="comp-step2">更新标题+新增子项</button>
-  <button id="comp-step3">深度修改</button>
-  <div class="log-area" id="comp-log"></div>
-</div>
-
-<!-- ==================== 性能优化 ==================== -->
-
-<h2>示例 8：DocumentFragment — 批量插入优化</h2>
-<p class="desc">对比直接 appendChild vs DocumentFragment 的性能差异。</p>
-<div class="demo">
-  <button id="perf-direct">直接插入 1000 项</button>
-  <button id="perf-fragment">Fragment 插入 1000 项</button>
-  <div class="log-area" id="perf-log"></div>
-  <div id="perf-result" style="margin-top:8px;font-size:13px;"></div>
-</div>
-
-<h2>示例 9：虚拟列表 — 只渲染可视区域</h2>
-<p class="desc">10000 条数据，只渲染可视区域内的 DOM 节点。</p>
-<div class="demo">
-  <div class="virtual-list" id="virtual-list-container"></div>
-  <div class="log-area" id="virtual-log"></div>
-</div>
-
-<h2>示例 10：防抖 & 节流 — 滚动/输入优化</h2>
-<p class="desc">对高频事件进行防抖/节流处理，减少 DOM 操作次数。</p>
-<div class="demo">
-  <input id="debounce-input" placeholder="输入试试（防抖 300ms）" style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;padding:6px 12px;border-radius:6px;width:260px;">
-  <div style="margin-top:10px;">
-    <button id="start-scroll">开始滚动测试（节流 100ms）</button>
-  </div>
-  <div id="scroll-area" style="height:100px;overflow-y:auto;margin-top:8px;background:#0d1117;border-radius:6px;padding:8px;">
-    <div style="height:2000px;">向下滚动...</div>
-  </div>
-  <div class="log-area" id="debounce-log"></div>
-</div>
-
-<h2>示例 11：IntersectionObserver — 懒加载 & 可见性检测</h2>
-<p class="desc">使用 IntersectionObserver 实现图片懒加载和元素进入视口检测。</p>
-<div class="demo">
-  <div id="lazy-container" style="height:200px;overflow-y:auto;background:#0d1117;border-radius:6px;"></div>
-  <div class="log-area" id="lazy-log"></div>
-</div>
-
-<h2>示例 12：MutationObserver — 监听 DOM 变化</h2>
-<p class="desc">监听 DOM 树的变化（节点增删、属性修改、文本变化）。</p>
-<div class="demo">
-  <div id="observe-target">
-    <p>初始内容</p>
-    <span class="meta">version: 1.0</span>
-  </div>
-  <button id="mutate-text">修改文本</button>
-  <button id="mutate-attr">修改属性</button>
-  <button id="mutate-add">添加节点</button>
-  <button id="mutate-remove">删除节点</button>
-  <div class="log-area" id="mutation-log"></div>
-</div>
-
-<script>
-// ============================================================
-//  示例 1：事件委托 — 动态列表项点击
-// ============================================================
-(function () {
-  const list = document.getElementById('task-list');
-  const log = document.getElementById('task-log');
-  let nextId = 4;
-
-  function logMsg(msg) {
-    const d = document.createElement('div');
-    d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    log.prepend(d);
-  }
-
-  // 核心：在父元素上监听，通过 e.target 判断
-  list.addEventListener('click', function (e) {
-    const item = e.target.closest('.item');
-    if (!item) return;
-
-    if (e.target.closest('#clear-done')) return; // 排除清除按钮
-
-    const id = item.dataset.id;
-    if (e.target.classList.contains('item')) {
-      // 切换 active
-      item.classList.toggle('active');
-      logMsg(`任务 #${id} ${item.classList.contains('active') ? '✅ 完成' : '⏳ 待办'}`);
-    }
-  });
-
-  // 双击删除
-  list.addEventListener('dblclick', function (e) {
-    const item = e.target.closest('.item');
-    if (!item) return;
-    const id = item.dataset.id;
-    item.remove();
-    logMsg(`任务 #${id} 🗑️ 已删除`);
-  });
-
-  document.getElementById('add-task').addEventListener('click', function () {
-    const item = document.createElement('div');
-    item.className = 'item';
-    item.dataset.id = nextId++;
-    item.textContent = `📋 新任务 #${item.dataset.id}`;
-    list.appendChild(item);
-    logMsg(`任务 #${item.dataset.id} ➕ 已添加`);
-  });
-
-  document.getElementById('clear-done').addEventListener('click', function () {
-    list.innerHTML = '';
-    logMsg('🗑️ 全部清除');
-  });
-})();
-
-// ============================================================
-//  示例 2：事件委托 — 表格行内操作
-// ============================================================
-(function () {
-  const table = document.getElementById('user-table');
-  const log = document.getElementById('table-log');
-
-  function logMsg(msg) {
-    const d = document.createElement('div');
-    d.textContent = msg;
-    log.prepend(d);
-  }
-
-  table.addEventListener('click', function (e) {
-    const row = e.target.closest('tr');
-    if (!row) return;
-    const id = row.dataset.id;
-    const name = row.cells[0]?.textContent;
-
-    if (e.target.classList.contains('delete-btn')) {
-      row.style.transition = 'opacity 0.3s';
-      row.style.opacity = '0';
-      setTimeout(() => row.remove(), 300);
-      logMsg(`🗑️ 删除用户 ${name} (#${id})`);
-    } else if (e.target.classList.contains('edit-btn')) {
-      logMsg(`✏️ 编辑用户 ${name} (#${id})`);
-    }
-  });
-})();
-
-// ============================================================
-//  示例 3：事件委托 — 键盘快捷键
-// ============================================================
-(function () {
-  const log = document.getElementById('shortcut-log');
-  function logMsg(msg) {
-    const d = document.createElement('div');
-    d.textContent = msg;
-    log.prepend(d);
-  }
-
-  document.addEventListener('keydown', function (e) {
-    const parts = [];
-    if (e.ctrlKey || e.metaKey) parts.push('Ctrl');
-    if (e.shiftKey) parts.push('Shift');
-    if (e.altKey) parts.push('Alt');
-    parts.push(e.key.length === 1 ? e.key.toUpperCase() : e.key);
-    const combo = parts.join('+');
-
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      logMsg(`⌨️ ${combo} → 💾 保存`);
-    } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-      e.preventDefault();
-      logMsg(`⌨️ ${combo} → ↩️ 撤销`);
-    } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'k') {
-      e.preventDefault();
-      logMsg(`⌨️ ${combo} → 🔍 命令面板`);
-    } else if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-      logMsg(`⌨️ ${combo} → ❓ 帮助`);
-    }
-  });
-})();
-
-// ============================================================
-//  示例 4：事件委托 — 动态表单验证
-// ============================================================
-(function () {
-  const form = document.getElementById('signup-form');
-  const log = document.getElementById('form-log');
-  const errors = {};
-
-  function logMsg(msg) {
-    const d = document.createElement('div');
-    d.textContent = msg;
-    log.prepend(d);
-  }
-
-  // 在表单容器上统一监听 input 事件
-  form.addEventListener('input', function (e) {
-    const input = e.target.closest('.validate-input');
-    if (!input) return;
-    const rule = input.dataset.rule;
-    const val = input.value.trim();
-    let err = '';
-
-    if (rule === 'required' && !val) err = '此项为必填';
-    if (rule === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) err = '邮箱格式不正确';
-    if (rule === 'number' && val && (isNaN(val) || val < 18 || val > 99)) err = '年龄需在 18-99 之间';
-
-    if (err) {
-      input.style.borderColor = '#da3633';
-      errors[input.dataset.rule] = err;
-    } else {
-      input.style.borderColor = '#238636';
-      delete errors[input.dataset.rule];
-    }
-  });
-
-  // 提交验证
-  document.getElementById('submit-form').addEventListener('click', function () {
-    if (Object.keys(errors).length === 0) {
-      logMsg('✅ 表单验证通过，可以提交');
-    } else {
-      logMsg('❌ 验证失败：' + Object.values(errors).join('；'));
-    }
-  });
-})();
-
-// ============================================================
-//  示例 5：简易 DOM Diff 引擎
-// ============================================================
-(function () {
-  const container = document.getElementById('diff-container');
-  const log = document.getElementById('diff-log');
-  let ops = 0;
-
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  // 简易 VNode
-  function h(tag, props, children) {
-    return { tag, props: props || {}, children: children || [] };
-  }
-
-  // 创建真实 DOM
-  function render(vnode) {
-    if (typeof vnode === 'string') return document.createTextNode(vnode);
-    const el = document.createElement(vnode.tag);
-    for (const [k, v] of Object.entries(vnode.props)) {
-      if (k === 'textContent') el.textContent = v;
-      else if (k === 'className') el.className = v;
-      else el.setAttribute(k, v);
-    }
-    vnode.children.forEach(c => el.appendChild(render(c)));
-    return el;
-  }
-
-  // Diff & Patch
-  function diff(oldVnode, newVnode, parent) {
-    ops++;
-    if (!oldVnode) {
-      parent.appendChild(render(newVnode));
-      return;
-    }
-    if (!newVnode) {
-      parent.removeChild(parent.firstChild);
-      return;
-    }
-    if (typeof oldVnode === 'string' || typeof newVnode === 'string') {
-      if (oldVnode !== newVnode) {
-        const newEl = render(newVnode);
-        parent.replaceChild(newEl, parent.firstChild);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM 专项训练 — 原生 DOM API 深度练习</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      return;
-    }
-    if (oldVnode.tag !== newVnode.tag) {
-      parent.replaceChild(render(newVnode), parent.firstChild);
-      return;
-    }
-    // 同 tag，更新属性
-    const el = parent.firstChild;
-    const allKeys = new Set([...Object.keys(oldVnode.props), ...Object.keys(newVnode.props)]);
-    allKeys.forEach(k => {
-      if (oldVnode.props[k] !== newVnode.props[k]) {
-        if (k === 'textContent') el.textContent = newVnode.props[k];
-        else if (k === 'className') el.className = newVnode.props[k];
-        else el.setAttribute(k, newVnode.props[k]);
+      body {
+        font-family: "SF Mono", "Fira Code", monospace;
+        background: #0d1117;
+        color: #c9d1d9;
+        padding: 20px;
+        line-height: 1.6;
       }
-    });
-    // 递归 diff 子节点
-    const maxLen = Math.max(oldVnode.children.length, newVnode.children.length);
-    for (let i = 0; i < maxLen; i++) {
-      diff(oldVnode.children[i], newVnode.children[i], el);
-    }
-  }
-
-  let currentVnode = null;
-  function update(newVnode) {
-    const start = performance.now();
-    diff(currentVnode, newVnode, container);
-    currentVnode = newVnode;
-    ops = 0;
-  }
-
-  document.getElementById('diff-step1').addEventListener('click', function () {
-    update(h('div', { className: 'item' }, [
-      h('h3', { textContent: '📦 用户面板' }),
-      h('p', { textContent: '欢迎回来，用户' })
-    ]));
-    logMsg('⚡ Step1: 初始渲染');
-  });
-
-  document.getElementById('diff-step2').addEventListener('click', function () {
-    update(h('div', { className: 'item active' }, [
-      h('h3', { textContent: '📦 用户面板' }),
-      h('p', { textContent: '欢迎回来，管理员' }),
-      h('button', { className: 'badge-green', textContent: '升级' })
-    ]));
-    logMsg('⚡ Step2: 修改文本 + 新增按钮（仅 diff 变化的节点）');
-  });
-
-  document.getElementById('diff-step3').addEventListener('click', function () {
-    update(h('div', { className: 'item' }, [
-      h('h3', { textContent: '📦 用户面板' }),
-      h('p', { textContent: '数据已更新' })
-    ]));
-    logMsg('⚡ Step3: 删除按钮 + 修改文本');
-  });
-})();
-
-// ============================================================
-//  示例 6：列表 Diff — 同层节点对比
-// ============================================================
-(function () {
-  const container = document.getElementById('list-diff-container');
-  const log = document.getElementById('list-diff-log');
-
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  function renderList(items) {
-    const oldItems = Array.from(container.children).map(el => el.dataset.key);
-    const newItems = items.map(i => i.key);
-
-    // 简易 LCS 计算需要保留的
-    const oldMap = {};
-    oldItems.forEach((k, i) => oldMap[k] = i);
-
-    const fragment = document.createDocumentFragment();
-    const toKeep = new Set(newItems);
-
-    // 删除不在新列表中的
-    oldItems.forEach(k => {
-      if (!toKeep.has(k)) {
-        const el = container.querySelector(`[data-key="${k}"]`);
-        if (el) { el.style.transition = '0.2s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }
-        logMsg(`🗑️ 移除: ${k}`);
+      h1 {
+        color: #58a6ff;
+        margin-bottom: 8px;
+        font-size: 22px;
       }
-    });
-
-    // 新增或移动
-    newItems.forEach((k, i) => {
-      let el = container.querySelector(`[data-key="${k}"]`);
-      if (!el) {
-        el = document.createElement('div');
-        el.className = 'grid-cell';
-        el.dataset.key = k;
-        el.textContent = k;
-        fragment.appendChild(el);
-        logMsg(`➕ 新增: ${k}`);
+      h2 {
+        color: #7ee787;
+        margin: 30px 0 10px;
+        font-size: 16px;
+        border-bottom: 1px solid #30363d;
+        padding-bottom: 6px;
       }
-    });
-    container.appendChild(fragment);
-
-    // 重新排序
-    newItems.forEach((k, i) => {
-      const el = container.querySelector(`[data-key="${k}"]`);
-      if (el) container.appendChild(el);
-    });
-  }
-
-  const dataA = [{ key: 'A' }, { key: 'B' }, { key: 'C' }, { key: 'D' }, { key: 'E' }];
-  const dataB = [{ key: 'A' }, { key: 'C' }, { key: 'D' }, { key: 'F' }, { key: 'G' }];
-  const dataC = [{ key: 'X' }, { key: 'Y' }, { key: 'Z' }];
-
-  document.getElementById('list-step1').addEventListener('click', function () { renderList(dataA); logMsg('📋 列表 A'); });
-  document.getElementById('list-step2').addEventListener('click', function () { renderList(dataB); logMsg('📋 列表 B (B/E→F/G, C/D 保留)'); });
-  document.getElementById('list-step3').addEventListener('click', function () { renderList(dataC); logMsg('📋 列表 C (全部替换)'); });
-})();
-
-// ============================================================
-//  示例 7：组件级 Diff
-// ============================================================
-(function () {
-  const container = document.getElementById('component-container');
-  const log = document.getElementById('comp-log');
-
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  // 模拟组件树
-  const components = {
-    step1: {
-      tag: 'div', props: { className: 'demo' },
-      children: [
-        { tag: 'h3', props: { textContent: '📊 仪表盘' } },
-        { tag: 'div', props: { className: 'grid' }, children: [
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'CPU 45%' } },
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'MEM 62%' } }
-        ]}
-      ]
-    },
-    step2: {
-      tag: 'div', props: { className: 'demo' },
-      children: [
-        { tag: 'h3', props: { textContent: '📊 仪表盘 - 实时更新' } },
-        { tag: 'div', props: { className: 'grid' }, children: [
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'CPU 78%' } },
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'MEM 62%' } },
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'NET 12ms' } }
-        ]}
-      ]
-    },
-    step3: {
-      tag: 'div', props: { className: 'demo' },
-      children: [
-        { tag: 'h3', props: { textContent: '📊 仪表盘 - 异常告警' } },
-        { tag: 'div', props: { className: 'grid' }, children: [
-          { tag: 'div', props: { className: 'grid-cell highlight', textContent: 'CPU 95% ⚠️' } },
-          { tag: 'div', props: { className: 'grid-cell highlight', textContent: 'MEM 88% ⚠️' } },
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'NET 45ms' } },
-          { tag: 'div', props: { className: 'grid-cell', textContent: 'DISK 72%' } }
-        ]}
-      ]
-    }
-  };
-
-  let current = null;
-  function patch(old, newV, parent) {
-    if (!old) {
-      parent.appendChild(createEl(newV));
-      return;
-    }
-    if (old.tag !== newV.tag) {
-      parent.replaceChild(createEl(newV), parent.firstChild);
-      return;
-    }
-    const el = parent.firstChild;
-    for (const k in newV.props) {
-      if (old.props[k] !== newV.props[k]) {
-        if (k === 'textContent') el.textContent = newV.props[k];
-        else el.setAttribute(k, newV.props[k]);
+      .desc {
+        color: #8b949e;
+        margin-bottom: 12px;
+        font-size: 13px;
       }
-    }
-  }
-
-  function createEl(vnode) {
-    if (typeof vnode === 'string') return document.createTextNode(vnode);
-    const el = document.createElement(vnode.tag);
-    for (const [k, v] of Object.entries(vnode.props || {})) {
-      if (k === 'textContent') el.textContent = v;
-      else el.setAttribute(k, v);
-    }
-    (vnode.children || []).forEach(c => el.appendChild(createEl(c)));
-    return el;
-  }
-
-  function renderStep(step) {
-    const v = components[step];
-    patch(current, v, container);
-    current = v;
-  }
-
-  document.getElementById('comp-step1').addEventListener('click', function () { renderStep('step1'); logMsg('🧩 组件 Step1: 初始'); });
-  document.getElementById('comp-step2').addEventListener('click', function () { renderStep('step2'); logMsg('🧩 组件 Step2: 标题修改 + 新增 NET 指标'); });
-  document.getElementById('comp-step3').addEventListener('click', function () { renderStep('step3'); logMsg('🧩 组件 Step3: 高亮告警 + 新增 DISK'); });
-})();
-
-// ============================================================
-//  示例 8：DocumentFragment 性能对比
-// ============================================================
-(function () {
-  const log = document.getElementById('perf-log');
-  const result = document.getElementById('perf-result');
-
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  function createItems(count) {
-    const items = [];
-    for (let i = 0; i < count; i++) {
-      items.push(`<div class="item" data-id="${i}">项目 #${i}</div>`);
-    }
-    return items;
-  }
-
-  document.getElementById('perf-direct').addEventListener('click', function () {
-    const start = performance.now();
-    const items = createItems(1000);
-    items.forEach(html => {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = html;
-      document.body.appendChild(div);
-    });
-    const elapsed = performance.now() - start;
-    logMsg(`⏱️ 直接插入 1000 项: ${elapsed.toFixed(2)}ms`);
-    result.textContent = `直接插入耗时: ${elapsed.toFixed(2)}ms`;
-  });
-
-  document.getElementById('perf-fragment').addEventListener('click', function () {
-    const start = performance.now();
-    const frag = document.createDocumentFragment();
-    for (let i = 0; i < 1000; i++) {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.textContent = `项目 #${i}`;
-      frag.appendChild(div);
-    }
-    document.body.appendChild(frag);
-    const elapsed = performance.now() - start;
-    logMsg(`⏱️ Fragment 插入 1000 项: ${elapsed.toFixed(2)}ms`);
-    result.textContent += ` | Fragment 耗时: ${elapsed.toFixed(2)}ms`;
-  });
-})();
-
-// ============================================================
-//  示例 9：虚拟列表
-// ============================================================
-(function () {
-  const container = document.getElementById('virtual-list-container');
-  const log = document.getElementById('virtual-log');
-  const ITEM_HEIGHT = 32;
-  const BUFFER = 5;
-  const TOTAL = 10000;
-
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  // 生成数据
-  const data = Array.from({ length: TOTAL }, (_, i) => ({
-    id: i,
-    text: `记录 #${i} — ${'Lorem ipsum dolor sit amet'.slice(0, (i % 20) + 10)}`
-  }));
-
-  // 创建占位 spacer
-  const spacer = document.createElement('div');
-  spacer.className = 'spacer';
-  spacer.style.height = TOTAL * ITEM_HEIGHT + 'px';
-  container.appendChild(spacer);
-
-  let renderedRange = { start: -1, end: -1 };
-
-  function render(visibleStart, visibleEnd) {
-    const start = Math.max(0, visibleStart - BUFFER);
-    const end = Math.min(TOTAL - 1, visibleEnd + BUFFER);
-
-    if (renderedRange.start === start && renderedRange.end === end) return;
-
-    // 清除旧节点
-    container.querySelectorAll('.row').forEach(el => el.remove());
-
-    const frag = document.createDocumentFragment();
-    for (let i = start; i <= end; i++) {
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.style.top = (i * ITEM_HEIGHT) + 'px';
-      row.style.height = ITEM_HEIGHT + 'px';
-      row.textContent = data[i].text;
-      frag.appendChild(row);
-    }
-    container.appendChild(frag);
-    renderedRange = { start, end };
-    logMsg(`📋 渲染 [${start}-${end}] 共 ${end - start + 1} 个节点 / 总计 ${TOTAL}`);
-  }
-
-  let rafId = null;
-  container.addEventListener('scroll', function () {
-    if (rafId) return;
-    rafId = requestAnimationFrame(() => {
-      const scrollTop = container.scrollTop;
-      const viewHeight = container.clientHeight;
-      const start = Math.floor(scrollTop / ITEM_HEIGHT);
-      const end = Math.ceil((scrollTop + viewHeight) / ITEM_HEIGHT);
-      render(start, end);
-      rafId = null;
-    });
-  });
-
-  // 初始渲染
-  render(0, Math.ceil(container.clientHeight / ITEM_HEIGHT));
-})();
-
-// ============================================================
-//  示例 10：防抖 & 节流
-// ============================================================
-(function () {
-  const log = document.getElementById('debounce-log');
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  // 防抖
-  function debounce(fn, delay) {
-    let timer = null;
-    return function (...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-  }
-
-  // 节流
-  function throttle(fn, delay) {
-    let last = 0;
-    return function (...args) {
-      const now = Date.now();
-      if (now - last >= delay) {
-        last = now;
-        fn.apply(this, args);
+      .demo {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
       }
-    };
-  }
-
-  // 防抖输入
-  const input = document.getElementById('debounce-input');
-  let inputCount = 0;
-  const debouncedSearch = debounce(function (val) {
-    inputCount++;
-    logMsg(`🔍 搜索触发 #${inputCount}: "${val}" (延迟 300ms)`);
-  }, 300);
-
-  input.addEventListener('input', function (e) {
-    logMsg(`⌨️ 输入: "${e.target.value}"`);
-    debouncedSearch(e.target.value);
-  });
-
-  // 节流滚动
-  let scrollCount = 0;
-  const throttledScroll = throttle(function () {
-    scrollCount++;
-    logMsg(`📜 滚动事件 #${scrollCount}: scrollTop=${this.scrollTop}`);
-  }, 100);
-
-  document.getElementById('start-scroll').addEventListener('click', function () {
-    const area = document.getElementById('scroll-area');
-    area.addEventListener('scroll', throttledScroll);
-    logMsg('✅ 滚动节流已启用 (100ms)');
-  });
-})();
-
-// ============================================================
-//  示例 11：IntersectionObserver — 懒加载
-// ============================================================
-(function () {
-  const container = document.getElementById('lazy-container');
-  const log = document.getElementById('lazy-log');
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
-
-  // 生成 50 个"图片"占位
-  for (let i = 1; i <= 50; i++) {
-    const div = document.createElement('div');
-    div.style.cssText = `height:80px;margin:8px 0;background:#21262d;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;`;
-    div.dataset.src = `image-${i}`;
-    div.textContent = `🖼️ 图片 #${i} (未加载)`;
-    container.appendChild(div);
-  }
-
-  const observer = new IntersectionObserver(function (entries) {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const src = el.dataset.src;
-        el.textContent = `🖼️ ${src} ✅ 已加载`;
-        el.style.background = '#1f6feb';
-        observer.unobserve(el);
-        logMsg(`📷 懒加载: ${src}`);
+      .demo pre {
+        background: #0d1117;
+        padding: 12px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 12px;
+        color: #ffa657;
       }
-    });
-  }, { root: container, rootMargin: '50px', threshold: 0.1 });
+      button {
+        background: #238636;
+        color: #fff;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 4px;
+        font-size: 13px;
+      }
+      button:hover {
+        background: #2ea043;
+      }
+      button.danger {
+        background: #da3633;
+      }
+      button.danger:hover {
+        background: #f85149;
+      }
+      .item {
+        padding: 6px 10px;
+        margin: 3px 0;
+        background: #21262d;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .item:hover {
+        background: #30363d;
+      }
+      .item.active {
+        background: #1f6feb;
+        color: #fff;
+      }
+      .log-area {
+        background: #0d1117;
+        padding: 8px;
+        border-radius: 6px;
+        max-height: 120px;
+        overflow-y: auto;
+        font-size: 12px;
+        color: #79c0ff;
+      }
+      .log-area div {
+        padding: 2px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 4px;
+      }
+      .grid-cell {
+        height: 40px;
+        background: #21262d;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+      }
+      .grid-cell.highlight {
+        background: #1f6feb;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #30363d;
+      }
+      th {
+        color: #58a6ff;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+      }
+      .badge-green {
+        background: #238636;
+      }
+      .badge-red {
+        background: #da3633;
+      }
+      .badge-yellow {
+        background: #d29922;
+        color: #000;
+      }
+      .tab-bar {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 12px;
+      }
+      .tab {
+        padding: 6px 16px;
+        background: #21262d;
+        border-radius: 6px 6px 0 0;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .tab.active {
+        background: #1f6feb;
+        color: #fff;
+      }
+      .tab-content {
+        background: #21262d;
+        padding: 12px;
+        border-radius: 0 6px 6px 6px;
+      }
+      .progress-bar {
+        height: 8px;
+        background: #21262d;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 6px 0;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #238636, #58a6ff);
+        transition: width 0.3s;
+      }
+      .tooltip {
+        position: relative;
+        display: inline-block;
+      }
+      .tooltip .tip-text {
+        display: none;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #30363d;
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .tooltip:hover .tip-text {
+        display: block;
+      }
+      .virtual-list {
+        height: 200px;
+        overflow-y: auto;
+        position: relative;
+      }
+      .virtual-list .spacer {
+        position: absolute;
+        width: 1px;
+      }
+      .virtual-list .row {
+        position: absolute;
+        width: 100%;
+        padding: 8px;
+        background: #21262d;
+        margin: 2px 0;
+        border-radius: 4px;
+      }
+      .sort-col {
+        cursor: pointer;
+        user-select: none;
+      }
+      .sort-col:hover {
+        color: #ffa657;
+      }
+      .sort-col::after {
+        content: " ↕";
+        opacity: 0.4;
+      }
+      .sort-col.asc::after {
+        content: " ↑";
+      }
+      .sort-col.desc::after {
+        content: " ↓";
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎯 DOM 专项训练 — 原生 DOM API 深度练习</h1>
+    <p class="desc">
+      2026-04-27 · 事件委托 / DOM Diff / 性能优化 · 12 个完整示例
+    </p>
 
-  container.querySelectorAll('div[data-src]').forEach(el => observer.observe(el));
-  logMsg('👁️ IntersectionObserver 已启动，滚动查看懒加载效果');
-})();
+    <!-- ==================== 事件委托 ==================== -->
 
-// ============================================================
-//  示例 12：MutationObserver
-// ============================================================
-(function () {
-  const target = document.getElementById('observe-target');
-  const log = document.getElementById('mutation-log');
-  function logMsg(msg) { log.prepend(document.createElement('div')).textContent = msg; }
+    <h2>示例 1：事件委托 — 动态列表项点击</h2>
+    <p class="desc">
+      利用冒泡机制，在父元素上监听子元素事件，避免为每个子元素绑定监听器。
+    </p>
+    <div class="demo">
+      <div id="task-list" style="min-height: 100px">
+        <div class="item" data-id="1">📋 完成 DOM 训练任务</div>
+        <div class="item" data-id="2">📋 复习事件委托模式</div>
+        <div class="item" data-id="3">📋 实现虚拟列表</div>
+      </div>
+      <button id="add-task">➕ 添加任务</button>
+      <button id="clear-done" class="danger">🗑️ 清除全部</button>
+      <div class="log-area" id="task-log"></div>
+    </div>
 
-  const observer = new MutationObserver(function (mutations) {
-    mutations.forEach(m => {
-      if (m.type === 'characterData') {
-        logMsg(`📝 文本变化: "${m.oldValue}" → "${m.target.textContent}"`);
-      } else if (m.type === 'attributes') {
-        logMsg(`🔧 属性变化: [${m.attributeName}] = "${target.getAttribute(m.attributeName)}"`);
-      } else if (m.type === 'childList') {
-        m.addedNodes.forEach(n => {
-          if (n.nodeType === 1) logMsg(`➕ 新增节点: <${n.tagName.toLowerCase()}>`);
+    <h2>示例 2：事件委托 — 表格行内操作（编辑/删除）</h2>
+    <p class="desc">表格中每行有编辑和删除按钮，通过事件委托统一处理。</p>
+    <div class="demo">
+      <table id="user-table">
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>角色</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-id="1">
+            <td>Alice</td>
+            <td><span class="badge badge-green">Admin</span></td>
+            <td>
+              <button class="edit-btn">编辑</button
+              ><button class="delete-btn danger">删除</button>
+            </td>
+          </tr>
+          <tr data-id="2">
+            <td>Bob</td>
+            <td><span class="badge badge-yellow">Editor</span></td>
+            <td>
+              <button class="edit-btn">编辑</button
+              ><button class="delete-btn danger">删除</button>
+            </td>
+          </tr>
+          <tr data-id="3">
+            <td>Charlie</td>
+            <td><span class="badge badge-red">Viewer</span></td>
+            <td>
+              <button class="edit-btn">编辑</button
+              ><button class="delete-btn danger">删除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="log-area" id="table-log"></div>
+    </div>
+
+    <h2>示例 3：事件委托 — 键盘快捷键全局监听</h2>
+    <p class="desc">使用事件委托在 document 上监听全局快捷键组合。</p>
+    <div class="demo">
+      <p>
+        试试快捷键：<kbd>Ctrl+S</kbd> 保存 · <kbd>Ctrl+Z</kbd> 撤销 ·
+        <kbd>Ctrl+Shift+K</kbd> 命令面板 · <kbd>?</kbd> 帮助
+      </p>
+      <div class="log-area" id="shortcut-log"></div>
+    </div>
+
+    <h2>示例 4：事件委托 — 动态表单验证</h2>
+    <p class="desc">
+      通过事件委托在表单容器上统一处理输入框的 blur/change 事件。
+    </p>
+    <div class="demo">
+      <form id="signup-form" style="display: grid; gap: 8px; max-width: 300px">
+        <div>
+          <label>用户名：</label
+          ><input
+            class="validate-input"
+            data-rule="required"
+            placeholder="必填"
+          />
+        </div>
+        <div>
+          <label>邮箱：</label
+          ><input
+            class="validate-input"
+            data-rule="email"
+            placeholder="email@example.com"
+          />
+        </div>
+        <div>
+          <label>年龄：</label
+          ><input
+            class="validate-input"
+            data-rule="number"
+            placeholder="18-99"
+          />
+        </div>
+        <button type="button" id="submit-form">提交</button>
+      </form>
+      <div class="log-area" id="form-log"></div>
+    </div>
+
+    <!-- ==================== DOM Diff ==================== -->
+
+    <h2>示例 5：简易 DOM Diff 引擎</h2>
+    <p class="desc">实现一个最小化的 VDOM → Real DOM 的 diff/patch 算法。</p>
+    <div class="demo">
+      <div id="diff-container"></div>
+      <button id="diff-step1">状态 1</button>
+      <button id="diff-step2">状态 2（修改+新增）</button>
+      <button id="diff-step3">状态 3（重排+删除）</button>
+      <div class="log-area" id="diff-log"></div>
+    </div>
+
+    <h2>示例 6：列表 Diff — 同层节点对比</h2>
+    <p class="desc">
+      对比两组列表数据，计算最小 DOM 操作集（新增/移动/删除）。
+    </p>
+    <div class="demo">
+      <div id="list-diff-container" class="grid"></div>
+      <button id="list-step1">列表 A</button>
+      <button id="list-step2">列表 B（增/删/移）</button>
+      <button id="list-step3">列表 C（大幅变化）</button>
+      <div class="log-area" id="list-diff-log"></div>
+    </div>
+
+    <h2>示例 7：组件级 Diff — 状态树对比</h2>
+    <p class="desc">模拟组件树 diff，只更新变化的属性/子节点。</p>
+    <div class="demo">
+      <div id="component-container"></div>
+      <button id="comp-step1">初始状态</button>
+      <button id="comp-step2">更新标题+新增子项</button>
+      <button id="comp-step3">深度修改</button>
+      <div class="log-area" id="comp-log"></div>
+    </div>
+
+    <!-- ==================== 性能优化 ==================== -->
+
+    <h2>示例 8：DocumentFragment — 批量插入优化</h2>
+    <p class="desc">对比直接 appendChild vs DocumentFragment 的性能差异。</p>
+    <div class="demo">
+      <button id="perf-direct">直接插入 1000 项</button>
+      <button id="perf-fragment">Fragment 插入 1000 项</button>
+      <div class="log-area" id="perf-log"></div>
+      <div id="perf-result" style="margin-top: 8px; font-size: 13px"></div>
+    </div>
+
+    <h2>示例 9：虚拟列表 — 只渲染可视区域</h2>
+    <p class="desc">10000 条数据，只渲染可视区域内的 DOM 节点。</p>
+    <div class="demo">
+      <div class="virtual-list" id="virtual-list-container"></div>
+      <div class="log-area" id="virtual-log"></div>
+    </div>
+
+    <h2>示例 10：防抖 & 节流 — 滚动/输入优化</h2>
+    <p class="desc">对高频事件进行防抖/节流处理，减少 DOM 操作次数。</p>
+    <div class="demo">
+      <input
+        id="debounce-input"
+        placeholder="输入试试（防抖 300ms）"
+        style="
+          background: #21262d;
+          border: 1px solid #30363d;
+          color: #c9d1d9;
+          padding: 6px 12px;
+          border-radius: 6px;
+          width: 260px;
+        "
+      />
+      <div style="margin-top: 10px">
+        <button id="start-scroll">开始滚动测试（节流 100ms）</button>
+      </div>
+      <div
+        id="scroll-area"
+        style="
+          height: 100px;
+          overflow-y: auto;
+          margin-top: 8px;
+          background: #0d1117;
+          border-radius: 6px;
+          padding: 8px;
+        "
+      >
+        <div style="height: 2000px">向下滚动...</div>
+      </div>
+      <div class="log-area" id="debounce-log"></div>
+    </div>
+
+    <h2>示例 11：IntersectionObserver — 懒加载 & 可见性检测</h2>
+    <p class="desc">
+      使用 IntersectionObserver 实现图片懒加载和元素进入视口检测。
+    </p>
+    <div class="demo">
+      <div
+        id="lazy-container"
+        style="
+          height: 200px;
+          overflow-y: auto;
+          background: #0d1117;
+          border-radius: 6px;
+        "
+      ></div>
+      <div class="log-area" id="lazy-log"></div>
+    </div>
+
+    <h2>示例 12：MutationObserver — 监听 DOM 变化</h2>
+    <p class="desc">监听 DOM 树的变化（节点增删、属性修改、文本变化）。</p>
+    <div class="demo">
+      <div id="observe-target">
+        <p>初始内容</p>
+        <span class="meta">version: 1.0</span>
+      </div>
+      <button id="mutate-text">修改文本</button>
+      <button id="mutate-attr">修改属性</button>
+      <button id="mutate-add">添加节点</button>
+      <button id="mutate-remove">删除节点</button>
+      <div class="log-area" id="mutation-log"></div>
+    </div>
+
+    <script>
+      // ============================================================
+      //  示例 1：事件委托 — 动态列表项点击
+      // ============================================================
+      (function () {
+        const list = document.getElementById("task-list");
+        const log = document.getElementById("task-log");
+        let nextId = 4;
+
+        function logMsg(msg) {
+          const d = document.createElement("div");
+          d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+          log.prepend(d);
+        }
+
+        // 核心：在父元素上监听，通过 e.target 判断
+        list.addEventListener("click", function (e) {
+          const item = e.target.closest(".item");
+          if (!item) return;
+
+          if (e.target.closest("#clear-done")) return; // 排除清除按钮
+
+          const id = item.dataset.id;
+          if (e.target.classList.contains("item")) {
+            // 切换 active
+            item.classList.toggle("active");
+            logMsg(
+              `任务 #${id} ${item.classList.contains("active") ? "✅ 完成" : "⏳ 待办"}`,
+            );
+          }
         });
-        m.removedNodes.forEach(n => {
-          if (n.nodeType === 1) logMsg(`🗑️ 删除节点: <${n.tagName.toLowerCase()}>`);
+
+        // 双击删除
+        list.addEventListener("dblclick", function (e) {
+          const item = e.target.closest(".item");
+          if (!item) return;
+          const id = item.dataset.id;
+          item.remove();
+          logMsg(`任务 #${id} 🗑️ 已删除`);
         });
-      }
-    });
-  });
 
-  observer.observe(target, {
-    childList: true,
-    characterData: true,
-    attributes: true,
-    subtree: true,
-    characterDataOldValue: true
-  });
+        document
+          .getElementById("add-task")
+          .addEventListener("click", function () {
+            const item = document.createElement("div");
+            item.className = "item";
+            item.dataset.id = nextId++;
+            item.textContent = `📋 新任务 #${item.dataset.id}`;
+            list.appendChild(item);
+            logMsg(`任务 #${item.dataset.id} ➕ 已添加`);
+          });
 
-  document.getElementById('mutate-text').addEventListener('click', function () {
-    target.querySelector('p').textContent = `修改于 ${new Date().toLocaleTimeString()}`;
-  });
+        document
+          .getElementById("clear-done")
+          .addEventListener("click", function () {
+            list.innerHTML = "";
+            logMsg("🗑️ 全部清除");
+          });
+      })();
 
-  document.getElementById('mutate-attr').addEventListener('click', function () {
-    const span = target.querySelector('.meta');
-    span.setAttribute('data-version', Math.random().toFixed(2));
-  });
+      // ============================================================
+      //  示例 2：事件委托 — 表格行内操作
+      // ============================================================
+      (function () {
+        const table = document.getElementById("user-table");
+        const log = document.getElementById("table-log");
 
-  document.getElementById('mutate-add').addEventListener('click', function () {
-    const p = document.createElement('p');
-    p.textContent = `动态添加于 ${new Date().toLocaleTimeString()}`;
-    target.appendChild(p);
-  });
+        function logMsg(msg) {
+          const d = document.createElement("div");
+          d.textContent = msg;
+          log.prepend(d);
+        }
 
-  document.getElementById('mutate-remove').addEventListener('click', function () {
-    const last = target.lastElementChild;
-    if (last) target.removeChild(last);
-  });
+        table.addEventListener("click", function (e) {
+          const row = e.target.closest("tr");
+          if (!row) return;
+          const id = row.dataset.id;
+          const name = row.cells[0]?.textContent;
 
-  logMsg('👁️ MutationObserver 已启动，点击按钮观察 DOM 变化');
-})();
-</script>
+          if (e.target.classList.contains("delete-btn")) {
+            row.style.transition = "opacity 0.3s";
+            row.style.opacity = "0";
+            setTimeout(() => row.remove(), 300);
+            logMsg(`🗑️ 删除用户 ${name} (#${id})`);
+          } else if (e.target.classList.contains("edit-btn")) {
+            logMsg(`✏️ 编辑用户 ${name} (#${id})`);
+          }
+        });
+      })();
 
-</body>
+      // ============================================================
+      //  示例 3：事件委托 — 键盘快捷键
+      // ============================================================
+      (function () {
+        const log = document.getElementById("shortcut-log");
+        function logMsg(msg) {
+          const d = document.createElement("div");
+          d.textContent = msg;
+          log.prepend(d);
+        }
+
+        document.addEventListener("keydown", function (e) {
+          const parts = [];
+          if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
+          if (e.shiftKey) parts.push("Shift");
+          if (e.altKey) parts.push("Alt");
+          parts.push(e.key.length === 1 ? e.key.toUpperCase() : e.key);
+          const combo = parts.join("+");
+
+          if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+            e.preventDefault();
+            logMsg(`⌨️ ${combo} → 💾 保存`);
+          } else if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+            e.preventDefault();
+            logMsg(`⌨️ ${combo} → ↩️ 撤销`);
+          } else if (
+            (e.ctrlKey || e.metaKey) &&
+            e.shiftKey &&
+            e.key.toLowerCase() === "k"
+          ) {
+            e.preventDefault();
+            logMsg(`⌨️ ${combo} → 🔍 命令面板`);
+          } else if (e.key === "?" && !e.ctrlKey && !e.metaKey) {
+            logMsg(`⌨️ ${combo} → ❓ 帮助`);
+          }
+        });
+      })();
+
+      // ============================================================
+      //  示例 4：事件委托 — 动态表单验证
+      // ============================================================
+      (function () {
+        const form = document.getElementById("signup-form");
+        const log = document.getElementById("form-log");
+        const errors = {};
+
+        function logMsg(msg) {
+          const d = document.createElement("div");
+          d.textContent = msg;
+          log.prepend(d);
+        }
+
+        // 在表单容器上统一监听 input 事件
+        form.addEventListener("input", function (e) {
+          const input = e.target.closest(".validate-input");
+          if (!input) return;
+          const rule = input.dataset.rule;
+          const val = input.value.trim();
+          let err = "";
+
+          if (rule === "required" && !val) err = "此项为必填";
+          if (
+            rule === "email" &&
+            val &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
+          )
+            err = "邮箱格式不正确";
+          if (rule === "number" && val && (isNaN(val) || val < 18 || val > 99))
+            err = "年龄需在 18-99 之间";
+
+          if (err) {
+            input.style.borderColor = "#da3633";
+            errors[input.dataset.rule] = err;
+          } else {
+            input.style.borderColor = "#238636";
+            delete errors[input.dataset.rule];
+          }
+        });
+
+        // 提交验证
+        document
+          .getElementById("submit-form")
+          .addEventListener("click", function () {
+            if (Object.keys(errors).length === 0) {
+              logMsg("✅ 表单验证通过，可以提交");
+            } else {
+              logMsg("❌ 验证失败：" + Object.values(errors).join("；"));
+            }
+          });
+      })();
+
+      // ============================================================
+      //  示例 5：简易 DOM Diff 引擎
+      // ============================================================
+      (function () {
+        const container = document.getElementById("diff-container");
+        const log = document.getElementById("diff-log");
+        let ops = 0;
+
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        // 简易 VNode
+        function h(tag, props, children) {
+          return { tag, props: props || {}, children: children || [] };
+        }
+
+        // 创建真实 DOM
+        function render(vnode) {
+          if (typeof vnode === "string") return document.createTextNode(vnode);
+          const el = document.createElement(vnode.tag);
+          for (const [k, v] of Object.entries(vnode.props)) {
+            if (k === "textContent") el.textContent = v;
+            else if (k === "className") el.className = v;
+            else el.setAttribute(k, v);
+          }
+          vnode.children.forEach((c) => el.appendChild(render(c)));
+          return el;
+        }
+
+        // Diff & Patch
+        function diff(oldVnode, newVnode, parent) {
+          ops++;
+          if (!oldVnode) {
+            parent.appendChild(render(newVnode));
+            return;
+          }
+          if (!newVnode) {
+            parent.removeChild(parent.firstChild);
+            return;
+          }
+          if (typeof oldVnode === "string" || typeof newVnode === "string") {
+            if (oldVnode !== newVnode) {
+              const newEl = render(newVnode);
+              parent.replaceChild(newEl, parent.firstChild);
+            }
+            return;
+          }
+          if (oldVnode.tag !== newVnode.tag) {
+            parent.replaceChild(render(newVnode), parent.firstChild);
+            return;
+          }
+          // 同 tag，更新属性
+          const el = parent.firstChild;
+          const allKeys = new Set([
+            ...Object.keys(oldVnode.props),
+            ...Object.keys(newVnode.props),
+          ]);
+          allKeys.forEach((k) => {
+            if (oldVnode.props[k] !== newVnode.props[k]) {
+              if (k === "textContent") el.textContent = newVnode.props[k];
+              else if (k === "className") el.className = newVnode.props[k];
+              else el.setAttribute(k, newVnode.props[k]);
+            }
+          });
+          // 递归 diff 子节点
+          const maxLen = Math.max(
+            oldVnode.children.length,
+            newVnode.children.length,
+          );
+          for (let i = 0; i < maxLen; i++) {
+            diff(oldVnode.children[i], newVnode.children[i], el);
+          }
+        }
+
+        let currentVnode = null;
+        function update(newVnode) {
+          const start = performance.now();
+          diff(currentVnode, newVnode, container);
+          currentVnode = newVnode;
+          ops = 0;
+        }
+
+        document
+          .getElementById("diff-step1")
+          .addEventListener("click", function () {
+            update(
+              h("div", { className: "item" }, [
+                h("h3", { textContent: "📦 用户面板" }),
+                h("p", { textContent: "欢迎回来，用户" }),
+              ]),
+            );
+            logMsg("⚡ Step1: 初始渲染");
+          });
+
+        document
+          .getElementById("diff-step2")
+          .addEventListener("click", function () {
+            update(
+              h("div", { className: "item active" }, [
+                h("h3", { textContent: "📦 用户面板" }),
+                h("p", { textContent: "欢迎回来，管理员" }),
+                h("button", { className: "badge-green", textContent: "升级" }),
+              ]),
+            );
+            logMsg("⚡ Step2: 修改文本 + 新增按钮（仅 diff 变化的节点）");
+          });
+
+        document
+          .getElementById("diff-step3")
+          .addEventListener("click", function () {
+            update(
+              h("div", { className: "item" }, [
+                h("h3", { textContent: "📦 用户面板" }),
+                h("p", { textContent: "数据已更新" }),
+              ]),
+            );
+            logMsg("⚡ Step3: 删除按钮 + 修改文本");
+          });
+      })();
+
+      // ============================================================
+      //  示例 6：列表 Diff — 同层节点对比
+      // ============================================================
+      (function () {
+        const container = document.getElementById("list-diff-container");
+        const log = document.getElementById("list-diff-log");
+
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        function renderList(items) {
+          const oldItems = Array.from(container.children).map(
+            (el) => el.dataset.key,
+          );
+          const newItems = items.map((i) => i.key);
+
+          // 简易 LCS 计算需要保留的
+          const oldMap = {};
+          oldItems.forEach((k, i) => (oldMap[k] = i));
+
+          const fragment = document.createDocumentFragment();
+          const toKeep = new Set(newItems);
+
+          // 删除不在新列表中的
+          oldItems.forEach((k) => {
+            if (!toKeep.has(k)) {
+              const el = container.querySelector(`[data-key="${k}"]`);
+              if (el) {
+                el.style.transition = "0.2s";
+                el.style.opacity = "0";
+                setTimeout(() => el.remove(), 200);
+              }
+              logMsg(`🗑️ 移除: ${k}`);
+            }
+          });
+
+          // 新增或移动
+          newItems.forEach((k, i) => {
+            let el = container.querySelector(`[data-key="${k}"]`);
+            if (!el) {
+              el = document.createElement("div");
+              el.className = "grid-cell";
+              el.dataset.key = k;
+              el.textContent = k;
+              fragment.appendChild(el);
+              logMsg(`➕ 新增: ${k}`);
+            }
+          });
+          container.appendChild(fragment);
+
+          // 重新排序
+          newItems.forEach((k, i) => {
+            const el = container.querySelector(`[data-key="${k}"]`);
+            if (el) container.appendChild(el);
+          });
+        }
+
+        const dataA = [
+          { key: "A" },
+          { key: "B" },
+          { key: "C" },
+          { key: "D" },
+          { key: "E" },
+        ];
+        const dataB = [
+          { key: "A" },
+          { key: "C" },
+          { key: "D" },
+          { key: "F" },
+          { key: "G" },
+        ];
+        const dataC = [{ key: "X" }, { key: "Y" }, { key: "Z" }];
+
+        document
+          .getElementById("list-step1")
+          .addEventListener("click", function () {
+            renderList(dataA);
+            logMsg("📋 列表 A");
+          });
+        document
+          .getElementById("list-step2")
+          .addEventListener("click", function () {
+            renderList(dataB);
+            logMsg("📋 列表 B (B/E→F/G, C/D 保留)");
+          });
+        document
+          .getElementById("list-step3")
+          .addEventListener("click", function () {
+            renderList(dataC);
+            logMsg("📋 列表 C (全部替换)");
+          });
+      })();
+
+      // ============================================================
+      //  示例 7：组件级 Diff
+      // ============================================================
+      (function () {
+        const container = document.getElementById("component-container");
+        const log = document.getElementById("comp-log");
+
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        // 模拟组件树
+        const components = {
+          step1: {
+            tag: "div",
+            props: { className: "demo" },
+            children: [
+              { tag: "h3", props: { textContent: "📊 仪表盘" } },
+              {
+                tag: "div",
+                props: { className: "grid" },
+                children: [
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "CPU 45%" },
+                  },
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "MEM 62%" },
+                  },
+                ],
+              },
+            ],
+          },
+          step2: {
+            tag: "div",
+            props: { className: "demo" },
+            children: [
+              { tag: "h3", props: { textContent: "📊 仪表盘 - 实时更新" } },
+              {
+                tag: "div",
+                props: { className: "grid" },
+                children: [
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "CPU 78%" },
+                  },
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "MEM 62%" },
+                  },
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "NET 12ms" },
+                  },
+                ],
+              },
+            ],
+          },
+          step3: {
+            tag: "div",
+            props: { className: "demo" },
+            children: [
+              { tag: "h3", props: { textContent: "📊 仪表盘 - 异常告警" } },
+              {
+                tag: "div",
+                props: { className: "grid" },
+                children: [
+                  {
+                    tag: "div",
+                    props: {
+                      className: "grid-cell highlight",
+                      textContent: "CPU 95% ⚠️",
+                    },
+                  },
+                  {
+                    tag: "div",
+                    props: {
+                      className: "grid-cell highlight",
+                      textContent: "MEM 88% ⚠️",
+                    },
+                  },
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "NET 45ms" },
+                  },
+                  {
+                    tag: "div",
+                    props: { className: "grid-cell", textContent: "DISK 72%" },
+                  },
+                ],
+              },
+            ],
+          },
+        };
+
+        let current = null;
+        function patch(old, newV, parent) {
+          if (!old) {
+            parent.appendChild(createEl(newV));
+            return;
+          }
+          if (old.tag !== newV.tag) {
+            parent.replaceChild(createEl(newV), parent.firstChild);
+            return;
+          }
+          const el = parent.firstChild;
+          for (const k in newV.props) {
+            if (old.props[k] !== newV.props[k]) {
+              if (k === "textContent") el.textContent = newV.props[k];
+              else el.setAttribute(k, newV.props[k]);
+            }
+          }
+        }
+
+        function createEl(vnode) {
+          if (typeof vnode === "string") return document.createTextNode(vnode);
+          const el = document.createElement(vnode.tag);
+          for (const [k, v] of Object.entries(vnode.props || {})) {
+            if (k === "textContent") el.textContent = v;
+            else el.setAttribute(k, v);
+          }
+          (vnode.children || []).forEach((c) => el.appendChild(createEl(c)));
+          return el;
+        }
+
+        function renderStep(step) {
+          const v = components[step];
+          patch(current, v, container);
+          current = v;
+        }
+
+        document
+          .getElementById("comp-step1")
+          .addEventListener("click", function () {
+            renderStep("step1");
+            logMsg("🧩 组件 Step1: 初始");
+          });
+        document
+          .getElementById("comp-step2")
+          .addEventListener("click", function () {
+            renderStep("step2");
+            logMsg("🧩 组件 Step2: 标题修改 + 新增 NET 指标");
+          });
+        document
+          .getElementById("comp-step3")
+          .addEventListener("click", function () {
+            renderStep("step3");
+            logMsg("🧩 组件 Step3: 高亮告警 + 新增 DISK");
+          });
+      })();
+
+      // ============================================================
+      //  示例 8：DocumentFragment 性能对比
+      // ============================================================
+      (function () {
+        const log = document.getElementById("perf-log");
+        const result = document.getElementById("perf-result");
+
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        function createItems(count) {
+          const items = [];
+          for (let i = 0; i < count; i++) {
+            items.push(`<div class="item" data-id="${i}">项目 #${i}</div>`);
+          }
+          return items;
+        }
+
+        document
+          .getElementById("perf-direct")
+          .addEventListener("click", function () {
+            const start = performance.now();
+            const items = createItems(1000);
+            items.forEach((html) => {
+              const div = document.createElement("div");
+              div.className = "item";
+              div.innerHTML = html;
+              document.body.appendChild(div);
+            });
+            const elapsed = performance.now() - start;
+            logMsg(`⏱️ 直接插入 1000 项: ${elapsed.toFixed(2)}ms`);
+            result.textContent = `直接插入耗时: ${elapsed.toFixed(2)}ms`;
+          });
+
+        document
+          .getElementById("perf-fragment")
+          .addEventListener("click", function () {
+            const start = performance.now();
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < 1000; i++) {
+              const div = document.createElement("div");
+              div.className = "item";
+              div.textContent = `项目 #${i}`;
+              frag.appendChild(div);
+            }
+            document.body.appendChild(frag);
+            const elapsed = performance.now() - start;
+            logMsg(`⏱️ Fragment 插入 1000 项: ${elapsed.toFixed(2)}ms`);
+            result.textContent += ` | Fragment 耗时: ${elapsed.toFixed(2)}ms`;
+          });
+      })();
+
+      // ============================================================
+      //  示例 9：虚拟列表
+      // ============================================================
+      (function () {
+        const container = document.getElementById("virtual-list-container");
+        const log = document.getElementById("virtual-log");
+        const ITEM_HEIGHT = 32;
+        const BUFFER = 5;
+        const TOTAL = 10000;
+
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        // 生成数据
+        const data = Array.from({ length: TOTAL }, (_, i) => ({
+          id: i,
+          text: `记录 #${i} — ${"Lorem ipsum dolor sit amet".slice(0, (i % 20) + 10)}`,
+        }));
+
+        // 创建占位 spacer
+        const spacer = document.createElement("div");
+        spacer.className = "spacer";
+        spacer.style.height = TOTAL * ITEM_HEIGHT + "px";
+        container.appendChild(spacer);
+
+        let renderedRange = { start: -1, end: -1 };
+
+        function render(visibleStart, visibleEnd) {
+          const start = Math.max(0, visibleStart - BUFFER);
+          const end = Math.min(TOTAL - 1, visibleEnd + BUFFER);
+
+          if (renderedRange.start === start && renderedRange.end === end)
+            return;
+
+          // 清除旧节点
+          container.querySelectorAll(".row").forEach((el) => el.remove());
+
+          const frag = document.createDocumentFragment();
+          for (let i = start; i <= end; i++) {
+            const row = document.createElement("div");
+            row.className = "row";
+            row.style.top = i * ITEM_HEIGHT + "px";
+            row.style.height = ITEM_HEIGHT + "px";
+            row.textContent = data[i].text;
+            frag.appendChild(row);
+          }
+          container.appendChild(frag);
+          renderedRange = { start, end };
+          logMsg(
+            `📋 渲染 [${start}-${end}] 共 ${end - start + 1} 个节点 / 总计 ${TOTAL}`,
+          );
+        }
+
+        let rafId = null;
+        container.addEventListener("scroll", function () {
+          if (rafId) return;
+          rafId = requestAnimationFrame(() => {
+            const scrollTop = container.scrollTop;
+            const viewHeight = container.clientHeight;
+            const start = Math.floor(scrollTop / ITEM_HEIGHT);
+            const end = Math.ceil((scrollTop + viewHeight) / ITEM_HEIGHT);
+            render(start, end);
+            rafId = null;
+          });
+        });
+
+        // 初始渲染
+        render(0, Math.ceil(container.clientHeight / ITEM_HEIGHT));
+      })();
+
+      // ============================================================
+      //  示例 10：防抖 & 节流
+      // ============================================================
+      (function () {
+        const log = document.getElementById("debounce-log");
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        // 防抖
+        function debounce(fn, delay) {
+          let timer = null;
+          return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), delay);
+          };
+        }
+
+        // 节流
+        function throttle(fn, delay) {
+          let last = 0;
+          return function (...args) {
+            const now = Date.now();
+            if (now - last >= delay) {
+              last = now;
+              fn.apply(this, args);
+            }
+          };
+        }
+
+        // 防抖输入
+        const input = document.getElementById("debounce-input");
+        let inputCount = 0;
+        const debouncedSearch = debounce(function (val) {
+          inputCount++;
+          logMsg(`🔍 搜索触发 #${inputCount}: "${val}" (延迟 300ms)`);
+        }, 300);
+
+        input.addEventListener("input", function (e) {
+          logMsg(`⌨️ 输入: "${e.target.value}"`);
+          debouncedSearch(e.target.value);
+        });
+
+        // 节流滚动
+        let scrollCount = 0;
+        const throttledScroll = throttle(function () {
+          scrollCount++;
+          logMsg(`📜 滚动事件 #${scrollCount}: scrollTop=${this.scrollTop}`);
+        }, 100);
+
+        document
+          .getElementById("start-scroll")
+          .addEventListener("click", function () {
+            const area = document.getElementById("scroll-area");
+            area.addEventListener("scroll", throttledScroll);
+            logMsg("✅ 滚动节流已启用 (100ms)");
+          });
+      })();
+
+      // ============================================================
+      //  示例 11：IntersectionObserver — 懒加载
+      // ============================================================
+      (function () {
+        const container = document.getElementById("lazy-container");
+        const log = document.getElementById("lazy-log");
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        // 生成 50 个"图片"占位
+        for (let i = 1; i <= 50; i++) {
+          const div = document.createElement("div");
+          div.style.cssText = `height:80px;margin:8px 0;background:#21262d;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;`;
+          div.dataset.src = `image-${i}`;
+          div.textContent = `🖼️ 图片 #${i} (未加载)`;
+          container.appendChild(div);
+        }
+
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const el = entry.target;
+                const src = el.dataset.src;
+                el.textContent = `🖼️ ${src} ✅ 已加载`;
+                el.style.background = "#1f6feb";
+                observer.unobserve(el);
+                logMsg(`📷 懒加载: ${src}`);
+              }
+            });
+          },
+          { root: container, rootMargin: "50px", threshold: 0.1 },
+        );
+
+        container
+          .querySelectorAll("div[data-src]")
+          .forEach((el) => observer.observe(el));
+        logMsg("👁️ IntersectionObserver 已启动，滚动查看懒加载效果");
+      })();
+
+      // ============================================================
+      //  示例 12：MutationObserver
+      // ============================================================
+      (function () {
+        const target = document.getElementById("observe-target");
+        const log = document.getElementById("mutation-log");
+        function logMsg(msg) {
+          log.prepend(document.createElement("div")).textContent = msg;
+        }
+
+        const observer = new MutationObserver(function (mutations) {
+          mutations.forEach((m) => {
+            if (m.type === "characterData") {
+              logMsg(
+                `📝 文本变化: "${m.oldValue}" → "${m.target.textContent}"`,
+              );
+            } else if (m.type === "attributes") {
+              logMsg(
+                `🔧 属性变化: [${m.attributeName}] = "${target.getAttribute(m.attributeName)}"`,
+              );
+            } else if (m.type === "childList") {
+              m.addedNodes.forEach((n) => {
+                if (n.nodeType === 1)
+                  logMsg(`➕ 新增节点: <${n.tagName.toLowerCase()}>`);
+              });
+              m.removedNodes.forEach((n) => {
+                if (n.nodeType === 1)
+                  logMsg(`🗑️ 删除节点: <${n.tagName.toLowerCase()}>`);
+              });
+            }
+          });
+        });
+
+        observer.observe(target, {
+          childList: true,
+          characterData: true,
+          attributes: true,
+          subtree: true,
+          characterDataOldValue: true,
+        });
+
+        document
+          .getElementById("mutate-text")
+          .addEventListener("click", function () {
+            target.querySelector("p").textContent =
+              `修改于 ${new Date().toLocaleTimeString()}`;
+          });
+
+        document
+          .getElementById("mutate-attr")
+          .addEventListener("click", function () {
+            const span = target.querySelector(".meta");
+            span.setAttribute("data-version", Math.random().toFixed(2));
+          });
+
+        document
+          .getElementById("mutate-add")
+          .addEventListener("click", function () {
+            const p = document.createElement("p");
+            p.textContent = `动态添加于 ${new Date().toLocaleTimeString()}`;
+            target.appendChild(p);
+          });
+
+        document
+          .getElementById("mutate-remove")
+          .addEventListener("click", function () {
+            const last = target.lastElementChild;
+            if (last) target.removeChild(last);
+          });
+
+        logMsg("👁️ MutationObserver 已启动，点击按钮观察 DOM 变化");
+      })();
+    </script>
+  </body>
 </html>

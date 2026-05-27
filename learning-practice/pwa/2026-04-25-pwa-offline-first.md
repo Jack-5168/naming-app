@@ -11,6 +11,7 @@
 Progressive Web App — 渐进式 Web 应用。用 Web 技术提供接近原生应用体验的应用。
 
 **三大核心特征:**
+
 - **可靠 (Reliable)**: 离线可用，不受网络影响
 - **快速 (Fast)**: 快速加载，流畅交互
 - **可安装 (Installable)**: 可以添加到主屏幕，像原生应用一样使用
@@ -48,6 +49,7 @@ Progressive Web App — 渐进式 Web 应用。用 Web 技术提供接近原生�
 Service Worker 是浏览器在后台运行的脚本，独立于网页，充当网络代理。
 
 **核心特性:**
+
 - 拦截网络请求
 - 缓存/返回资源
 - 推送通知
@@ -64,6 +66,7 @@ install → activated → running → terminated
 ```
 
 **三个阶段:**
+
 1. **Install**: 缓存静态资源，失败则 SW 不激活
 2. **Activate**: 清理旧缓存，接管客户端
 3. **Running**: 拦截 fetch 事件，处理消息
@@ -72,25 +75,28 @@ install → activated → running → terminated
 
 ```javascript
 // 注册 Service Worker
-if ('serviceWorker' in navigator) {
+if ("serviceWorker" in navigator) {
   try {
-    const reg = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/'  // SW 控制范围
+    const reg = await navigator.serviceWorker.register("/sw.js", {
+      scope: "/", // SW 控制范围
     });
-    console.log('SW registered:', reg.scope);
-    
+    console.log("SW registered:", reg.scope);
+
     // 更新检测
-    reg.addEventListener('updatefound', () => {
+    reg.addEventListener("updatefound", () => {
       const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+      newWorker.addEventListener("statechange", () => {
+        if (
+          newWorker.state === "installed" &&
+          navigator.serviceWorker.controller
+        ) {
           // 有新版本可用
           showUpdateBanner();
         }
       });
     });
   } catch (err) {
-    console.error('SW registration failed:', err);
+    console.error("SW registration failed:", err);
   }
 }
 ```
@@ -100,21 +106,21 @@ if ('serviceWorker' in navigator) {
 ```javascript
 // 页面 → SW: postMessage
 navigator.serviceWorker.controller?.postMessage({
-  type: 'CACHE_URLS',
-  urls: ['/api/articles']
+  type: "CACHE_URLS",
+  urls: ["/api/articles"],
 });
 
 // SW → 页面: clients.matchAll + postMessage
-self.clients.matchAll().then(clients => {
-  clients.forEach(client => {
-    client.postMessage({ type: 'SYNC_COMPLETE' });
+self.clients.matchAll().then((clients) => {
+  clients.forEach((client) => {
+    client.postMessage({ type: "SYNC_COMPLETE" });
   });
 });
 
 // SW 中接收消息
-self.addEventListener('message', (event) => {
-  if (event.data.type === 'CACHE_URLS') {
-    caches.open('dynamic-v1').then(cache => {
+self.addEventListener("message", (event) => {
+  if (event.data.type === "CACHE_URLS") {
+    caches.open("dynamic-v1").then((cache) => {
       cache.addAll(event.data.urls);
     });
   }
@@ -127,22 +133,22 @@ self.addEventListener('message', (event) => {
 
 ### 3.1 五种核心策略
 
-| 策略 | 适用场景 | 优点 | 缺点 |
-|------|---------|------|------|
-| Cache First | 静态资源 (JS/CSS/图片) | 极快 | 可能过期 |
-| Network First | API 数据 | 数据新鲜 | 离线不可用 |
-| Stale While Revalidate | 不关键资源 | 快速+最终一致 | 可能短暂过期 |
-| Cache Only | 永不变更资源 | 最快 | 无法更新 |
-| Network Only | 实时数据 | 永远最新 | 离线不可用 |
+| 策略                   | 适用场景               | 优点          | 缺点         |
+| ---------------------- | ---------------------- | ------------- | ------------ |
+| Cache First            | 静态资源 (JS/CSS/图片) | 极快          | 可能过期     |
+| Network First          | API 数据               | 数据新鲜      | 离线不可用   |
+| Stale While Revalidate | 不关键资源             | 快速+最终一致 | 可能短暂过期 |
+| Cache Only             | 永不变更资源           | 最快          | 无法更新     |
+| Network Only           | 实时数据               | 永远最新      | 离线不可用   |
 
 ### 3.2 Cache First (缓存优先)
 
 ```javascript
 async function cacheFirst(request) {
-  const cache = await caches.open('static-v1');
+  const cache = await caches.open("static-v1");
   const cached = await cache.match(request);
   if (cached) return cached;
-  
+
   try {
     const response = await fetch(request);
     if (response.ok) {
@@ -150,7 +156,7 @@ async function cacheFirst(request) {
     }
     return response;
   } catch (err) {
-    return caches.match('/offline.html');
+    return caches.match("/offline.html");
   }
 }
 ```
@@ -159,16 +165,19 @@ async function cacheFirst(request) {
 
 ```javascript
 async function networkFirst(request) {
-  const cache = await caches.open('api-v1');
+  const cache = await caches.open("api-v1");
   try {
     const response = await fetch(request);
     cache.put(request, response.clone());
     return response;
   } catch (err) {
     const cached = await cache.match(request);
-    return cached || new Response(JSON.stringify({ error: 'offline' }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return (
+      cached ||
+      new Response(JSON.stringify({ error: "offline" }), {
+        headers: { "Content-Type": "application/json" },
+      })
+    );
   }
 }
 ```
@@ -177,15 +186,17 @@ async function networkFirst(request) {
 
 ```javascript
 async function staleWhileRevalidate(request) {
-  const cache = await caches.open('dynamic-v1');
+  const cache = await caches.open("dynamic-v1");
   const cached = await cache.match(request);
-  
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) cache.put(request, response.clone());
-    return response;
-  }).catch(() => null);
-  
-  return cached || await fetchPromise;
+
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) cache.put(request, response.clone());
+      return response;
+    })
+    .catch(() => null);
+
+  return cached || (await fetchPromise);
 }
 ```
 
@@ -195,18 +206,19 @@ async function staleWhileRevalidate(request) {
 
 ### 4.1 为什么用 IndexedDB
 
-| 特性 | localStorage | IndexedDB |
-|------|-------------|-----------|
-| 容量 | ~5MB | 大容量 (GB级) |
-| 类型 | 仅字符串 | 任意类型 |
-| 异步 | 同步(阻塞) | 异步(非阻塞) |
-| 事务 | 无 | 支持事务 |
-| 索引 | 无 | 支持索引 |
-| SW 支持 | ❌ | ✅ |
+| 特性    | localStorage | IndexedDB     |
+| ------- | ------------ | ------------- |
+| 容量    | ~5MB         | 大容量 (GB级) |
+| 类型    | 仅字符串     | 任意类型      |
+| 异步    | 同步(阻塞)   | 异步(非阻塞)  |
+| 事务    | 无           | 支持事务      |
+| 索引    | 无           | 支持索引      |
+| SW 支持 | ❌           | ✅            |
 
 ### 4.2 IndexedDB 封装
 
 见 `04-indexeddb.js` — 完整封装，支持:
+
 - 自动版本管理
 - CRUD 操作
 - 游标遍历
@@ -257,17 +269,17 @@ pwa/
 
 ## 六、关键代码文件说明
 
-| 文件 | 内容 | 代码量 |
-|------|------|--------|
-| `01-service-worker.js` | SW 注册、版本管理、通信 | ~120 行 |
-| `02-cache-strategies.js` | 五种缓存策略完整实现 | ~200 行 |
-| `03-cache-api.js` | Cache API 高级操作 | ~150 行 |
-| `04-indexeddb.js` | IndexedDB 完整封装 | ~250 行 |
-| `05-offline-queue.js` | 离线请求队列 | ~180 行 |
-| `06-offline-notes.js` | 离线笔记应用 | ~350 行 |
-| `07-install-prompt.js` | 安装提示 | ~80 行 |
-| `08-background-sync.js` | 后台同步 | ~100 行 |
-| **总计** | | **~1430 行** |
+| 文件                     | 内容                    | 代码量       |
+| ------------------------ | ----------------------- | ------------ |
+| `01-service-worker.js`   | SW 注册、版本管理、通信 | ~120 行      |
+| `02-cache-strategies.js` | 五种缓存策略完整实现    | ~200 行      |
+| `03-cache-api.js`        | Cache API 高级操作      | ~150 行      |
+| `04-indexeddb.js`        | IndexedDB 完整封装      | ~250 行      |
+| `05-offline-queue.js`    | 离线请求队列            | ~180 行      |
+| `06-offline-notes.js`    | 离线笔记应用            | ~350 行      |
+| `07-install-prompt.js`   | 安装提示                | ~80 行       |
+| `08-background-sync.js`  | 后台同步                | ~100 行      |
+| **总计**                 |                         | **~1430 行** |
 
 ---
 
@@ -302,9 +314,9 @@ API 数据 (用户信息/文章内容) → Network First
 // 5. 下次打开页面 → 使用新 SW
 
 // 加速更新:
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();  // 跳过等待，立即激活
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") {
+    self.skipWaiting(); // 跳过等待，立即激活
   }
 });
 ```
@@ -374,4 +386,4 @@ Lighthouse → PWA 检查项:
 
 ---
 
-*本专项产出 ~1430 行代码 + 1 份文档，覆盖 PWA 核心三件套 (Service Worker / Cache API / IndexedDB)*
+_本专项产出 ~1430 行代码 + 1 份文档，覆盖 PWA 核心三件套 (Service Worker / Cache API / IndexedDB)_

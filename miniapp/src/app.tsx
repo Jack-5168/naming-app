@@ -1,7 +1,5 @@
 import './app.css';
 
-const App = ({ children }) => {
-  return children;
-};
+const App = ({ children }) => children;
 
 export default App;

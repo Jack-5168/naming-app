@@ -191,7 +191,8 @@ class PageLoadMonitor {
 
       // SSL 握手
       sslHandshake: timing.secureConnectionStart
-        ? timing.connectEnd - timing.secureConnectionStart : 0,
+        ? timing.connectEnd - timing.secureConnectionStart
+        : 0,
 
       // TTFB (首字节时间)
       ttfb: timing.responseStart - timing.requestStart,
@@ -290,11 +291,15 @@ class PageLoadMonitor {
     }
 
     if (analysis.largeResources.length > 0) {
-      recommendations.push(`发现 ${analysis.largeResources.length} 个大资源，考虑压缩或拆分`);
+      recommendations.push(
+        `发现 ${analysis.largeResources.length} 个大资源，考虑压缩或拆分`,
+      );
     }
 
     if (analysis.slowResources.length > 0) {
-      recommendations.push(`发现 ${analysis.slowResources.length} 个慢资源，考虑懒加载或预加载`);
+      recommendations.push(
+        `发现 ${analysis.slowResources.length} 个慢资源，考虑懒加载或预加载`,
+      );
     }
 
     return recommendations;
@@ -373,7 +378,10 @@ class RuntimeMonitor {
         used: performance.memory.usedJSHeapSize,
         limit: performance.memory.jsHeapSizeLimit,
         total: performance.memory.totalJSHeapSize,
-        percent: (performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100,
+        percent:
+          (performance.memory.usedJSHeapSize
+            / performance.memory.jsHeapSizeLimit)
+          * 100,
       };
     }
     return null;
@@ -442,13 +450,21 @@ class PerformanceBudget {
 
     // 检查各项预算
     this.checkBudget('scriptSize', scriptSize, this.budgets.maxScriptSize);
-    this.checkBudget('stylesheetSize', stylesheetSize, this.budgets.maxStylesheetSize);
+    this.checkBudget(
+      'stylesheetSize',
+      stylesheetSize,
+      this.budgets.maxStylesheetSize,
+    );
     this.checkBudget('imageSize', imageSize, this.budgets.maxImageSize);
     this.checkBudget('totalSize', totalSize, this.budgets.maxTotalSize);
     this.checkBudget('requests', resources.length, this.budgets.maxRequests);
 
     if (navigation) {
-      this.checkBudget('loadTime', navigation.loadEventEnd, this.budgets.maxLoadTime);
+      this.checkBudget(
+        'loadTime',
+        navigation.loadEventEnd,
+        this.budgets.maxLoadTime,
+      );
     }
 
     return {
@@ -474,7 +490,7 @@ class PerformanceBudget {
         actual,
         budget,
         exceeded: actual - budget,
-        percent: ((actual - budget) / budget * 100).toFixed(1),
+        percent: (((actual - budget) / budget) * 100).toFixed(1),
       });
     }
   }
@@ -527,7 +543,9 @@ class PerformanceReporter {
     const payload = this.queue.splice(0, this.batchSize);
 
     // 使用 sendBeacon 确保数据发送（即使页面关闭）
-    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(payload)], {
+      type: 'application/json',
+    });
     navigator.sendBeacon(this.endpoint, blob);
 
     console.log(`📊 Reported ${payload.length} performance records`);
@@ -573,7 +591,8 @@ class PerformanceMonitor {
     this.runtime = new RuntimeMonitor();
     this.budget = new PerformanceBudget(options.budgets);
     this.reporter = options.endpoint
-      ? new PerformanceReporter({ endpoint: options.endpoint }) : null;
+      ? new PerformanceReporter({ endpoint: options.endpoint })
+      : null;
 
     this.initialized = false;
   }

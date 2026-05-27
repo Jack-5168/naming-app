@@ -4,27 +4,28 @@
 
 ## Summary
 
-| Metric | Current | Threshold | Status |
-|--------|--------|-----------|--------|
-| Lines | 16.65% | 70% | ❌ FAIL |
-| Statements | 15.66% | 70% | ❌ FAIL |
-| Branches | 14.43% | 70% | ❌ FAIL |
-| Functions | 22% | 70% | ❌ FAIL |
+| Metric     | Current | Threshold | Status  |
+| ---------- | ------- | --------- | ------- |
+| Lines      | 16.65%  | 70%       | ❌ FAIL |
+| Statements | 15.66%  | 70%       | ❌ FAIL |
+| Branches   | 14.43%  | 70%       | ❌ FAIL |
+| Functions  | 22%     | 70%       | ❌ FAIL |
 
 ## Well-Covered Modules (>80%)
 
-| Module | Coverage |
-|--------|----------|
-| cat-engine.ts | 100% ✓ |
-| big5-to-mbti.ts | 100% ✓ |
-| stability-calculator.ts | 97.05% ✓ |
+| Module                    | Coverage |
+| ------------------------- | -------- |
+| cat-engine.ts             | 100% ✓   |
+| big5-to-mbti.ts           | 100% ✓   |
+| stability-calculator.ts   | 97.05% ✓ |
 | compatibility-analyzer.ts | 97.75% ✓ |
-| result-calculator.ts | 100% ✓ |
-| life-events.ts | 91.26% ✓ |
+| result-calculator.ts      | 100% ✓   |
+| life-events.ts            | 91.26% ✓ |
 
 ## Critical Uncovered Paths (Priority for Testing)
 
 ### Controllers (Business Logic)
+
 - **auth.ts** - 0% (user authentication, JWT handling)
 - **payments.ts** - 0% (payment processing)
 - **reports.ts** - 0% (report generation)
@@ -32,12 +33,14 @@
 - **dual-test.ts** - 0% (A/B testing controller)
 
 ### Services (Core Business)
+
 - **ab-testing.ts** - 0%
 - **cost-control.ts** - 81.53% (! close)
 - **llm-report.ts** - 36.41%
 - **matching.ts** - 0%
 
 ### Security
+
 - **encryption.ts** - 25.51%
 - **rate-limiter.ts** - 0%
 

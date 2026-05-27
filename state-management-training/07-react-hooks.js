@@ -36,7 +36,10 @@ function createUseReducer() {
   }
 
   return {
-    useReducer, useSelector, subscribe, getDispatch: () => dispatch,
+    useReducer,
+    useSelector,
+    subscribe,
+    getDispatch: () => dispatch,
   };
 }
 
@@ -89,23 +92,45 @@ const getCartItems = (state) => state.items;
 console.log('=== 购物车状态管理 ===\n');
 
 // 添加商品
-cartDispatch({ type: 'ADD_ITEM', item: { id: 1, name: 'iPhone', price: 5999 } });
-cartDispatch({ type: 'ADD_ITEM', item: { id: 2, name: 'AirPods', price: 1299 } });
-cartDispatch({ type: 'ADD_ITEM', item: { id: 3, name: 'MacBook', price: 9999 } });
+cartDispatch({
+  type: 'ADD_ITEM',
+  item: { id: 1, name: 'iPhone', price: 5999 },
+});
+cartDispatch({
+  type: 'ADD_ITEM',
+  item: { id: 2, name: 'AirPods', price: 1299 },
+});
+cartDispatch({
+  type: 'ADD_ITEM',
+  item: { id: 3, name: 'MacBook', price: 9999 },
+});
 
 console.log('商品数量:', getItemCount(cartState));
-console.log('商品列表:', getCartItems(cartState).map((i) => `${i.name} x${i.qty}`));
+console.log(
+  '商品列表:',
+  getCartItems(cartState).map((i) => `${i.name} x${i.qty}`),
+);
 console.log('总价:', getTotalPrice(cartState));
 
 // 增加数量
-cartDispatch({ type: 'ADD_ITEM', item: { id: 1, name: 'iPhone', price: 5999 } });
+cartDispatch({
+  type: 'ADD_ITEM',
+  item: { id: 1, name: 'iPhone', price: 5999 },
+});
 console.log('\n再添加一个 iPhone 后:');
-console.log('商品列表:', getCartItems(cartState).map((i) => `${i.name} x${i.qty}`));
+console.log(
+  '商品列表:',
+  getCartItems(cartState).map((i) => `${i.name} x${i.qty}`),
+);
 console.log('总价:', getTotalPrice(cartState));
 
 // 订阅更新
 subscribe((state) => {
-  console.log('🛒 购物车更新:', getItemCount(state), '件商品，总计 ¥' + getTotalPrice(state));
+  console.log(
+    '🛒 购物车更新:',
+    getItemCount(state),
+    '件商品，总计 ¥' + getTotalPrice(state),
+  );
 });
 
 cartDispatch({ type: 'ADD_ITEM', item: { id: 4, name: 'iPad', price: 3999 } });

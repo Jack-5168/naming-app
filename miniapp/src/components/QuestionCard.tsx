@@ -1,6 +1,6 @@
-import { View, Text } from '@tarojs/components';
-import { memo } from 'react';
-import './QuestionCard.css';
+import { View, Text } from "@tarojs/components";
+import { memo } from "react";
+import "./QuestionCard.css";
 
 interface QuestionCardProps {
   question: {
@@ -23,28 +23,28 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onAnswer,
   disabled = false,
 }) => (
-    <View className="question-card">
-      <View className="question-header">
-        <Text className="question-number">第 {questionNumber} 题</Text>
-      </View>
-
-      <View className="question-content">
-        <Text className="question-text">{question.text}</Text>
-      </View>
-
-      <View className="options-list">
-        {question.options.map((option) => (
-          <View
-            key={option.id}
-            className={`option-item ${disabled ? 'disabled' : ''}`}
-            onClick={() => !disabled && onAnswer(option.id)}
-          >
-            <View className="option-code">{option.code}</View>
-            <Text className="option-text">{option.text}</Text>
-          </View>
-        ))}
-      </View>
+  <View className="question-card">
+    <View className="question-header">
+      <Text className="question-number">第 {questionNumber} 题</Text>
     </View>
+
+    <View className="question-content">
+      <Text className="question-text">{question.text}</Text>
+    </View>
+
+    <View className="options-list">
+      {question.options.map((option) => (
+        <View
+          key={option.id}
+          className={`option-item ${disabled ? "disabled" : ""}`}
+          onClick={() => !disabled && onAnswer(option.id)}
+        >
+          <View className="option-code">{option.code}</View>
+          <Text className="option-text">{option.text}</Text>
+        </View>
+      ))}
+    </View>
+  </View>
 );
 
 export default memo(QuestionCard);

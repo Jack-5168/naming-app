@@ -92,10 +92,14 @@ function createUndoableReducerWithLimit(reducer, limit = 10) {
 // ========== 使用示例 ==========
 const textReducer = (state = '', action = {}) => {
   switch (action.type) {
-    case 'SET_TEXT': return action.text;
-    case 'APPEND_TEXT': return state + action.text;
-    case 'CLEAR': return '';
-    default: return state;
+    case 'SET_TEXT':
+      return action.text;
+    case 'APPEND_TEXT':
+      return state + action.text;
+    case 'CLEAR':
+      return '';
+    default:
+      return state;
   }
 };
 
@@ -119,17 +123,37 @@ console.log('=== Undo/Redo 状态管理 ===\n');
 console.log('初始:', store.getState().present);
 
 store.dispatch({ type: 'SET_TEXT', text: 'Hello' });
-console.log('SET "Hello":', store.getState().present, '| 历史:', store.getState().past);
+console.log(
+  'SET "Hello":',
+  store.getState().present,
+  '| 历史:',
+  store.getState().past,
+);
 
 store.dispatch({ type: 'APPEND_TEXT', text: ' World' });
-console.log('APPEND " World":', store.getState().present, '| 历史:', store.getState().past);
+console.log(
+  'APPEND " World":',
+  store.getState().present,
+  '| 历史:',
+  store.getState().past,
+);
 
 store.dispatch({ type: 'APPEND_TEXT', text: '!' });
-console.log('APPEND "!":', store.getState().present, '| 历史:', store.getState().past);
+console.log(
+  'APPEND "!":',
+  store.getState().present,
+  '| 历史:',
+  store.getState().past,
+);
 
 console.log('\n--- 执行 UNDO ---');
 store.dispatch({ type: 'UNDO' });
-console.log('UNDO 后:', store.getState().present, '| 未来:', store.getState().future);
+console.log(
+  'UNDO 后:',
+  store.getState().present,
+  '| 未来:',
+  store.getState().future,
+);
 
 store.dispatch({ type: 'UNDO' });
 console.log('再 UNDO:', store.getState().present);

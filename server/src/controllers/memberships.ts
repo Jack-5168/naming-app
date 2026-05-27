@@ -9,21 +9,25 @@
  * - GET /api/v1/memberships/benefits - Get benefit details
  */
 
-import { Request, Response } from 'express';
-import { PrismaClient, MembershipLevel, MembershipStatus, OrderStatus } from '@prisma/client';
-import { createPushNotification } from '../services/push-notification';
-
+import { Request, Response } from "express";
+import {
+  PrismaClient,
+  MembershipLevel,
+  MembershipStatus,
+  OrderStatus,
+} from "@prisma/client";
+import { createPushNotification } from "../services/push-notification";
 
 // ==================== Membership Products Configuration ====================
 
 const MEMBERSHIP_PRODUCTS = [
   {
     id: 1,
-    name: '单次测试解锁',
-    description: '解锁单次完整测试报告',
-    price: 29.00,
+    name: "单次测试解锁",
+    description: "解锁单次完整测试报告",
+    price: 29.0,
     durationDays: 0, // one-time
-    level: 'basic' as MembershipLevel,
+    level: "basic" as MembershipLevel,
     features: {
       report_basic: { unlimited: false, limit: 1 },
       report_pro: { unlimited: false, limit: 0 },
@@ -36,11 +40,11 @@ const MEMBERSHIP_PRODUCTS = [
   },
   {
     id: 2,
-    name: '基础解锁',
-    description: '8 条特征 + 职业分析',
-    price: 9.90,
+    name: "基础解锁",
+    description: "8 条特征 + 职业分析",
+    price: 9.9,
     durationDays: 30,
-    level: 'basic' as MembershipLevel,
+    level: "basic" as MembershipLevel,
     features: {
       report_basic: { unlimited: true },
       report_pro: { unlimited: false, limit: 0 },
@@ -53,11 +57,11 @@ const MEMBERSHIP_PRODUCTS = [
   },
   {
     id: 3,
-    name: '3 次卡（3 个月）',
-    description: '3 次测试机会，有效期 3 个月',
-    price: 59.00,
+    name: "3 次卡（3 个月）",
+    description: "3 次测试机会，有效期 3 个月",
+    price: 59.0,
     durationDays: 90,
-    level: 'basic' as MembershipLevel,
+    level: "basic" as MembershipLevel,
     features: {
       report_basic: { unlimited: false, limit: 3 },
       report_pro: { unlimited: false, limit: 0 },
@@ -70,11 +74,11 @@ const MEMBERSHIP_PRODUCTS = [
   },
   {
     id: 4,
-    name: '月卡会员',
-    description: '月度会员，含成长任务',
-    price: 49.00,
+    name: "月卡会员",
+    description: "月度会员，含成长任务",
+    price: 49.0,
     durationDays: 30,
-    level: 'pro' as MembershipLevel,
+    level: "pro" as MembershipLevel,
     features: {
       report_basic: { unlimited: true },
       report_pro: { unlimited: true },
@@ -87,11 +91,11 @@ const MEMBERSHIP_PRODUCTS = [
   },
   {
     id: 5,
-    name: '季卡会员',
-    description: '季度会员，性价比之选',
-    price: 129.00,
+    name: "季卡会员",
+    description: "季度会员，性价比之选",
+    price: 129.0,
     durationDays: 90,
-    level: 'pro' as MembershipLevel,
+    level: "pro" as MembershipLevel,
     features: {
       report_basic: { unlimited: true },
       report_pro: { unlimited: true },
@@ -104,11 +108,11 @@ const MEMBERSHIP_PRODUCTS = [
   },
   {
     id: 6,
-    name: '年卡会员',
-    description: '年度会员，最优性价比',
-    price: 299.00,
+    name: "年卡会员",
+    description: "年度会员，最优性价比",
+    price: 299.0,
     durationDays: 365,
-    level: 'premium' as MembershipLevel,
+    level: "premium" as MembershipLevel,
     features: {
       report_basic: { unlimited: true },
       report_pro: { unlimited: true },
@@ -121,11 +125,11 @@ const MEMBERSHIP_PRODUCTS = [
   },
   {
     id: 7,
-    name: '双人合测',
-    description: '邀请好友进行双人合测',
-    price: 29.00,
+    name: "双人合测",
+    description: "邀请好友进行双人合测",
+    price: 29.0,
     durationDays: 0, // one-time
-    level: 'basic' as MembershipLevel,
+    level: "basic" as MembershipLevel,
     features: {
       report_basic: { unlimited: false, limit: 0 },
       report_pro: { unlimited: false, limit: 0 },
@@ -149,7 +153,7 @@ export async function getMembershipProducts(req: Request, res: Response) {
     // Check if products exist in database, if not, initialize them
     const existingProducts = await prisma.membershipProduct.findMany({
       where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { sortOrder: "asc" },
     });
 
     let products = existingProducts;
@@ -161,7 +165,7 @@ export async function getMembershipProducts(req: Request, res: Response) {
       });
       products = await prisma.membershipProduct.findMany({
         where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { sortOrder: "asc" },
       });
     }
 
@@ -176,20 +180,21 @@ export async function getMembershipProducts(req: Request, res: Response) {
         durationDays: p.durationDays,
         level: p.level,
         features: p.features,
-        pricePerUse: p.durationDays === 0
-          ? Number(p.price)
-          : p.durationDays === 30
+        pricePerUse:
+          p.durationDays === 0
             ? Number(p.price)
-            : p.durationDays === 90
-              ? Number(p.price) / 3
-              : Number(p.price) / 12,
+            : p.durationDays === 30
+              ? Number(p.price)
+              : p.durationDays === 90
+                ? Number(p.price) / 3
+                : Number(p.price) / 12,
       })),
     });
   } catch (error) {
-    console.error('Error fetching membership products:', error);
+    console.error("Error fetching membership products:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch membership products',
+      error: "Failed to fetch membership products",
     });
   }
 }
@@ -205,7 +210,7 @@ export async function getCurrentMembership(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -224,13 +229,13 @@ export async function getCurrentMembership(req: Request, res: Response) {
 
     if (!membership) {
       // Return free tier benefits
-      const freeBenefits = await getBenefitsForLevel('free');
+      const freeBenefits = await getBenefitsForLevel("free");
 
       return res.json({
         success: true,
         data: {
-          level: 'free',
-          status: 'none',
+          level: "free",
+          status: "none",
           endDate: null,
           benefits: freeBenefits,
         },
@@ -241,20 +246,20 @@ export async function getCurrentMembership(req: Request, res: Response) {
     const now = new Date();
     const isExpired = membership.endDate < now;
 
-    if (isExpired && membership.status === 'active') {
+    if (isExpired && membership.status === "active") {
       // Auto-downgrade expired membership
       await prisma.membership.update({
         where: { id: membership.id },
-        data: { status: 'expired' },
+        data: { status: "expired" },
       });
 
-      const freeBenefits = await getBenefitsForLevel('free');
+      const freeBenefits = await getBenefitsForLevel("free");
 
       return res.json({
         success: true,
         data: {
-          level: 'free',
-          status: 'expired',
+          level: "free",
+          status: "expired",
           endDate: membership.endDate,
           benefits: freeBenefits,
         },
@@ -275,10 +280,10 @@ export async function getCurrentMembership(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error fetching current membership:', error);
+    console.error("Error fetching current membership:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch membership',
+      error: "Failed to fetch membership",
     });
   }
 }
@@ -295,14 +300,14 @@ export async function upgradeMembership(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
     if (!productId) {
       return res.status(400).json({
         success: false,
-        error: 'Product ID is required',
+        error: "Product ID is required",
       });
     }
 
@@ -314,7 +319,7 @@ export async function upgradeMembership(req: Request, res: Response) {
     if (!product || !product.isActive) {
       return res.status(404).json({
         success: false,
-        error: 'Product not found',
+        error: "Product not found",
       });
     }
 
@@ -325,10 +330,10 @@ export async function upgradeMembership(req: Request, res: Response) {
         orderNo,
         userId,
         productId,
-        productType: 'membership',
+        productType: "membership",
         amount: Number(product.price),
         currency: product.currency,
-        status: 'pending',
+        status: "pending",
         paymentMethod,
         transactionId,
       },
@@ -339,33 +344,42 @@ export async function upgradeMembership(req: Request, res: Response) {
     const updatedOrder = await prisma.order.update({
       where: { id: order.id },
       data: {
-        status: 'paid',
+        status: "paid",
         paidAt: new Date(),
       },
     });
 
     // Create or update membership
     const now = new Date();
-    const endDate = product.durationDays > 0
-      ? new Date(now.getTime() + product.durationDays * 24 * 60 * 60 * 1000)
-      : now; // one-time products don't extend membership
+    const endDate =
+      product.durationDays > 0
+        ? new Date(now.getTime() + product.durationDays * 24 * 60 * 60 * 1000)
+        : now; // one-time products don't extend membership
 
     let membership = await prisma.membership.findUnique({
       where: { userId },
     });
 
-    if (membership && membership.status === 'active' && membership.endDate > now) {
+    if (
+      membership &&
+      membership.status === "active" &&
+      membership.endDate > now
+    ) {
       // Extend existing membership
-      const newEndDate = product.durationDays > 0
-        ? new Date(membership.endDate.getTime() + product.durationDays * 24 * 60 * 60 * 1000)
-        : membership.endDate;
+      const newEndDate =
+        product.durationDays > 0
+          ? new Date(
+              membership.endDate.getTime() +
+                product.durationDays * 24 * 60 * 60 * 1000,
+            )
+          : membership.endDate;
 
       membership = await prisma.membership.update({
         where: { userId },
         data: {
           level: product.level as MembershipLevel,
           endDate: newEndDate,
-          status: 'active' as MembershipStatus,
+          status: "active" as MembershipStatus,
         },
       });
     } else {
@@ -374,7 +388,7 @@ export async function upgradeMembership(req: Request, res: Response) {
         data: {
           userId,
           level: product.level as MembershipLevel,
-          status: 'active' as MembershipStatus,
+          status: "active" as MembershipStatus,
           startDate: now,
           endDate,
           autoRenew: false,
@@ -391,10 +405,10 @@ export async function upgradeMembership(req: Request, res: Response) {
     // Send push notification
     await createPushNotification({
       userId,
-      type: 'membership_expiring', // Using existing type, could add 'membership_upgraded'
-      title: '会员升级成功',
+      type: "membership_expiring", // Using existing type, could add 'membership_upgraded'
+      title: "会员升级成功",
       content: `您已成功升级为${product.name}，有效期至${endDate.toLocaleDateString()}`,
-      deepLink: '/membership/benefits',
+      deepLink: "/membership/benefits",
     });
 
     res.json({
@@ -409,10 +423,10 @@ export async function upgradeMembership(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error upgrading membership:', error);
+    console.error("Error upgrading membership:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to upgrade membership',
+      error: "Failed to upgrade membership",
     });
   }
 }
@@ -438,7 +452,7 @@ export async function getMembershipBenefits(req: Request, res: Response) {
     }
 
     // Return benefits for all levels
-    const levels: MembershipLevel[] = ['free', 'basic', 'pro', 'premium'];
+    const levels: MembershipLevel[] = ["free", "basic", "pro", "premium"];
     const allBenefits = await Promise.all(
       levels.map((l) => getBenefitsForLevel(l)),
     );
@@ -451,10 +465,10 @@ export async function getMembershipBenefits(req: Request, res: Response) {
       })),
     });
   } catch (error) {
-    console.error('Error fetching membership benefits:', error);
+    console.error("Error fetching membership benefits:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch benefits',
+      error: "Failed to fetch benefits",
     });
   }
 }
@@ -509,14 +523,21 @@ async function getBenefitsForLevel(level: MembershipLevel) {
 /**
  * Check if user has access to a specific feature
  */
-export async function checkFeatureAccess(userId: number, feature: string): Promise<{ allowed: boolean; remaining?: number }> {
+export async function checkFeatureAccess(
+  userId: number,
+  feature: string,
+): Promise<{ allowed: boolean; remaining?: number }> {
   const membership = await prisma.membership.findUnique({
     where: { userId },
   });
 
-  if (!membership || membership.status !== 'active' || membership.endDate < new Date()) {
+  if (
+    !membership ||
+    membership.status !== "active" ||
+    membership.endDate < new Date()
+  ) {
     // Free tier
-    const freeBenefits = await getBenefitsForLevel('free');
+    const freeBenefits = await getBenefitsForLevel("free");
     const featureConfig = freeBenefits.features[feature];
 
     if (!featureConfig) {
@@ -532,7 +553,9 @@ export async function checkFeatureAccess(userId: number, feature: string): Promi
       where: {
         userId,
         feature,
-        consumedAt: { gte: new Date(new Date().setDate(new Date().getDate() - 30)) }, // Last 30 days
+        consumedAt: {
+          gte: new Date(new Date().setDate(new Date().getDate() - 30)),
+        }, // Last 30 days
       },
     });
 
@@ -577,7 +600,11 @@ export async function checkFeatureAccess(userId: number, feature: string): Promi
 /**
  * Record feature usage
  */
-export async function recordFeatureUsage(userId: number, feature: string, metadata?: any) {
+export async function recordFeatureUsage(
+  userId: number,
+  feature: string,
+  metadata?: any,
+) {
   await prisma.usageRecord.create({
     data: {
       userId,

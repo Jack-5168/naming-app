@@ -95,7 +95,11 @@
 }
 
 .tier-cell.popular {
-  background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(240, 147, 251, 0.1) 0%,
+    rgba(245, 87, 108, 0.1) 100%
+  );
 }
 
 .tier-cell.current {

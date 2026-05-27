@@ -3,6 +3,7 @@
 ## Overview
 
 Persona Lab is a personality assessment platform built with the Big Five (IPIP-NEO) model. It provides:
+
 - Computerized Adaptive Testing (CAT) for efficient trait measurement
 - MBTI-style type derivation from Big Five scores
 - Personality growth tracking over time
@@ -43,38 +44,40 @@ Persona Lab is a personality assessment platform built with the Big Five (IPIP-N
 
 ### Technology Stack
 
-| Layer | Technology | Version |
-|-------|------------|---------|
-| Runtime | Node.js | >= 18 |
-| Framework | Express.js | ^4.x |
-| Language | TypeScript | ^5.x |
-| Database | MySQL | 8.0+ |
-| ORM | Prisma | ^5.x |
-| Cache | Redis | 7.0+ |
-| Auth | JWT | - |
-| Logging | Winston | ^3.x |
-| Validation | Zod | ^3.x |
-| Security | Helmet | ^7.x |
+| Layer      | Technology | Version |
+| ---------- | ---------- | ------- |
+| Runtime    | Node.js    | >= 18   |
+| Framework  | Express.js | ^4.x    |
+| Language   | TypeScript | ^5.x    |
+| Database   | MySQL      | 8.0+    |
+| ORM        | Prisma     | ^5.x    |
+| Cache      | Redis      | 7.0+    |
+| Auth       | JWT        | -       |
+| Logging    | Winston    | ^3.x    |
+| Validation | Zod        | ^3.x    |
+| Security   | Helmet     | ^7.x    |
 
 ## Business Logic Services
 
-| Service | File | Description |
-|---------|------|-------------|
-| CAT Engine | `cat-engine.ts` | Item Response Theory based adaptive testing |
-| Big5-MBTI | `big5-to-mbti.ts` | Factor score to MBTI type mapping |
-| Compatibility | `compatibility-analyzer.ts` | Personality compatibility analysis |
-| Stability Calculator | `stability-calculator.ts` | Longitudinal trait stability tracking |
+| Service              | File                        | Description                                 |
+| -------------------- | --------------------------- | ------------------------------------------- |
+| CAT Engine           | `cat-engine.ts`             | Item Response Theory based adaptive testing |
+| Big5-MBTI            | `big5-to-mbti.ts`           | Factor score to MBTI type mapping           |
+| Compatibility        | `compatibility-analyzer.ts` | Personality compatibility analysis          |
+| Stability Calculator | `stability-calculator.ts`   | Longitudinal trait stability tracking       |
 
 ## Module Architecture
 
 ### 1. Authentication Module (`/api/v1/auth`)
 
 **Components:**
+
 - `authController.ts` - Login, logout, token refresh
 - JWT middleware - Token validation
 - WeChat OAuth - Mini-program authentication
 
 **Flow:**
+
 ```
 User Login → WeChat Code → Exchange for Session Key → Create JWT
 ```
@@ -82,11 +85,13 @@ User Login → WeChat Code → Exchange for Session Key → Create JWT
 ### 2. Test Module (`/api/v1/tests`)
 
 **Components:**
+
 - `tests.ts` - Session management
 - CAT Engine (`services/cat-engine.ts`) - Item selection
 - `resultCalculator.ts` - Score computation
 
 **CAT Algorithm:**
+
 ```
 1. Start with average difficulty items
 2. Estimate ability (θ) = 0
@@ -99,6 +104,7 @@ User Login → WeChat Code → Exchange for Session Key → Create JWT
 ### 3. Report Module (`/api/v1/reports`)
 
 **Components:**
+
 - `reports.ts` - Report generation and retrieval
 - `llm-report.ts` - AI-powered personalized reports
 - `big5-to-mbti.ts` - Factor to type mapping
@@ -115,6 +121,7 @@ User Login → WeChat Code → Exchange for Session Key → Create JWT
 ### 4. Membership Module (`/api/v1/memberships`)
 
 **Components:**
+
 - `memberships.ts` - Member management
 - `membership-benefits.ts` - Benefit calculation
 
@@ -129,10 +136,12 @@ User Login → WeChat Code → Exchange for Session Key → Create JWT
 ### 5. Payment Module (`/api/v1/payments`)
 
 **Components:**
+
 - `payments.ts` - Payment processing
 - `cost-control.ts` - WeChat Pay integration
 
 **Flow:**
+
 ```
 Create Order → WeChat Pay API → Callback → Verify → Complete
 ```
@@ -140,16 +149,19 @@ Create Order → WeChat Pay API → Callback → Verify → Complete
 ### 6. Growth Module (`/api/v1/growth`)
 
 **Features:**
+
 - Dual Test (friend comparison)
 - Share Cards (social media)
 - KOC Referral System
 
 **Dual Test Flow:**
+
 ```
 Inviter creates → Generates code → Invitee enters → Both take test → Comparison
 ```
 
 **KOC Referral:**
+
 ```
 Share link → Friend signs up → Makes payment → Commission earned → Withdraw
 ```
@@ -157,11 +169,13 @@ Share link → Friend signs up → Makes payment → Commission earned → Withd
 ### 7. Life Events Module (`/api/v1/life-events`)
 
 **Features:**
+
 - Life event tracking
 - Personality dimension correlation
 - Impact analysis
 
 **Life Event Types:**
+
 - Career (职业发展)
 - Relationship (人际关系)
 - Health (健康状况)
@@ -170,6 +184,7 @@ Share link → Friend signs up → Makes payment → Commission earned → Withd
 - Other (其他)
 
 **Correlation Analysis:**
+
 ```
 Record event → Link to personality result → Analyze correlation → Generate insights
 ```
@@ -177,11 +192,13 @@ Record event → Link to personality result → Analyze correlation → Generate
 ### 8. Share Module (`/api/v1/share`)
 
 **Features:**
+
 - Invite codes (public validation, private creation)
 - Share cards (personality, stability, dual-test)
 - Share analytics
 
 **Endpoints:**
+
 - `GET /share/invite-code/:code` - Validate invite (public)
 - `POST /share/invite-code` - Create invite (private)
 - `GET /share/card/personality` - Generate personality card
@@ -212,7 +229,7 @@ model User {
   testCount       Int       @default(0)
   createdAt       DateTime  @default(now())
   lastLoginAt     DateTime?
-  
+
   testSessions    TestSession[]
   results         Result[]
   lifeEvents      LifeEvent[]
@@ -227,7 +244,7 @@ model TestSession {
   standardError   Float?
   startedAt       DateTime  @default(now())
   completedAt     DateTime?
-  
+
   answers         Answer[]
   user            User      @relation(fields: [userId], references: [id])
   result          Result?
@@ -238,7 +255,7 @@ model Answer {
   sessionId       Int
   itemId          String
   score           Int
-  
+
   session         TestSession @relation(fields: [sessionId], references: [id])
 }
 
@@ -246,25 +263,25 @@ model Result {
   id              Int       @id @default(autoincrement())
   sessionId       Int       @unique
   userId          Int
-  
+
   // Raw Big Five scores (0-100)
   openness        Float
   conscientiousness Float
   extraversion   Float
   agreeableness  Float
   neuroticism    Float
-  
+
   // Derived MBTI type
   mbtiType       String?
-  
+
   // Stability Index
   stabilityScore Float?
-  
+
   // Report content
   reportText     Json?
-  
+
   createdAt      DateTime   @default(now())
-  
+
   session        TestSession @relation(fields: [sessionId], references: [id])
   user           User      @relation(fields: [userId], references: [id])
 }
@@ -273,14 +290,14 @@ model LifeEvent {
   id              Int       @id @default(autoincrement())
   userId          Int
   resultId        Int?
-  
+
   eventType       String    // career/relationship/health/etc
   title           String
   description     String?
   eventDate       DateTime
   expectedImpact  String?   // positive/negative/neutral
   actualImpactScore Int?
-  
+
   createdAt      DateTime  @default(now())
   user            User     @relation(fields: [userId], references: [id])
   result          Result?  @relation(fields: [resultId], references: [id])
@@ -298,11 +315,11 @@ model LifeEvent {
 
 ### Rate Limiting
 
-| Endpoint | Limit |
-|----------|-------|
-| Auth | 10/minute/IP |
-| API | 100/day/user |
-| Reports | 50/day/user |
+| Endpoint | Limit        |
+| -------- | ------------ |
+| Auth     | 10/minute/IP |
+| API      | 100/day/user |
+| Reports  | 50/day/user  |
 
 ### Security Headers
 
@@ -310,19 +327,21 @@ model LifeEvent {
 Helmet({
   contentSecurityPolicy: true,
   crossDomain: { policy: "master-only" },
-  hsts: { maxAge: 31536000, includeSubDomains: true }
-})
+  hsts: { maxAge: 31536000, includeSubDomains: true },
+});
 ```
 
 ## Deployment
 
 ### Development
+
 ```bash
 docker-compose up -d mysql redis
 npm run dev
 ```
 
 ### Production (Docker)
+
 ```bash
 docker-compose -f docker-compose.yml up -d --build
 ```
@@ -353,10 +372,12 @@ See `.env.example` for full configuration.
 ## Monitoring
 
 ### Health Checks
+
 - `/health` - Basic liveness
 - `/health/ready` - Readiness with dependencies
 
 ### Logging
+
 - Winston with rotating files
 - Error stack traces in `logs/error.log`
 - JSON structured logging for production

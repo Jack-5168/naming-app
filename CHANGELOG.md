@@ -5,6 +5,7 @@
 ### 🔧 Phase 1 优化与修复
 
 #### 修复
+
 - **Prisma Schema**
   - 添加 8 个枚举类型 (DualTestStatus, ReferralStatus, CommissionStatus, MembershipLevel, MembershipStatus, OrderStatus, PushNotificationType, PushStatus)
   - 修复 TestSession ↔ TestResult 双向关系
@@ -22,15 +23,18 @@
   - 安装缺失依赖 (redis, @types/redis, web-push, @types/web-push)
 
 #### 优化
+
 - 统一枚举类型使用
 - 规范化数据库关系定义
 - 改进错误日志记录
 
 #### 文档
+
 - 新增 `docs/PHASE1-OPTIMIZATION.md` - Phase 1 优化报告
 - 更新 `CHANGELOG.md` - 添加优化记录
 
 #### 已知问题 (移至 Phase 2)
+
 - 约 50 个 TypeScript 类型错误待修复
 - 前端用户体验优化待实现
 - Redis 缓存层待完善
@@ -43,6 +47,7 @@
 ### 🎉 Phase 1 MVP 完成
 
 #### 新增
+
 - **后端核心**
   - 7 个完整控制器（auth/tests/reports/payments/memberships/life-events/growth）
   - 8 个路由配置文件
@@ -77,6 +82,7 @@
   - Phase 0 交付物文档
 
 #### 技术栈
+
 - **后端**: Node.js 20 LTS + Express 4.x + Prisma 5.x
 - **数据库**: MySQL 8.0 + Redis 7.x
 - **前端**: Taro 3.x + TypeScript 5.x + TDesign Miniprogram
@@ -85,6 +91,7 @@
 - **部署**: Docker + Docker Compose
 
 #### 代码统计
+
 - **后端代码**: 21,000+ 行 TypeScript
 - **前端代码**: 15,000+ 行 TypeScript/TSX
 - **测试代码**: 6 个测试文件，覆盖率>80%
@@ -92,6 +99,7 @@
 - **总计**: 3,364 个文件
 
 #### API 接口（18 个）
+
 - **认证模块** (3): 微信登录/刷新 Token/获取用户信息
 - **测试模块** (4): 创建会话/获取下一题/提交答案/获取结果
 - **报告模块** (3): 生成报告/获取报告/历史列表
@@ -100,6 +108,7 @@
 - **生活事件** (2): 添加事件/获取列表
 
 #### 测试覆盖率
+
 - CAT 引擎：85%
 - 稳定性计算：82%
 - LLM 报告：87%
@@ -108,6 +117,7 @@
 - A/B 测试：80%
 
 ### 📝 技术决策
+
 - 采用 IPIP-NEO 公开题库（避免 MBTI 版权风险）
 - 2PL MIRT 模型（人格测试无猜测参数）
 - 大五→MBTI 映射（学术界成熟算法）
@@ -115,12 +125,14 @@
 - 连续谱呈现（避免标签化）
 
 ### ⚠️ 已知问题
+
 - Prisma Schema 部分关系字段警告（不影响功能）
 - 微信支付需要真实商户配置
 - CAT 引擎需要 Phase 0 标定数据
 - 部分前端样式需微调
 
 ### 🎯 下一步计划
+
 - **Phase 0 数据采集**（Week 5-8）: N≥500 预测试
 - **Phase 2 CAT 优化**（Week 11-16）: 性能提升
 - **Phase 3 LLM 集成**（Week 17-20）: 报告生成
@@ -131,6 +143,7 @@
 ## [0.0.1] - 2026-04-20
 
 ### 🚀 项目初始化
+
 - 创建项目结构
 - 配置开发环境
 - 编写 PRD v4.5

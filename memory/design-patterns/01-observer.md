@@ -1,9 +1,11 @@
 # 观察者模式 (Observer Pattern)
 
 ## 核心思想
+
 定义对象间的一对多依赖关系。当一个对象（Subject）的状态发生变化时，所有依赖它的对象（Observer）都会收到通知并自动更新。
 
 ## 适用场景
+
 - 事件系统 / 发布-订阅
 - 数据绑定（如 Vue 的响应式系统）
 - 消息推送、状态同步
@@ -28,14 +30,14 @@ class Subject {
 
   // 移除观察者
   unsubscribe(observer) {
-    this.observers = this.observers.filter(o => o !== observer);
+    this.observers = this.observers.filter((o) => o !== observer);
     console.log(`[Subject] 观察者已退出: ${observer.name}`);
   }
 
   // 通知所有观察者
   notify(data) {
     console.log(`[Subject] 广播通知, 数据:`, data);
-    this.observers.forEach(observer => observer.update(data));
+    this.observers.forEach((observer) => observer.update(data));
   }
 }
 
@@ -57,15 +59,15 @@ class Observer {
 const messageCenter = new Subject();
 
 // 创建观察者
-const logger = new Observer('Logger', (data) => {
+const logger = new Observer("Logger", (data) => {
   console.log(`  → 日志记录: ${data.message}`);
 });
 
-const analytics = new Observer('Analytics', (data) => {
+const analytics = new Observer("Analytics", (data) => {
   console.log(`  → 数据统计: 类型=${data.type}, 时间=${Date.now()}`);
 });
 
-const pushNotif = new Observer('PushNotification', (data) => {
+const pushNotif = new Observer("PushNotification", (data) => {
   console.log(`  → 推送通知: ${data.message}`);
 });
 
@@ -75,15 +77,16 @@ messageCenter.subscribe(analytics);
 messageCenter.subscribe(pushNotif);
 
 // 发送消息，所有观察者都会收到通知
-console.log('\n--- 发送一条消息 ---');
-messageCenter.notify({ type: 'user_login', message: '用户 admin 登录成功' });
+console.log("\n--- 发送一条消息 ---");
+messageCenter.notify({ type: "user_login", message: "用户 admin 登录成功" });
 
-console.log('\n--- 移除 Logger 后发送 ---');
+console.log("\n--- 移除 Logger 后发送 ---");
 messageCenter.unsubscribe(logger);
-messageCenter.notify({ type: 'order_create', message: '新订单 #1234' });
+messageCenter.notify({ type: "order_create", message: "新订单 #1234" });
 ```
 
 ## 输出示例
+
 ```
 [Subject] 新观察者已加入: Logger
 [Subject] 新观察者已加入: Analytics
@@ -108,6 +111,7 @@ messageCenter.notify({ type: 'order_create', message: '新订单 #1234' });
 ```
 
 ## 要点总结
+
 1. **松耦合**: Subject 不需要知道 Observer 的具体实现，只依赖接口
 2. **动态管理**: 可以随时添加/移除观察者
 3. **一对多**: 一个状态变化触发多个响应

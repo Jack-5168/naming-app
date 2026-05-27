@@ -23,13 +23,22 @@ exports.createOrder = async (req, res) => {
     // Get product info
     const products = {
       basic: {
-        name: '基础版', price: 990, level: 1, duration: 30,
+        name: '基础版',
+        price: 990,
+        level: 1,
+        duration: 30,
       },
       standard: {
-        name: '标准版', price: 2900, level: 2, duration: 90,
+        name: '标准版',
+        price: 2900,
+        level: 2,
+        duration: 90,
       },
       premium: {
-        name: '尊享版', price: 4900, level: 3, duration: 365,
+        name: '尊享版',
+        price: 4900,
+        level: 3,
+        duration: 365,
       },
     };
 
@@ -116,11 +125,15 @@ exports.wechatCallback = async (req, res) => {
 
     // Verify signature
     if (!verifyWeChatSign(result)) {
-      return res.status(400).send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
+      return res
+        .status(400)
+        .send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
     }
 
     if (result.return_code !== 'SUCCESS' || result.result_code !== 'SUCCESS') {
-      return res.status(400).send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
+      return res
+        .status(400)
+        .send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
     }
 
     const { out_trade_no, transaction_id, total_fee } = result;
@@ -131,7 +144,9 @@ exports.wechatCallback = async (req, res) => {
     });
 
     if (!order || order.status !== 'pending') {
-      return res.status(400).send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
+      return res
+        .status(400)
+        .send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
     }
 
     // Update order status
@@ -172,19 +187,21 @@ exports.wechatCallback = async (req, res) => {
     });
 
     // Send success response to WeChat
-    res.send('<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>');
+    res.send(
+      '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>',
+    );
   } catch (error) {
     console.error('WeChat callback error:', error);
-    res.status(500).send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
+    res
+      .status(500)
+      .send('<xml><return_code><![CDATA[FAIL]]></return_code></xml>');
   }
 };
 
 // Helper function to generate WeChat signature
 function generateWeChatSign(params) {
   const sortedKeys = Object.keys(params).sort();
-  const stringA = sortedKeys
-    .map((key) => `${key}=${params[key]}`)
-    .join('&');
+  const stringA = sortedKeys.map((key) => `${key}=${params[key]}`).join('&');
   const stringSignTemp = `${stringA}&key=${WECHAT_API_KEY}`;
 
   return crypto

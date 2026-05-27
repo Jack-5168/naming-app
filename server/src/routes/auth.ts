@@ -6,10 +6,7 @@
  */
 
 import { Router } from 'express';
-import {
-  login,
-  refreshToken,
-} from '../controllers/auth';
+import { login, refreshToken } from '../controllers/auth';
 
 const router = Router();
 

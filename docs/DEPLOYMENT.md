@@ -29,6 +29,7 @@ docker-compose ps
 ```
 
 Services will be available at:
+
 - Backend API: http://localhost:3000
 - Frontend (dev): http://localhost:10086
 - PostgreSQL: localhost:5432
@@ -185,6 +186,7 @@ curl http://localhost:3000/health
 ```
 
 Response:
+
 ```json
 {
   "status": "ok",
@@ -242,6 +244,7 @@ tar -czf postgres-backup.tar.gz /var/lib/docker/volumes/persona-lab_postgres_dat
 ### Common Issues
 
 **Database connection error:**
+
 ```bash
 # Check if PostgreSQL is running
 docker-compose ps db
@@ -251,6 +254,7 @@ docker-compose exec server env | grep DATABASE_URL
 ```
 
 **Port already in use:**
+
 ```bash
 # Find process using port 3000
 lsof -i :3000
@@ -260,6 +264,7 @@ PORT=3001
 ```
 
 **Prisma migration error:**
+
 ```bash
 # Reset database (development only!)
 npx prisma migrate reset
@@ -309,6 +314,7 @@ npx prisma generate
 ## Support
 
 For issues and questions:
+
 - Check logs: `server/logs/`
 - API docs: `/workspace/persona-lab/docs/API.md`
 - Project README: `/workspace/persona-lab/README.md`

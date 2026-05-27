@@ -5,6 +5,7 @@
 Phase 4 专注于用户增长和病毒式传播功能，通过双人合测和分享卡片系统，实现用户自发传播和付费转化。
 
 **核心目标：**
+
 - 提升用户增长率（目标：月增长 30%+）
 - 提高付费转化率（目标：5% → 8%）
 - 建立 KOC 分销体系
@@ -32,17 +33,20 @@ Phase 4 专注于用户增长和病毒式传播功能，通过双人合测和分
 #### 1.3 核心功能
 
 **创建邀请**
+
 - 生成唯一邀请码（8 位大写字母）
 - 生成分享链接和二维码
 - 设置 7 天有效期
 
 **邀请方式**
+
 - 微信好友（模板消息）
 - 微信链接（可复制）
 - 二维码（保存到相册）
 - 邮件（预留）
 
 **兼容性分析**
+
 - 匹配度评分（0-100 分）
 - 四维度兼容性分析（E-I, N-S, T-F, J-P）
 - 冲突预警（潜在矛盾点）
@@ -57,6 +61,7 @@ Phase 4 专注于用户增长和病毒式传播功能，通过双人合测和分
 #### 1.5 技术实现
 
 **后端接口**
+
 ```
 POST   /api/v1/dual-test/create          # 创建合测邀请
 POST   /api/v1/dual-test/accept          # 接受邀请
@@ -67,6 +72,7 @@ GET    /api/v1/dual-test/invite/:code    # 通过邀请码获取信息
 ```
 
 **核心算法**
+
 - 维度差异计算（0-100 分）
 - 类型互动加成（互补类型 +15%）
 - 冲突预警生成（差异 > 40 触发）
@@ -82,16 +88,19 @@ GET    /api/v1/dual-test/invite/:code    # 通过邀请码获取信息
 #### 2.2 卡片内容
 
 **基础信息**
+
 - 用户 MBTI 类型（如 INFJ）
 - 类型名称（如"提倡者"）
 - 类型描述（一句话特点）
 
 **数据可视化**
+
 - 四维度得分条（E, N, T, J）
 - 人格稳定性指数
 - 测试次数（如基于 3 次测试）
 
 **社交元素**
+
 - 个性化文案（如"只有 1% 的人是这个类型"）
 - 金句引用（类型特色语录）
 - 二维码（扫码测试）
@@ -100,14 +109,17 @@ GET    /api/v1/dual-test/invite/:code    # 通过邀请码获取信息
 #### 2.3 卡片模板
 
 **模板 1：标准版**
+
 - 完整信息展示
 - 适合朋友圈分享
 
 **模板 2：简约版**
+
 - 仅显示类型和二维码
 - 适合快速分享
 
 **模板 3：详细版**
+
 - 包含所有维度和稳定性
 - 适合深度分享
 
@@ -122,6 +134,7 @@ GET    /api/v1/dual-test/invite/:code    # 通过邀请码获取信息
 #### 2.5 技术实现
 
 **后端接口**
+
 ```
 GET    /api/v1/share/card/personality    # 生成性格卡片
 GET    /api/v1/share/card/stability      # 生成稳定性卡片
@@ -131,6 +144,7 @@ GET    /api/v1/share/stats               # 获取分享统计
 ```
 
 **前端组件**
+
 - `<ShareCard />` - 卡片渲染组件
 - 支持 Canvas 生成图片
 - 支持保存到相册
@@ -146,16 +160,19 @@ GET    /api/v1/share/stats               # 获取分享统计
 #### 3.2 邀请码类型
 
 **通用邀请码**
+
 - 任何用户可创建
 - 30 天有效期
 - 用于拉新奖励
 
 **KOC 分销码**
+
 - KOC 专属邀请码
 - 15% 佣金比例
 - 永久有效
 
 **活动邀请码**
+
 - 限时活动专用
 - 可设置使用次数限制
 - 可设置优惠金额
@@ -173,6 +190,7 @@ GET    /api/v1/share/stats               # 获取分享统计
 #### 3.4 技术实现
 
 **后端接口**
+
 ```
 POST   /api/v1/share/invite-code         # 创建邀请码
 GET    /api/v1/share/invite-code/:code   # 验证邀请码
@@ -190,11 +208,13 @@ POST   /api/v1/share/invite-code/:code/use  # 使用邀请码
 #### 4.2 佣金结构
 
 **基础佣金**
+
 - 付费会员：15% 佣金
 - 双人合测：15% 佣金
 - 报告解锁：10% 佣金
 
 **阶梯奖励**
+
 - 月推广 10 单：额外 5% 奖金
 - 月推广 50 单：额外 10% 奖金
 - 月推广 100 单：额外 15% 奖金
@@ -209,6 +229,7 @@ POST   /api/v1/share/invite-code/:code/use  # 使用邀请码
 #### 4.4 技术实现
 
 **后端接口**
+
 ```
 GET    /api/v1/growth/koc/referral-link  # 获取推广链接
 GET    /api/v1/growth/koc/commissions    # 获取佣金记录
@@ -242,7 +263,7 @@ model DualTest {
   acceptedAt          DateTime?
   completedAt         DateTime?
   expiresAt           DateTime
-  
+
   initiator           User     @relation("DualTestInitiator", fields: [initiatorId], references: [id])
   participant         User?    @relation("DualTestParticipant", fields: [participantId], references: [id])
   initiatorTestResult TestResult @relation(fields: [initiatorTestId], references: [id])
@@ -260,7 +281,7 @@ model Share {
   channel     ShareChannel // wechat, moment, qq, link, weibo
   targetId    Int?
   sharedAt    DateTime @default(now())
-  
+
   user        User     @relation(fields: [userId], references: [id])
 }
 ```
@@ -279,7 +300,7 @@ model InviteCode {
   createdAt   DateTime @default(now())
   usedAt      DateTime?
   expiresAt   DateTime
-  
+
   user        User     @relation(fields: [userId], references: [id])
 }
 ```
@@ -293,14 +314,14 @@ model InviteCode {
 ```typescript
 function calculateDimensionCompatibility(
   score1: number, // 0-100
-  score2: number  // 0-100
+  score2: number, // 0-100
 ): number {
   const difference = Math.abs(score1 - score2);
-  
-  if (difference <= 15) return 1.0;    // 高度兼容
-  if (difference <= 30) return 0.8;    // 兼容
-  if (difference <= 50) return 0.6;    // 中等
-  return 0.4;                           // 挑战性
+
+  if (difference <= 15) return 1.0; // 高度兼容
+  if (difference <= 30) return 0.8; // 兼容
+  if (difference <= 50) return 0.6; // 中等
+  return 0.4; // 挑战性
 }
 ```
 
@@ -308,10 +329,10 @@ function calculateDimensionCompatibility(
 
 ```typescript
 const complementaryPairs = [
-  ['INFJ', 'ENFP'], // 黄金配对
-  ['INTJ', 'ENTP'],
-  ['INFP', 'ENFJ'],
-  ['INTP', 'ENTJ'],
+  ["INFJ", "ENFP"], // 黄金配对
+  ["INTJ", "ENTP"],
+  ["INFP", "ENFJ"],
+  ["INTP", "ENTJ"],
   // ... 更多配对
 ];
 
@@ -326,10 +347,7 @@ function getTypeInteractionBonus(type1: string, type2: string): number {
 ### 总体兼容性评分
 
 ```typescript
-overallScore = (
-  avgDimensionScore * 0.7 + 
-  typeInteractionBonus * 0.3
-)
+overallScore = avgDimensionScore * 0.7 + typeInteractionBonus * 0.3;
 ```
 
 ---
@@ -348,8 +366,8 @@ overallScore = (
 ```typescript
 interface ShareEvent {
   userId: number;
-  type: 'personality_card' | 'stability_card' | 'dual_test_invite';
-  channel: 'wechat' | 'moment' | 'qq' | 'link';
+  type: "personality_card" | "stability_card" | "dual_test_invite";
+  channel: "wechat" | "moment" | "qq" | "link";
   targetId?: number;
   sharedAt: Date;
 }
@@ -419,20 +437,20 @@ interface ShareEvent {
 
 ### 业务指标
 
-| 指标 | 基线 | 目标 | 实际 |
-|------|------|------|------|
-| 分享率 | - | 30% | - |
-| 病毒系数 K | - | 1.5 | - |
-| 合测转化率 | - | 25% | - |
-| KOC 参与率 | - | 5% | - |
+| 指标       | 基线 | 目标 | 实际 |
+| ---------- | ---- | ---- | ---- |
+| 分享率     | -    | 30%  | -    |
+| 病毒系数 K | -    | 1.5  | -    |
+| 合测转化率 | -    | 25%  | -    |
+| KOC 参与率 | -    | 5%   | -    |
 
 ### 技术指标
 
-| 指标 | 目标 |
-|------|------|
+| 指标         | 目标    |
+| ------------ | ------- |
 | API 响应时间 | < 200ms |
-| 卡片生成时间 | < 1s |
-| 系统可用性 | 99.9% |
+| 卡片生成时间 | < 1s    |
+| 系统可用性   | 99.9%   |
 
 ---
 
@@ -452,13 +470,13 @@ interface ShareEvent {
 
 ### C. 错误码定义
 
-| 错误码 | 说明 |
-|--------|------|
-| 4001 | 邀请码无效 |
-| 4002 | 邀请码已过期 |
-| 4003 | 邀请码已使用 |
-| 4004 | 无合测权限 |
-| 4005 | 分享频率超限 |
+| 错误码 | 说明         |
+| ------ | ------------ |
+| 4001   | 邀请码无效   |
+| 4002   | 邀请码已过期 |
+| 4003   | 邀请码已使用 |
+| 4004   | 无合测权限   |
+| 4005   | 分享频率超限 |
 
 ---
 

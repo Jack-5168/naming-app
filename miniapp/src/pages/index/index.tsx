@@ -1,7 +1,7 @@
-import { View, Text, Button, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
-import './index.css';
+import { View, Text, Button, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { useState, useEffect } from "react";
+import "./index.css";
 
 const DEMO_MODE = false; // Set to true for demo (no backend required)
 
@@ -11,12 +11,12 @@ const Index = () => {
 
   useEffect(() => {
     if (DEMO_MODE) {
-      setUserInfo({ name: 'Demo User', avatar: '' });
+      setUserInfo({ name: "Demo User", avatar: "" });
       setLoading(false);
       return;
     }
     // Check login status
-    const token = Taro.getStorageSync('accessToken');
+    const token = Taro.getStorageSync("accessToken");
     if (token) {
       // Fetch user info
       fetchUserInfo();
@@ -27,16 +27,16 @@ const Index = () => {
 
   const fetchUserInfo = async () => {
     try {
-      const token = Taro.getStorageSync('accessToken');
+      const token = Taro.getStorageSync("accessToken");
       const res = await Taro.request({
-        url: 'http://localhost:3000/api/v1/users/me',
+        url: "http://localhost:3000/api/v1/users/me",
         header: {
           Authorization: `Bearer ${token}`,
         },
       });
       setUserInfo(res.data.user);
     } catch (error) {
-      console.error('Failed to fetch user info:', error);
+      console.error("Failed to fetch user info:", error);
     }
   };
 
@@ -47,24 +47,24 @@ const Index = () => {
         if (res.code) {
           try {
             const loginRes = await Taro.request({
-              url: 'http://localhost:3000/api/v1/auth/wechat/login',
-              method: 'POST',
+              url: "http://localhost:3000/api/v1/auth/wechat/login",
+              method: "POST",
               data: { code: res.code },
             });
-            
+
             const { accessToken, refreshToken } = loginRes.data;
-            Taro.setStorageSync('accessToken', accessToken);
-            Taro.setStorageSync('refreshToken', refreshToken);
-            
+            Taro.setStorageSync("accessToken", accessToken);
+            Taro.setStorageSync("refreshToken", refreshToken);
+
             fetchUserInfo();
             Taro.showToast({
-              title: '登录成功',
-              icon: 'success',
+              title: "登录成功",
+              icon: "success",
             });
           } catch (error) {
             Taro.showToast({
-              title: '登录失败',
-              icon: 'none',
+              title: "登录失败",
+              icon: "none",
             });
           }
         }
@@ -75,13 +75,13 @@ const Index = () => {
   const startTest = () => {
     if (!userInfo) {
       Taro.showToast({
-        title: '请先登录',
-        icon: 'none',
+        title: "请先登录",
+        icon: "none",
       });
       return;
     }
     Taro.navigateTo({
-      url: '/pages/test/test',
+      url: "/pages/test/test",
     });
   };
 
@@ -120,10 +120,10 @@ const Index = () => {
           <View className="preview-item">
             <Text className="preview-label">四维得分</Text>
             <View className="score-bars">
-              <View className="score-bar" style={{ width: '75%' }} />
-              <View className="score-bar" style={{ width: '60%' }} />
-              <View className="score-bar" style={{ width: '80%' }} />
-              <View className="score-bar" style={{ width: '45%' }} />
+              <View className="score-bar" style={{ width: "75%" }} />
+              <View className="score-bar" style={{ width: "60%" }} />
+              <View className="score-bar" style={{ width: "80%" }} />
+              <View className="score-bar" style={{ width: "45%" }} />
             </View>
           </View>
           <View className="preview-item">
@@ -149,7 +149,7 @@ const Index = () => {
       {/* User Info */}
       {userInfo && (
         <View className="user-info">
-          <Text>欢迎，{userInfo.nickname || '探索者'}</Text>
+          <Text>欢迎，{userInfo.nickname || "探索者"}</Text>
           <Text>已测试 {userInfo.testCount} 次</Text>
         </View>
       )}

@@ -4,12 +4,12 @@
 
 ## Summary
 
-| Metric | Current | Previous (May 24) | Threshold | Status |
-|--------|---------|------------------|-----------|--------|
-| Lines | 15.61% | 16.65% | 70% | ❌ FAIL |
-| Statements | 16.16% | 15.66% | 70% | ❌ FAIL |
-| Branches | 14.36% | 14.43% | 70% | ❌ FAIL |
-| Functions | 26.25% | 22% | 70% | ❌ FAIL |
+| Metric     | Current | Previous (May 24) | Threshold | Status  |
+| ---------- | ------- | ----------------- | --------- | ------- |
+| Lines      | 15.61%  | 16.65%            | 70%       | ❌ FAIL |
+| Statements | 16.16%  | 15.66%            | 70%       | ❌ FAIL |
+| Branches   | 14.36%  | 14.43%            | 70%       | ❌ FAIL |
+| Functions  | 26.25%  | 22%               | 70%       | ❌ FAIL |
 
 ## Test Results
 
@@ -32,47 +32,51 @@
 
 ## Well-Covered Modules (>80%)
 
-| Module | Coverage | Trend |
-|--------|----------|-------|
-| cat-engine.ts | 100% | ✓ |
-| big5-to-mbti.ts | 0% | ❌ (新增) |
-| stability-calculator.ts | 91.42% | ↓ |
-| cost-control.ts | 92.53% | ↑ |
-| life-events.ts | 89.31% | ↓ |
-| result-calculator.ts | 93.75% | ✓ |
+| Module                  | Coverage | Trend     |
+| ----------------------- | -------- | --------- |
+| cat-engine.ts           | 100%     | ✓         |
+| big5-to-mbti.ts         | 0%       | ❌ (新增) |
+| stability-calculator.ts | 91.42%   | ↓         |
+| cost-control.ts         | 92.53%   | ↑         |
+| life-events.ts          | 89.31%   | ↓         |
+| result-calculator.ts    | 93.75%   | ✓         |
 
 ## Critical Uncovered Paths (Priority for Testing)
 
 ### Controllers (Business Logic)
-| File | Coverage | Priority |
-|------|----------|----------|
-| auth.ts | 0% | P0 |
-| payments.ts | 0% | P0 |
-| reports.ts | 0% | P1 |
-| tests.ts | 0% | P1 |
-| growth.ts | 0% | P2 |
+
+| File        | Coverage | Priority |
+| ----------- | -------- | -------- |
+| auth.ts     | 0%       | P0       |
+| payments.ts | 0%       | P0       |
+| reports.ts  | 0%       | P1       |
+| tests.ts    | 0%       | P1       |
+| growth.ts   | 0%       | P2       |
 
 ### Services (Core Business)
-| File | Coverage | Priority |
-|------|----------|----------|
-| ab-testing.ts | 0% | P0 |
-| llm-report.ts | 0% | P1 |
-| membership-benefits.ts | 0% | P1 |
-| compatibility-analyzer.ts | 0% | P1 |
-| big5-to-mbti.ts | 0% | P1 |
+
+| File                      | Coverage | Priority |
+| ------------------------- | -------- | -------- |
+| ab-testing.ts             | 0%       | P0       |
+| llm-report.ts             | 0%       | P1       |
+| membership-benefits.ts    | 0%       | P1       |
+| compatibility-analyzer.ts | 0%       | P1       |
+| big5-to-mbti.ts           | 0%       | P1       |
 
 ### Security
-| File | Coverage | Priority |
-|------|----------|----------|
-| encryption.ts | 0% | P0 |
-| rate-limiter.ts | 0% | P2 |
+
+| File            | Coverage | Priority |
+| --------------- | -------- | -------- |
+| encryption.ts   | 0%       | P0       |
+| rate-limiter.ts | 0%       | P2       |
 
 ### Middleware & Optimization
-| File | Coverage | Priority |
-|------|----------|----------|
-| auth.ts (middleware) | 0% | P1 |
-| cache.ts | 0% | P2 |
-| database.ts | 0% | P2 |
+
+| File                 | Coverage | Priority |
+| -------------------- | -------- | -------- |
+| auth.ts (middleware) | 0%       | P1       |
+| cache.ts             | 0%       | P2       |
+| database.ts          | 0%       | P2       |
 
 ## Issues Found
 
@@ -110,9 +114,9 @@
 
 ## Progress Tracking
 
-| Date | Lines | Change |
-|------|-------|-------|
-| May 24 | 16.65% | - |
+| Date   | Lines  | Change |
+| ------ | ------ | ------ |
+| May 24 | 16.65% | -      |
 | May 25 | 15.61% | -1.04% |
 
 **Trend:** Coverage dropped slightly due to new module additions.

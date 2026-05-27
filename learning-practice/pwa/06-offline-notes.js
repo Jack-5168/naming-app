@@ -221,16 +221,28 @@ class OfflineNotesApp {
     } else {
       this.categories = [
         {
-          id: 'default', name: '默认分类', color: '#4a90d9', icon: '📝',
+          id: 'default',
+          name: '默认分类',
+          color: '#4a90d9',
+          icon: '📝',
         },
         {
-          id: 'work', name: '工作', color: '#e74c3c', icon: '💼',
+          id: 'work',
+          name: '工作',
+          color: '#e74c3c',
+          icon: '💼',
         },
         {
-          id: 'personal', name: '个人', color: '#27ae60', icon: '🏠',
+          id: 'personal',
+          name: '个人',
+          color: '#27ae60',
+          icon: '🏠',
         },
         {
-          id: 'ideas', name: '灵感', color: '#f39c12', icon: '💡',
+          id: 'ideas',
+          name: '灵感',
+          color: '#f39c12',
+          icon: '💡',
         },
       ];
       await this.db.setSetting('categories', this.categories);
@@ -342,7 +354,9 @@ class OfflineNotesApp {
    */
   async pullFromServer() {
     try {
-      const response = await fetch(`${this.apiUrl}/notes?since=${this.getLastSyncTime()}`);
+      const response = await fetch(
+        `${this.apiUrl}/notes?since=${this.getLastSyncTime()}`,
+      );
       if (!response.ok) return;
 
       const serverNotes = await response.json();
@@ -357,7 +371,10 @@ class OfflineNotesApp {
           await this.db.createNote(serverNote);
         } else if (localNote.status === 'local') {
           // 本地有修改，需要解决冲突
-          const resolved = ConflictResolver.lastWriteWins(localNote, serverNote);
+          const resolved = ConflictResolver.lastWriteWins(
+            localNote,
+            serverNote,
+          );
           await this.db.updateNote(resolved.id, resolved);
         } else {
           // 本地未修改，使用服务器数据

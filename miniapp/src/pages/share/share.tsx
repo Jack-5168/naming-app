@@ -1,19 +1,19 @@
 /**
  * Share Page - 分享页面
  * Phase 4: Growth Features
- * 
+ *
  * Features:
  * - 分享渠道选择
  * - 分享统计
  * - 分享历史
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, Image, ScrollView } from '@tarojs/components';
-import { useNavigate, useRouter } from '@tarojs/taro';
-import Taro from '@tarojs/taro';
-import ShareCard from '../../components/ShareCard';
-import './share.css';
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, Image, ScrollView } from "@tarojs/components";
+import { useNavigate, useRouter } from "@tarojs/taro";
+import Taro from "@tarojs/taro";
+import ShareCard from "../../components/ShareCard";
+import "./share.css";
 
 interface SharePageProps {
   testId?: string;
@@ -53,11 +53,13 @@ interface ShareData {
 export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
   const navigate = useNavigate();
   const router = useRouter();
-  
+
   const [loading, setLoading] = useState(true);
   const [shareData, setShareData] = useState<ShareData | null>(null);
   const [shareStats, setShareStats] = useState<ShareStats | null>(null);
-  const [selectedChannel, setSelectedChannel] = useState<'wechat' | 'moment' | 'qq' | 'link'>('wechat');
+  const [selectedChannel, setSelectedChannel] = useState<
+    "wechat" | "moment" | "qq" | "link"
+  >("wechat");
   const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
@@ -74,7 +76,9 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
   const loadShareData = async (testId: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/v1/share/card/personality?testId=${testId}`);
+      const response = await fetch(
+        `/api/v1/share/card/personality?testId=${testId}`,
+      );
       const data = await response.json();
 
       if (data.success) {
@@ -93,15 +97,15 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
         });
       } else {
         Taro.showToast({
-          title: data.error || '加载失败',
-          icon: 'none',
+          title: data.error || "加载失败",
+          icon: "none",
         });
       }
     } catch (err) {
-      console.error('Error loading share data:', err);
+      console.error("Error loading share data:", err);
       Taro.showToast({
-        title: '网络错误',
-        icon: 'none',
+        title: "网络错误",
+        icon: "none",
       });
     } finally {
       setLoading(false);
@@ -113,14 +117,14 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    */
   const loadShareStats = async () => {
     try {
-      const response = await fetch('/api/v1/share/stats');
+      const response = await fetch("/api/v1/share/stats");
       const data = await response.json();
 
       if (data.success) {
         setShareStats(data.data);
       }
     } catch (err) {
-      console.error('Error loading share stats:', err);
+      console.error("Error loading share stats:", err);
     }
   };
 
@@ -129,17 +133,17 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    */
   const trackShare = async (channel: string) => {
     try {
-      await fetch('/api/v1/share/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/v1/share/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: 'personality_card',
+          type: "personality_card",
           channel,
           targetId: propTestId || router.params.testId,
         }),
       });
     } catch (err) {
-      console.error('Error tracking share:', err);
+      console.error("Error tracking share:", err);
     }
   };
 
@@ -147,15 +151,15 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    * Handle share to WeChat
    */
   const handleShareToWeChat = async () => {
-    await trackShare('wechat');
-    
+    await trackShare("wechat");
+
     Taro.showShareMenu({
       withShareTicket: true,
-      showShareItems: ['wechatFriends'],
+      showShareItems: ["wechatFriends"],
       success: () => {
         Taro.showToast({
-          title: '点击右上角分享',
-          icon: 'none',
+          title: "点击右上角分享",
+          icon: "none",
         });
       },
     });
@@ -165,15 +169,15 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    * Handle share to WeChat Moments
    */
   const handleShareToMoment = async () => {
-    await trackShare('moment');
-    
+    await trackShare("moment");
+
     Taro.showShareMenu({
       withShareTicket: true,
-      showShareItems: ['wechatMoment'],
+      showShareItems: ["wechatMoment"],
       success: () => {
         Taro.showToast({
-          title: '点击右上角分享到朋友圈',
-          icon: 'none',
+          title: "点击右上角分享到朋友圈",
+          icon: "none",
         });
       },
     });
@@ -183,11 +187,11 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    * Handle share to QQ
    */
   const handleShareToQQ = async () => {
-    await trackShare('qq');
-    
+    await trackShare("qq");
+
     Taro.showToast({
-      title: 'QQ 分享功能开发中',
-      icon: 'none',
+      title: "QQ 分享功能开发中",
+      icon: "none",
     });
   };
 
@@ -195,16 +199,16 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    * Handle copy link
    */
   const handleCopyLink = async () => {
-    await trackShare('link');
-    
+    await trackShare("link");
+
     if (!shareData?.shareUrl) return;
 
     Taro.setClipboardData({
       data: shareData.shareUrl,
       success: () => {
         Taro.showToast({
-          title: '链接已复制',
-          icon: 'success',
+          title: "链接已复制",
+          icon: "success",
         });
       },
     });
@@ -215,8 +219,8 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
    */
   const handleSaveToAlbum = () => {
     Taro.showToast({
-      title: '长按卡片保存图片',
-      icon: 'none',
+      title: "长按卡片保存图片",
+      icon: "none",
     });
   };
 
@@ -234,11 +238,11 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
       <View className="share-header">
         <Text className="share-title">分享我的 MBTI</Text>
         <Text className="share-subtitle">邀请好友一起探索性格奥秘</Text>
-        
+
         <View className="stats-toggle" onClick={() => setShowStats(!showStats)}>
           <Text className="stats-icon">📊</Text>
           <Text className="stats-text">
-            {showStats ? '隐藏统计' : '查看统计'}
+            {showStats ? "隐藏统计" : "查看统计"}
           </Text>
         </View>
       </View>
@@ -254,28 +258,37 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
             {shareStats.referralStats && (
               <>
                 <View className="stat-item">
-                  <Text className="stat-value">{shareStats.referralStats.totalReferrals}</Text>
+                  <Text className="stat-value">
+                    {shareStats.referralStats.totalReferrals}
+                  </Text>
                   <Text className="stat-label">邀请人数</Text>
                 </View>
                 <View className="stat-item">
-                  <Text className="stat-value">{shareStats.referralStats.convertedReferrals}</Text>
+                  <Text className="stat-value">
+                    {shareStats.referralStats.convertedReferrals}
+                  </Text>
                   <Text className="stat-label">成功转化</Text>
                 </View>
               </>
             )}
           </View>
 
-          {shareStats.sharesByChannel && Object.keys(shareStats.sharesByChannel).length > 0 && (
-            <View className="stats-detail">
-              <Text className="stats-detail-title">分享渠道</Text>
-              {Object.entries(shareStats.sharesByChannel).map(([channel, count]) => (
-                <View key={channel} className="channel-stat">
-                  <Text className="channel-name">{getChannelName(channel)}</Text>
-                  <Text className="channel-count">{count}次</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          {shareStats.sharesByChannel &&
+            Object.keys(shareStats.sharesByChannel).length > 0 && (
+              <View className="stats-detail">
+                <Text className="stats-detail-title">分享渠道</Text>
+                {Object.entries(shareStats.sharesByChannel).map(
+                  ([channel, count]) => (
+                    <View key={channel} className="channel-stat">
+                      <Text className="channel-name">
+                        {getChannelName(channel)}
+                      </Text>
+                      <Text className="channel-count">{count}次</Text>
+                    </View>
+                  ),
+                )}
+              </View>
+            )}
         </View>
       )}
 
@@ -300,35 +313,35 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
       {/* Share Channels */}
       <View className="share-channels">
         <Text className="channels-title">选择分享渠道</Text>
-        
+
         <View className="channel-options">
           <View
-            className={`channel-option ${selectedChannel === 'wechat' ? 'selected' : ''}`}
-            onClick={() => setSelectedChannel('wechat')}
+            className={`channel-option ${selectedChannel === "wechat" ? "selected" : ""}`}
+            onClick={() => setSelectedChannel("wechat")}
           >
             <View className="channel-icon wechat">💬</View>
             <Text className="channel-label">微信好友</Text>
           </View>
-          
+
           <View
-            className={`channel-option ${selectedChannel === 'moment' ? 'selected' : ''}`}
-            onClick={() => setSelectedChannel('moment')}
+            className={`channel-option ${selectedChannel === "moment" ? "selected" : ""}`}
+            onClick={() => setSelectedChannel("moment")}
           >
             <View className="channel-icon moment">📱</View>
             <Text className="channel-label">朋友圈</Text>
           </View>
-          
+
           <View
-            className={`channel-option ${selectedChannel === 'qq' ? 'selected' : ''}`}
-            onClick={() => setSelectedChannel('qq')}
+            className={`channel-option ${selectedChannel === "qq" ? "selected" : ""}`}
+            onClick={() => setSelectedChannel("qq")}
           >
             <View className="channel-icon qq">🐧</View>
             <Text className="channel-label">QQ 好友</Text>
           </View>
-          
+
           <View
-            className={`channel-option ${selectedChannel === 'link' ? 'selected' : ''}`}
-            onClick={() => setSelectedChannel('link')}
+            className={`channel-option ${selectedChannel === "link" ? "selected" : ""}`}
+            onClick={() => setSelectedChannel("link")}
           >
             <View className="channel-icon link">🔗</View>
             <Text className="channel-label">复制链接</Text>
@@ -336,30 +349,36 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
         </View>
 
         <View className="share-actions">
-          {selectedChannel === 'wechat' && (
-            <Button className="action-btn primary" onClick={handleShareToWeChat}>
+          {selectedChannel === "wechat" && (
+            <Button
+              className="action-btn primary"
+              onClick={handleShareToWeChat}
+            >
               分享给微信好友
             </Button>
           )}
-          
-          {selectedChannel === 'moment' && (
-            <Button className="action-btn primary" onClick={handleShareToMoment}>
+
+          {selectedChannel === "moment" && (
+            <Button
+              className="action-btn primary"
+              onClick={handleShareToMoment}
+            >
               分享到朋友圈
             </Button>
           )}
-          
-          {selectedChannel === 'qq' && (
+
+          {selectedChannel === "qq" && (
             <Button className="action-btn primary" onClick={handleShareToQQ}>
               分享给 QQ 好友
             </Button>
           )}
-          
-          {selectedChannel === 'link' && (
+
+          {selectedChannel === "link" && (
             <Button className="action-btn primary" onClick={handleCopyLink}>
               复制链接
             </Button>
           )}
-          
+
           <Button className="action-btn secondary" onClick={handleSaveToAlbum}>
             保存卡片
           </Button>
@@ -389,7 +408,7 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
           </View>
           <Button
             className="action-btn referral"
-            onClick={() => navigate({ url: '/koc/dashboard' })}
+            onClick={() => navigate({ url: "/koc/dashboard" })}
           >
             查看佣金详情
           </Button>
@@ -404,11 +423,11 @@ export const SharePage: React.FC<SharePageProps> = ({ testId: propTestId }) => {
  */
 function getChannelName(channel: string): string {
   const names: { [key: string]: string } = {
-    wechat: '微信好友',
-    moment: '朋友圈',
-    qq: 'QQ 好友',
-    link: '复制链接',
-    weibo: '微博',
+    wechat: "微信好友",
+    moment: "朋友圈",
+    qq: "QQ 好友",
+    link: "复制链接",
+    weibo: "微博",
   };
   return names[channel] || channel;
 }

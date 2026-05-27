@@ -65,4 +65,6 @@ store.dispatch({ type: 'DECREMENT' }); // 会触发订阅回调
 unsubscribe();
 store.dispatch({ type: 'DECREMENT' }); // 不会触发（已取消订阅）
 
-console.log('\n✅ 示例 1 完成：理解了 createStore/dispatch/subscribe 的核心原理');
+console.log(
+  '\n✅ 示例 1 完成：理解了 createStore/dispatch/subscribe 的核心原理',
+);

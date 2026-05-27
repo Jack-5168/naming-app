@@ -10,10 +10,14 @@
  * @module controllers/reports
  */
 
-import { Request, Response } from 'express';
-import { generateReport, getRateLimitStatus, reportEvents } from '../services/llm-report';
-import { recordFeatureUsage } from './memberships';
-import { prisma, logger } from '../lib/logger';
+import { Request, Response } from "express";
+import {
+  generateReport,
+  getRateLimitStatus,
+  reportEvents,
+} from "../services/llm-report";
+import { recordFeatureUsage } from "./memberships";
+import { prisma, logger } from "../lib/logger";
 
 // ==================== 类型定义 ====================
 
@@ -22,7 +26,7 @@ import { prisma, logger } from '../lib/logger';
  */
 interface GenerateReportRequest {
   result_id: number;
-  report_type: 'basic' | 'pro' | 'master';
+  report_type: "basic" | "pro" | "master";
   include_sections?: string[];
 }
 
@@ -46,7 +50,7 @@ interface ReportStatusGeneratingResponse {
   code: number;
   data: {
     report_id: number;
-    status: 'generating';
+    status: "generating";
     progress: number;
     current_section?: string;
   };
@@ -59,7 +63,7 @@ interface ReportContentResponse {
   code: number;
   data: {
     report_id: number;
-    status: 'completed';
+    status: "completed";
     type: string;
     title: string;
     summary: string;
@@ -117,19 +121,33 @@ const REPORT_CONFIG = {
     price: 0,
     pages: 3,
     estimatedTime: 10,
-    features: ['personality_type', 'dimension_scores', 'basic_analysis'],
+    features: ["personality_type", "dimension_scores", "basic_analysis"],
   },
   pro: {
     price: 9.9,
     pages: 8,
     estimatedTime: 15,
-    features: ['personality_type', 'dimension_scores', 'detailed_analysis', 'career_suggestions', 'relationship_compatibility'],
+    features: [
+      "personality_type",
+      "dimension_scores",
+      "detailed_analysis",
+      "career_suggestions",
+      "relationship_compatibility",
+    ],
   },
   master: {
     price: 29,
     pages: 15,
     estimatedTime: 25,
-    features: ['personality_type', 'dimension_scores', 'detailed_analysis', 'career_suggestions', 'relationship_compatibility', 'growth_path', 'life_events_analysis'],
+    features: [
+      "personality_type",
+      "dimension_scores",
+      "detailed_analysis",
+      "career_suggestions",
+      "relationship_compatibility",
+      "growth_path",
+      "life_events_analysis",
+    ],
   },
 };
 
@@ -145,7 +163,9 @@ const RATE_LIMIT = {
  * @param userId 用户 ID
  * @returns 是否允许生成
  */
-async function checkUserRateLimit(userId: number): Promise<{ allowed: boolean; remaining: number; resetTime?: Date }> {
+async function checkUserRateLimit(
+  userId: number,
+): Promise<{ allowed: boolean; remaining: number; resetTime?: Date }> {
   const today = new Date();
 
   today.setHours(0, 0, 0, 0);
@@ -211,10 +231,10 @@ function parseReportContent(content: string): any {
   } catch (error) {
     // 如果不是 JSON，尝试按 Markdown 解析
     return {
-      dimensions: { title: '四维深度解析', sections: [] },
-      career: { title: '职业发展指引', suggestions: [] },
-      relationship: { title: '人际关系图谱', analysis: [] },
-      growth: { title: '个人成长计划', plans: [] },
+      dimensions: { title: "四维深度解析", sections: [] },
+      career: { title: "职业发展指引", suggestions: [] },
+      relationship: { title: "人际关系图谱", analysis: [] },
+      growth: { title: "个人成长计划", plans: [] },
     };
   }
 }
@@ -227,32 +247,32 @@ function parseReportContent(content: string): any {
  */
 function generateReportTitle(mbtiType: string, reportType: string): string {
   const typeNames: Record<string, string> = {
-    INTJ: '建筑师',
-    INTP: '逻辑学家',
-    ENTJ: '指挥官',
-    ENTP: '辩论家',
-    INFJ: '调停者',
-    INFP: ' mediator',
-    ENFJ: '主人公',
-    ENFP: '竞选者',
-    ISTJ: '物流师',
-    ISFJ: '守卫者',
-    ESTJ: '总经理',
-    ESFJ: '执政官',
-    ISTP: '鉴赏家',
-    ISFP: '探险家',
-    ESTP: '企业家',
-    ESFP: '表演者',
+    INTJ: "建筑师",
+    INTP: "逻辑学家",
+    ENTJ: "指挥官",
+    ENTP: "辩论家",
+    INFJ: "调停者",
+    INFP: " mediator",
+    ENFJ: "主人公",
+    ENFP: "竞选者",
+    ISTJ: "物流师",
+    ISFJ: "守卫者",
+    ESTJ: "总经理",
+    ESFJ: "执政官",
+    ISTP: "鉴赏家",
+    ISFP: "探险家",
+    ESTP: "企业家",
+    ESFP: "表演者",
   };
 
-  const typeName = typeNames[mbtiType] || '探索者';
+  const typeName = typeNames[mbtiType] || "探索者";
   const typeLabels: Record<string, string> = {
-    basic: '基础人格报告',
-    pro: '深度人格报告',
-    master: '大师级人格报告',
+    basic: "基础人格报告",
+    pro: "深度人格报告",
+    master: "大师级人格报告",
   };
 
-  return `${mbtiType} ${typeName} - ${typeLabels[reportType] || '人格报告'}`;
+  return `${mbtiType} ${typeName} - ${typeLabels[reportType] || "人格报告"}`;
 }
 
 /**
@@ -263,13 +283,16 @@ function generateReportTitle(mbtiType: string, reportType: string): string {
  */
 function generateReportSummary(mbtiType: string, reportType: string): string {
   const summaries: Record<string, string> = {
-    INFJ: '你是一个富有想象力和理想主义的人，善于洞察他人内心，追求深刻的人际关系和人生意义。',
-    ENFP: '你充满热情和创造力，善于激励他人，喜欢探索新的可能性和想法。',
-    INTJ: '你具有战略思维和独立精神，善于制定长远计划并高效执行。',
+    INFJ: "你是一个富有想象力和理想主义的人，善于洞察他人内心，追求深刻的人际关系和人生意义。",
+    ENFP: "你充满热情和创造力，善于激励他人，喜欢探索新的可能性和想法。",
+    INTJ: "你具有战略思维和独立精神，善于制定长远计划并高效执行。",
     // ... 其他类型的摘要
   };
 
-  return summaries[mbtiType] || `基于您的 MBTI 测试结果生成的${reportType}级人格分析报告。`;
+  return (
+    summaries[mbtiType] ||
+    `基于您的 MBTI 测试结果生成的${reportType}级人格分析报告。`
+  );
 }
 
 // ==================== 控制器函数 ====================
@@ -298,14 +321,18 @@ export async function generateReportHandler(
 
   try {
     const userId = req.user?.id;
-    const { result_id, report_type = 'basic', include_sections }: GenerateReportRequest = req.body;
+    const {
+      result_id,
+      report_type = "basic",
+      include_sections,
+    }: GenerateReportRequest = req.body;
 
     // 1. 验证用户身份
     if (!userId) {
-      logger.warn('Unauthorized report generation attempt', { requestId });
+      logger.warn("Unauthorized report generation attempt", { requestId });
       res.status(401).json({
         code: 401,
-        message: '未授权访问',
+        message: "未授权访问",
       });
 
       return;
@@ -313,21 +340,21 @@ export async function generateReportHandler(
 
     // 2. 验证必填参数
     if (!result_id) {
-      logger.warn('Missing result_id', { requestId, userId });
+      logger.warn("Missing result_id", { requestId, userId });
       res.status(400).json({
         code: 400,
-        message: 'result_id 是必填参数',
+        message: "result_id 是必填参数",
       });
 
       return;
     }
 
     // 3. 验证报告类型
-    if (!['basic', 'pro', 'master'].includes(report_type)) {
-      logger.warn('Invalid report_type', { requestId, userId, report_type });
+    if (!["basic", "pro", "master"].includes(report_type)) {
+      logger.warn("Invalid report_type", { requestId, userId, report_type });
       res.status(400).json({
         code: 400,
-        message: 'report_type 必须是 basic、pro 或 master',
+        message: "report_type 必须是 basic、pro 或 master",
       });
 
       return;
@@ -337,7 +364,11 @@ export async function generateReportHandler(
     const rateLimit = await checkUserRateLimit(userId);
 
     if (!rateLimit.allowed) {
-      logger.warn('Rate limit exceeded', { requestId, userId, remaining: rateLimit.remaining });
+      logger.warn("Rate limit exceeded", {
+        requestId,
+        userId,
+        remaining: rateLimit.remaining,
+      });
       res.status(429).json({
         code: 429,
         message: `您今日的生成次数已达上限（${RATE_LIMIT.userDaily}次/日），请明日再试`,
@@ -352,10 +383,10 @@ export async function generateReportHandler(
     });
 
     if (!testResult) {
-      logger.warn('Test result not found', { requestId, userId, result_id });
+      logger.warn("Test result not found", { requestId, userId, result_id });
       res.status(404).json({
         code: 404,
-        message: '测试结果不存在',
+        message: "测试结果不存在",
       });
 
       return;
@@ -363,10 +394,14 @@ export async function generateReportHandler(
 
     // 6. 验证所有权
     if (testResult.userId !== userId) {
-      logger.warn('Access denied to test result', { requestId, userId, result_id });
+      logger.warn("Access denied to test result", {
+        requestId,
+        userId,
+        result_id,
+      });
       res.status(403).json({
         code: 403,
-        message: '无权访问此测试结果',
+        message: "无权访问此测试结果",
       });
 
       return;
@@ -377,17 +412,21 @@ export async function generateReportHandler(
       where: {
         testResultId: result_id,
         reportType: report_type,
-        status: 'completed',
+        status: "completed",
       },
     });
 
     if (existingReport) {
-      logger.info('Report already exists', { requestId, userId, report_id: existingReport.id });
+      logger.info("Report already exists", {
+        requestId,
+        userId,
+        report_id: existingReport.id,
+      });
       res.json({
         code: 0,
         data: {
           report_id: existingReport.id,
-          status: 'completed',
+          status: "completed",
           estimated_time_seconds: 0,
           progress_url: `/api/v1/reports/${existingReport.id}`,
         },
@@ -402,25 +441,35 @@ export async function generateReportHandler(
         userId,
         testResultId: result_id,
         reportType: report_type,
-        content: '', // 初始为空
+        content: "", // 初始为空
         tokens: 0,
         generationTime: 0,
         requestId,
         cost: 0,
-        status: 'pending',
+        status: "pending",
       },
     });
 
-    logger.info('Report created', { requestId, userId, report_id: report.id, report_type });
+    logger.info("Report created", {
+      requestId,
+      userId,
+      report_id: report.id,
+      report_type,
+    });
 
     // 9. 异步生成报告内容
     // 注意：实际生产中应使用消息队列处理
     generateReport({
       userId: String(userId),
-      clientIp: req.ip || 'unknown',
+      clientIp: req.ip || "unknown",
       resultId: result_id,
       reportType: report_type,
-      includeSections: include_sections || ['dimensions', 'career', 'relationship', 'growth'],
+      includeSections: include_sections || [
+        "dimensions",
+        "career",
+        "relationship",
+        "growth",
+      ],
     })
       .then(async (result) => {
         // 更新报告记录
@@ -431,7 +480,7 @@ export async function generateReportHandler(
             tokens: result.tokens,
             generationTime: result.generationTime,
             cost: result.cost,
-            status: 'completed',
+            status: "completed",
             qualityScore: 5, // 默认高质量
           },
         });
@@ -440,9 +489,11 @@ export async function generateReportHandler(
         await incrementUserUsage(userId);
 
         // 记录功能使用
-        await recordFeatureUsage(userId, `report_${report_type}`, { reportId: report.id });
+        await recordFeatureUsage(userId, `report_${report_type}`, {
+          reportId: report.id,
+        });
 
-        logger.info('Report generation completed', {
+        logger.info("Report generation completed", {
           requestId,
           report_id: report.id,
           tokens: result.tokens,
@@ -450,7 +501,7 @@ export async function generateReportHandler(
         });
       })
       .catch(async (error) => {
-        logger.error('Report generation failed', {
+        logger.error("Report generation failed", {
           requestId,
           report_id: report.id,
           error: (error as Error).message,
@@ -460,7 +511,7 @@ export async function generateReportHandler(
         await prisma.report.update({
           where: { id: report.id },
           data: {
-            status: 'failed',
+            status: "failed",
           },
         });
       });
@@ -472,13 +523,13 @@ export async function generateReportHandler(
       code: 0,
       data: {
         report_id: report.id,
-        status: 'generating',
+        status: "generating",
         estimated_time_seconds: config.estimatedTime,
         progress_url: `/api/v1/reports/${report.id}`,
       },
     });
   } catch (error) {
-    logger.error('Error generating report', {
+    logger.error("Error generating report", {
       requestId,
       error: (error as Error).message,
       stack: (error as Error).stack,
@@ -486,7 +537,7 @@ export async function generateReportHandler(
 
     res.status(500).json({
       code: 500,
-      message: '生成报告失败，请稍后重试',
+      message: "生成报告失败，请稍后重试",
     });
   }
 }
@@ -512,7 +563,9 @@ export async function generateReportHandler(
  */
 export async function getReportHandler(
   req: Request,
-  res: Response<ReportStatusGeneratingResponse | ReportContentResponse | ErrorResponse>,
+  res: Response<
+    ReportStatusGeneratingResponse | ReportContentResponse | ErrorResponse
+  >,
 ): Promise<void> {
   const requestId = `get_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
@@ -522,10 +575,10 @@ export async function getReportHandler(
 
     // 1. 验证用户身份
     if (!userId) {
-      logger.warn('Unauthorized report access attempt', { requestId });
+      logger.warn("Unauthorized report access attempt", { requestId });
       res.status(401).json({
         code: 401,
-        message: '未授权访问',
+        message: "未授权访问",
       });
 
       return;
@@ -535,10 +588,10 @@ export async function getReportHandler(
     const reportId = parseInt(id);
 
     if (isNaN(reportId)) {
-      logger.warn('Invalid report ID format', { requestId, id });
+      logger.warn("Invalid report ID format", { requestId, id });
       res.status(400).json({
         code: 400,
-        message: '无效的报告 ID',
+        message: "无效的报告 ID",
       });
 
       return;
@@ -553,10 +606,10 @@ export async function getReportHandler(
     });
 
     if (!report) {
-      logger.warn('Report not found', { requestId, reportId });
+      logger.warn("Report not found", { requestId, reportId });
       res.status(404).json({
         code: 404,
-        message: '报告不存在',
+        message: "报告不存在",
       });
 
       return;
@@ -564,36 +617,36 @@ export async function getReportHandler(
 
     // 4. 验证所有权
     if (report.testResult.userId !== userId) {
-      logger.warn('Access denied to report', { requestId, userId, reportId });
+      logger.warn("Access denied to report", { requestId, userId, reportId });
       res.status(403).json({
         code: 403,
-        message: '无权访问此报告',
+        message: "无权访问此报告",
       });
 
       return;
     }
 
     // 5. 根据状态返回不同响应
-    if (report.status === 'pending' || report.status === 'generating') {
+    if (report.status === "pending" || report.status === "generating") {
       // 生成中：返回进度
       res.json({
         code: 0,
         data: {
           report_id: report.id,
-          status: 'generating',
+          status: "generating",
           progress: 30, // 固定进度，实际可从 Redis 获取
-          current_section: 'dimensions',
+          current_section: "dimensions",
         },
       });
 
       return;
     }
 
-    if (report.status === 'failed') {
-      logger.warn('Report generation failed', { requestId, reportId });
+    if (report.status === "failed") {
+      logger.warn("Report generation failed", { requestId, reportId });
       res.status(500).json({
         code: 500,
-        message: '报告生成失败，请稍后重试',
+        message: "报告生成失败，请稍后重试",
       });
 
       return;
@@ -601,8 +654,14 @@ export async function getReportHandler(
 
     // 6. 已完成：返回完整报告内容
     const content = parseReportContent(report.content);
-    const title = generateReportTitle(report.testResult.mbtiType, report.reportType);
-    const summary = generateReportSummary(report.testResult.mbtiType, report.reportType);
+    const title = generateReportTitle(
+      report.testResult.mbtiType,
+      report.reportType,
+    );
+    const summary = generateReportSummary(
+      report.testResult.mbtiType,
+      report.reportType,
+    );
 
     // 更新已读时间
     await prisma.report.update({
@@ -612,31 +671,42 @@ export async function getReportHandler(
       },
     });
 
-    logger.info('Report retrieved', { requestId, userId, reportId, reportType: report.reportType });
+    logger.info("Report retrieved", {
+      requestId,
+      userId,
+      reportId,
+      reportType: report.reportType,
+    });
 
     res.json({
       code: 0,
       data: {
         report_id: report.id,
-        status: 'completed',
+        status: "completed",
         type: report.reportType,
         title,
         summary,
         content: {
-          dimensions: content.dimensions || { title: '四维深度解析', sections: [] },
-          career: content.career || { title: '职业发展指引', suggestions: [] },
-          relationship: content.relationship || { title: '人际关系图谱', analysis: [] },
-          growth: content.growth || { title: '个人成长计划', plans: [] },
+          dimensions: content.dimensions || {
+            title: "四维深度解析",
+            sections: [],
+          },
+          career: content.career || { title: "职业发展指引", suggestions: [] },
+          relationship: content.relationship || {
+            title: "人际关系图谱",
+            analysis: [],
+          },
+          growth: content.growth || { title: "个人成长计划", plans: [] },
         },
         meta: {
-          llm_model: 'gpt-4o-mini',
+          llm_model: "gpt-4o-mini",
           tokens_used: report.tokens,
           generation_time_ms: report.generationTime,
         },
       },
     });
   } catch (error) {
-    logger.error('Error getting report', {
+    logger.error("Error getting report", {
       requestId,
       error: (error as Error).message,
       stack: (error as Error).stack,
@@ -644,7 +714,7 @@ export async function getReportHandler(
 
     res.status(500).json({
       code: 500,
-      message: '获取报告失败，请稍后重试',
+      message: "获取报告失败，请稍后重试",
     });
   }
 }
@@ -670,14 +740,18 @@ export async function getReportHistoryHandler(
 
   try {
     const userId = req.user?.id;
-    const { page = '1', page_size = '20', type }: { page?: string; page_size?: string; type?: string } = req.query;
+    const {
+      page = "1",
+      page_size = "20",
+      type,
+    }: { page?: string; page_size?: string; type?: string } = req.query;
 
     // 1. 验证用户身份
     if (!userId) {
-      logger.warn('Unauthorized report history access attempt', { requestId });
+      logger.warn("Unauthorized report history access attempt", { requestId });
       res.status(401).json({
         code: 401,
-        message: '未授权访问',
+        message: "未授权访问",
       });
 
       return;
@@ -693,10 +767,10 @@ export async function getReportHistoryHandler(
       result: {
         userId,
       },
-      status: 'completed', // 只返回已完成的报告
+      status: "completed", // 只返回已完成的报告
     };
 
-    if (type && ['basic', 'pro', 'master'].includes(type)) {
+    if (type && ["basic", "pro", "master"].includes(type)) {
       where.reportType = type;
     }
 
@@ -715,7 +789,7 @@ export async function getReportHistoryHandler(
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       skip,
       take: pageSize,
     });
@@ -726,12 +800,15 @@ export async function getReportHistoryHandler(
       personality_type: report.testResult.mbtiType,
       type: report.reportType,
       title: generateReportTitle(report.testResult.mbtiType, report.reportType),
-      summary: generateReportSummary(report.testResult.mbtiType, report.reportType),
+      summary: generateReportSummary(
+        report.testResult.mbtiType,
+        report.reportType,
+      ),
       created_at: report.createdAt.toISOString(),
       read_at: report.updatedAt.toISOString(), // 使用 updatedAt 作为已读时间
     }));
 
-    logger.info('Report history retrieved', {
+    logger.info("Report history retrieved", {
       requestId,
       userId,
       page: pageNum,
@@ -752,7 +829,7 @@ export async function getReportHistoryHandler(
       },
     });
   } catch (error) {
-    logger.error('Error getting report history', {
+    logger.error("Error getting report history", {
       requestId,
       error: (error as Error).message,
       stack: (error as Error).stack,
@@ -760,7 +837,7 @@ export async function getReportHistoryHandler(
 
     res.status(500).json({
       code: 500,
-      message: '获取报告列表失败，请稍后重试',
+      message: "获取报告列表失败，请稍后重试",
     });
   }
 }

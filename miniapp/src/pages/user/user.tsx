@@ -1,7 +1,7 @@
-import { View, Text, Button, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
-import './user.css';
+import { View, Text, Button, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { useState, useEffect } from "react";
+import "./user.css";
 
 const User = () => {
   const [userInfo, setUserInfo] = useState(null);
@@ -14,11 +14,11 @@ const User = () => {
 
   const fetchUserData = async () => {
     try {
-      const token = Taro.getStorageSync('accessToken');
-      
+      const token = Taro.getStorageSync("accessToken");
+
       // Fetch user info
       const userRes = await Taro.request({
-        url: 'http://localhost:3000/api/v1/users/me',
+        url: "http://localhost:3000/api/v1/users/me",
         header: {
           Authorization: `Bearer ${token}`,
         },
@@ -27,7 +27,7 @@ const User = () => {
 
       // Fetch membership
       const membershipRes = await Taro.request({
-        url: 'http://localhost:3000/api/v1/memberships/me',
+        url: "http://localhost:3000/api/v1/memberships/me",
         header: {
           Authorization: `Bearer ${token}`,
         },
@@ -36,14 +36,14 @@ const User = () => {
 
       // Fetch report history
       const historyRes = await Taro.request({
-        url: 'http://localhost:3000/api/v1/reports',
+        url: "http://localhost:3000/api/v1/reports",
         header: {
           Authorization: `Bearer ${token}`,
         },
       });
       setHistory(historyRes.data.reports);
     } catch (error) {
-      console.error('Failed to fetch user data:', error);
+      console.error("Failed to fetch user data:", error);
     }
   };
 
@@ -53,24 +53,24 @@ const User = () => {
         if (res.code) {
           try {
             const loginRes = await Taro.request({
-              url: 'http://localhost:3000/api/v1/auth/wechat/login',
-              method: 'POST',
+              url: "http://localhost:3000/api/v1/auth/wechat/login",
+              method: "POST",
               data: { code: res.code },
             });
-            
+
             const { accessToken, refreshToken } = loginRes.data;
-            Taro.setStorageSync('accessToken', accessToken);
-            Taro.setStorageSync('refreshToken', refreshToken);
-            
+            Taro.setStorageSync("accessToken", accessToken);
+            Taro.setStorageSync("refreshToken", refreshToken);
+
             fetchUserData();
             Taro.showToast({
-              title: '登录成功',
-              icon: 'success',
+              title: "登录成功",
+              icon: "success",
             });
           } catch (error) {
             Taro.showToast({
-              title: '登录失败',
-              icon: 'none',
+              title: "登录失败",
+              icon: "none",
             });
           }
         }
@@ -85,14 +85,14 @@ const User = () => {
   };
 
   const logout = () => {
-    Taro.removeStorageSync('accessToken');
-    Taro.removeStorageSync('refreshToken');
+    Taro.removeStorageSync("accessToken");
+    Taro.removeStorageSync("refreshToken");
     setUserInfo(null);
     setMembership(null);
     setHistory([]);
     Taro.showToast({
-      title: '已退出登录',
-      icon: 'success',
+      title: "已退出登录",
+      icon: "success",
     });
   };
 
@@ -120,7 +120,7 @@ const User = () => {
             <Text className="avatar-placeholder">👤</Text>
           )}
         </View>
-        <Text className="nickname">{userInfo.nickname || '探索者'}</Text>
+        <Text className="nickname">{userInfo.nickname || "探索者"}</Text>
         {membership?.isMember && (
           <View className="member-badge">
             <Text className="member-text">VIP 会员</Text>

@@ -26,10 +26,14 @@
 ```js
 // ❌ 问题：谁都能改，无法追踪，无法回退
 let count = 0;
-let name = 'Alice';
+let name = "Alice";
 
-function increment() { count++; }
-function setName(n) { name = n; }
+function increment() {
+  count++;
+}
+function setName(n) {
+  name = n;
+}
 
 // 问题：
 // 1. 任何代码都能直接修改状态
@@ -57,7 +61,7 @@ class EventEmitter {
   }
 
   emit(event, ...args) {
-    this._events.get(event)?.forEach(listener => listener(...args));
+    this._events.get(event)?.forEach((listener) => listener(...args));
   }
 
   off(event, listener) {
@@ -67,11 +71,11 @@ class EventEmitter {
 
 // 使用
 const emitter = new EventEmitter();
-const unsub = emitter.on('change', (data) => {
-  console.log('状态变了:', data);
+const unsub = emitter.on("change", (data) => {
+  console.log("状态变了:", data);
 });
 
-emitter.emit('change', { count: 1 }); // 状态变了: { count: 1 }
+emitter.emit("change", { count: 1 }); // 状态变了: { count: 1 }
 unsub(); // 取消订阅
 ```
 
@@ -95,7 +99,7 @@ class Store {
     // 合并新状态
     this._state = { ...this._state, ...partialState };
     // 通知所有监听者
-    this._listeners.forEach(listener => listener(this._state));
+    this._listeners.forEach((listener) => listener(this._state));
   }
 
   subscribe(listener) {
@@ -107,12 +111,12 @@ class Store {
 // 使用
 const store = new Store({ count: 0, user: null });
 
-store.subscribe(state => {
-  console.log('UI 更新:', state);
+store.subscribe((state) => {
+  console.log("UI 更新:", state);
 });
 
 store.setState({ count: 1 });
-store.setState({ user: { name: 'Alice' } });
+store.setState({ user: { name: "Alice" } });
 
 // 输出:
 // UI 更新: { count: 1, user: null }
@@ -136,11 +140,11 @@ store.setState({ user: { name: 'Alice' } });
 
 function counterReducer(state = { count: 0 }, action) {
   switch (action.type) {
-    case 'INCREMENT':
+    case "INCREMENT":
       return { count: state.count + (action.payload ?? 1) };
-    case 'DECREMENT':
+    case "DECREMENT":
       return { count: state.count - (action.payload ?? 1) };
-    case 'RESET':
+    case "RESET":
       return { count: 0 };
     default:
       return state; // 未知 action 返回原 state
@@ -148,9 +152,9 @@ function counterReducer(state = { count: 0 }, action) {
 }
 
 // 测试纯函数特性
-console.log(counterReducer({ count: 0 }, { type: 'INCREMENT' })); // { count: 1 }
-console.log(counterReducer({ count: 0 }, { type: 'INCREMENT' })); // { count: 1 } ✅ 确定性
-console.log(counterReducer({ count: 0 }, { type: 'UNKNOWN' }));   // { count: 0 } ✅ 默认返回
+console.log(counterReducer({ count: 0 }, { type: "INCREMENT" })); // { count: 1 }
+console.log(counterReducer({ count: 0 }, { type: "INCREMENT" })); // { count: 1 } ✅ 确定性
+console.log(counterReducer({ count: 0 }, { type: "UNKNOWN" })); // { count: 0 } ✅ 默认返回
 ```
 
 ### 示例 5: 完整 Redux 实现（含中间件）
@@ -182,12 +186,12 @@ function createStore(reducer, preloadedState) {
   function dispatch(action) {
     currentState = reducer(currentState, action);
     ensureListeners();
-    currentListeners.forEach(listener => listener());
+    currentListeners.forEach((listener) => listener());
     return action;
   }
 
   // 初始化（触发默认状态）
-  dispatch({ type: '@@redux/INIT' });
+  dispatch({ type: "@@redux/INIT" });
 
   return { getState, subscribe, dispatch };
 }
@@ -196,22 +200,22 @@ function createStore(reducer, preloadedState) {
 const store = createStore(counterReducer, { count: 0 });
 
 const unsub1 = store.subscribe(() => {
-  console.log('监听器1:', store.getState());
+  console.log("监听器1:", store.getState());
 });
 const unsub2 = store.subscribe(() => {
-  console.log('监听器2:', store.getState());
+  console.log("监听器2:", store.getState());
 });
 
-store.dispatch({ type: 'INCREMENT' });
+store.dispatch({ type: "INCREMENT" });
 // 监听器1: { count: 1 }
 // 监听器2: { count: 1 }
 
-store.dispatch({ type: 'INCREMENT', payload: 5 });
+store.dispatch({ type: "INCREMENT", payload: 5 });
 // 监听器1: { count: 6 }
 // 监听器2: { count: 6 }
 
 unsub1();
-store.dispatch({ type: 'DECREMENT' });
+store.dispatch({ type: "DECREMENT" });
 // 监听器2: { count: 5 } (只有 unsub2 还在)
 ```
 
@@ -222,31 +226,31 @@ store.dispatch({ type: 'DECREMENT' });
 // Redux 中间件签名: store => next => action => result
 
 // 日志中间件
-const loggerMiddleware = store => next => action => {
-  console.log('📤 dispatch:', action.type);
-  console.log('📊 before:', store.getState());
+const loggerMiddleware = (store) => (next) => (action) => {
+  console.log("📤 dispatch:", action.type);
+  console.log("📊 before:", store.getState());
   const result = next(action);
-  console.log('📊 after:', store.getState());
+  console.log("📊 after:", store.getState());
   return result;
 };
 
 // 错误捕获中间件
-const errorMiddleware = store => next => action => {
+const errorMiddleware = (store) => (next) => (action) => {
   try {
     return next(action);
   } catch (error) {
-    console.error('❌ Action 错误:', action.type, error);
+    console.error("❌ Action 错误:", action.type, error);
     throw error;
   }
 };
 
 // 条件执行中间件（类似 redux-thunk 的简化版）
-const conditionMiddleware = store => next => action => {
-  if (typeof action === 'function') {
+const conditionMiddleware = (store) => (next) => (action) => {
+  if (typeof action === "function") {
     return action(store.getState); // 支持函数式 action
   }
   if (action.meta?.condition && !action.meta.condition(store.getState())) {
-    console.log('⏭️ 条件不满足，跳过:', action.type);
+    console.log("⏭️ 条件不满足，跳过:", action.type);
     return null;
   }
   return next(action);
@@ -254,18 +258,18 @@ const conditionMiddleware = store => next => action => {
 
 //  applyMiddleware 实现
 function applyMiddleware(...middlewares) {
-  return createStore => (reducer, preloadedState) => {
+  return (createStore) => (reducer, preloadedState) => {
     const store = createStore(reducer, preloadedState);
     let dispatch = store.dispatch;
 
     // 注入 store API
     const middlewareAPI = {
       getState: store.getState,
-      dispatch: (action) => dispatch(action)
+      dispatch: (action) => dispatch(action),
     };
 
     // 组合中间件
-    const chain = middlewares.map(mw => mw(middlewareAPI));
+    const chain = middlewares.map((mw) => mw(middlewareAPI));
     dispatch = compose(...chain)(store.dispatch);
 
     return { ...store, dispatch };
@@ -274,17 +278,21 @@ function applyMiddleware(...middlewares) {
 
 // compose: 从右到左组合函数
 function compose(...fns) {
-  return fns.reduce((a, b) => (...args) => a(b(...args)));
+  return fns.reduce(
+    (a, b) =>
+      (...args) =>
+        a(b(...args)),
+  );
 }
 
 // 使用中间件
 const enhancedCreateStore = applyMiddleware(
   loggerMiddleware,
-  errorMiddleware
+  errorMiddleware,
 )(createStore);
 
 const store2 = enhancedCreateStore(counterReducer, { count: 0 });
-store2.dispatch({ type: 'INCREMENT' });
+store2.dispatch({ type: "INCREMENT" });
 // 📤 dispatch: INCREMENT
 // 📊 before: { count: 0 }
 // 📊 after: { count: 1 }
@@ -294,25 +302,25 @@ store2.dispatch({ type: 'INCREMENT' });
 
 ```js
 // ✅ Thunk 核心：action 可以是函数，接收 dispatch 和 getState
-const thunkMiddleware = store => next => action => {
-  if (typeof action === 'function') {
+const thunkMiddleware = (store) => (next) => (action) => {
+  if (typeof action === "function") {
     return action(store.dispatch, store.getState);
   }
   return next(action);
 };
 
-const thunkStore = applyMiddleware(thunkMiddleware, loggerMiddleware)(createStore)(
-  counterReducer,
-  { count: 0 }
-);
+const thunkStore = applyMiddleware(
+  thunkMiddleware,
+  loggerMiddleware,
+)(createStore)(counterReducer, { count: 0 });
 
 // 异步 action creator
 function asyncIncrement(delay = 1000) {
   return (dispatch, getState) => {
-    console.log('⏳ 开始异步递增...');
+    console.log("⏳ 开始异步递增...");
     setTimeout(() => {
-      dispatch({ type: 'INCREMENT' });
-      console.log('✅ 异步递增完成, 当前:', getState());
+      dispatch({ type: "INCREMENT" });
+      console.log("✅ 异步递增完成, 当前:", getState());
     }, delay);
   };
 }
@@ -322,15 +330,15 @@ function conditionalIncrementIfOdd() {
   return (dispatch, getState) => {
     const count = getState().count;
     if (count % 2 === 0) {
-      console.log('当前是偶数，不需要递增');
+      console.log("当前是偶数，不需要递增");
       return;
     }
-    dispatch({ type: 'INCREMENT' });
+    dispatch({ type: "INCREMENT" });
   };
 }
 
 // 使用（模拟）
-console.log('--- Thunk 测试 ---');
+console.log("--- Thunk 测试 ---");
 // thunkStore.dispatch(asyncIncrement(100)); // 实际运行会异步执行
 ```
 
@@ -357,22 +365,22 @@ function combineReducers(reducers) {
 }
 
 // 多个 reducer
-function userReducer(state = { name: '', role: 'user' }, action) {
+function userReducer(state = { name: "", role: "user" }, action) {
   switch (action.type) {
-    case 'SET_USER':
+    case "SET_USER":
       return { ...state, ...action.payload };
-    case 'LOGOUT':
-      return { name: '', role: 'user' };
+    case "LOGOUT":
+      return { name: "", role: "user" };
     default:
       return state;
   }
 }
 
-function todoReducer(state = { items: [], filter: 'all' }, action) {
+function todoReducer(state = { items: [], filter: "all" }, action) {
   switch (action.type) {
-    case 'ADD_TODO':
+    case "ADD_TODO":
       return { ...state, items: [...state.items, action.payload] };
-    case 'SET_FILTER':
+    case "SET_FILTER":
       return { ...state, filter: action.payload };
     default:
       return state;
@@ -382,22 +390,28 @@ function todoReducer(state = { items: [], filter: 'all' }, action) {
 const rootReducer = combineReducers({
   counter: counterReducer,
   user: userReducer,
-  todos: todoReducer
+  todos: todoReducer,
 });
 
 const appStore = createStore(rootReducer, {
   counter: { count: 0 },
-  user: { name: '', role: 'user' },
-  todos: { items: [], filter: 'all' }
+  user: { name: "", role: "user" },
+  todos: { items: [], filter: "all" },
 });
 
 appStore.subscribe(() => {
-  console.log('📊 全局状态:', JSON.stringify(appStore.getState()));
+  console.log("📊 全局状态:", JSON.stringify(appStore.getState()));
 });
 
-appStore.dispatch({ type: 'INCREMENT' });
-appStore.dispatch({ type: 'SET_USER', payload: { name: 'Alice', role: 'admin' } });
-appStore.dispatch({ type: 'ADD_TODO', payload: { id: 1, text: '学习 Redux', done: false } });
+appStore.dispatch({ type: "INCREMENT" });
+appStore.dispatch({
+  type: "SET_USER",
+  payload: { name: "Alice", role: "admin" },
+});
+appStore.dispatch({
+  type: "ADD_TODO",
+  payload: { id: 1, text: "学习 Redux", done: false },
+});
 
 // 输出:
 // 📊 全局状态: {"counter":{"count":1},"user":{"name":"","role":"user"},"todos":{"items":[],"filter":"all"}}
@@ -410,6 +424,7 @@ appStore.dispatch({ type: 'ADD_TODO', payload: { id: 1, text: '学习 Redux', do
 ## 四、Zustand 原理实现
 
 Zustand 与 Redux 的核心区别：
+
 - Redux: reducer + dispatch（函数式、不可变）
 - Zustand: 直接 set 状态（命令式、可变语法但内部不可变）
 
@@ -423,14 +438,17 @@ function createZustand(createStore) {
 
   // 初始化状态
   const setState = (partial, replace = false) => {
-    const nextState = typeof partial === 'function'
-      ? partial(state)
-      : replace ? partial : { ...state, ...partial };
+    const nextState =
+      typeof partial === "function"
+        ? partial(state)
+        : replace
+          ? partial
+          : { ...state, ...partial };
 
     if (nextState === state) return; // 相等则不通知
 
     state = nextState;
-    listeners.forEach(listener => listener(state));
+    listeners.forEach((listener) => listener(state));
   };
 
   const getState = () => state;
@@ -444,7 +462,7 @@ function createZustand(createStore) {
   state = createStore(setState, getState);
 
   // 返回 hook 函数
-  const useStore = (selector = s => s) => {
+  const useStore = (selector = (s) => s) => {
     return selector(state);
   };
 
@@ -458,16 +476,16 @@ function createZustand(createStore) {
 // 使用
 const useCounter = createZustand((set, get) => ({
   count: 0,
-  name: 'Counter',
-  increment: () => set(state => ({ count: state.count + 1 })),
-  decrement: () => set(state => ({ count: state.count - 1 })),
+  name: "Counter",
+  increment: () => set((state) => ({ count: state.count + 1 })),
+  decrement: () => set((state) => ({ count: state.count - 1 })),
   incrementBy: (amount) => set({ count: get().count + amount }),
-  reset: () => set({ count: 0, name: 'Counter' }),
+  reset: () => set({ count: 0, name: "Counter" }),
 }));
 
 // 订阅
-useCounter.subscribe(state => {
-  console.log('📊 Zustand 状态:', state);
+useCounter.subscribe((state) => {
+  console.log("📊 Zustand 状态:", state);
 });
 
 useCounter.getState().increment();
@@ -477,8 +495,8 @@ useCounter.getState().incrementBy(5);
 // 📊 Zustand 状态: { count: 6, name: 'Counter', ... }
 
 // 选择器（只监听需要的部分）
-const count = useCounter(state => state.count);
-console.log('选择器获取:', count); // 选择器获取: 6
+const count = useCounter((state) => state.count);
+console.log("选择器获取:", count); // 选择器获取: 6
 ```
 
 ### 示例 10: Zustand 中间件系统
@@ -497,23 +515,30 @@ function persist(storageKey) {
         const parsed = JSON.parse(saved);
         // 合并到初始状态
         const initialState = create(
-          (partial) => set(typeof partial === 'function' ? { ...get(), ...partial(get()) } : partial),
+          (partial) =>
+            set(
+              typeof partial === "function"
+                ? { ...get(), ...partial(get()) }
+                : partial,
+            ),
           get,
-          api
+          api,
         );
         const merged = { ...initialState, ...parsed };
         // 用合并后的状态重新初始化
         return create(
           (p) => {
-            const next = typeof p === 'function' ? p(get()) : p;
+            const next = typeof p === "function" ? p(get()) : p;
             set({ ...get(), ...next });
             localStorage.setItem(storageKey, JSON.stringify(get()));
           },
           get,
-          api
+          api,
         );
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
 
     // 正常初始化 + 拦截 set
     const baseState = create(set, get, api);
@@ -521,7 +546,9 @@ function persist(storageKey) {
       set(partial);
       try {
         localStorage.setItem(storageKey, JSON.stringify(get()));
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
     };
     return create(wrappedSet, get, api) || baseState;
   };
@@ -537,7 +564,7 @@ function devtools(name) {
       console.log(`🔧 [${name}]`, {
         from: prevState,
         to: nextState,
-        by: partial.toString().slice(0, 100)
+        by: partial.toString().slice(0, 100),
       });
     };
     return create(wrappedSet, get, api);
@@ -546,12 +573,10 @@ function devtools(name) {
 
 // 使用中间件
 const useDevCounter = createZustand(
-  devtools('dev-counter')(
-    (set, get) => ({
-      count: 0,
-      increment: () => set({ count: get().count + 1 }),
-    })
-  )
+  devtools("dev-counter")((set, get) => ({
+    count: 0,
+    increment: () => set({ count: get().count + 1 }),
+  })),
 );
 
 useDevCounter.getState().increment();
@@ -571,10 +596,10 @@ const useAsyncStore = createZustand((set, get) => ({
     set({ loading: true, error: null });
     try {
       // 模拟 API 调用
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
       const mockUsers = [
-        { id: 1, name: 'Alice' },
-        { id: 2, name: 'Bob' },
+        { id: 1, name: "Alice" },
+        { id: 2, name: "Bob" },
       ];
       set({ users: mockUsers, loading: false });
     } catch (error) {
@@ -582,22 +607,26 @@ const useAsyncStore = createZustand((set, get) => ({
     }
   },
 
-  addUser: (user) => set(state => ({
-    users: [...state.users, { ...user, id: Date.now() }]
-  })),
+  addUser: (user) =>
+    set((state) => ({
+      users: [...state.users, { ...user, id: Date.now() }],
+    })),
 }));
 
 // 使用
-useAsyncStore.subscribe(state => {
-  console.log('📊 异步 Store:', JSON.stringify({
-    users: state.users,
-    loading: state.loading,
-    error: state.error
-  }));
+useAsyncStore.subscribe((state) => {
+  console.log(
+    "📊 异步 Store:",
+    JSON.stringify({
+      users: state.users,
+      loading: state.loading,
+      error: state.error,
+    }),
+  );
 });
 
 // 模拟异步加载
-console.log('--- 异步 Store 测试 ---');
+console.log("--- 异步 Store 测试 ---");
 // useAsyncStore.getState().fetchUsers();
 // 输出: loading: true → loading: false, users: [...]
 ```
@@ -618,9 +647,12 @@ function createSelector(selectorFn) {
   return (...args) => {
     const result = selectorFn(...args);
     // 浅比较
-    if (lastArgs && args.length === lastArgs.length &&
-        args.every((a, i) => a === lastArgs[i]) &&
-        result === lastResult) {
+    if (
+      lastArgs &&
+      args.length === lastArgs.length &&
+      args.every((a, i) => a === lastArgs[i]) &&
+      result === lastResult
+    ) {
       return lastResult; // 引用相同，跳过
     }
     lastResult = result;
@@ -630,10 +662,10 @@ function createSelector(selectorFn) {
 }
 
 // 组合选择器
-const selectCount = state => state.counter.count;
-const selectUser = state => state.user;
+const selectCount = (state) => state.counter.count;
+const selectUser = (state) => state.user;
 
-const selectDisplayName = createSelector(state => {
+const selectDisplayName = createSelector((state) => {
   const user = selectUser(state);
   const count = selectCount(state);
   return `${user.name} (计数: ${count})`;
@@ -641,12 +673,12 @@ const selectDisplayName = createSelector(state => {
 
 const appStore2 = createStore(rootReducer, {
   counter: { count: 0 },
-  user: { name: 'Alice', role: 'admin' },
-  todos: { items: [], filter: 'all' }
+  user: { name: "Alice", role: "admin" },
+  todos: { items: [], filter: "all" },
 });
 
 console.log(selectDisplayName(appStore2.getState())); // "Alice (计数: 0)"
-appStore2.dispatch({ type: 'INCREMENT' });
+appStore2.dispatch({ type: "INCREMENT" });
 console.log(selectDisplayName(appStore2.getState())); // "Alice (计数: 1)"
 ```
 
@@ -658,29 +690,29 @@ function withUndoRedo(reducer, initialState) {
   const history = {
     past: [],
     present: initialState,
-    future: []
+    future: [],
   };
 
   return (state = history, action) => {
     const { past, present, future } = state;
 
     switch (action.type) {
-      case 'UNDO': {
+      case "UNDO": {
         if (past.length === 0) return state;
         const previous = past[past.length - 1];
         return {
           past: past.slice(0, -1),
           present: previous,
-          future: [present, ...future]
+          future: [present, ...future],
         };
       }
-      case 'REDO': {
+      case "REDO": {
         if (future.length === 0) return state;
         const next = future[0];
         return {
           past: [...past, present],
           present: next,
-          future: future.slice(1)
+          future: future.slice(1),
         };
       }
       default: {
@@ -689,33 +721,34 @@ function withUndoRedo(reducer, initialState) {
         return {
           past: [...past, present],
           present: newPresent,
-          future: []
+          future: [],
         };
       }
     }
   };
 }
 
-const undoableStore = createStore(
-  withUndoRedo(counterReducer, { count: 0 }),
-  { past: [], present: { count: 0 }, future: [] }
-);
+const undoableStore = createStore(withUndoRedo(counterReducer, { count: 0 }), {
+  past: [],
+  present: { count: 0 },
+  future: [],
+});
 
 undoableStore.subscribe(() => {
   const s = undoableStore.getState();
-  console.log('📊 历史:', {
+  console.log("📊 历史:", {
     past: s.past.length,
     present: s.present,
-    future: s.future.length
+    future: s.future.length,
   });
 });
 
-undoableStore.dispatch({ type: 'INCREMENT' }); // past: 1, present: 1
-undoableStore.dispatch({ type: 'INCREMENT' }); // past: 2, present: 2
-undoableStore.dispatch({ type: 'INCREMENT' }); // past: 3, present: 3
-undoableStore.dispatch({ type: 'UNDO' });       // past: 2, present: 2
-undoableStore.dispatch({ type: 'UNDO' });       // past: 1, present: 1
-undoableStore.dispatch({ type: 'REDO' });       // past: 2, present: 2
+undoableStore.dispatch({ type: "INCREMENT" }); // past: 1, present: 1
+undoableStore.dispatch({ type: "INCREMENT" }); // past: 2, present: 2
+undoableStore.dispatch({ type: "INCREMENT" }); // past: 3, present: 3
+undoableStore.dispatch({ type: "UNDO" }); // past: 2, present: 2
+undoableStore.dispatch({ type: "UNDO" }); // past: 1, present: 1
+undoableStore.dispatch({ type: "REDO" }); // past: 2, present: 2
 ```
 
 ### 示例 14: 状态快照与恢复
@@ -741,8 +774,8 @@ class SnapshotManager {
     }
     // 通过 dispatch 恢复
     this.store.dispatch({
-      type: 'RESTORE_SNAPSHOT',
-      payload: snapshot
+      type: "RESTORE_SNAPSHOT",
+      payload: snapshot,
     });
     console.log(`🔄 快照已恢复: ${name}`);
   }
@@ -759,7 +792,7 @@ class SnapshotManager {
 // 扩展 reducer 支持快照恢复
 function snapshotReducer(reducer) {
   return (state, action) => {
-    if (action.type === 'RESTORE_SNAPSHOT') {
+    if (action.type === "RESTORE_SNAPSHOT") {
       return action.payload;
     }
     return reducer(state, action);
@@ -770,19 +803,19 @@ const snapStore = createStore(snapshotReducer(counterReducer), { count: 0 });
 const snapshotMgr = new SnapshotManager(snapStore);
 
 snapStore.subscribe(() => {
-  console.log('📊 当前:', snapStore.getState());
+  console.log("📊 当前:", snapStore.getState());
 });
 
-snapStore.dispatch({ type: 'INCREMENT' });
-snapStore.dispatch({ type: 'INCREMENT' });
-snapshotMgr.save('checkpoint1'); // 保存 count=2
+snapStore.dispatch({ type: "INCREMENT" });
+snapStore.dispatch({ type: "INCREMENT" });
+snapshotMgr.save("checkpoint1"); // 保存 count=2
 
-snapStore.dispatch({ type: 'INCREMENT' });
-snapStore.dispatch({ type: 'INCREMENT' });
+snapStore.dispatch({ type: "INCREMENT" });
+snapStore.dispatch({ type: "INCREMENT" });
 // count=4
 
-snapshotMgr.restore('checkpoint1'); // 恢复到 count=2
-console.log('📸 快照列表:', snapshotMgr.list()); // ['checkpoint1']
+snapshotMgr.restore("checkpoint1"); // 恢复到 count=2
+console.log("📸 快照列表:", snapshotMgr.list()); // ['checkpoint1']
 ```
 
 ### 示例 15: 响应式状态（Proxy 实现）
@@ -797,7 +830,7 @@ function createReactiveState(initialState) {
     get(target, prop) {
       const value = target[prop];
       // 如果是对象，递归代理
-      if (value && typeof value === 'object') {
+      if (value && typeof value === "object") {
         return new Proxy(value, handler);
       }
       return value;
@@ -806,11 +839,11 @@ function createReactiveState(initialState) {
       const oldValue = target[prop];
       target[prop] = value;
       // 通知该 key 的监听者
-      listeners.get(prop)?.forEach(fn => fn(value, oldValue));
+      listeners.get(prop)?.forEach((fn) => fn(value, oldValue));
       // 通知全局监听者
-      globalListeners.forEach(fn => fn(target, prop));
+      globalListeners.forEach((fn) => fn(target, prop));
       return true;
-    }
+    },
   };
 
   const state = new Proxy(initialState, handler);
@@ -825,18 +858,18 @@ function createReactiveState(initialState) {
     subscribe(listener) {
       globalListeners.add(listener);
       return () => globalListeners.delete(listener);
-    }
+    },
   };
 }
 
 // 使用
 const { state, watch, subscribe } = createReactiveState({
   count: 0,
-  name: 'Alice',
-  todos: []
+  name: "Alice",
+  todos: [],
 });
 
-watch('count', (newVal, oldVal) => {
+watch("count", (newVal, oldVal) => {
   console.log(`📊 count 变化: ${oldVal} → ${newVal}`);
 });
 
@@ -848,7 +881,7 @@ state.count = 1;
 // 📊 count 变化: 0 → 1
 // 📊 任意属性变化: count = 1
 
-state.name = 'Bob';
+state.name = "Bob";
 // 📊 任意属性变化: name = Bob
 ```
 
@@ -867,24 +900,23 @@ function createMachine(config) {
     const transition = stateConfig.on?.[event.type];
     if (!transition) return;
 
-    const nextState = typeof transition === 'string'
-      ? transition
-      : transition.target;
+    const nextState =
+      typeof transition === "string" ? transition : transition.target;
 
     // 执行出口动作
-    stateConfig.onExit?.forEach(fn => fn(currentState, nextState, event));
+    stateConfig.onExit?.forEach((fn) => fn(currentState, nextState, event));
 
     currentState = nextState;
 
     // 执行入口动作
-    config.states[nextState]?.onEntry?.forEach(fn => fn(currentState, event));
+    config.states[nextState]?.onEntry?.forEach((fn) => fn(currentState, event));
 
     // 执行转换动作
-    if (typeof transition === 'object' && transition.actions) {
-      transition.actions.forEach(fn => fn(currentState, event));
+    if (typeof transition === "object" && transition.actions) {
+      transition.actions.forEach((fn) => fn(currentState, event));
     }
 
-    listeners.forEach(fn => fn(currentState));
+    listeners.forEach((fn) => fn(currentState));
   }
 
   function getState() {
@@ -901,37 +933,37 @@ function createMachine(config) {
 
 // 使用：登录状态机
 const authMachine = createMachine({
-  initial: 'idle',
+  initial: "idle",
   states: {
     idle: {
-      on: { LOGIN: 'loading' },
-      onEntry: [() => console.log('🔓 空闲状态')],
+      on: { LOGIN: "loading" },
+      onEntry: [() => console.log("🔓 空闲状态")],
     },
     loading: {
       on: {
-        SUCCESS: 'authenticated',
-        FAILURE: 'idle',
+        SUCCESS: "authenticated",
+        FAILURE: "idle",
       },
-      onEntry: [() => console.log('⏳ 加载中...')],
+      onEntry: [() => console.log("⏳ 加载中...")],
     },
     authenticated: {
-      on: { LOGOUT: 'idle', REFRESH: 'loading' },
-      onEntry: [() => console.log('✅ 已认证')],
+      on: { LOGOUT: "idle", REFRESH: "loading" },
+      onEntry: [() => console.log("✅ 已认证")],
     },
-  }
+  },
 });
 
-authMachine.subscribe(state => console.log('📊 认证状态:', state));
+authMachine.subscribe((state) => console.log("📊 认证状态:", state));
 
-authMachine.send({ type: 'LOGIN' });
+authMachine.send({ type: "LOGIN" });
 // ⏳ 加载中...
 // 📊 认证状态: loading
 
-authMachine.send({ type: 'SUCCESS' });
+authMachine.send({ type: "SUCCESS" });
 // ✅ 已认证
 // 📊 认证状态: authenticated
 
-authMachine.send({ type: 'LOGOUT' });
+authMachine.send({ type: "LOGOUT" });
 // 📊 认证状态: idle
 ```
 
@@ -947,14 +979,16 @@ class Atom {
     this._dependents = new Set(); // 依赖此 atom 的 selector
   }
 
-  get value() { return this._value; }
+  get value() {
+    return this._value;
+  }
 
   set value(newValue) {
     if (Object.is(this._value, newValue)) return;
     this._value = newValue;
-    this._listeners.forEach(fn => fn(newValue));
+    this._listeners.forEach((fn) => fn(newValue));
     // 通知依赖的 selector 重新计算
-    this._dependents.forEach(sel => sel._invalidate());
+    this._dependents.forEach((sel) => sel._invalidate());
   }
 
   subscribe(fn) {
@@ -974,10 +1008,12 @@ class Selector {
 
   get value() {
     if (this._dirty) {
-      this._value = this._get({ get: (atom) => {
-        atom._dependents.add(this);
-        return atom.value;
-      }});
+      this._value = this._get({
+        get: (atom) => {
+          atom._dependents.add(this);
+          return atom.value;
+        },
+      });
       this._dirty = false;
     }
     return this._value;
@@ -985,7 +1021,7 @@ class Selector {
 
   _invalidate() {
     this._dirty = true;
-    this._listeners.forEach(fn => fn(this.value));
+    this._listeners.forEach((fn) => fn(this.value));
   }
 
   subscribe(fn) {
@@ -995,13 +1031,13 @@ class Selector {
 }
 
 // 使用
-const countAtom = new Atom('count', 0);
-const doubleSelector = new Selector('double', {
-  get: ({ get }) => get(countAtom) * 2
+const countAtom = new Atom("count", 0);
+const doubleSelector = new Selector("double", {
+  get: ({ get }) => get(countAtom) * 2,
 });
 
-countAtom.subscribe(v => console.log(`📊 count: ${v}`));
-doubleSelector.subscribe(v => console.log(`📊 double: ${v}`));
+countAtom.subscribe((v) => console.log(`📊 count: ${v}`));
+doubleSelector.subscribe((v) => console.log(`📊 double: ${v}`));
 
 countAtom.value = 5;
 // 📊 count: 5
@@ -1022,46 +1058,49 @@ countAtom.value = 10;
 // === Action Creators ===
 const actions = {
   addTodo: (text) => ({
-    type: 'ADD_TODO',
-    payload: { id: Date.now(), text, done: false }
+    type: "ADD_TODO",
+    payload: { id: Date.now(), text, done: false },
   }),
-  toggleTodo: (id) => ({ type: 'TOGGLE_TODO', payload: id }),
-  deleteTodo: (id) => ({ type: 'DELETE_TODO', payload: id }),
-  setFilter: (filter) => ({ type: 'SET_FILTER', payload: filter }),
-  clearCompleted: () => ({ type: 'CLEAR_COMPLETED' }),
+  toggleTodo: (id) => ({ type: "TOGGLE_TODO", payload: id }),
+  deleteTodo: (id) => ({ type: "DELETE_TODO", payload: id }),
+  setFilter: (filter) => ({ type: "SET_FILTER", payload: filter }),
+  clearCompleted: () => ({ type: "CLEAR_COMPLETED" }),
 };
 
 // === Reducer ===
-function todoApp(state = {
-  todos: [],
-  filter: 'all',
-  nextId: 1
-}, action) {
+function todoApp(
+  state = {
+    todos: [],
+    filter: "all",
+    nextId: 1,
+  },
+  action,
+) {
   switch (action.type) {
-    case 'ADD_TODO':
+    case "ADD_TODO":
       return {
         ...state,
         todos: [...state.todos, { ...action.payload, id: state.nextId }],
-        nextId: state.nextId + 1
+        nextId: state.nextId + 1,
       };
-    case 'TOGGLE_TODO':
+    case "TOGGLE_TODO":
       return {
         ...state,
-        todos: state.todos.map(t =>
-          t.id === action.payload ? { ...t, done: !t.done } : t
-        )
+        todos: state.todos.map((t) =>
+          t.id === action.payload ? { ...t, done: !t.done } : t,
+        ),
       };
-    case 'DELETE_TODO':
+    case "DELETE_TODO":
       return {
         ...state,
-        todos: state.todos.filter(t => t.id !== action.payload)
+        todos: state.todos.filter((t) => t.id !== action.payload),
       };
-    case 'SET_FILTER':
+    case "SET_FILTER":
       return { ...state, filter: action.payload };
-    case 'CLEAR_COMPLETED':
+    case "CLEAR_COMPLETED":
       return {
         ...state,
-        todos: state.todos.filter(t => !t.done)
+        todos: state.todos.filter((t) => !t.done),
       };
     default:
       return state;
@@ -1069,16 +1108,19 @@ function todoApp(state = {
 }
 
 // === Selectors ===
-const selectTodos = state => state.todos;
-const selectFilter = state => state.filter;
+const selectTodos = (state) => state.todos;
+const selectFilter = (state) => state.filter;
 
 const selectFilteredTodos = createSelector((state) => {
   const todos = selectTodos(state);
   const filter = selectFilter(state);
   switch (filter) {
-    case 'active': return todos.filter(t => !t.done);
-    case 'completed': return todos.filter(t => t.done);
-    default: return todos;
+    case "active":
+      return todos.filter((t) => !t.done);
+    case "completed":
+      return todos.filter((t) => t.done);
+    default:
+      return todos;
   }
 });
 
@@ -1086,16 +1128,16 @@ const selectStats = createSelector((state) => {
   const todos = selectTodos(state);
   return {
     total: todos.length,
-    active: todos.filter(t => !t.done).length,
-    completed: todos.filter(t => t.done).length,
+    active: todos.filter((t) => !t.done).length,
+    completed: todos.filter((t) => t.done).length,
   };
 });
 
 // === Store ===
 const todoStore = createStore(todoApp, {
   todos: [],
-  filter: 'all',
-  nextId: 1
+  filter: "all",
+  nextId: 1,
 });
 
 // === UI 渲染（模拟）===
@@ -1104,23 +1146,25 @@ function render() {
   const filtered = selectFilteredTodos(state);
   const stats = selectStats(state);
 
-  console.log('\n📋 Todo List:');
-  filtered.forEach(t => {
-    console.log(`  ${t.done ? '✅' : '⬜'} ${t.text}`);
+  console.log("\n📋 Todo List:");
+  filtered.forEach((t) => {
+    console.log(`  ${t.done ? "✅" : "⬜"} ${t.text}`);
   });
-  console.log(`📊 总计: ${stats.total} | 完成: ${stats.completed} | 待办: ${stats.active}`);
+  console.log(
+    `📊 总计: ${stats.total} | 完成: ${stats.completed} | 待办: ${stats.active}`,
+  );
   console.log(`🔍 过滤器: ${state.filter}\n`);
 }
 
 todoStore.subscribe(render);
 
 // === 操作 ===
-todoStore.dispatch(actions.addTodo('学习 Redux'));
-todoStore.dispatch(actions.addTodo('学习 Zustand'));
-todoStore.dispatch(actions.addTodo('学习 Vue3'));
+todoStore.dispatch(actions.addTodo("学习 Redux"));
+todoStore.dispatch(actions.addTodo("学习 Zustand"));
+todoStore.dispatch(actions.addTodo("学习 Vue3"));
 todoStore.dispatch(actions.toggleTodo(1));
-todoStore.dispatch(actions.setFilter('active'));
-todoStore.dispatch(actions.setFilter('all'));
+todoStore.dispatch(actions.setFilter("active"));
+todoStore.dispatch(actions.setFilter("all"));
 todoStore.dispatch(actions.deleteTodo(2));
 todoStore.dispatch(actions.clearCompleted());
 
@@ -1142,39 +1186,46 @@ const useCart = createZustand((set, get) => ({
   coupon: null,
 
   // 添加商品
-  addItem: (item) => set(state => {
-    const existing = state.items.find(i => i.id === item.id);
-    if (existing) {
-      return {
-        items: state.items.map(i =>
-          i.id === item.id ? { ...i, qty: i.qty + 1 } : i
-        )
-      };
-    }
-    return { items: [...state.items, { ...item, qty: 1 }] };
-  }),
+  addItem: (item) =>
+    set((state) => {
+      const existing = state.items.find((i) => i.id === item.id);
+      if (existing) {
+        return {
+          items: state.items.map((i) =>
+            i.id === item.id ? { ...i, qty: i.qty + 1 } : i,
+          ),
+        };
+      }
+      return { items: [...state.items, { ...item, qty: 1 }] };
+    }),
 
   // 移除商品
-  removeItem: (id) => set(state => ({
-    items: state.items.filter(i => i.id !== id)
-  })),
+  removeItem: (id) =>
+    set((state) => ({
+      items: state.items.filter((i) => i.id !== id),
+    })),
 
   // 更新数量
-  updateQty: (id, qty) => set(state => ({
-    items: state.items.map(i =>
-      i.id === id ? { ...i, qty: Math.max(0, qty) } : i
-    ).filter(i => i.qty > 0)
-  })),
+  updateQty: (id, qty) =>
+    set((state) => ({
+      items: state.items
+        .map((i) => (i.id === id ? { ...i, qty: Math.max(0, qty) } : i))
+        .filter((i) => i.qty > 0),
+    })),
 
   // 清空购物车
   clear: () => set({ items: [], coupon: null }),
 
   // 应用优惠券
-  applyCoupon: (code) => set({
-    coupon: ['SAVE10', 'SAVE20', 'VIP50'].includes(code)
-      ? { code, discount: code === 'SAVE10' ? 0.1 : code === 'SAVE20' ? 0.2 : 0.5 }
-      : null
-  }),
+  applyCoupon: (code) =>
+    set({
+      coupon: ["SAVE10", "SAVE20", "VIP50"].includes(code)
+        ? {
+            code,
+            discount: code === "SAVE10" ? 0.1 : code === "SAVE20" ? 0.2 : 0.5,
+          }
+        : null,
+    }),
 
   // 计算（getter）
   get subtotal() {
@@ -1192,8 +1243,8 @@ const useCart = createZustand((set, get) => ({
 // 模拟渲染
 function renderCart() {
   const items = useCart.getState().items;
-  console.log('\n🛒 购物车:');
-  items.forEach(i => {
+  console.log("\n🛒 购物车:");
+  items.forEach((i) => {
     console.log(`  ${i.name} x${i.qty} = ¥${(i.price * i.qty).toFixed(2)}`);
   });
   console.log(`  小计: ¥${useCart.getState().subtotal.toFixed(2)}`);
@@ -1204,10 +1255,10 @@ function renderCart() {
 useCart.subscribe(renderCart);
 
 // 操作
-useCart.getState().addItem({ id: 1, name: 'iPhone', price: 5999 });
-useCart.getState().addItem({ id: 2, name: 'AirPods', price: 1299 });
-useCart.getState().addItem({ id: 1, name: 'iPhone', price: 5999 }); // 数量+1
-useCart.getState().applyCoupon('SAVE10');
+useCart.getState().addItem({ id: 1, name: "iPhone", price: 5999 });
+useCart.getState().addItem({ id: 2, name: "AirPods", price: 1299 });
+useCart.getState().addItem({ id: 1, name: "iPhone", price: 5999 }); // 数量+1
+useCart.getState().applyCoupon("SAVE10");
 useCart.getState().updateQty(2, 0); // 移除 AirPods
 ```
 
@@ -1233,12 +1284,12 @@ function createModernStore(modules) {
 
   // 获取嵌套路径的值
   function getByPath(obj, path) {
-    return path.split('.').reduce((o, k) => o?.[k], obj);
+    return path.split(".").reduce((o, k) => o?.[k], obj);
   }
 
   // dispatch
   function dispatch(action) {
-    const [moduleName, actionType] = action.type.split('/');
+    const [moduleName, actionType] = action.type.split("/");
     const module = modules[moduleName];
     if (!module?.reducer) return;
 
@@ -1247,15 +1298,15 @@ function createModernStore(modules) {
 
     if (state[moduleName] !== prevState) {
       // 通知全局
-      globalListeners.forEach(fn => fn(state));
+      globalListeners.forEach((fn) => fn(state));
       // 通知模块
-      listeners.get(moduleName)?.forEach(fn => fn(state[moduleName]));
+      listeners.get(moduleName)?.forEach((fn) => fn(state[moduleName]));
     }
   }
 
   // 订阅
   function subscribe(pathOrListener, listener) {
-    if (typeof pathOrListener === 'function') {
+    if (typeof pathOrListener === "function") {
       globalListeners.add(pathOrListener);
       return () => globalListeners.delete(pathOrListener);
     }
@@ -1280,75 +1331,98 @@ const app = createModernStore({
     initialState: { user: null, token: null, loading: false },
     reducer(state, action) {
       switch (action.type) {
-        case 'auth/LOGIN':
-          return { ...state, user: action.payload.user, token: action.payload.token, loading: false };
-        case 'auth/LOGOUT':
+        case "auth/LOGIN":
+          return {
+            ...state,
+            user: action.payload.user,
+            token: action.payload.token,
+            loading: false,
+          };
+        case "auth/LOGOUT":
           return { user: null, token: null, loading: false };
-        case 'auth/LOADING':
+        case "auth/LOADING":
           return { ...state, loading: true };
         default:
           return state;
       }
-    }
+    },
   },
   ui: {
-    initialState: { theme: 'light', sidebarOpen: true, notifications: [] },
+    initialState: { theme: "light", sidebarOpen: true, notifications: [] },
     reducer(state, action) {
       switch (action.type) {
-        case 'ui/TOGGLE_THEME':
-          return { ...state, theme: state.theme === 'light' ? 'dark' : 'light' };
-        case 'ui/TOGGLE_SIDEBAR':
+        case "ui/TOGGLE_THEME":
+          return {
+            ...state,
+            theme: state.theme === "light" ? "dark" : "light",
+          };
+        case "ui/TOGGLE_SIDEBAR":
           return { ...state, sidebarOpen: !state.sidebarOpen };
-        case 'ui/ADD_NOTIFICATION':
-          return { ...state, notifications: [...state.notifications, action.payload] };
-        case 'ui/CLEAR_NOTIFICATIONS':
+        case "ui/ADD_NOTIFICATION":
+          return {
+            ...state,
+            notifications: [...state.notifications, action.payload],
+          };
+        case "ui/CLEAR_NOTIFICATIONS":
           return { ...state, notifications: [] };
         default:
           return state;
       }
-    }
+    },
   },
   data: {
     initialState: { items: [], loading: false, error: null },
     reducer(state, action) {
       switch (action.type) {
-        case 'data/SET_ITEMS':
+        case "data/SET_ITEMS":
           return { ...state, items: action.payload, loading: false };
-        case 'data/LOADING':
+        case "data/LOADING":
           return { ...state, loading: true, error: null };
-        case 'data/ERROR':
+        case "data/ERROR":
           return { ...state, loading: false, error: action.payload };
-        case 'data/ADD_ITEM':
+        case "data/ADD_ITEM":
           return { ...state, items: [...state.items, action.payload] };
         default:
           return state;
       }
-    }
-  }
+    },
+  },
 });
 
 // 订阅
-app.subscribe('auth', (auth) => {
-  console.log('🔐 Auth 状态:', JSON.stringify(auth));
+app.subscribe("auth", (auth) => {
+  console.log("🔐 Auth 状态:", JSON.stringify(auth));
 });
-app.subscribe('ui', (ui) => {
-  console.log('🎨 UI 状态:', JSON.stringify(ui));
+app.subscribe("ui", (ui) => {
+  console.log("🎨 UI 状态:", JSON.stringify(ui));
 });
 app.subscribe((state) => {
-  console.log('📊 全局状态 keys:', Object.keys(state));
+  console.log("📊 全局状态 keys:", Object.keys(state));
 });
 
 // 操作
-console.log('\n=== 多模块应用 ===');
-app.dispatch({ type: 'auth/LOADING' });
-app.dispatch({ type: 'auth/LOGIN', payload: { user: { name: 'Alice' }, token: 'abc123' } });
-app.dispatch({ type: 'ui/TOGGLE_THEME' });
-app.dispatch({ type: 'data/LOADING' });
-app.dispatch({ type: 'data/SET_ITEMS', payload: [{ id: 1, title: 'Item 1' }, { id: 2, title: 'Item 2' }] });
-app.dispatch({ type: 'ui/ADD_NOTIFICATION', payload: { id: 1, text: '数据加载完成', type: 'success' } });
+console.log("\n=== 多模块应用 ===");
+app.dispatch({ type: "auth/LOADING" });
+app.dispatch({
+  type: "auth/LOGIN",
+  payload: { user: { name: "Alice" }, token: "abc123" },
+});
+app.dispatch({ type: "ui/TOGGLE_THEME" });
+app.dispatch({ type: "data/LOADING" });
+app.dispatch({
+  type: "data/SET_ITEMS",
+  payload: [
+    { id: 1, title: "Item 1" },
+    { id: 2, title: "Item 2" },
+  ],
+});
+app.dispatch({
+  type: "ui/ADD_NOTIFICATION",
+  payload: { id: 1, text: "数据加载完成", type: "success" },
+});
 
-console.log('\n选择器:', app.select('auth.user')); // { name: 'Alice' }
-console.log('选择器:', app.select('data.items')); // [{ id: 1, ... }, { id: 2, ... }]
+console.log("\n选择器:", app.select("auth.user")); // { name: 'Alice' }
+console.log("选择器:", app.select("data.items")); // [{ id: 1, ... }, { id: 2, ... }]
 ```
 
 ---
@@ -1357,16 +1431,16 @@ console.log('选择器:', app.select('data.items')); // [{ id: 1, ... }, { id: 2
 
 ### Redux vs Zustand vs MobX 对比
 
-| 特性 | Redux | Zustand | MobX |
-|------|-------|---------|------|
-| 状态更新 | dispatch(action) → reducer | set(partial) / set(fn) | 直接赋值（Proxy） |
-| 不可变性 | 必须不可变 | 必须不可变 | 自动代理（可变语法） |
-| 调试 | 时间旅行、DevTools | 简单 DevTools | 自动追踪 |
-| 学习曲线 | 高（action/reducer/middleware） | 低（直觉 API） | 中（observable/computed） |
-| 性能 | 需手动优化（selector） | 自动精准更新 | 自动精准更新 |
-| 类型安全 | TS 友好 | TS 友好 | TS 友好 |
-| 包大小 | ~1KB | ~1KB | ~15KB |
-| 适用场景 | 大型应用、需要时间旅行 | 中小型应用、快速开发 | 需要自动追踪的场景 |
+| 特性     | Redux                           | Zustand                | MobX                      |
+| -------- | ------------------------------- | ---------------------- | ------------------------- |
+| 状态更新 | dispatch(action) → reducer      | set(partial) / set(fn) | 直接赋值（Proxy）         |
+| 不可变性 | 必须不可变                      | 必须不可变             | 自动代理（可变语法）      |
+| 调试     | 时间旅行、DevTools              | 简单 DevTools          | 自动追踪                  |
+| 学习曲线 | 高（action/reducer/middleware） | 低（直觉 API）         | 中（observable/computed） |
+| 性能     | 需手动优化（selector）          | 自动精准更新           | 自动精准更新              |
+| 类型安全 | TS 友好                         | TS 友好                | TS 友好                   |
+| 包大小   | ~1KB                            | ~1KB                   | ~15KB                     |
+| 适用场景 | 大型应用、需要时间旅行          | 中小型应用、快速开发   | 需要自动追踪的场景        |
 
 ### 状态管理核心模式
 

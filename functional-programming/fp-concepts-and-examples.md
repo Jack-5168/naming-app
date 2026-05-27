@@ -86,8 +86,8 @@ nums[0] = 99; // 原数组被修改
 
 // ✅ 不可变：每次操作返回新数组
 const nums2 = [1, 2, 3];
-const nums3 = [...nums2, 4];        // [1, 2, 3, 4] — 新数组
-const nums4 = nums3.map((n, i) => i === 0 ? 99 : n); // [99, 2, 3, 4]
+const nums3 = [...nums2, 4]; // [1, 2, 3, 4] — 新数组
+const nums4 = nums3.map((n, i) => (i === 0 ? 99 : n)); // [99, 2, 3, 4]
 console.log(nums2); // [1, 2, 3] — 原数组不变！
 
 // 不可变对象更新
@@ -99,12 +99,12 @@ const user2 = { ...user, age: 26 };
 // 深拷贝更新 — 嵌套对象
 const user3 = {
   ...user,
-  address: { ...user.address, city: "Shanghai" }
+  address: { ...user.address, city: "Shanghai" },
 };
 
-console.log(user);       // age: 25, city: Beijing — 不变
-console.log(user2);      // age: 26, city: Beijing
-console.log(user3);      // age: 25, city: Shanghai
+console.log(user); // age: 25, city: Beijing — 不变
+console.log(user2); // age: 26, city: Beijing
+console.log(user3); // age: 25, city: Shanghai
 ```
 
 ### 示例 5：不可变数组操作工具集
@@ -125,14 +125,14 @@ const Immutable = {
   insert: (arr, index, item) => [
     ...arr.slice(0, index),
     item,
-    ...arr.slice(index)
-  ]
+    ...arr.slice(index),
+  ],
 };
 
 const list = ["a", "b", "c"];
-console.log(Immutable.add(list, "d"));     // ["a","b","c","d"]
-console.log(Immutable.remove(list, 1));    // ["a","c"]
-console.log(Immutable.update(list, 0, x => x.toUpperCase())); // ["A","b","c"]
+console.log(Immutable.add(list, "d")); // ["a","b","c","d"]
+console.log(Immutable.remove(list, 1)); // ["a","c"]
+console.log(Immutable.update(list, 0, (x) => x.toUpperCase())); // ["A","b","c"]
 console.log(Immutable.insert(list, 1, "x")); // ["a","x","b","c"]
 console.log(list); // ["a","b","c"] — 原数组永远不变
 ```
@@ -147,18 +147,22 @@ console.log(list); // ["a","b","c"] — 原数组永远不变
 
 ```js
 // compose: 从右到左执行 — f(g(h(x)))
-const compose = (...fns) => (x) =>
-  fns.reduceRight((val, fn) => fn(val), x);
+const compose =
+  (...fns) =>
+  (x) =>
+    fns.reduceRight((val, fn) => fn(val), x);
 
 // pipe: 从左到右执行 — h(g(f(x)))
-const pipe = (...fns) => (x) =>
-  fns.reduce((val, fn) => fn(val), x);
+const pipe =
+  (...fns) =>
+  (x) =>
+    fns.reduce((val, fn) => fn(val), x);
 
 // 基础函数
-const trim = s => s.trim();
-const lower = s => s.toLowerCase();
-const removeVowels = s => s.replace(/[aeiou]/g, "");
-const wrapInBrackets = s => `[${s}]`;
+const trim = (s) => s.trim();
+const lower = (s) => s.toLowerCase();
+const removeVowels = (s) => s.replace(/[aeiou]/g, "");
+const wrapInBrackets = (s) => `[${s}]`;
 
 // 组合 — 从右到左
 const process1 = compose(wrapInBrackets, removeVowels, lower, trim);
@@ -177,19 +181,19 @@ const users = [
   { name: "bob", age: 17, role: "user", active: false },
   { name: "Charlie", age: 35, role: "admin", active: true },
   { name: "diana", age: 22, role: "user", active: true },
-  { name: "Eve", age: 31, role: "user", active: true }
+  { name: "Eve", age: 31, role: "user", active: true },
 ];
 
 // 管道：过滤 → 排序 → 映射 → 格式化
 const getActiveAdminNames = pipe(
   // 1. 过滤：活跃用户 + admin
-  users => users.filter(u => u.active && u.role === "admin"),
+  (users) => users.filter((u) => u.active && u.role === "admin"),
   // 2. 按年龄排序
-  users => [...users].sort((a, b) => a.age - b.age),
+  (users) => [...users].sort((a, b) => a.age - b.age),
   // 3. 提取名字并大写
-  users => users.map(u => u.name.toUpperCase()),
+  (users) => users.map((u) => u.name.toUpperCase()),
   // 4. 格式化输出
-  names => `Active admins: ${names.join(", ")}`
+  (names) => `Active admins: ${names.join(", ")}`,
 );
 
 console.log(getActiveAdminNames(users));
@@ -218,9 +222,9 @@ class Pipeline {
 
 // 使用
 const result = new Pipeline([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-  .use(arr => arr.filter(n => n % 2 === 0))      // [2,4,6,8,10]
-  .use(arr => arr.map(n => n * n))               // [4,16,36,64,100]
-  .use(arr => arr.reduce((sum, n) => sum + n, 0)) // 220
+  .use((arr) => arr.filter((n) => n % 2 === 0)) // [2,4,6,8,10]
+  .use((arr) => arr.map((n) => n * n)) // [4,16,36,64,100]
+  .use((arr) => arr.reduce((sum, n) => sum + n, 0)) // 220
   .run();
 
 console.log(result); // 220
@@ -253,26 +257,28 @@ function add(a, b, c) {
 // 柯里化后
 const curriedAdd = curry(add);
 
-console.log(curriedAdd(1)(2)(3));    // 6
-console.log(curriedAdd(1, 2)(3));    // 6
-console.log(curriedAdd(1)(2, 3));    // 6
-console.log(curriedAdd(1, 2, 3));    // 6
+console.log(curriedAdd(1)(2)(3)); // 6
+console.log(curriedAdd(1, 2)(3)); // 6
+console.log(curriedAdd(1)(2, 3)); // 6
+console.log(curriedAdd(1, 2, 3)); // 6
 
 // 柯里化的威力：部分应用
 const add10 = curriedAdd(10);
 const add10And5 = curriedAdd(10)(5);
 
-console.log(add10(20));      // 30
-console.log(add10And5(7));   // 22
+console.log(add10(20)); // 30
+console.log(add10And5(7)); // 22
 ```
 
 ### 示例 10：柯里化实战 — 正则验证器
 
 ```js
-const curry = fn => (...args) =>
-  args.length >= fn.length
-    ? fn(...args)
-    : (...more) => curry(fn)(...args, ...more);
+const curry =
+  (fn) =>
+  (...args) =>
+    args.length >= fn.length
+      ? fn(...args)
+      : (...more) => curry(fn)(...args, ...more);
 
 // 柯里化的正则匹配
 const matches = curry((pattern, str) => pattern.test(str));
@@ -283,8 +289,8 @@ const isPhone = matches(/^\d{11}$/);
 const isUrl = matches(/^https?:\/\/.+/);
 
 console.log(isEmail("test@example.com")); // true
-console.log(isPhone("13812345678"));      // true
-console.log(isUrl("not-a-url"));          // false
+console.log(isPhone("13812345678")); // true
+console.log(isUrl("not-a-url")); // false
 
 // 结合 filter 使用
 const emails = ["a@b.com", "invalid", "c@d.org", "xxx"];
@@ -296,26 +302,26 @@ console.log(emails.filter(isEmail)); // ["a@b.com", "c@d.org"]
 ```js
 // 柯里化查询器
 const where = curry((field, value, arr) =>
-  arr.filter(item => item[field] === value)
+  arr.filter((item) => item[field] === value),
 );
 
 const select = curry((fields, arr) =>
-  arr.map(item => {
+  arr.map((item) => {
     const picked = {};
-    fields.forEach(f => picked[f] = item[f]);
+    fields.forEach((f) => (picked[f] = item[f]));
     return picked;
-  })
+  }),
 );
 
 const orderBy = curry((field, arr) =>
-  [...arr].sort((a, b) => (a[field] > b[field] ? 1 : -1))
+  [...arr].sort((a, b) => (a[field] > b[field] ? 1 : -1)),
 );
 
 const data = [
   { name: "Alice", dept: "eng", salary: 80 },
   { name: "Bob", dept: "sales", salary: 60 },
   { name: "Charlie", dept: "eng", salary: 90 },
-  { name: "Diana", dept: "eng", salary: 85 }
+  { name: "Diana", dept: "eng", salary: 85 },
 ];
 
 // 部分应用创建专用查询
@@ -338,10 +344,13 @@ console.log(result);
 ```js
 // Point-Free = 不显式提及数据参数，只组合函数
 const pointFree = {
-  map: fn => arr => arr.map(fn),
-  filter: fn => arr => arr.filter(fn),
-  reduce: (fn, init) => arr => arr.reduce(fn, init),
-  compose: (...fns) => x => fns.reduceRight((v, f) => f(v), x)
+  map: (fn) => (arr) => arr.map(fn),
+  filter: (fn) => (arr) => arr.filter(fn),
+  reduce: (fn, init) => (arr) => arr.reduce(fn, init),
+  compose:
+    (...fns) =>
+    (x) =>
+      fns.reduceRight((v, f) => f(v), x),
 };
 
 const { map, filter, reduce, compose } = pointFree;
@@ -349,8 +358,8 @@ const { map, filter, reduce, compose } = pointFree;
 // 组合成纯数据变换管道
 const sumOfSquaresOfEvens = compose(
   reduce((sum, n) => sum + n, 0),
-  map(n => n * n),
-  filter(n => n % 2 === 0)
+  map((n) => n * n),
+  filter((n) => n % 2 === 0),
 );
 
 console.log(sumOfSquaresOfEvens([1, 2, 3, 4, 5, 6]));
@@ -362,16 +371,26 @@ console.log(sumOfSquaresOfEvens([1, 2, 3, 4, 5, 6]));
 ```js
 // Functor: 可映射的容器
 class Functor {
-  constructor(value) { this.value = value; }
-  map(fn) { return new Functor(fn(this.value)); }
+  constructor(value) {
+    this.value = value;
+  }
+  map(fn) {
+    return new Functor(fn(this.value));
+  }
 }
 
 // Maybe: 处理 null/undefined 的安全容器
 class Maybe {
-  static of(value) { return new Maybe(value); }
-  constructor(value) { this.value = value; }
+  static of(value) {
+    return new Maybe(value);
+  }
+  constructor(value) {
+    this.value = value;
+  }
 
-  isNothing() { return this.value === null || this.value === undefined; }
+  isNothing() {
+    return this.value === null || this.value === undefined;
+  }
 
   map(fn) {
     return this.isNothing() ? new Maybe(null) : new Maybe(fn(this.value));
@@ -386,18 +405,18 @@ class Maybe {
 const user = { profile: { settings: { theme: "dark" } } };
 
 const getTheme = Maybe.of(user)
-  .map(u => u.profile)
-  .map(p => p.settings)
-  .map(s => s.theme)
+  .map((u) => u.profile)
+  .map((p) => p.settings)
+  .map((s) => s.theme)
   .getOrElse("light");
 
 console.log(getTheme); // "dark"
 
 // null 安全
 const getThemeNull = Maybe.of(null)
-  .map(u => u.profile)
-  .map(p => p.settings)
-  .map(s => s.theme)
+  .map((u) => u.profile)
+  .map((p) => p.settings)
+  .map((s) => s.theme)
   .getOrElse("light");
 
 console.log(getThemeNull); // "light" — 不会报错！
@@ -415,12 +434,12 @@ const createStore = (reducer, initialState) => {
     getState: () => state, // 返回副本，保持不可变
     dispatch: (action) => {
       state = reducer(state, action);
-      listeners.forEach(fn => fn(state));
+      listeners.forEach((fn) => fn(state));
     },
     subscribe: (fn) => {
       listeners.push(fn);
       return () => listeners.splice(listeners.indexOf(fn), 1);
-    }
+    },
   };
 };
 
@@ -428,19 +447,20 @@ const createStore = (reducer, initialState) => {
 function todoReducer(state, action) {
   switch (action.type) {
     case "ADD":
-      return [...state, {
-        id: Date.now(),
-        text: action.text,
-        done: false
-      }];
+      return [
+        ...state,
+        {
+          id: Date.now(),
+          text: action.text,
+          done: false,
+        },
+      ];
     case "TOGGLE":
-      return state.map(todo =>
-        todo.id === action.id
-          ? { ...todo, done: !todo.done }
-          : todo
+      return state.map((todo) =>
+        todo.id === action.id ? { ...todo, done: !todo.done } : todo,
       );
     case "REMOVE":
-      return state.filter(todo => todo.id !== action.id);
+      return state.filter((todo) => todo.id !== action.id);
     default:
       return state;
   }
@@ -448,7 +468,7 @@ function todoReducer(state, action) {
 
 const store = createStore(todoReducer, []);
 
-store.subscribe(state => {
+store.subscribe((state) => {
   console.log("State:", JSON.stringify(state));
 });
 
@@ -464,15 +484,15 @@ store.dispatch({ type: "REMOVE", id: store.getState()[1].id });
 
 ## 核心概念速查表
 
-| 概念 | 一句话 | 关键工具 |
-|------|--------|----------|
-| **纯函数** | 相同输入→相同输出，无副作用 | 无全局变量、无 I/O |
-| **不可变性** | 数据创建后不可修改，"改"即创建新的 | spread `...`, `Object.assign`, `map/filter` |
-| **组合** | 小函数拼成大函数，数据流经管道 | `compose`, `pipe` |
-| **柯里化** | 多参函数→单参函数链，支持部分应用 | `curry`, 闭包 |
-| **Point-Free** | 不写参数名，只组合函数 | 组合 + 柯里化 |
-| **Functor** | 可映射的容器，封装值 | `map` 方法 |
-| **Maybe** | 安全处理 null/undefined | `map` + `getOrElse` |
+| 概念           | 一句话                             | 关键工具                                    |
+| -------------- | ---------------------------------- | ------------------------------------------- |
+| **纯函数**     | 相同输入→相同输出，无副作用        | 无全局变量、无 I/O                          |
+| **不可变性**   | 数据创建后不可修改，"改"即创建新的 | spread `...`, `Object.assign`, `map/filter` |
+| **组合**       | 小函数拼成大函数，数据流经管道     | `compose`, `pipe`                           |
+| **柯里化**     | 多参函数→单参函数链，支持部分应用  | `curry`, 闭包                               |
+| **Point-Free** | 不写参数名，只组合函数             | 组合 + 柯里化                               |
+| **Functor**    | 可映射的容器，封装值               | `map` 方法                                  |
+| **Maybe**      | 安全处理 null/undefined            | `map` + `getOrElse`                         |
 
 ## 函数式编程思维转换
 

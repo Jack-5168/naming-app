@@ -9,12 +9,10 @@
  * - 支持保存到相册
  */
 
-import React, { useEffect } from 'react';
-import {
-  View, Text, Image,
-} from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import './ShareCard.css';
+import React, { useEffect } from "react";
+import { View, Text, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import "./ShareCard.css";
 
 interface ShareCardProps {
   personalityType: string;
@@ -48,7 +46,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
   shareUrl,
   onSaved,
 }) => {
-  const [cardImage, setCardImage] = React.useState<string>('');
+  const [cardImage, setCardImage] = React.useState<string>("");
 
   useEffect(() => {
     // Generate card image when component mounts
@@ -66,7 +64,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
       const imageUrl = `/api/v1/share/cards/render/personality${query}`;
       setCardImage(imageUrl);
     } catch (error) {
-      console.error('Failed to generate card image:', error);
+      console.error("Failed to generate card image:", error);
     }
   };
 
@@ -77,8 +75,8 @@ const ShareCard: React.FC<ShareCardProps> = ({
     try {
       if (!cardImage) {
         Taro.showToast({
-          title: '卡片生成中',
-          icon: 'none',
+          title: "卡片生成中",
+          icon: "none",
         });
         return;
       }
@@ -91,26 +89,26 @@ const ShareCard: React.FC<ShareCardProps> = ({
         filePath,
         success: () => {
           Taro.showToast({
-            title: '已保存到相册',
-            icon: 'success',
+            title: "已保存到相册",
+            icon: "success",
             duration: 2000,
           });
           onSaved?.();
         },
         fail: (err) => {
-          console.error('Save failed:', err);
+          console.error("Save failed:", err);
           Taro.showModal({
-            title: '保存失败',
-            content: '请检查相册权限设置',
+            title: "保存失败",
+            content: "请检查相册权限设置",
             showCancel: false,
           });
         },
       });
     } catch (error) {
-      console.error('Error saving to album:', error);
+      console.error("Error saving to album:", error);
       Taro.showToast({
-        title: '保存失败',
-        icon: 'none',
+        title: "保存失败",
+        icon: "none",
       });
     }
   };
@@ -118,19 +116,20 @@ const ShareCard: React.FC<ShareCardProps> = ({
   /**
    * Download image to local
    */
-  const downloadImage = async (url: string): Promise<string> => new Promise((resolve, reject) => {
-    Taro.downloadFile({
-      url: url.startsWith('http') ? url : `https://personaalab.com${url}`,
-      success: (res) => {
-        if (res.statusCode === 200) {
-          resolve(res.tempFilePath);
-        } else {
-          reject(new Error('Download failed'));
-        }
-      },
-      fail: reject,
+  const downloadImage = async (url: string): Promise<string> =>
+    new Promise((resolve, reject) => {
+      Taro.downloadFile({
+        url: url.startsWith("http") ? url : `https://personaalab.com${url}`,
+        success: (res) => {
+          if (res.statusCode === 200) {
+            resolve(res.tempFilePath);
+          } else {
+            reject(new Error("Download failed"));
+          }
+        },
+        fail: reject,
+      });
     });
-  });
 
   /**
    * Share to WeChat
@@ -138,7 +137,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
   const handleShare = () => {
     Taro.showShareMenu({
       withShareTicket: true,
-      showShareItems: ['wechatFriends', 'wechatMoment'],
+      showShareItems: ["wechatFriends", "wechatMoment"],
     });
   };
 
@@ -152,8 +151,8 @@ const ShareCard: React.FC<ShareCardProps> = ({
       data: shareUrl,
       success: () => {
         Taro.showToast({
-          title: '链接已复制',
-          icon: 'success',
+          title: "链接已复制",
+          icon: "success",
         });
       },
     });
@@ -180,9 +179,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
               <View className="type-badge-large">
                 <Text className="type-text-large">{personalityType}</Text>
               </View>
-              {typeName && (
-                <Text className="type-name">{typeName}</Text>
-              )}
+              {typeName && <Text className="type-name">{typeName}</Text>}
               {typeDescription && (
                 <Text className="type-description">{typeDescription}</Text>
               )}
@@ -191,10 +188,26 @@ const ShareCard: React.FC<ShareCardProps> = ({
             {/* Dimension Scores */}
             {dimensionScores && (
               <View className="dimensions-section">
-                <DimensionBar label="外向 E" score={dimensionScores.E} color="#FF6B6B" />
-                <DimensionBar label="直觉 N" score={dimensionScores.N} color="#4ECDC4" />
-                <DimensionBar label="思考 T" score={dimensionScores.T} color="#45B7D1" />
-                <DimensionBar label="判断 J" score={dimensionScores.J} color="#96CEB4" />
+                <DimensionBar
+                  label="外向 E"
+                  score={dimensionScores.E}
+                  color="#FF6B6B"
+                />
+                <DimensionBar
+                  label="直觉 N"
+                  score={dimensionScores.N}
+                  color="#4ECDC4"
+                />
+                <DimensionBar
+                  label="思考 T"
+                  score={dimensionScores.T}
+                  color="#45B7D1"
+                />
+                <DimensionBar
+                  label="判断 J"
+                  score={dimensionScores.J}
+                  color="#96CEB4"
+                />
               </View>
             )}
 
@@ -235,11 +248,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
           {/* Footer with QR Code */}
           <View className="card-footer">
             {qrCodeUrl ? (
-              <Image
-                className="qr-code"
-                src={qrCodeUrl}
-                mode="aspectFill"
-              />
+              <Image className="qr-code" src={qrCodeUrl} mode="aspectFill" />
             ) : (
               <View className="qr-placeholder">
                 <Text className="qr-placeholder-text">扫码测试</Text>

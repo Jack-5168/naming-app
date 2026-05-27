@@ -48,11 +48,11 @@ class CacheManager {
 
     // 删除最旧的条目 (keys 按添加顺序排列)
     const keysToDelete = keys.slice(0, keys.length - maxEntries);
-    await Promise.all(
-      keysToDelete.map((key) => cache.delete(key)),
-    );
+    await Promise.all(keysToDelete.map((key) => cache.delete(key)));
 
-    console.log(`[Cache] 清理 ${cacheName}: 删除 ${keysToDelete.length} 个旧条目`);
+    console.log(
+      `[Cache] 清理 ${cacheName}: 删除 ${keysToDelete.length} 个旧条目`,
+    );
   }
 
   /**
@@ -68,7 +68,7 @@ class CacheManager {
       const response = await cache.match(request);
       const timestamp = response?.headers.get('x-cache-timestamp');
 
-      if (timestamp && (now - parseInt(timestamp)) > maxAge) {
+      if (timestamp && now - parseInt(timestamp) > maxAge) {
         await cache.delete(request);
         console.log(`[Cache] 删除过期缓存: ${request.url}`);
       }
@@ -167,11 +167,14 @@ async function cacheFirst(request, options = {}) {
     console.warn(`[CacheFirst] 网络请求失败: ${request.url}`);
     // 3. 返回离线降级
     const offlineResponse = await cache.match(offlineFallback);
-    return offlineResponse || new Response('离线', {
-      status: 503,
-      statusText: 'Service Unavailable',
-      headers: { 'Content-Type': 'text/html' },
-    });
+    return (
+      offlineResponse
+      || new Response('离线', {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'text/html' },
+      })
+    );
   }
 }
 
@@ -216,8 +219,11 @@ async function networkFirst(request, options = {}) {
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
       // 检查是否过期
-      const timestamp = await cacheManager.getCacheTimestamp(cacheName, request);
-      if (timestamp && (Date.now() - parseInt(timestamp)) < maxAge) {
+      const timestamp = await cacheManager.getCacheTimestamp(
+        cacheName,
+        request,
+      );
+      if (timestamp && Date.now() - parseInt(timestamp) < maxAge) {
         console.log(`[NetworkFirst] 使用缓存 (未过期): ${request.url}`);
         return cachedResponse;
       }
@@ -232,13 +238,16 @@ async function networkFirst(request, options = {}) {
       });
     }
 
-    return new Response(JSON.stringify({
-      error: 'offline',
-      message: '网络不可用，请检查网络连接',
-    }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'offline',
+        message: '网络不可用，请检查网络连接',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }
 }
 
@@ -255,10 +264,7 @@ async function networkFirst(request, options = {}) {
  * 适用: 不关键资源 (头像/非首屏图片/不重要的 API)
  */
 async function staleWhileRevalidate(request, options = {}) {
-  const {
-    cacheName = 'dynamic-v1',
-    maxEntries = 100,
-  } = options;
+  const { cacheName = 'dynamic-v1', maxEntries = 100 } = options;
 
   const cache = await caches.open(cacheName);
 
@@ -308,9 +314,7 @@ async function staleWhileRevalidate(request, options = {}) {
  * 适用: 永不变更的资源 (favicon/版本号文件)
  */
 async function cacheOnly(request, options = {}) {
-  const {
-    cacheName = 'static-v1',
-  } = options;
+  const { cacheName = 'static-v1' } = options;
 
   const cache = await caches.open(cacheName);
   const response = await cache.match(request);
@@ -379,7 +383,9 @@ class CacheRouter {
   async handle(request) {
     for (const route of this.routes) {
       if (route.pattern.test(request.url)) {
-        console.log(`[CacheRouter] 匹配路由: ${request.url} → ${route.strategy.name}`);
+        console.log(
+          `[CacheRouter] 匹配路由: ${request.url} → ${route.strategy.name}`,
+        );
         return route.strategy(request, route.options);
       }
     }
@@ -408,25 +414,23 @@ class CacheRouter {
     );
 
     // API 请求 → Network First
-    this.addRoute(
-      /\/api\//,
-      networkFirst,
-      { cacheName: 'api-v1', maxEntries: 100, maxAge: 5 * 60 * 1000 },
-    );
+    this.addRoute(/\/api\//, networkFirst, {
+      cacheName: 'api-v1',
+      maxEntries: 100,
+      maxAge: 5 * 60 * 1000,
+    });
 
     // 图片 CDN → Stale While Revalidate
-    this.addRoute(
-      /\/images\/|cdn\./,
-      staleWhileRevalidate,
-      { cacheName: 'images-v1', maxEntries: 100 },
-    );
+    this.addRoute(/\/images\/|cdn\./, staleWhileRevalidate, {
+      cacheName: 'images-v1',
+      maxEntries: 100,
+    });
 
     // HTML 页面 → Network First
-    this.addRoute(
-      /text\/html/,
-      networkFirst,
-      { cacheName: 'pages-v1', maxEntries: 20 },
-    );
+    this.addRoute(/text\/html/, networkFirst, {
+      cacheName: 'pages-v1',
+      maxEntries: 20,
+    });
   }
 }
 

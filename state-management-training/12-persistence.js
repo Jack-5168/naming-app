@@ -70,12 +70,13 @@ const migrations = [
   // v2 → v3: 数据结构变化
   (state) => ({
     ...state,
-    todos: state.items?.map((item) => ({
-      id: item.id,
-      text: item.title,
-      done: item.completed,
-      createdAt: Date.now(),
-    })) || [],
+    todos:
+      state.items?.map((item) => ({
+        id: item.id,
+        text: item.title,
+        done: item.completed,
+        createdAt: Date.now(),
+      })) || [],
   }),
 ];
 
@@ -85,9 +86,15 @@ const migrator = createMigrator(migrations);
 // 模拟 localStorage
 const mockStorage = {
   data: {},
-  getItem(key) { return this.data[key] || null; },
-  setItem(key, value) { this.data[key] = value; },
-  removeItem(key) { delete this.data[key]; },
+  getItem(key) {
+    return this.data[key] || null;
+  },
+  setItem(key, value) {
+    this.data[key] = value;
+  },
+  removeItem(key) {
+    delete this.data[key];
+  },
 };
 
 // 初始状态
@@ -140,9 +147,18 @@ function createPersistedStore(reducer, storageKey, initialState) {
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case 'ADD_TODO':
-      return { ...state, todos: [...state.todos, { id: Date.now(), text: action.text, done: false }] };
+      return {
+        ...state,
+        todos: [
+          ...state.todos,
+          { id: Date.now(), text: action.text, done: false },
+        ],
+      };
     case 'TOGGLE_TODO':
-      return { ...state, todos: state.todos.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t)) };
+      return {
+        ...state,
+        todos: state.todos.map((t) => (t.id === action.id ? { ...t, done: !t.done } : t)),
+      };
     case 'SET_THEME':
       return { ...state, settings: { ...state.settings, theme: action.theme } };
     default:

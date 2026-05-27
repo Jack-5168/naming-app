@@ -63,6 +63,7 @@ export const mountChildFibers = createChildReconciler(false);     // 挂载时�
 ```
 
 **为什么用工厂函数？**
+
 - `shouldTrackSideEffects` 在闭包中固定，避免每次调用都传参
 - 首次挂载时不需要标记 Placement/Deletion（反正都是新建），`mountChildFibers` 跳过这些逻辑，性能更好
 - 所有辅助函数共享同一个布尔值，无需参数传递
@@ -76,7 +77,7 @@ export const mountChildFibers = createChildReconciler(false);     // 挂载时�
 ```javascript
 function deleteChild(returnFiber: Fiber, childToDelete: Fiber): void {
   if (!shouldTrackSideEffects) return;  // 挂载阶段不需要
-  
+
   const deletions = returnFiber.deletions;
   if (deletions === null) {
     returnFiber.deletions = [childToDelete];  // 首次：创建数组
@@ -88,6 +89,7 @@ function deleteChild(returnFiber: Fiber, childToDelete: Fiber): void {
 ```
 
 **关键洞察：**
+
 - 删除不是立即执行的，而是**标记**（`flags |= ChildDeletion`）+ **收集**（`deletions` 数组）
 - 真正的 DOM 删除发生在 Commit 阶段的 `commitDeletion()` 中
 - `returnFiber.deletions` 是父节点上的数组，存储所有需要删除的子 Fiber
@@ -100,7 +102,7 @@ function deleteRemainingChildren(
   currentFirstChild: Fiber | null,
 ): null {
   if (!shouldTrackSideEffects) return null;
-  
+
   let childToDelete = currentFirstChild;
   while (childToDelete !== null) {
     deleteChild(returnFiber, childToDelete);
@@ -111,6 +113,7 @@ function deleteRemainingChildren(
 ```
 
 **使用场景：**
+
 - 新子节点比旧子节点少时，删除多余的旧节点
 - key 不匹配时，删除当前匹配点之后的所有旧节点
 - 单节点协调中，找到匹配后删除其余兄弟
@@ -123,7 +126,7 @@ function mapRemainingChildren(
 ): Map<string | number, Fiber> {
   const existingChildren = new Map();
   let existingChild = currentFirstChild;
-  
+
   while (existingChild !== null) {
     if (existingChild.key === null) {
       existingChildren.set(existingChild.index, existingChild);  // 无 key → 用 index
@@ -141,6 +144,7 @@ function mapRemainingChildren(
 当新旧子节点顺序不一致时（如列表重排），仅靠位置匹配会失败。Map 让查找从 O(n) 降到 O(1)。
 
 **关键细节：**
+
 - 无 key 的节点用 `index` 作为 Map 的 key——这是 React 警告 "Each child in a list should have a unique key" 的根本原因
 - 只有当快速路径（位置匹配）失败后，才构建 Map
 
@@ -156,6 +160,7 @@ function useFiber(fiber: Fiber, pendingProps: mixed): Fiber {
 ```
 
 **`createWorkInProgress` 做了什么？**
+
 - 如果 `fiber.alternate` 存在，复用这个 alternate 节点（双缓冲的核心）
 - 如果不存在，创建新 Fiber 并设为 `fiber.alternate`
 - 重置 `flags = Forked`、`childLanes = NoLanes` 等状态
@@ -171,12 +176,12 @@ function placeChild(
   newIndex: number,
 ): number {
   newFiber.index = newIndex;
-  
+
   if (!shouldTrackSideEffects) {
     newFiber.flags |= Forked;  // 仅挂载时标记 Forked
     return lastPlacedIndex;
   }
-  
+
   const current = newFiber.alternate;
   if (current !== null) {
     // 这是一个已存在的节点（复用）
@@ -248,13 +253,13 @@ function reconcileSingleElement(
 ): Fiber {
   const key = element.key;
   let child = currentFirstChild;
-  
+
   // 第一步：遍历旧子节点链表，寻找 key 匹配的节点
   while (child !== null) {
     if (child.key === key) {
       // key 匹配！检查 type 是否也匹配
       const elementType = element.type;
-      
+
       if (elementType === REACT_FRAGMENT_TYPE) {
         if (child.tag === Fragment) {
           // Fragment 匹配：复用
@@ -270,7 +275,7 @@ function reconcileSingleElement(
             || (typeof elementType === 'object'
                 && elementType.$$typeof === REACT_LAZY_TYPE
                 && resolveLazy(elementType) === child.type)) {
-          
+
           // type 也匹配：复用这个 Fiber
           deleteRemainingChildren(returnFiber, child.sibling);  // 删除后面的旧节点
           const existing = useFiber(child, element.props);
@@ -279,7 +284,7 @@ function reconcileSingleElement(
           return existing;
         }
       }
-      
+
       // key 匹配但 type 不匹配 → 后面的旧节点全部删除
       deleteRemainingChildren(returnFiber, child);
       break;
@@ -289,7 +294,7 @@ function reconcileSingleElement(
     }
     child = child.sibling;
   }
-  
+
   // 第二步：没有找到匹配的旧节点 → 创建新 Fiber
   if (element.type === REACT_FRAGMENT_TYPE) {
     const created = createFiberFromFragment(
@@ -307,6 +312,7 @@ function reconcileSingleElement(
 ```
 
 **关键洞察：**
+
 1. **单节点协调也遍历旧链表**——因为旧节点可能有多个（上次渲染了多个子节点，这次只渲染一个）
 2. **匹配逻辑：key 优先，type 次之**——key 不同直接删除旧节点，key 相同但 type 不同则复用失败
 3. **找到匹配后删除后续所有旧节点**——单元素不可能对应多个旧子节点
@@ -374,9 +380,9 @@ for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
   } else {
     nextOldFiber = oldFiber.sibling;
   }
-  
+
   const newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx], lanes);
-  
+
   if (newFiber === null) {
     // 不匹配！退出快速路径，进入慢速路径
     if (oldFiber === null) {
@@ -384,16 +390,16 @@ for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
     }
     break;
   }
-  
+
   // 匹配成功
   if (shouldTrackSideEffects) {
     if (oldFiber && newFiber.alternate === null) {
       deleteChild(returnFiber, oldFiber);  // 位置匹配但类型变了，删除旧节点
     }
   }
-  
+
   lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-  
+
   // 链接新 Fiber 链表
   if (previousNewFiber === null) {
     resultingFirstChild = newFiber;
@@ -410,31 +416,32 @@ for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
 ```javascript
 function updateSlot(returnFiber, oldFiber, newChild, lanes) {
   const key = oldFiber !== null ? oldFiber.key : null;
-  
+
   // 文本节点：key 必须为 null
-  if (typeof newChild === 'string' && newChild !== '') {
-    if (key !== null) return null;  // 旧节点有 key，新节点是文本 → 不匹配
-    return updateTextNode(returnFiber, oldFiber, '' + newChild, lanes);
+  if (typeof newChild === "string" && newChild !== "") {
+    if (key !== null) return null; // 旧节点有 key，新节点是文本 → 不匹配
+    return updateTextNode(returnFiber, oldFiber, "" + newChild, lanes);
   }
-  
+
   // ReactElement：key 必须相等
-  if (typeof newChild === 'object' && newChild !== null) {
+  if (typeof newChild === "object" && newChild !== null) {
     switch (newChild.$$typeof) {
       case REACT_ELEMENT_TYPE:
         if (newChild.key === key) {
           return updateElement(returnFiber, oldFiber, newChild, lanes);
         } else {
-          return null;  // key 不匹配
+          return null; // key 不匹配
         }
       // ... 其他类型
     }
   }
-  
+
   return null;
 }
 ```
 
 **快速路径退出的条件：**
+
 - `updateSlot` 返回 `null`（key 不匹配或类型不匹配）
 - 旧链表遍历完
 - 新数组遍历完
@@ -472,9 +479,13 @@ const existingChildren = mapRemainingChildren(oldFiber);
 // 遍历剩余新节点，从 Map 中查找匹配
 for (; newIdx < newChildren.length; newIdx++) {
   const newFiber = updateFromMap(
-    existingChildren, returnFiber, newIdx, newChildren[newIdx], lanes,
+    existingChildren,
+    returnFiber,
+    newIdx,
+    newChildren[newIdx],
+    lanes,
   );
-  
+
   if (newFiber !== null) {
     // 匹配成功：从 Map 中移除（标记已消费）
     if (shouldTrackSideEffects) {
@@ -485,7 +496,7 @@ for (; newIdx < newChildren.length; newIdx++) {
         );
       }
     }
-    
+
     lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
     // 链接...
   }
@@ -493,13 +504,14 @@ for (; newIdx < newChildren.length; newIdx++) {
 
 // Map 中剩余的 = 没有被消费的旧节点 = 需要删除
 if (shouldTrackSideEffects) {
-  existingChildren.forEach(child => deleteChild(returnFiber, child));
+  existingChildren.forEach((child) => deleteChild(returnFiber, child));
 }
 
 return resultingFirstChild;
 ```
 
 **Map 路径例子：** 旧 `[A, B, C, D]` → 新 `[D, A, X]`
+
 1. 快速路径：A 匹配 A（位置 0→0），lastPlacedIndex=0
 2. B 不匹配 D → 退出快速路径
 3. 构建 Map：`{A: fiberA, B: fiberB, C: fiberC, D: fiberD}`（假设 A 已被消费则移除）
@@ -511,6 +523,7 @@ return resultingFirstChild;
 实际上快速路径只消费了位置匹配的，Map 路径重新查找。让我修正：
 
 **修正后的例子：** 旧 `[A(0), B(1), C(2), D(3)]` → 新 `[D, A, X]`
+
 1. 快速路径：`updateSlot` 比较 A vs D → key 不匹配 → 退出
 2. 构建 Map：`{A: fiberA, B: fiberB, C: fiberC, D: fiberD}`
 3. 新 D → `updateFromMap` 在 Map 中找到 D → 复用，oldIndex=3，lastPlacedIndex=0→3，不移动
@@ -533,7 +546,7 @@ function updateFromMap(
     const matchedFiber = existingChildren.get(newIdx) || null;
     return updateTextNode(returnFiber, matchedFiber, '' + newChild, lanes);
   }
-  
+
   if (typeof newChild === 'object' && newChild !== null) {
     switch (newChild.$$typeof) {
       case REACT_ELEMENT_TYPE: {
@@ -552,12 +565,13 @@ function updateFromMap(
       // ...
     }
   }
-  
+
   return null;
 }
 ```
 
 **与 `updateSlot` 的区别：**
+
 - `updateSlot`：按**位置**匹配（oldFiber.index === newIdx），用于快速路径
 - `updateFromMap`：按**key**匹配，用于慢速路径
 
@@ -576,11 +590,11 @@ function reconcileChildFibers(
   const isUnkeyedTopLevelFragment =
     typeof newChild === 'object' && newChild !== null
     && newChild.type === REACT_FRAGMENT_TYPE && newChild.key === null;
-  
+
   if (isUnkeyedTopLevelFragment) {
     newChild = newChild.props.children;
   }
-  
+
   // 2. 对象类型分发
   if (typeof newChild === 'object' && newChild !== null) {
     switch (newChild.$$typeof) {
@@ -597,21 +611,21 @@ function reconcileChildFibers(
         const result = resolveLazy(newChild);
         return reconcileChildFibers(returnFiber, currentFirstChild, result, lanes);
     }
-    
+
     if (isArray(newChild)) {
       return reconcileChildrenArray(returnFiber, currentFirstChild, newChild, lanes);
     }
     if (getIteratorFn(newChild)) {
       return reconcileChildrenIteratable(returnFiber, currentFirstChild, newChild, lanes);
     }
-    
+
     // Thenable（Promise）→ Suspense 支持
     if (typeof newChild.then === 'function') {
       return reconcileChildFibers(
         returnFiber, currentFirstChild, unwrapThenable(newChild), lanes,
       );
     }
-    
+
     // Context → 读取上下文值后递归
     if (newChild.$$typeof === REACT_CONTEXT_TYPE) {
       return reconcileChildFibers(
@@ -619,17 +633,17 @@ function reconcileChildFibers(
         readContextDuringReconciliation(returnFiber, newChild, lanes), lanes,
       );
     }
-    
+
     throwOnInvalidObjectType(returnFiber, newChild);
   }
-  
+
   // 3. 文本节点
   if (typeof newChild === 'string' && newChild !== '' || typeof newChild === 'number') {
     return placeSingleChild(
       reconcileSingleTextNode(returnFiber, currentFirstChild, '' + newChild, lanes)
     );
   }
-  
+
   // 4. 其余（null/undefined/boolean）→ 删除所有旧子节点
   return deleteRemainingChildren(returnFiber, currentFirstChild);
 }
@@ -637,17 +651,17 @@ function reconcileChildFibers(
 
 **分发策略总结：**
 
-| newChild 类型 | 处理方式 | 使用函数 |
-|---|---|---|
-| 单个 JSX 元素 | 单节点协调 | `reconcileSingleElement` |
-| 单个 Portal | 单节点协调 | `reconcileSinglePortal` |
-| 单个文本 | 单节点协调 | `reconcileSingleTextNode` |
-| 数组 | 多节点协调 | `reconcileChildrenArray` |
-| Iterator | 多节点协调 | `reconcileChildrenIterator` |
-| Lazy | 解析后递归 | `resolveLazy` → 递归 |
-| Promise | 展开后递归 | `unwrapThenable` → 递归 |
-| Context | 读取后递归 | `readContextDuringReconciliation` → 递归 |
-| null/undefined | 删除旧节点 | `deleteRemainingChildren` |
+| newChild 类型  | 处理方式   | 使用函数                                 |
+| -------------- | ---------- | ---------------------------------------- |
+| 单个 JSX 元素  | 单节点协调 | `reconcileSingleElement`                 |
+| 单个 Portal    | 单节点协调 | `reconcileSinglePortal`                  |
+| 单个文本       | 单节点协调 | `reconcileSingleTextNode`                |
+| 数组           | 多节点协调 | `reconcileChildrenArray`                 |
+| Iterator       | 多节点协调 | `reconcileChildrenIterator`              |
+| Lazy           | 解析后递归 | `resolveLazy` → 递归                     |
+| Promise        | 展开后递归 | `unwrapThenable` → 递归                  |
+| Context        | 读取后递归 | `readContextDuringReconciliation` → 递归 |
+| null/undefined | 删除旧节点 | `deleteRemainingChildren`                |
 
 ---
 
@@ -660,6 +674,7 @@ function reconcileChildFibers(
 ```
 
 **为什么这样设计？**
+
 - 90% 以上的更新是"末尾追加"或"末尾删除"——快速路径 O(n) 搞定
 - 只有列表重排/乱序时才需要 Map——O(n) 空间换 O(n) 时间
 - 避免每次更新都构建 Map
@@ -672,6 +687,7 @@ Commit 阶段：根据 flags 执行真实 DOM 操作
 ```
 
 **好处：**
+
 - Reconciliation 可以中断/恢复（Fiber 架构的核心优势）
 - 批量提交 DOM 操作，减少 reflow/repaint
 - 错误边界可以在 Commit 前拦截
@@ -679,8 +695,8 @@ Commit 阶段：根据 flags 执行真实 DOM 操作
 ### 6.3 双版本导出
 
 ```javascript
-export const reconcileChildFibers = createChildReconciler(true);   // 更新
-export const mountChildFibers = createChildReconciler(false);      // 挂载
+export const reconcileChildFibers = createChildReconciler(true); // 更新
+export const mountChildFibers = createChildReconciler(false); // 挂载
 ```
 
 挂载时不需要跟踪副作用——所有节点都是新的。跳过 `shouldTrackSideEffects` 检查，减少分支预测失败。
@@ -688,6 +704,7 @@ export const mountChildFibers = createChildReconciler(false);      // 挂载
 ### 6.4 Fiber 复用（`useFiber` / `createWorkInProgress`）
 
 不是每次更新都创建新 Fiber，而是：
+
 1. 检查 `fiber.alternate` 是否存在
 2. 存在 → 复用，更新 `pendingProps`
 3. 不存在 → 创建新 Fiber，设为 `fiber.alternate`
@@ -698,21 +715,23 @@ export const mountChildFibers = createChildReconciler(false);      // 挂载
 
 ## 七、与 Vue 3 Diff 算法的对比
 
-| 维度 | React | Vue 3 |
-|---|---|---|
-| **类型** | 全量 Diff（类型无关） | 分类型 Diff（静态标记优化） |
-| **关键策略** | 三路扫描 + Map | 双端比较 + 最长递增子序列 |
-| **key 要求** | 运行时检查（DEV 警告） | 编译时静态分析 |
-| **静态优化** | 无（运行时完全动态） | PatchFlags（编译时标记动态部分） |
-| **时间复杂度** | O(n) 平均，Map 路径 O(n) 空间 | O(n) 平均，双端 O(1) 空间 |
-| **移动检测** | lastPlacedIndex（简化 LIS） | 完整 LIS 算法 |
+| 维度           | React                         | Vue 3                            |
+| -------------- | ----------------------------- | -------------------------------- |
+| **类型**       | 全量 Diff（类型无关）         | 分类型 Diff（静态标记优化）      |
+| **关键策略**   | 三路扫描 + Map                | 双端比较 + 最长递增子序列        |
+| **key 要求**   | 运行时检查（DEV 警告）        | 编译时静态分析                   |
+| **静态优化**   | 无（运行时完全动态）          | PatchFlags（编译时标记动态部分） |
+| **时间复杂度** | O(n) 平均，Map 路径 O(n) 空间 | O(n) 平均，双端 O(1) 空间        |
+| **移动检测**   | lastPlacedIndex（简化 LIS）   | 完整 LIS 算法                    |
 
 **React 的选择哲学：**
+
 - 不依赖编译时优化——JSX 只是 JavaScript 函数调用
 - 运行时算法足够快——三路扫描覆盖绝大多数场景
 - 开发者负责 key——React 不做静态分析
 
 **Vue 的选择哲学：**
+
 - 编译时做尽可能多的分析——template 是静态可分析的
 - 运行时只做最小工作——PatchFlags 告诉 diff 哪些属性是动态的
 - 双端比较减少 Map 使用——大多数列表操作是首尾增删

@@ -17,14 +17,14 @@ Vue 3 的 Scheduler 是整个框架的**异步更新调度器**。它的核心�
 
 ```js
 // 没有 Scheduler：同步执行，3 次渲染
-state.count = 1  // → effect 立即执行，渲染 1
-state.count = 2  // → effect 立即执行，渲染 2
-state.count = 3  // → effect 立即执行，渲染 3
+state.count = 1; // → effect 立即执行，渲染 1
+state.count = 2; // → effect 立即执行，渲染 2
+state.count = 3; // → effect 立即执行，渲染 3
 
 // 有 Scheduler：批量执行，1 次渲染
-state.count = 1  // → 加入队列
-state.count = 2  // → 加入队列（覆盖）
-state.count = 3  // → 加入队列（覆盖）
+state.count = 1; // → 加入队列
+state.count = 2; // → 加入队列（覆盖）
+state.count = 3; // → 加入队列（覆盖）
 // → 下一个微任务 tick，只渲染最终值 3
 ```
 
@@ -64,14 +64,14 @@ packages/scheduler/src/index.ts
 
 ### 1.2 与 React 调度器的对比
 
-| 维度 | Vue 3 Scheduler | React Scheduler |
-|------|-----------------|-----------------|
-| 调度单元 | Job（effect/组件更新） | Fiber 节点 + Lane |
-| 优先级模型 | 按 id 排序（组件树深度） | Lane 位图（16 级） |
-| 执行时机 | 微任务（Promise.then） | 宏任务（MessageChannel）+ requestIdleCallback |
-| 时间切片 | ❌ 无（一次性刷完） | ✅ 有（5ms 时间片） |
-| 中断/恢复 | ❌ 不支持 | ✅ 支持（concurrent mode） |
-| 设计哲学 | "简单高效，相信开发者" | "可中断，保证响应性" |
+| 维度       | Vue 3 Scheduler          | React Scheduler                               |
+| ---------- | ------------------------ | --------------------------------------------- |
+| 调度单元   | Job（effect/组件更新）   | Fiber 节点 + Lane                             |
+| 优先级模型 | 按 id 排序（组件树深度） | Lane 位图（16 级）                            |
+| 执行时机   | 微任务（Promise.then）   | 宏任务（MessageChannel）+ requestIdleCallback |
+| 时间切片   | ❌ 无（一次性刷完）      | ✅ 有（5ms 时间片）                           |
+| 中断/恢复  | ❌ 不支持                | ✅ 支持（concurrent mode）                    |
+| 设计哲学   | "简单高效，相信开发者"   | "可中断，保证响应性"                          |
 
 **关键差异**：Vue 的调度更简单——所有 pending 的 effect 在一个微任务中全部执行完。React 则可以在执行中被打断，把剩余工作留给下一次调度。两种设计各有优劣。
 
@@ -83,14 +83,15 @@ packages/scheduler/src/index.ts
 
 ```typescript
 export type SchedulerJob = Function & {
-  id?: number
-  ss?: boolean                    // server snapshot?
-  allowRecurse?: boolean          // 允许自身触发自身（递归）
-  __recursive_count?: number      // 递归深度计数器
-}
+  id?: number;
+  ss?: boolean; // server snapshot?
+  allowRecurse?: boolean; // 允许自身触发自身（递归）
+  __recursive_count?: number; // 递归深度计数器
+};
 ```
 
 **逐行解读**：
+
 - `SchedulerJob` 本质上就是一个函数，但挂载了元信息
 - `id`：组件的 `uid`（唯一递增 ID），用于排序。id 小的先执行 → 保证**父组件先于子组件更新**
 - `allowRecurse`：默认 false。如果 effect 内部修改了自己依赖的数据，会触发自身再次执行。默认禁止，防止无限循环
@@ -100,16 +101,16 @@ export type SchedulerJob = Function & {
 
 ```typescript
 // 主队列：组件更新 + effect 执行
-const queue: SchedulerJob[] = []
+const queue: SchedulerJob[] = [];
 
 // 前置队列：在 DOM 更新前执行（如：watch 的 flush: 'pre'）
-let preQueue: SchedulerJob[] | null = null
+let preQueue: SchedulerJob[] | null = null;
 
 // 后置队列：在 DOM 更新后执行（如：watch 的 flush: 'post' / 'sync'，onUpdated 钩子）
-let postQueue: SchedulerJob[] | null = null
+let postQueue: SchedulerJob[] | null = null;
 
 // 游标：防止遍历时队列被修改导致跳过或重复
-const schedulerCursor = 0
+const schedulerCursor = 0;
 ```
 
 **三队列设计的原因**：
@@ -133,13 +134,14 @@ postQueue:   updated / onUpdated() / watch({ flush: 'post' })
 
 ```typescript
 export const enum SchedulerJobFlags {
-  QUEUED = 1 << 1,        // 0b10   — 已在队列中（去重）
-  PRE = 1 << 2,           // 0b100  — 来自 preQueue
-  POST = 1 << 3,          // 0b1000 — 来自 postQueue
+  QUEUED = 1 << 1, // 0b10   — 已在队列中（去重）
+  PRE = 1 << 2, // 0b100  — 来自 preQueue
+  POST = 1 << 3, // 0b1000 — 来自 postQueue
 }
 ```
 
 **为什么用位标志而不是布尔属性？**
+
 - 节省内存（一个 number 存多个标志）
 - 位运算比多次 if 判断更快
 - 与 Vue 内部的 Flags 系统风格一致
@@ -158,27 +160,21 @@ export function queueJob(job: SchedulerJob) {
   //    防止在 flush 过程中重复入队
   if (
     (!queue.length ||
-      !queue.includes(
-        job,
-        schedulerCursor > 0 ? schedulerCursor + 1 : 1,
-      )) &&
+      !queue.includes(job, schedulerCursor > 0 ? schedulerCursor + 1 : 1)) &&
     !(
       preQueue &&
-      preQueue.includes(
-        job,
-        schedulerCursor > 0 ? schedulerCursor + 1 : 1,
-      )
+      preQueue.includes(job, schedulerCursor > 0 ? schedulerCursor + 1 : 1)
     )
   ) {
     // 2. 标记为已入队
     if (job.id == null) {
-      queue.push(job)
+      queue.push(job);
     } else {
       // 3. 有 id 的 job：按 id 排序插入（二分查找）
-      queue.splice(findInsertionIndex(job.id), 0, job)
+      queue.splice(findInsertionIndex(job.id), 0, job);
     }
     // 4. 触发调度：确保在下一个微任务 tick 执行 flush
-    queueFlush()
+    queueFlush();
   }
 }
 ```
@@ -186,34 +182,41 @@ export function queueJob(job: SchedulerJob) {
 **逐行深度解读**：
 
 **第 1 步 — 去重检查**：
+
 ```typescript
-!queue.includes(job, schedulerCursor + 1)
+!queue.includes(job, schedulerCursor + 1);
 ```
+
 - `includes` 的第二个参数是起始搜索位置
 - `schedulerCursor` 是当前正在执行的 job 在队列中的位置
 - 从 `cursor + 1` 开始搜索，避免检查已经执行过的 job
 - **为什么不去重已经执行的 job？** 因为如果 job 在执行过程中修改了依赖，它应该被重新入队（如果 `allowRecurse=true`）
 
 **第 2 步 — 无 id 的 job 直接 push**：
+
 - 没有 id 的 job 通常是匿名 effect，不需要排序
 - 直接 push 到队列末尾，O(1) 操作
 
 **第 3 步 — 有 id 的 job 排序插入**：
+
 ```typescript
-queue.splice(findInsertionIndex(job.id), 0, job)
+queue.splice(findInsertionIndex(job.id), 0, job);
 ```
+
 - 按 id 升序排列 → 父组件（id 小）先于子组件（id 大）更新
 - `findInsertionIndex` 使用**二分查找**，O(log n) 时间找到插入位置
 
 **第 4 步 — 触发调度**：
+
 ```typescript
 function queueFlush() {
   if (!isFlushing && !isFlushPending) {
-    isFlushPending = true
-    nextTick(flushSchedulerQueue)  // 微任务调度
+    isFlushPending = true;
+    nextTick(flushSchedulerQueue); // 微任务调度
   }
 }
 ```
+
 - `isFlushPending`：防止重复调度（同一 tick 内多次调用 queueJob 只触发一次 flush）
 - `nextTick(flushSchedulerQueue)`：将 flush 推迟到下一个微任务
 
@@ -221,23 +224,25 @@ function queueFlush() {
 
 ```typescript
 const findInsertionIndex = (id: number) => {
-  let start = schedulerCursor + 1
-  let end = queue.length
+  let start = schedulerCursor + 1;
+  let end = queue.length;
   while (start < end) {
-    const mid = (start + end) >>> 1  // 无符号右移 = Math.floor((start+end)/2)
-    const middleJobId = getId(queue[mid])
-    mid < id ? (start = mid + 1) : (end = mid)
+    const mid = (start + end) >>> 1; // 无符号右移 = Math.floor((start+end)/2)
+    const middleJobId = getId(queue[mid]);
+    mid < id ? (start = mid + 1) : (end = mid);
   }
-  return start
-}
+  return start;
+};
 ```
 
 **逐行解读**：
+
 - `>>> 1`：位运算技巧，等价于 `Math.floor((start + end) / 2)`，但更快
 - 搜索范围从 `schedulerCursor + 1` 开始：已经执行的 job 不需要重新排序
 - 返回的 `start` 就是插入位置，保证队列始终有序
 
 **为什么用二分查找而不是每次排序？**
+
 - 队列大部分时候已经有序（job 按创建顺序入队，id 递增）
 - 二分插入 O(log n) + O(n) 移动元素，比全量排序 O(n log n) 更快
 - 增量排序是稳定排序（相同 id 保持原有顺序）
@@ -248,44 +253,44 @@ const findInsertionIndex = (id: number) => {
 
 ```typescript
 function flushSchedulerQueue() {
-  currentFlushTimestamp = getNow()
-  isFlushPending = false
-  isFlushing = true
+  currentFlushTimestamp = getNow();
+  isFlushPending = false;
+  isFlushing = true;
 
   // 1. 刷新 preQueue（DOM 更新前）
   if (preQueue.length) {
-    flushPreFlushCallbacks()
+    flushPreFlushCallbacks();
   }
 
   // 2. 排序并刷新主队列
-  queue.sort((a, b) => getId(a) - getId(b))
+  queue.sort((a, b) => getId(a) - getId(b));
 
   // 3. 遍历执行
   for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
-    const job = queue[flushIndex]
+    const job = queue[flushIndex];
     if (job) {
       // 清除 QUEUED 标志
       if (CHECK__) {
         // dev 模式：检测无限循环
       }
-      callWithErrorHandling(job, null, ErrorCodes.SCHEDULER)
+      callWithErrorHandling(job, null, ErrorCodes.SCHEDULER);
     }
   }
 
   // 4. 刷新 postQueue（DOM 更新后）
   if (postQueue.length) {
-    flushPostFlushCallbacks()
+    flushPostFlushCallbacks();
   }
 
   // 5. 重置状态
-  isFlushing = false
-  queue.length = 0
-  preQueue && (preQueue.length = 0)
-  postQueue && (postQueue.length = 0)
+  isFlushing = false;
+  queue.length = 0;
+  preQueue && (preQueue.length = 0);
+  postQueue && (postQueue.length = 0);
 
   // 6. 检查是否有新的 job 在 flush 过程中入队
   if (queue.length || preQueue || postQueue) {
-    flushSchedulerQueue()  // 递归刷新（处理新入队的 job）
+    flushSchedulerQueue(); // 递归刷新（处理新入队的 job）
   }
 }
 ```
@@ -293,36 +298,43 @@ function flushSchedulerQueue() {
 **逐行深度解读**：
 
 **第 1 步 — preQueue**：
+
 - 在 DOM 更新之前执行
 - 典型场景：`watch({ flush: 'pre' })`、`beforeUpdate` 钩子
 - 用途：在 DOM 变化前做测量（如获取元素尺寸）、清理定时器
 
 **第 2 步 — 排序主队列**：
+
 ```typescript
-queue.sort((a, b) => getId(a) - getId(b))
+queue.sort((a, b) => getId(a) - getId(b));
 ```
+
 - 虽然入队时已经排序，但 flush 过程中可能有新 job 入队
 - 全量排序确保顺序正确
 - **注意**：这里用的是 Array.prototype.sort，V8 中是 Timsort（稳定排序）
 
 **第 3 步 — 遍历执行**：
+
 ```typescript
 for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
-  const job = queue[flushIndex]
-  callWithErrorHandling(job, null, ErrorCodes.SCHEDULER)
+  const job = queue[flushIndex];
+  callWithErrorHandling(job, null, ErrorCodes.SCHEDULER);
 }
 ```
+
 - `flushIndex` 是全局变量，作为 `schedulerCursor` 使用
 - 遍历时如果 job 内部触发了新的 queueJob，新 job 会被追加到队列末尾
 - 由于 `queue.length` 是动态的，新 job 也会被执行（递归刷新）
 - `callWithErrorHandling`：Vue 的错误处理包装器，捕获 job 执行中的错误并调用 `app.config.errorHandler`
 
 **第 6 步 — 递归刷新**：
+
 ```typescript
 if (queue.length || preQueue || postQueue) {
-  flushSchedulerQueue()
+  flushSchedulerQueue();
 }
 ```
+
 - **这是最关键的设计**：如果在 flush 过程中，某个 job 触发了新的数据变化，新的 job 会被入队
 - 递归调用确保所有 pending 的 job 都被执行
 - 但这也有风险：如果 job 无限触发自身 → 栈溢出
@@ -332,12 +344,13 @@ if (queue.length || preQueue || postQueue) {
 
 ```typescript
 export function nextTick<T = void>(this: T, fn?: (...args: any[]) => any) {
-  const p = currentTickResolve ? currentTickResolve : resolvedPromise
-  return fn ? p.then(fn.bind(this)) : p
+  const p = currentTickResolve ? currentTickResolve : resolvedPromise;
+  return fn ? p.then(fn.bind(this)) : p;
 }
 ```
 
 **逐行解读**：
+
 - `resolvedPromise`：`Promise.resolve()`，一个已经 resolve 的 Promise
 - `currentTickResolve`：当前 tick 的 resolve 函数（用于批量合并）
 - 如果传了 `fn`，返回 `p.then(fn)`；否则返回 `p`（等待下一个 tick）
@@ -347,6 +360,7 @@ export function nextTick<T = void>(this: T, fn?: (...args: any[]) => any) {
   - 比宏任务少一次事件循环延迟
 
 **与 React 的对比**：
+
 - React 使用 `MessageChannel`（宏任务）进行调度，支持时间切片
 - Vue 使用 `Promise.then`（微任务），一次性刷完
 - Vue 的选择：简单、快速，但不支持中断
@@ -383,7 +397,7 @@ effect.run() 重新执行
 
 ```typescript
 // effect.ts 中
-effect.scheduler = () => queueJob(effect)
+effect.scheduler = () => queueJob(effect);
 ```
 
 这就是为什么数据变化不会立即触发重新渲染——它只是把 effect 放进队列，等微任务统一处理。
@@ -392,26 +406,26 @@ effect.scheduler = () => queueJob(effect)
 
 ```typescript
 // watch 源码中
-if (options.flush === 'post') {
+if (options.flush === "post") {
   // 推迟到 DOM 更新后执行
-  job.post = true
-  queuePostFlushCb(job)
-} else if (options.flush === 'sync') {
+  job.post = true;
+  queuePostFlushCb(job);
+} else if (options.flush === "sync") {
   // 同步执行（不经过 Scheduler）
-  job()
+  job();
 } else {
   // 默认 'pre'：在 DOM 更新前执行
-  queuePreFlushCb(job)
+  queuePreFlushCb(job);
 }
 ```
 
 **三种 flush 模式**：
 
-| 模式 | 执行时机 | 使用场景 |
-|------|----------|----------|
-| `'pre'`（默认） | DOM 更新前 | 大多数场景，在渲染前响应数据变化 |
-| `'post'` | DOM 更新后 | 需要访问更新后的 DOM（如测量元素尺寸） |
-| `'sync'` | 立即同步 | 极少数场景，需要立即响应（可能影响性能） |
+| 模式            | 执行时机   | 使用场景                                 |
+| --------------- | ---------- | ---------------------------------------- |
+| `'pre'`（默认） | DOM 更新前 | 大多数场景，在渲染前响应数据变化         |
+| `'post'`        | DOM 更新后 | 需要访问更新后的 DOM（如测量元素尺寸）   |
+| `'sync'`        | 立即同步   | 极少数场景，需要立即响应（可能影响性能） |
 
 ---
 
@@ -436,6 +450,7 @@ setup() {
 ```
 
 **去重机制**：
+
 - `queue.includes(job, cursor)` 检查 job 是否已在队列中
 - 已在队列中的 job 不会重复入队
 - 最终执行时读取的是最新值（闭包引用的是 ref 对象，不是快照）
@@ -466,7 +481,7 @@ if (job === queue[flushIndex] && !job.allowRecurse) {
 
 // 即使 allowRecurse=true，也有递归深度限制
 if (job.__recursive_count > MAX_RECURSE_COUNT) {
-  warn('Maximum recursive updates exceeded')
+  warn("Maximum recursive updates exceeded");
 }
 ```
 
@@ -481,6 +496,7 @@ for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
 ```
 
 **为什么需要游标？**
+
 - flush 过程中，job 可能触发新的 queueJob
 - 新 job 被追加到队列末尾
 - 如果从队列头部开始去重检查，会错误地跳过已执行的 job
@@ -492,12 +508,12 @@ for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
 
 ### 6.1 时间复杂度
 
-| 操作 | 复杂度 | 说明 |
-|------|--------|------|
-| queueJob（无 id） | O(1) | 直接 push |
-| queueJob（有 id） | O(n) | 二分查找 O(log n) + splice 移动 O(n) |
-| flushSchedulerQueue | O(n log n) | sort O(n log n) + 遍历 O(n) |
-| nextTick | O(1) | Promise.then |
+| 操作                | 复杂度     | 说明                                 |
+| ------------------- | ---------- | ------------------------------------ |
+| queueJob（无 id）   | O(1)       | 直接 push                            |
+| queueJob（有 id）   | O(n)       | 二分查找 O(log n) + splice 移动 O(n) |
+| flushSchedulerQueue | O(n log n) | sort O(n log n) + 遍历 O(n)          |
+| nextTick            | O(1)       | Promise.then                         |
 
 ### 6.2 空间复杂度
 
@@ -515,24 +531,26 @@ for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
 
 ## 七、与 React Scheduler 的深度对比
 
-| 维度 | Vue 3 Scheduler | React Scheduler |
-|------|-----------------|-----------------|
-| **调度单元** | Job（effect/组件） | Task（Fiber 工作单元） |
-| **优先级** | id 排序（隐式） | Lane 位图（显式 16 级） |
-| **时间切片** | ❌ 无 | ✅ 5ms 时间片 |
-| **中断/恢复** | ❌ 不支持 | ✅ 支持（concurrent） |
-| **调度时机** | 微任务（Promise.then） | 宏任务（MessageChannel） |
-| **批量更新** | ✅ 自动（tick 内合并） | ✅ 自动（React 18 全局批量） |
-| **去重** | ✅ includes 检查 | ✅ Lane 合并 |
-| **复杂度** | ~550 行 | ~1500 行 |
-| **哲学** | 简单高效 | 可中断、保证响应性 |
+| 维度          | Vue 3 Scheduler        | React Scheduler              |
+| ------------- | ---------------------- | ---------------------------- |
+| **调度单元**  | Job（effect/组件）     | Task（Fiber 工作单元）       |
+| **优先级**    | id 排序（隐式）        | Lane 位图（显式 16 级）      |
+| **时间切片**  | ❌ 无                  | ✅ 5ms 时间片                |
+| **中断/恢复** | ❌ 不支持              | ✅ 支持（concurrent）        |
+| **调度时机**  | 微任务（Promise.then） | 宏任务（MessageChannel）     |
+| **批量更新**  | ✅ 自动（tick 内合并） | ✅ 自动（React 18 全局批量） |
+| **去重**      | ✅ includes 检查       | ✅ Lane 合并                 |
+| **复杂度**    | ~550 行                | ~1500 行                     |
+| **哲学**      | 简单高效               | 可中断、保证响应性           |
 
 **Vue 的选择分析**：
+
 - 优点：实现简单、执行快速、无额外开销
 - 缺点：大量更新时会阻塞主线程（无时间切片）
 - 适用场景：中小型应用、更新频率可控
 
 **React 的选择分析**：
+
 - 优点：可中断、保证 UI 响应性、支持并发
 - 缺点：实现复杂、有额外开销、需要开发者理解优先级
 - 适用场景：大型应用、高并发场景
@@ -543,43 +561,43 @@ for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
 
 ```js
 // 手动实现一个简化版 Scheduler
-const queue = []
-let isFlushing = false
+const queue = [];
+let isFlushing = false;
 
 function queueJob(job) {
   if (!queue.includes(job)) {
-    queue.push(job)
+    queue.push(job);
     if (!isFlushing) {
-      isFlushing = true
-      Promise.resolve().then(flush)
+      isFlushing = true;
+      Promise.resolve().then(flush);
     }
   }
 }
 
 function flush() {
   // 排序
-  queue.sort((a, b) => (a.id || 0) - (b.id || 0))
-  
+  queue.sort((a, b) => (a.id || 0) - (b.id || 0));
+
   // 执行
   for (let i = 0; i < queue.length; i++) {
-    queue[i]()
+    queue[i]();
   }
-  
+
   // 清理
-  queue.length = 0
-  isFlushing = false
+  queue.length = 0;
+  isFlushing = false;
 }
 
 // 测试
-const effect1 = () => console.log('effect1')
-const effect2 = () => console.log('effect2')
+const effect1 = () => console.log("effect1");
+const effect2 = () => console.log("effect2");
 
-effect1.id = 1
-effect2.id = 2
+effect1.id = 1;
+effect2.id = 2;
 
-queueJob(effect1)
-queueJob(effect2)
-queueJob(effect1)  // 去重，跳过
+queueJob(effect1);
+queueJob(effect2);
+queueJob(effect1); // 去重，跳过
 
 // 输出: effect1 \n effect2
 ```
@@ -625,5 +643,5 @@ effect.run        →  重新计算 / 重新渲染
 
 ---
 
-*精读完成。核心文件 `packages/scheduler/src/index.ts` ~550 行，全部关键路径已覆盖。*
-*下一步建议：Vue 3 Runtime-DOM（patch 算法 / DOM diff）或 React Scheduler（Lane 模型 / 时间切片）。*
+_精读完成。核心文件 `packages/scheduler/src/index.ts` ~550 行，全部关键路径已覆盖。_
+_下一步建议：Vue 3 Runtime-DOM（patch 算法 / DOM diff）或 React Scheduler（Lane 模型 / 时间切片）。_

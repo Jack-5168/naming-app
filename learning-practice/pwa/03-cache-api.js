@@ -195,17 +195,25 @@ class CacheMonitor {
     };
   }
 
-  recordHit() { this.metrics.hits++; }
+  recordHit() {
+    this.metrics.hits++;
+  }
 
-  recordMiss() { this.metrics.misses++; }
+  recordMiss() {
+    this.metrics.misses++;
+  }
 
-  recordError() { this.metrics.errors++; }
+  recordError() {
+    this.metrics.errors++;
+  }
 
-  recordRequest() { this.metrics.totalRequests++; }
+  recordRequest() {
+    this.metrics.totalRequests++;
+  }
 
   getHitRate() {
     const total = this.metrics.hits + this.metrics.misses;
-    return total > 0 ? (this.metrics.hits / total * 100).toFixed(1) : 0;
+    return total > 0 ? ((this.metrics.hits / total) * 100).toFixed(1) : 0;
   }
 
   getStats() {
@@ -217,7 +225,10 @@ class CacheMonitor {
 
   reset() {
     this.metrics = {
-      hits: 0, misses: 0, errors: 0, totalRequests: 0,
+      hits: 0,
+      misses: 0,
+      errors: 0,
+      totalRequests: 0,
     };
   }
 }
@@ -287,10 +298,13 @@ class SmartWarmup {
 
     if (urls.length === 0) return;
 
-    requestIdleCallback(async () => {
-      await warmupCache('dynamic-v1', urls);
-      urls.forEach((url) => this.warmedUp.add(url));
-    }, { timeout: 2000 });
+    requestIdleCallback(
+      async () => {
+        await warmupCache('dynamic-v1', urls);
+        urls.forEach((url) => this.warmedUp.add(url));
+      },
+      { timeout: 2000 },
+    );
   }
 }
 
@@ -348,7 +362,7 @@ class CacheInvalidator {
     switch (strategy.type) {
       case 'time': {
         const timestamp = await this.getCacheTimestamp(cacheName);
-        return timestamp && (Date.now() - timestamp) > strategy.maxAge;
+        return timestamp && Date.now() - timestamp > strategy.maxAge;
       }
 
       case 'version': {
@@ -389,7 +403,9 @@ class CacheInvalidator {
       }
     }
 
-    console.log(`[Invalidator] 按模式失效: ${pattern}, 删除 ${deleted.length} 条`);
+    console.log(
+      `[Invalidator] 按模式失效: ${pattern}, 删除 ${deleted.length} 条`,
+    );
     return deleted;
   }
 
@@ -480,7 +496,10 @@ class CacheDebugger {
     return {
       timestamp: new Date().toISOString(),
       cacheCount: Object.keys(stats).length,
-      totalEntries: Object.values(stats).reduce((sum, s) => sum + s.entryCount, 0),
+      totalEntries: Object.values(stats).reduce(
+        (sum, s) => sum + s.entryCount,
+        0,
+      ),
       totalSize: Object.values(stats).reduce((sum, s) => sum + s.totalSize, 0),
       totalSizeHuman: formatBytes(
         Object.values(stats).reduce((sum, s) => sum + s.totalSize, 0),

@@ -8,12 +8,12 @@
 
 ## 交付物清单
 
-| # | 文件 | 路径 | 状态 |
-|---|------|------|------|
-| 1 | CAT 引擎核心 | `server/src/services/cat-engine.ts` | ✅ |
-| 2 | 类型定义 | `server/src/services/cat-types.ts` | ✅ |
-| 3 | 单元测试 | `server/tests/cat-engine.test.ts` | ✅ |
-| 4 | 实现文档 | `docs/CAT-IMPLEMENTATION.md` | ✅ |
+| #   | 文件         | 路径                                | 状态 |
+| --- | ------------ | ----------------------------------- | ---- |
+| 1   | CAT 引擎核心 | `server/src/services/cat-engine.ts` | ✅   |
+| 2   | 类型定义     | `server/src/services/cat-types.ts`  | ✅   |
+| 3   | 单元测试     | `server/tests/cat-engine.test.ts`   | ✅   |
+| 4   | 实现文档     | `docs/CAT-IMPLEMENTATION.md`        | ✅   |
 
 ---
 
@@ -38,6 +38,7 @@
 - [x] 难度匹配：题目难度与用户能力匹配
 
 **测试验证**: 4/4 测试通过
+
 - 选题基于最大信息量 ✅
 - 不重复使用题目 ✅
 - 维度平衡 ✅
@@ -53,6 +54,7 @@
 - [x] 输出：五维度分数（0-100）
 
 **测试验证**: 3/3 测试通过
+
 - 无作答时返回先验均值 0 ✅
 - 基于作答估计能力 ✅
 - 随题目增加收敛 ✅
@@ -72,12 +74,12 @@
 
 ## 性能验收
 
-| 指标 | 目标 | 实测 | 状态 |
-|------|------|------|------|
-| 选题时间 | <50ms/题 | 13ms | ✅ |
-| 能力估计 | <10ms | 8.7ms | ✅ |
-| 内存占用 | <100MB | ~45MB | ✅ |
-| 并发支持 | >100 QPS | ~150 QPS | ✅ |
+| 指标     | 目标     | 实测     | 状态 |
+| -------- | -------- | -------- | ---- |
+| 选题时间 | <50ms/题 | 13ms     | ✅   |
+| 能力估计 | <10ms    | 8.7ms    | ✅   |
+| 内存占用 | <100MB   | ~45MB    | ✅   |
+| 并发支持 | >100 QPS | ~150 QPS | ✅   |
 
 **测试验证**: 2/2 性能测试通过
 
@@ -85,12 +87,12 @@
 
 ## 精度验收
 
-| 指标 | 目标 | 验证方法 | 状态 |
-|------|------|---------|------|
-| EAP 收敛 | 随题目增加 SEM 递减 | 收敛性测试 | ✅ |
-| 置信区间 | 随题目增加变窄 | CI 收窄测试 | ✅ |
-| 分数转换 | θ∈[-3,3]↔score∈[0,100] | 边界值测试 | ✅ |
-| 逆变换 | 转换可逆 | 往返测试 | ✅ |
+| 指标     | 目标                   | 验证方法    | 状态 |
+| -------- | ---------------------- | ----------- | ---- |
+| EAP 收敛 | 随题目增加 SEM 递减    | 收敛性测试  | ✅   |
+| 置信区间 | 随题目增加变窄         | CI 收窄测试 | ✅   |
+| 分数转换 | θ∈[-3,3]↔score∈[0,100] | 边界值测试  | ✅   |
+| 逆变换   | 转换可逆               | 往返测试    | ✅   |
 
 **测试验证**: 7/7 精度测试通过
 
@@ -115,19 +117,19 @@ cat-engine.ts  |   92.74 |    62.96 |   96.15 |   96.49 |
 
 ### CATEngine 类方法
 
-| 方法 | 签名 | 状态 |
-|------|------|------|
-| `selectNextQuestion` | `(answers: Answer[]) => Question | null` | ✅ |
-| `estimateAbility` | `(answers: Answer[]) => number` | ✅ |
-| `estimateAbilityByDimension` | `(answers: Answer[]) => { [dim]: AbilityEstimate }` | ✅ |
-| `calculateSEM` | `(answers: Answer[]) => number` | ✅ |
-| `calculateConfidenceInterval` | `(answers: Answer[], confidenceLevel?: number) => [number, number]` | ✅ |
-| `shouldTerminate` | `(answers: Answer[]) => boolean` | ✅ |
-| `thetaToScore` | `(theta: number) => number` | ✅ |
-| `scoreToTheta` | `(score: number) => number` | ✅ |
-| `getAbilityEstimate` | `(answers: Answer[]) => AbilityEstimate` | ✅ |
-| `reset` | `() => void` | ✅ |
-| `setQuestionPool` | `(questions: Question[]) => void` | ✅ |
+| 方法                          | 签名                                                                | 状态  |
+| ----------------------------- | ------------------------------------------------------------------- | ----- | --- |
+| `selectNextQuestion`          | `(answers: Answer[]) => Question                                    | null` | ✅  |
+| `estimateAbility`             | `(answers: Answer[]) => number`                                     | ✅    |
+| `estimateAbilityByDimension`  | `(answers: Answer[]) => { [dim]: AbilityEstimate }`                 | ✅    |
+| `calculateSEM`                | `(answers: Answer[]) => number`                                     | ✅    |
+| `calculateConfidenceInterval` | `(answers: Answer[], confidenceLevel?: number) => [number, number]` | ✅    |
+| `shouldTerminate`             | `(answers: Answer[]) => boolean`                                    | ✅    |
+| `thetaToScore`                | `(theta: number) => number`                                         | ✅    |
+| `scoreToTheta`                | `(score: number) => number`                                         | ✅    |
+| `getAbilityEstimate`          | `(answers: Answer[]) => AbilityEstimate`                            | ✅    |
+| `reset`                       | `() => void`                                                        | ✅    |
+| `setQuestionPool`             | `(questions: Question[]) => void`                                   | ✅    |
 
 ---
 

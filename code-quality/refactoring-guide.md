@@ -3,13 +3,15 @@
 ## 1. 重复 PrismaClient 实例化
 
 ### 当前问题
+
 ```typescript
-// auth.ts, dual-test.ts, growth.ts, memberships.ts, 
+// auth.ts, dual-test.ts, growth.ts, memberships.ts,
 // payments.ts, reports.ts, share.ts 各自有:
 const prisma = new PrismaClient();
 ```
 
 ### 修复步骤
+
 每个 controller 文件需要修改两处:
 
 **Step 1: 删除本地 PrismaClient 初始化**
@@ -19,11 +21,13 @@ const prisma = new PrismaClient();
 **Step 2: 添加共享导入**
 
 在 import 区域顶部添加:
+
 ```typescript
-import { prisma } from '../lib/prisma';
+import { prisma } from "../lib/prisma";
 ```
 
 **示例 (auth.ts)**:
+
 ```diff
 - import { PrismaClient } from '@prisma/client';
 + import { prisma } from '../lib/prisma';
@@ -36,6 +40,7 @@ import { prisma } from '../lib/prisma';
 ## 2. 重复 Winston Logger 实例化
 
 ### 已有的共享 Logger
+
 查看 `src/lib/logger.ts`:
 
 ```typescript
@@ -45,8 +50,9 @@ import { prisma } from '../lib/prisma';
 ### 修复步骤
 
 **直接导入**:
+
 ```typescript
-import { logger } from '../lib/logger';
+import { logger } from "../lib/logger";
 ```
 
 ---
@@ -74,14 +80,14 @@ export async function generateReportHandler(req: Request, res: Response) {
 
     // 提取的数据准备
     const context = await prepareReportContext(validated.resultId);
-    
+
     // 核心业务逻辑
     const report = await generateReport(context);
-    
+
     return res.json({ code: 200, data: report });
   } catch (error) {
-    logger.error('generateReportHandler failed', { error });
-    return res.status(500).json({ code: 500, message: 'Internal error' });
+    logger.error("generateReportHandler failed", { error });
+    return res.status(500).json({ code: 500, message: "Internal error" });
   }
 }
 
@@ -106,7 +112,7 @@ function prepareReportContext(resultId: number): Promise<ReportContext> {
 // src/types/reports.ts
 export interface GenerateReportRequest {
   result_id: number;
-  report_type: 'basic' | 'pro' | 'master';
+  report_type: "basic" | "pro" | "master";
   include_sections?: string[];
 }
 
@@ -132,30 +138,34 @@ export interface GenerateReportResponse {
 ```typescript
 // src/lib/report-config.ts
 export const REPORT_CONFIG = {
-  basic: { price: 0, pages: 3, /* ... */ },
-  pro: { price: 9900, pages: 10, /* ... */ },
-  master: { price: 19900, pages: 20, /* ... */ },
+  basic: { price: 0, pages: 3 /* ... */ },
+  pro: { price: 9900, pages: 10 /* ... */ },
+  master: { price: 19900, pages: 20 /* ... */ },
 };
 
-export const USER_ROLES = { /* ... */ };
-export const MEMBERSHIP_TIERS = { /* ... */ };
+export const USER_ROLES = {
+  /* ... */
+};
+export const MEMBERSHIP_TIERS = {
+  /* ... */
+};
 ```
 
 ---
 
 ## 📋 修改清单
 
-| 文件 | 操作 | 优先级 | 状态 |
-|------|------|--------|------|
-| auth.ts | 改用 lib/prisma + lib/logger | P0 | ✅ 已完成 |
-| dual-test.ts | 改用 lib/prisma | P0 | ✅ 已完成 |
-| growth.ts | 改用 lib/prisma | P0 | ✅ 已完成 |
-| memberships.ts | 改用 lib/prisma | P0 | ✅ 已完成 |
-| payments.ts | 改用 lib/prisma | P0 | ✅ 已完成 |
-| reports.ts | 改用 lib/prisma + lib/logger | P0 | ✅ 已完成 |
-| share.ts | 改用 lib/prisma | P0 | ✅ 已完成 |
-| src/types/reports.ts | 新建，提取接口 | P1 | 待处理 |
-| src/lib/report-config.ts | 新建，提取配置 | P1 | 待处理 |
+| 文件                     | 操作                         | 优先级 | 状态      |
+| ------------------------ | ---------------------------- | ------ | --------- |
+| auth.ts                  | 改用 lib/prisma + lib/logger | P0     | ✅ 已完成 |
+| dual-test.ts             | 改用 lib/prisma              | P0     | ✅ 已完成 |
+| growth.ts                | 改用 lib/prisma              | P0     | ✅ 已完成 |
+| memberships.ts           | 改用 lib/prisma              | P0     | ✅ 已完成 |
+| payments.ts              | 改用 lib/prisma              | P0     | ✅ 已完成 |
+| reports.ts               | 改用 lib/prisma + lib/logger | P0     | ✅ 已完成 |
+| share.ts                 | 改用 lib/prisma              | P0     | ✅ 已完成 |
+| src/types/reports.ts     | 新建，提取接口               | P1     | 待处理    |
+| src/lib/report-config.ts | 新建，提取配置               | P1     | 待处理    |
 
 ### 重构成果
 

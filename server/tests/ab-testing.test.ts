@@ -3,48 +3,84 @@
  * Test coverage for traffic allocation and variant assignment
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from "@jest/globals";
 import {
   getABTestResults,
   initializeABTest,
   assignUserToVariant,
-} from '../src/services/ab-testing';
+} from "../src/services/ab-testing";
 
-describe('A/B Testing Module', () => {
-  describe('Experiment Initialization', () => {
-    it('should initialize experiment without error', () => {
-      expect(() => initializeABTest('test-exp')).not.toThrow();
+describe("A/B Testing Module", () => {
+  describe("Experiment Initialization", () => {
+    it("should initialize experiment without error", () => {
+      expect(() => initializeABTest("test-exp")).not.toThrow();
     });
   });
 
-  describe('Variant Assignment', () => {
-    it('should assign user to a variant', () => {
+  describe("Variant Assignment", () => {
+    it("should assign user to a variant", () => {
       const variants = [
-        { variantId: 'control', name: 'Control', description: '', allocation: 50, config: {} },
-        { variantId: 'treatment', name: 'Treatment', description: '', allocation: 50, config: {} },
+        {
+          variantId: "control",
+          name: "Control",
+          description: "",
+          allocation: 50,
+          config: {},
+        },
+        {
+          variantId: "treatment",
+          name: "Treatment",
+          description: "",
+          allocation: 50,
+          config: {},
+        },
       ];
 
-      const assigned = assignUserToVariant('user-123', variants);
+      const assigned = assignUserToVariant("user-123", variants);
       expect(assigned).toBeDefined();
-      expect(variants.map(v => v.variantId)).toContain(assigned);
+      expect(variants.map((v) => v.variantId)).toContain(assigned);
     });
 
-    it('should assign same user to same variant consistently', () => {
+    it("should assign same user to same variant consistently", () => {
       const variants = [
-        { variantId: 'control', name: 'Control', description: '', allocation: 50, config: {} },
-        { variantId: 'treatment', name: 'Treatment', description: '', allocation: 50, config: {} },
+        {
+          variantId: "control",
+          name: "Control",
+          description: "",
+          allocation: 50,
+          config: {},
+        },
+        {
+          variantId: "treatment",
+          name: "Treatment",
+          description: "",
+          allocation: 50,
+          config: {},
+        },
       ];
 
-      const assigned1 = assignUserToVariant('user-consistent', variants);
-      const assigned2 = assignUserToVariant('user-consistent', variants);
+      const assigned1 = assignUserToVariant("user-consistent", variants);
+      const assigned2 = assignUserToVariant("user-consistent", variants);
 
       expect(assigned1).toBe(assigned2);
     });
 
-    it('should distribute users approximately evenly', () => {
+    it("should distribute users approximately evenly", () => {
       const variants = [
-        { variantId: 'control', name: 'Control', description: '', allocation: 50, config: {} },
-        { variantId: 'treatment', name: 'Treatment', description: '', allocation: 50, config: {} },
+        {
+          variantId: "control",
+          name: "Control",
+          description: "",
+          allocation: 50,
+          config: {},
+        },
+        {
+          variantId: "treatment",
+          name: "Treatment",
+          description: "",
+          allocation: 50,
+          config: {},
+        },
       ];
 
       const results = { control: 0, treatment: 0 };
@@ -62,9 +98,9 @@ describe('A/B Testing Module', () => {
     });
   });
 
-  describe('Results Retrieval', () => {
-    it('should return results structure', async () => {
-      const results = await getABTestResults('test-exp');
+  describe("Results Retrieval", () => {
+    it("should return results structure", async () => {
+      const results = await getABTestResults("test-exp");
 
       expect(results).toBeDefined();
       expect(results.success).toBeDefined();

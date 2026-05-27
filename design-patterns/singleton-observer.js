@@ -199,11 +199,17 @@ class EventBus {
     return EventBus._instance;
   }
 
-  on(event, cb) { return this._emitter.on(event, cb); }
+  on(event, cb) {
+    return this._emitter.on(event, cb);
+  }
 
-  off(event, cb) { return this._emitter.off(event, cb); }
+  off(event, cb) {
+    return this._emitter.off(event, cb);
+  }
 
-  emit(event, ...args) { return this._emitter.emit(event, ...args); }
+  emit(event, ...args) {
+    return this._emitter.emit(event, ...args);
+  }
 }
 
 const bus = EventBus.getInstance();

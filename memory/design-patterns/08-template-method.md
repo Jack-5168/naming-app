@@ -1,25 +1,29 @@
 # 模板方法模式 (Template Method Pattern)
 
 ## 核心思想
+
 在父类中定义一个算法的骨架（模板方法），将某些步骤延迟到子类实现。子类可以不改变算法结构的情况下重定义某些步骤。
 
 ## 适用场景
+
 - 数据处理流水线（读取 → 解析 → 验证 → 转换 → 存储）
 - 测试框架（setup → execute → teardown）
 - 构建工具（lint → compile → bundle → minify → deploy）
 - 游戏 AI 行为（感知 → 决策 → 执行）
 
 ## JS 原生体现
+
 - Koa 中间件 compose — 骨架固定，中间件自定义
 - Express 路由处理 — `app.get(path, handler)` 骨架相同，handler 不同
 - `Array.prototype.sort` — 排序骨架固定，比较函数自定义
 
 ## 与策略模式的区别
-| 维度 | 模板方法 | 策略模式 |
-|------|----------|----------|
+
+| 维度 | 模板方法          | 策略模式            |
+| ---- | ----------------- | ------------------- |
 | 关系 | 继承（父类→子类） | 组合（上下文→策略） |
-| 控制 | 父类控制算法骨架 | 客户端选择算法 |
-| 粒度 | 部分步骤可变 | 整个算法可替换 |
+| 控制 | 父类控制算法骨架  | 客户端选择算法      |
+| 粒度 | 部分步骤可变      | 整个算法可替换      |
 
 ---
 
@@ -59,38 +63,56 @@ class DataImporter {
   }
 
   // 抽象方法（子类必须实现）
-  getFormatName() { throw new Error('子类必须实现 getFormatName'); }
-  read(source) { throw new Error('子类必须实现 read'); }
-  parse(data) { throw new Error('子类必须实现 parse'); }
-  validate(data) { throw new Error('子类必须实现 validate'); }
-  transform(data) { throw new Error('子类必须实现 transform'); }
-  store(data) { throw new Error('子类必须实现 store'); }
+  getFormatName() {
+    throw new Error("子类必须实现 getFormatName");
+  }
+  read(source) {
+    throw new Error("子类必须实现 read");
+  }
+  parse(data) {
+    throw new Error("子类必须实现 parse");
+  }
+  validate(data) {
+    throw new Error("子类必须实现 validate");
+  }
+  transform(data) {
+    throw new Error("子类必须实现 transform");
+  }
+  store(data) {
+    throw new Error("子类必须实现 store");
+  }
 
   // 钩子方法（子类可选择覆盖）
-  onImportStart() { /* 默认空操作 */ }
-  onImportEnd(result) { /* 默认空操作 */ }
+  onImportStart() {
+    /* 默认空操作 */
+  }
+  onImportEnd(result) {
+    /* 默认空操作 */
+  }
 }
 
 // ============ CSV 导入器 ============
 
 class CSVImporter extends DataImporter {
-  getFormatName() { return 'CSV'; }
+  getFormatName() {
+    return "CSV";
+  }
 
   read(source) {
     // 模拟读取 CSV 文件
     console.log(`    [CSV] 读取文件: ${source}`);
     return [
-      'name,age,email,role',
-      'Alice,25,alice@example.com,admin',
-      'Bob,30,bob@example.com,user',
-      'Charlie,28,charlie@example.com,user'
+      "name,age,email,role",
+      "Alice,25,alice@example.com,admin",
+      "Bob,30,bob@example.com,user",
+      "Charlie,28,charlie@example.com,user",
     ];
   }
 
   parse(lines) {
-    const headers = lines[0].split(',');
-    return lines.slice(1).map(line => {
-      const values = line.split(',');
+    const headers = lines[0].split(",");
+    return lines.slice(1).map((line) => {
+      const values = line.split(",");
       return headers.reduce((obj, h, i) => {
         obj[h] = values[i];
         return obj;
@@ -99,19 +121,19 @@ class CSVImporter extends DataImporter {
   }
 
   validate(data) {
-    return data.filter(row => {
-      const valid = row.name && row.email && row.email.includes('@');
+    return data.filter((row) => {
+      const valid = row.name && row.email && row.email.includes("@");
       if (!valid) console.log(`    [CSV] 跳过无效行: ${JSON.stringify(row)}`);
       return valid;
     });
   }
 
   transform(data) {
-    return data.map(row => ({
+    return data.map((row) => ({
       ...row,
       age: parseInt(row.age, 10),
-      role: row.role || 'user',
-      createdAt: new Date().toISOString()
+      role: row.role || "user",
+      createdAt: new Date().toISOString(),
     }));
   }
 
@@ -124,14 +146,16 @@ class CSVImporter extends DataImporter {
 // ============ JSON 导入器 ============
 
 class JSONImporter extends DataImporter {
-  getFormatName() { return 'JSON'; }
+  getFormatName() {
+    return "JSON";
+  }
 
   read(source) {
     console.log(`    [JSON] 读取文件: ${source}`);
     return JSON.stringify([
-      { name: 'Alice', age: 25, email: 'alice@example.com', role: 'admin' },
-      { name: 'Bob', age: 30, email: 'bob@example.com' },
-      { name: 'Charlie', age: 28, email: 'charlie@example.com', role: 'user' }
+      { name: "Alice", age: 25, email: "alice@example.com", role: "admin" },
+      { name: "Bob", age: 30, email: "bob@example.com" },
+      { name: "Charlie", age: 28, email: "charlie@example.com", role: "user" },
     ]);
   }
 
@@ -140,19 +164,19 @@ class JSONImporter extends DataImporter {
   }
 
   validate(data) {
-    return data.filter(row => {
-      const valid = row.name && row.email && row.email.includes('@');
+    return data.filter((row) => {
+      const valid = row.name && row.email && row.email.includes("@");
       if (!valid) console.log(`    [JSON] 跳过无效行: ${JSON.stringify(row)}`);
       return valid;
     });
   }
 
   transform(data) {
-    return data.map(row => ({
+    return data.map((row) => ({
       ...row,
       age: parseInt(row.age, 10),
-      role: row.role || 'user',
-      createdAt: new Date().toISOString()
+      role: row.role || "user",
+      createdAt: new Date().toISOString(),
     }));
   }
 
@@ -165,7 +189,9 @@ class JSONImporter extends DataImporter {
 // ============ XML 导入器 ============
 
 class XMLImporter extends DataImporter {
-  getFormatName() { return 'XML'; }
+  getFormatName() {
+    return "XML";
+  }
 
   read(source) {
     console.log(`    [XML] 读取文件: ${source}`);
@@ -194,15 +220,17 @@ class XMLImporter extends DataImporter {
   }
 
   validate(data) {
-    return data.filter(row => row.name && row.email && row.email.includes('@'));
+    return data.filter(
+      (row) => row.name && row.email && row.email.includes("@"),
+    );
   }
 
   transform(data) {
-    return data.map(row => ({
+    return data.map((row) => ({
       ...row,
       age: parseInt(row.age, 10),
-      role: row.role || 'user',
-      createdAt: new Date().toISOString()
+      role: row.role || "user",
+      createdAt: new Date().toISOString(),
     }));
   }
 
@@ -215,13 +243,13 @@ class XMLImporter extends DataImporter {
 // ============ 使用 ============
 
 const csvImporter = new CSVImporter();
-csvImporter.import('users.csv');
+csvImporter.import("users.csv");
 
 const jsonImporter = new JSONImporter();
-jsonImporter.import('users.json');
+jsonImporter.import("users.json");
 
 const xmlImporter = new XMLImporter();
-xmlImporter.import('users.xml');
+xmlImporter.import("users.xml");
 ```
 
 ## 实现二：测试框架
@@ -255,7 +283,9 @@ class TestRunner {
         console.log(`  ✅ [${i + 1}/${testCases.length}] ${testCase.name}`);
       } catch (error) {
         failed++;
-        console.log(`  ❌ [${i + 1}/${testCases.length}] ${testCase.name}: ${error.message}`);
+        console.log(
+          `  ❌ [${i + 1}/${testCases.length}] ${testCase.name}: ${error.message}`,
+        );
       }
 
       // 每个测试用例后
@@ -273,18 +303,28 @@ class TestRunner {
 
   // 抽象方法：执行测试（子类实现）
   executeTest(testCase) {
-    throw new Error('子类必须实现 executeTest');
+    throw new Error("子类必须实现 executeTest");
   }
 
   // 钩子方法（子类可选择覆盖）
-  beforeAll() { /* 默认空 */ }
-  beforeEach(testCase) { /* 默认空 */ }
-  afterEach(testCase) { /* 默认空 */ }
-  afterAll() { /* 默认空 */ }
+  beforeAll() {
+    /* 默认空 */
+  }
+  beforeEach(testCase) {
+    /* 默认空 */
+  }
+  afterEach(testCase) {
+    /* 默认空 */
+  }
+  afterAll() {
+    /* 默认空 */
+  }
 
   report(passed, failed, total) {
     const pct = ((passed / total) * 100).toFixed(1);
-    console.log(`\n  📊 结果: ${passed}/${total} 通过 (${pct}%), ${failed} 失败`);
+    console.log(
+      `\n  📊 结果: ${passed}/${total} 通过 (${pct}%), ${failed} 失败`,
+    );
   }
 }
 
@@ -338,7 +378,7 @@ class IntegrationTestRunner extends TestRunner {
 
   beforeAll() {
     console.log(`  🗄️  连接测试数据库...`);
-    this.db = { connected: true, tables: ['users', 'orders'] };
+    this.db = { connected: true, tables: ["users", "orders"] };
   }
 
   beforeEach(testCase) {
@@ -365,17 +405,17 @@ class IntegrationTestRunner extends TestRunner {
 // ============ 使用 ============
 
 const unitRunner = new UnitTestRunner();
-unitRunner.run('数学函数测试', [
-  { name: 'add(1, 2) === 3', fn: () => 1 + 2 === 3, expected: true },
-  { name: 'multiply(2, 3) === 6', fn: () => 2 * 3 === 6, expected: true },
-  { name: 'subtract(5, 3) === 2', fn: () => 5 - 3 === 2, expected: true }
+unitRunner.run("数学函数测试", [
+  { name: "add(1, 2) === 3", fn: () => 1 + 2 === 3, expected: true },
+  { name: "multiply(2, 3) === 6", fn: () => 2 * 3 === 6, expected: true },
+  { name: "subtract(5, 3) === 2", fn: () => 5 - 3 === 2, expected: true },
 ]);
 
 const integrationRunner = new IntegrationTestRunner();
-integrationRunner.run('用户模块集成测试', [
-  { name: '创建用户', fn: (db) => db.connected === true },
-  { name: '查询用户', fn: (db) => db.tables.includes('users') },
-  { name: '删除用户', fn: (db) => db.connected === true }
+integrationRunner.run("用户模块集成测试", [
+  { name: "创建用户", fn: (db) => db.connected === true },
+  { name: "查询用户", fn: (db) => db.tables.includes("users") },
+  { name: "删除用户", fn: (db) => db.connected === true },
 ]);
 ```
 
@@ -416,7 +456,7 @@ class BuildPipeline {
   // 已实现的方法（骨架的一部分）
   parse(entryFile) {
     console.log(`    读取文件: ${entryFile}`);
-    return { type: 'Program', body: [], source: entryFile };
+    return { type: "Program", body: [], source: entryFile };
   }
 
   getNodeCount(ast) {
@@ -424,14 +464,26 @@ class BuildPipeline {
   }
 
   // 抽象方法
-  transform(ast) { throw new Error('子类实现'); }
-  analyzeDependencies(transformed) { throw new Error('子类实现'); }
-  bundle(transformed, deps) { throw new Error('子类实现'); }
-  output(bundle, entryFile) { throw new Error('子类实现'); }
+  transform(ast) {
+    throw new Error("子类实现");
+  }
+  analyzeDependencies(transformed) {
+    throw new Error("子类实现");
+  }
+  bundle(transformed, deps) {
+    throw new Error("子类实现");
+  }
+  output(bundle, entryFile) {
+    throw new Error("子类实现");
+  }
 
   // 钩子
-  onBuildStart(entryFile) { /* 默认空 */ }
-  onBuildEnd(bundle) { /* 默认空 */ }
+  onBuildStart(entryFile) {
+    /* 默认空 */
+  }
+  onBuildEnd(bundle) {
+    /* 默认空 */
+  }
 }
 
 // ============ JS 构建器 ============
@@ -439,20 +491,20 @@ class BuildPipeline {
 class JSBuildPipeline extends BuildPipeline {
   transform(ast) {
     console.log(`    [Babel] 转换 JSX → JS, ES6+ → ES5`);
-    return { ...ast, transformed: true, target: 'es5' };
+    return { ...ast, transformed: true, target: "es5" };
   }
 
   analyzeDependencies(transformed) {
-    return ['react', 'react-dom', 'lodash'];
+    return ["react", "react-dom", "lodash"];
   }
 
   bundle(transformed, deps) {
-    const code = `// Bundled from ${transformed.source}\n${JSON.stringify(transformed)}\n// Dependencies: ${deps.join(', ')}`;
+    const code = `// Bundled from ${transformed.source}\n${JSON.stringify(transformed)}\n// Dependencies: ${deps.join(", ")}`;
     return code;
   }
 
   output(bundle, entryFile) {
-    const outFile = entryFile.replace('.jsx', '.js');
+    const outFile = entryFile.replace(".jsx", ".js");
     console.log(`    写入: dist/${outFile}`);
   }
 }
@@ -462,11 +514,11 @@ class JSBuildPipeline extends BuildPipeline {
 class CSSBuildPipeline extends BuildPipeline {
   transform(ast) {
     console.log(`    [PostCSS] 自动添加前缀, 压缩`);
-    return { ...ast, transformed: true, target: 'css' };
+    return { ...ast, transformed: true, target: "css" };
   }
 
   analyzeDependencies(transformed) {
-    return ['normalize.css'];
+    return ["normalize.css"];
   }
 
   bundle(transformed, deps) {
@@ -474,18 +526,19 @@ class CSSBuildPipeline extends BuildPipeline {
   }
 
   output(bundle, entryFile) {
-    const outFile = entryFile.replace('.scss', '.css');
+    const outFile = entryFile.replace(".scss", ".css");
     console.log(`    写入: dist/${outFile}`);
   }
 }
 
 // ============ 使用 ============
 
-new JSBuildPipeline().build('src/App.jsx');
-new CSSBuildPipeline().build('src/styles.scss');
+new JSBuildPipeline().build("src/App.jsx");
+new CSSBuildPipeline().build("src/styles.scss");
 ```
 
 ## 要点总结
+
 1. **骨架固定，步骤可变**: 父类定义算法流程，子类实现具体步骤
 2. **钩子方法**: 提供可选的扩展点，子类可选择覆盖
 3. **代码复用**: 公共逻辑在父类实现，避免子类重复

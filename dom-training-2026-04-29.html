@@ -1,782 +1,1182 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DOM 专项训练 — 原生 DOM API 深度练习</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
-  h1 { color: #38bdf8; margin-bottom: 24px; }
-  h2 { color: #818cf8; margin: 28px 0 12px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
-  .demo { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-  .demo h3 { color: #34d399; margin-bottom: 8px; }
-  .demo p.desc { color: #94a3b8; font-size: 13px; margin-bottom: 10px; }
-  button { background: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; margin: 4px; }
-  button:hover { background: #2563eb; }
-  button.danger { background: #ef4444; }
-  .log { background: #0f172a; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 120px; overflow-y: auto; margin-top: 8px; }
-  .item { padding: 8px; margin: 4px 0; background: #334155; border-radius: 4px; cursor: pointer; }
-  .item:hover { background: #475569; }
-  .highlight { background: #fbbf24 !important; color: #0f172a; }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { border: 1px solid #475569; padding: 6px 10px; text-align: left; }
-  th { background: #1e293b; }
-  .diff-old { background: #451a03; color: #fbbf24; }
-  .diff-new { background: #052e16; color: #4ade80; }
-  .perf-bar { height: 20px; background: #334155; border-radius: 4px; margin: 4px 0; position: relative; }
-  .perf-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
-  .perf-fill.fast { background: #22c55e; }
-  .perf-fill.slow { background: #ef4444; }
-  .perf-label { position: absolute; right: 8px; top: 2px; font-size: 11px; color: #e2e8f0; }
-  #scroll-target { height: 300px; overflow-y: auto; background: #0f172a; border-radius: 4px; padding: 8px; }
-  #scroll-target div { padding: 8px; margin: 2px 0; background: #334155; border-radius: 4px; }
-  .virtual-item { height: 40px; line-height: 40px; padding: 0 12px; }
-  #virtual-container { height: 300px; overflow-y: auto; position: relative; background: #0f172a; border-radius: 4px; }
-  #virtual-phantom { position: absolute; width: 1px; }
-  #virtual-window { position: absolute; top: 0; left: 0; right: 0; }
-  .drag-item { padding: 10px; margin: 4px 0; background: #334155; border-radius: 4px; cursor: grab; }
-  .drag-item.dragging { opacity: 0.5; border: 2px dashed #38bdf8; }
-  .observer-box { width: 100px; height: 100px; margin: 200px 0; background: #334155; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .observer-box.visible { background: #22c55e; }
-</style>
-</head>
-<body>
-
-<h1>🎯 DOM 专项训练 — 原生 DOM API 深度练习</h1>
-<p style="color:#94a3b8;margin-bottom:20px;">2026-04-29 | 事件委托 · DOM Diff · 性能优化 | 共 15 个示例</p>
-
-<!-- ============ 一、事件委托 ============ -->
-<h2>一、事件委托 (Event Delegation)</h2>
-
-<div class="demo">
-  <h3>示例 1：列表点击事件委托</h3>
-  <p class="desc">不给每个 li 绑事件，而是在 ul 上统一监听，利用 e.target 判断来源</p>
-  <ul id="delegation-list" style="list-style:none;padding:0;">
-    <li class="item" data-id="1">📦 商品 A</li>
-    <li class="item" data-id="2">📦 商品 B</li>
-    <li class="item" data-id="3">📦 商品 C</li>
-    <li class="item" data-id="4">📦 商品 D</li>
-    <li class="item" data-id="5">📦 商品 E</li>
-  </ul>
-  <div class="log" id="delegation-log">点击列表项查看事件委托效果…</div>
-</div>
-
-<div class="demo">
-  <h3>示例 2：动态添加元素的事件委托</h3>
-  <p class="desc">新增的元素自动拥有事件处理能力，无需重新绑定</p>
-  <button id="add-item-btn">+ 添加列表项</button>
-  <button id="remove-all-btn" class="danger">清空</button>
-  <ul id="dynamic-list" style="list-style:none;padding:0;"></ul>
-  <div class="log" id="dynamic-log">点击「添加列表项」，新元素自动可点击</div>
-</div>
-
-<div class="demo">
-  <h3>示例 3：多级嵌套事件委托</h3>
-  <p class="desc">处理嵌套结构中的不同层级元素点击，区分按钮和卡片</p>
-  <div id="card-container">
-    <div class="item" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>📄 文档 1</span>
-      <div><button class="card-btn" data-action="edit">编辑</button><button class="card-btn" data-action="delete">删除</button></div>
-    </div>
-    <div class="item" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>📄 文档 2</span>
-      <div><button class="card-btn" data-action="edit">编辑</button><button class="card-btn" data-action="delete">删除</button></div>
-    </div>
-    <div class="item" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>📄 文档 3</span>
-      <div><button class="card-btn" data-action="edit">编辑</button><button class="card-btn" data-action="delete">删除</button></div>
-    </div>
-  </div>
-  <div class="log" id="nested-log">点击卡片或按钮查看委托结果…</div>
-</div>
-
-<div class="demo">
-  <h3>示例 4：事件委托 + 节流</h3>
-  <p class="desc">鼠标移动事件委托到容器，配合节流限制触发频率</p>
-  <div id="move-area" style="width:100%;height:120px;background:#0f172a;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#94a3b8;">
-    在此区域内移动鼠标
-  </div>
-  <div class="log" id="move-log">移动鼠标查看节流效果…</div>
-</div>
-
-<!-- ============ 二、DOM Diff ============ -->
-<h2>二、DOM Diff 算法</h2>
-
-<div class="demo">
-  <h3>示例 5：简易 DOM Diff 实现</h3>
-  <p class="desc">比较新旧虚拟 DOM 树，只更新变化的节点，生成最小操作集</p>
-  <button id="diff-demo-btn">运行 Diff 演示</button>
-  <div id="diff-old" style="display:inline-block;vertical-align:top;margin-right:20px;">
-    <h4 style="color:#94a3b8;">旧 DOM</h4>
-    <table id="old-table"><tr><th>名称</th><th>分数</th></tr><tr><td>张三</td><td>85</td></tr><tr><td>李四</td><td>92</td></tr><tr><td>王五</td><td>78</td></tr></table>
-  </div>
-  <div id="diff-new" style="display:inline-block;vertical-align:top;">
-    <h4 style="color:#94a3b8;">新 DOM（Diff 后）</h4>
-    <table id="new-table"><tr><th>名称</th><th>分数</th></tr><tr><td>张三</td><td>85</td></tr><tr><td>李四</td><td>92</td></tr><tr><td>王五</td><td>78</td></tr></table>
-  </div>
-  <div class="log" id="diff-log">点击按钮运行 Diff，绿色=新增，黄色=修改</div>
-</div>
-
-<div class="demo">
-  <h3>示例 6：列表 Diff（ keyed 对比）</h3>
-  <p class="desc">带 key 的列表 diff，正确处理新增、删除、移动操作</p>
-  <button id="list-diff-btn">随机变换列表</button>
-  <div id="list-diff-container" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
-  <div class="log" id="list-diff-log">点击按钮查看 diff 操作记录</div>
-</div>
-
-<div class="demo">
-  <h3>示例 7：Patch 函数实现</h3>
-  <p class="desc">将 diff 结果应用到真实 DOM，实现 createElement / updateText / removeNode / replaceNode</p>
-  <button id="patch-btn">执行 Patch</button>
-  <div id="patch-target" style="margin-top:8px;padding:8px;background:#0f172a;border-radius:4px;"></div>
-  <div class="log" id="patch-log">查看 patch 操作日志</div>
-</div>
-
-<div class="demo">
-  <h3>示例 8：双端 Diff（Double-end Diff）</h3>
-  <p class="desc">Vue 2 使用的双端对比算法，从首尾同时比较减少移动次数</p>
-  <button id="double-end-btn">运行双端 Diff</button>
-  <div class="log" id="double-end-log">查看双端 diff 步骤</div>
-</div>
-
-<!-- ============ 三、性能优化 ============ -->
-<h2>三、性能优化</h2>
-
-<div class="demo">
-  <h3>示例 9：DocumentFragment 批量插入</h3>
-  <p class="desc">用 DocumentFragment 一次性插入 1000 个节点，对比逐条插入的性能差异</p>
-  <button id="frag-insert-btn">DocumentFragment 插入 1000 条</button>
-  <button id="direct-insert-btn">直接逐条插入 1000 条</button>
-  <div class="log" id="frag-log">点击按钮对比性能，查看耗时差异</div>
-  <ul id="frag-list" style="max-height:150px;overflow-y:auto;margin-top:8px;"></ul>
-</div>
-
-<div class="demo">
-  <h3>示例 10：requestAnimationFrame 动画优化</h3>
-  <p class="desc">用 rAF 替代 setInterval 实现流畅动画，避免掉帧</p>
-  <button id="raf-start">启动 rAF 动画</button>
-  <button id="raf-stop">停止</button>
-  <div id="raf-box" style="width:40px;height:40px;background:#38bdf8;border-radius:4px;margin-top:8px;"></div>
-  <div class="log" id="raf-log">FPS: --</div>
-</div>
-
-<div class="demo">
-  <h3>示例 11：虚拟滚动（Virtual Scrolling）</h3>
-  <p class="desc">只渲染可视区域的列表项，10 万条数据也能流畅滚动</p>
-  <div class="log" id="virtual-log">总数据: 100000 条 | 渲染: 0 条</div>
-  <div id="virtual-container">
-    <div id="virtual-phantom"></div>
-    <div id="virtual-window"></div>
-  </div>
-</div>
-
-<div class="demo">
-  <h3>示例 12：防抖搜索</h3>
-  <p class="desc">输入框防抖，避免每次按键都触发搜索请求</p>
-  <input id="debounce-input" type="text" placeholder="输入搜索关键词…" style="width:100%;padding:8px;background:#0f172a;border:1px solid #475569;border-radius:4px;color:#e2e8f0;">
-  <div class="log" id="debounce-log">输入文字，观察防抖效果（500ms 延迟）</div>
-</div>
-
-<div class="demo">
-  <h3>示例 13：IntersectionObserver 懒加载</h3>
-  <p class="desc">元素进入视口时才加载内容，替代 scroll 事件监听</p>
-  <div id="scroll-target">
-    <div>📌 顶部固定内容</div>
-    <div class="observer-box" data-observed>1. 滚动到我这里触发加载</div>
-    <div>（占位…）</div>
-    <div>（占位…）</div>
-    <div class="observer-box" data-observed>2. 滚动到我这里触发加载</div>
-    <div>（占位…）</div>
-    <div>（占位…）</div>
-    <div class="observer-box" data-observed>3. 滚动到我这里触发加载</div>
-    <div>（占位…）</div>
-    <div>（占位…）</div>
-    <div class="observer-box" data-observed>4. 滚动到我这里触发加载</div>
-    <div>📌 底部固定内容</div>
-  </div>
-  <div class="log" id="observer-log">在上方容器内滚动，观察 IntersectionObserver 触发</div>
-</div>
-
-<div class="demo">
-  <h3>示例 14：CSS containment 优化重排</h3>
-  <p class="desc">使用 CSS contain 属性隔离局部 DOM 变化，避免全局重排</p>
-  <button id="contain-btn">修改局部内容</button>
-  <div id="contain-area" style="contain:layout size; padding:12px; margin-top:8px; background:#0f172a; border-radius:4px; min-height:60px;">
-    这个区域使用了 <code style="color:#38bdf8;">contain: layout size</code>，修改它不会影响外部布局
-  </div>
-  <div class="log" id="contain-log">点击按钮修改内容，观察布局隔离效果</div>
-</div>
-
-<div class="demo">
-  <h3>示例 15：批量读取避免 Layout Thrashing</h3>
-  <p class="desc">先批量读取所有 DOM 尺寸，再批量写入，避免读写交替导致的强制重排</p>
-  <button id="thrash-bad">❌ 读写交替（Layout Thrashing）</button>
-  <button id="thrash-good">✅ 批量读写（Batched）</button>
-  <div id="thrash-boxes" style="display:flex;gap:8px;margin-top:8px;"></div>
-  <div class="log" id="thrash-log">点击按钮对比两种方式的性能差异</div>
-</div>
-
-<script>
-// ============================================================
-//  示例 1：列表点击事件委托
-// ============================================================
-(function() {
-  const list = document.getElementById('delegation-list');
-  const log = document.getElementById('delegation-log');
-  list.addEventListener('click', function(e) {
-    const item = e.target.closest('.item');
-    if (!item) return;
-    const id = item.dataset.id;
-    const text = item.textContent.trim();
-    log.textContent = `[事件委托] 点击了 #${id}: ${text} | 实际绑定在 ul 上，通过 e.target 识别`;
-    item.classList.toggle('highlight');
-  });
-})();
-
-// ============================================================
-//  示例 2：动态添加元素的事件委托
-// ============================================================
-(function() {
-  const list = document.getElementById('dynamic-list');
-  const log = document.getElementById('dynamic-log');
-  let counter = 0;
-
-  // 事件委托：绑定在父容器上
-  list.addEventListener('click', function(e) {
-    const item = e.target.closest('.item');
-    if (!item) return;
-    log.textContent = `[动态委托] 点击了: ${item.textContent.trim()} — 即使元素是后来添加的，事件仍然有效`;
-    item.classList.toggle('highlight');
-  });
-
-  document.getElementById('add-item-btn').addEventListener('click', function() {
-    counter++;
-    const li = document.createElement('li');
-    li.className = 'item';
-    li.textContent = `🆕 动态项 ${counter}`;
-    list.appendChild(li);
-    log.textContent = `[动态委托] 新增了「${li.textContent}」，无需重新绑定事件`;
-  });
-
-  document.getElementById('remove-all-btn').addEventListener('click', function() {
-    list.innerHTML = '';
-    counter = 0;
-    log.textContent = `[动态委托] 已清空列表`;
-  });
-})();
-
-// ============================================================
-//  示例 3：多级嵌套事件委托
-// ============================================================
-(function() {
-  const container = document.getElementById('card-container');
-  const log = document.getElementById('nested-log');
-
-  container.addEventListener('click', function(e) {
-    // 判断是否点击了按钮
-    const btn = e.target.closest('.card-btn');
-    if (btn) {
-      const action = btn.dataset.action;
-      const card = btn.closest('.item');
-      const docName = card.querySelector('span').textContent;
-      log.textContent = `[多级委托] 卡片「${docName}」→ 按钮 [${action}]`;
-      if (action === 'delete') card.remove();
-      return;
-    }
-    // 判断是否点击了卡片本身
-    const card = e.target.closest('.item');
-    if (card) {
-      const docName = card.querySelector('span').textContent;
-      log.textContent = `[多级委托] 点击了卡片「${docName}」（非按钮区域）`;
-    }
-  });
-})();
-
-// ============================================================
-//  示例 4：事件委托 + 节流
-// ============================================================
-(function() {
-  const area = document.getElementById('move-area');
-  const log = document.getElementById('move-log');
-  let lastTime = 0;
-  const THROTTLE_MS = 100;
-
-  area.addEventListener('mousemove', function(e) {
-    const now = Date.now();
-    if (now - lastTime < THROTTLE_MS) return;
-    lastTime = now;
-    const rect = area.getBoundingClientRect();
-    const x = Math.round(e.clientX - rect.left);
-    const y = Math.round(e.clientY - rect.top);
-    log.textContent = `[节流委托] 坐标 (${x}, ${y}) | 节流间隔 ${THROTTLE_MS}ms | 实际 mousemove 事件触发频率远高于此`;
-  });
-})();
-
-// ============================================================
-//  示例 5：简易 DOM Diff 实现
-// ============================================================
-(function() {
-  const btn = document.getElementById('diff-demo-btn');
-  const log = document.getElementById('diff-log');
-  const newTable = document.getElementById('new-table');
-
-  btn.addEventListener('click', function() {
-    // 新数据
-    const newData = [
-      ['名称', '分数', '等级'],
-      ['张三', '90', 'A'],    // 分数变了
-      ['李四', '92', 'A'],    // 不变
-      // 王五被删除
-      ['赵六', '88', 'B'],    // 新增
-    ];
-
-    const oldRows = newTable.rows;
-    const ops = [];
-
-    // 简化 diff：逐行逐单元格对比
-    for (let i = 0; i < Math.max(oldRows.length, newData.length); i++) {
-      if (i >= newData.length) {
-        if (oldRows[i]) { oldRows[i].style.textDecoration = 'line-through'; oldRows[i].style.color = '#ef4444'; }
-        ops.push(`删除行 ${i}`);
-        continue;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM 专项训练 — 原生 DOM API 深度练习</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      if (!oldRows[i]) {
-        const tr = newTable.insertRow();
-        for (let j = 0; j < newData[i].length; j++) {
-          const td = tr.insertCell();
-          td.textContent = newData[i][j];
-          td.classList.add('diff-new');
-        }
-        ops.push(`新增行 ${i}: ${newData[i].join(', ')}`);
-        continue;
+      body {
+        font-family: system-ui, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 24px;
       }
-      for (let j = 0; j < Math.max(oldRows[i].cells.length, newData[i].length); j++) {
-        const oldVal = oldRows[i].cells[j]?.textContent;
-        const newVal = newData[i][j];
-        if (oldVal !== String(newVal)) {
-          if (oldRows[i].cells[j]) {
-            oldRows[i].cells[j].textContent = newVal;
-            oldRows[i].cells[j].classList.add('diff-highlight');
-            oldRows[i].cells[j].style.background = '#fbbf2433';
+      h1 {
+        color: #38bdf8;
+        margin-bottom: 24px;
+      }
+      h2 {
+        color: #818cf8;
+        margin: 28px 0 12px;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 6px;
+      }
+      .demo {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .demo h3 {
+        color: #34d399;
+        margin-bottom: 8px;
+      }
+      .demo p.desc {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 4px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      button.danger {
+        background: #ef4444;
+      }
+      .log {
+        background: #0f172a;
+        padding: 8px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 120px;
+        overflow-y: auto;
+        margin-top: 8px;
+      }
+      .item {
+        padding: 8px;
+        margin: 4px 0;
+        background: #334155;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .item:hover {
+        background: #475569;
+      }
+      .highlight {
+        background: #fbbf24 !important;
+        color: #0f172a;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      td,
+      th {
+        border: 1px solid #475569;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      th {
+        background: #1e293b;
+      }
+      .diff-old {
+        background: #451a03;
+        color: #fbbf24;
+      }
+      .diff-new {
+        background: #052e16;
+        color: #4ade80;
+      }
+      .perf-bar {
+        height: 20px;
+        background: #334155;
+        border-radius: 4px;
+        margin: 4px 0;
+        position: relative;
+      }
+      .perf-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s;
+      }
+      .perf-fill.fast {
+        background: #22c55e;
+      }
+      .perf-fill.slow {
+        background: #ef4444;
+      }
+      .perf-label {
+        position: absolute;
+        right: 8px;
+        top: 2px;
+        font-size: 11px;
+        color: #e2e8f0;
+      }
+      #scroll-target {
+        height: 300px;
+        overflow-y: auto;
+        background: #0f172a;
+        border-radius: 4px;
+        padding: 8px;
+      }
+      #scroll-target div {
+        padding: 8px;
+        margin: 2px 0;
+        background: #334155;
+        border-radius: 4px;
+      }
+      .virtual-item {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 12px;
+      }
+      #virtual-container {
+        height: 300px;
+        overflow-y: auto;
+        position: relative;
+        background: #0f172a;
+        border-radius: 4px;
+      }
+      #virtual-phantom {
+        position: absolute;
+        width: 1px;
+      }
+      #virtual-window {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+      .drag-item {
+        padding: 10px;
+        margin: 4px 0;
+        background: #334155;
+        border-radius: 4px;
+        cursor: grab;
+      }
+      .drag-item.dragging {
+        opacity: 0.5;
+        border: 2px dashed #38bdf8;
+      }
+      .observer-box {
+        width: 100px;
+        height: 100px;
+        margin: 200px 0;
+        background: #334155;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .observer-box.visible {
+        background: #22c55e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎯 DOM 专项训练 — 原生 DOM API 深度练习</h1>
+    <p style="color: #94a3b8; margin-bottom: 20px">
+      2026-04-29 | 事件委托 · DOM Diff · 性能优化 | 共 15 个示例
+    </p>
+
+    <!-- ============ 一、事件委托 ============ -->
+    <h2>一、事件委托 (Event Delegation)</h2>
+
+    <div class="demo">
+      <h3>示例 1：列表点击事件委托</h3>
+      <p class="desc">
+        不给每个 li 绑事件，而是在 ul 上统一监听，利用 e.target 判断来源
+      </p>
+      <ul id="delegation-list" style="list-style: none; padding: 0">
+        <li class="item" data-id="1">📦 商品 A</li>
+        <li class="item" data-id="2">📦 商品 B</li>
+        <li class="item" data-id="3">📦 商品 C</li>
+        <li class="item" data-id="4">📦 商品 D</li>
+        <li class="item" data-id="5">📦 商品 E</li>
+      </ul>
+      <div class="log" id="delegation-log">点击列表项查看事件委托效果…</div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 2：动态添加元素的事件委托</h3>
+      <p class="desc">新增的元素自动拥有事件处理能力，无需重新绑定</p>
+      <button id="add-item-btn">+ 添加列表项</button>
+      <button id="remove-all-btn" class="danger">清空</button>
+      <ul id="dynamic-list" style="list-style: none; padding: 0"></ul>
+      <div class="log" id="dynamic-log">
+        点击「添加列表项」，新元素自动可点击
+      </div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 3：多级嵌套事件委托</h3>
+      <p class="desc">处理嵌套结构中的不同层级元素点击，区分按钮和卡片</p>
+      <div id="card-container">
+        <div
+          class="item"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>📄 文档 1</span>
+          <div>
+            <button class="card-btn" data-action="edit">编辑</button
+            ><button class="card-btn" data-action="delete">删除</button>
+          </div>
+        </div>
+        <div
+          class="item"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>📄 文档 2</span>
+          <div>
+            <button class="card-btn" data-action="edit">编辑</button
+            ><button class="card-btn" data-action="delete">删除</button>
+          </div>
+        </div>
+        <div
+          class="item"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>📄 文档 3</span>
+          <div>
+            <button class="card-btn" data-action="edit">编辑</button
+            ><button class="card-btn" data-action="delete">删除</button>
+          </div>
+        </div>
+      </div>
+      <div class="log" id="nested-log">点击卡片或按钮查看委托结果…</div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 4：事件委托 + 节流</h3>
+      <p class="desc">鼠标移动事件委托到容器，配合节流限制触发频率</p>
+      <div
+        id="move-area"
+        style="
+          width: 100%;
+          height: 120px;
+          background: #0f172a;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #94a3b8;
+        "
+      >
+        在此区域内移动鼠标
+      </div>
+      <div class="log" id="move-log">移动鼠标查看节流效果…</div>
+    </div>
+
+    <!-- ============ 二、DOM Diff ============ -->
+    <h2>二、DOM Diff 算法</h2>
+
+    <div class="demo">
+      <h3>示例 5：简易 DOM Diff 实现</h3>
+      <p class="desc">比较新旧虚拟 DOM 树，只更新变化的节点，生成最小操作集</p>
+      <button id="diff-demo-btn">运行 Diff 演示</button>
+      <div
+        id="diff-old"
+        style="display: inline-block; vertical-align: top; margin-right: 20px"
+      >
+        <h4 style="color: #94a3b8">旧 DOM</h4>
+        <table id="old-table">
+          <tr>
+            <th>名称</th>
+            <th>分数</th>
+          </tr>
+          <tr>
+            <td>张三</td>
+            <td>85</td>
+          </tr>
+          <tr>
+            <td>李四</td>
+            <td>92</td>
+          </tr>
+          <tr>
+            <td>王五</td>
+            <td>78</td>
+          </tr>
+        </table>
+      </div>
+      <div id="diff-new" style="display: inline-block; vertical-align: top">
+        <h4 style="color: #94a3b8">新 DOM（Diff 后）</h4>
+        <table id="new-table">
+          <tr>
+            <th>名称</th>
+            <th>分数</th>
+          </tr>
+          <tr>
+            <td>张三</td>
+            <td>85</td>
+          </tr>
+          <tr>
+            <td>李四</td>
+            <td>92</td>
+          </tr>
+          <tr>
+            <td>王五</td>
+            <td>78</td>
+          </tr>
+        </table>
+      </div>
+      <div class="log" id="diff-log">
+        点击按钮运行 Diff，绿色=新增，黄色=修改
+      </div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 6：列表 Diff（ keyed 对比）</h3>
+      <p class="desc">带 key 的列表 diff，正确处理新增、删除、移动操作</p>
+      <button id="list-diff-btn">随机变换列表</button>
+      <div
+        id="list-diff-container"
+        style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px"
+      ></div>
+      <div class="log" id="list-diff-log">点击按钮查看 diff 操作记录</div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 7：Patch 函数实现</h3>
+      <p class="desc">
+        将 diff 结果应用到真实 DOM，实现 createElement / updateText / removeNode
+        / replaceNode
+      </p>
+      <button id="patch-btn">执行 Patch</button>
+      <div
+        id="patch-target"
+        style="
+          margin-top: 8px;
+          padding: 8px;
+          background: #0f172a;
+          border-radius: 4px;
+        "
+      ></div>
+      <div class="log" id="patch-log">查看 patch 操作日志</div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 8：双端 Diff（Double-end Diff）</h3>
+      <p class="desc">Vue 2 使用的双端对比算法，从首尾同时比较减少移动次数</p>
+      <button id="double-end-btn">运行双端 Diff</button>
+      <div class="log" id="double-end-log">查看双端 diff 步骤</div>
+    </div>
+
+    <!-- ============ 三、性能优化 ============ -->
+    <h2>三、性能优化</h2>
+
+    <div class="demo">
+      <h3>示例 9：DocumentFragment 批量插入</h3>
+      <p class="desc">
+        用 DocumentFragment 一次性插入 1000 个节点，对比逐条插入的性能差异
+      </p>
+      <button id="frag-insert-btn">DocumentFragment 插入 1000 条</button>
+      <button id="direct-insert-btn">直接逐条插入 1000 条</button>
+      <div class="log" id="frag-log">点击按钮对比性能，查看耗时差异</div>
+      <ul
+        id="frag-list"
+        style="max-height: 150px; overflow-y: auto; margin-top: 8px"
+      ></ul>
+    </div>
+
+    <div class="demo">
+      <h3>示例 10：requestAnimationFrame 动画优化</h3>
+      <p class="desc">用 rAF 替代 setInterval 实现流畅动画，避免掉帧</p>
+      <button id="raf-start">启动 rAF 动画</button>
+      <button id="raf-stop">停止</button>
+      <div
+        id="raf-box"
+        style="
+          width: 40px;
+          height: 40px;
+          background: #38bdf8;
+          border-radius: 4px;
+          margin-top: 8px;
+        "
+      ></div>
+      <div class="log" id="raf-log">FPS: --</div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 11：虚拟滚动（Virtual Scrolling）</h3>
+      <p class="desc">只渲染可视区域的列表项，10 万条数据也能流畅滚动</p>
+      <div class="log" id="virtual-log">总数据: 100000 条 | 渲染: 0 条</div>
+      <div id="virtual-container">
+        <div id="virtual-phantom"></div>
+        <div id="virtual-window"></div>
+      </div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 12：防抖搜索</h3>
+      <p class="desc">输入框防抖，避免每次按键都触发搜索请求</p>
+      <input
+        id="debounce-input"
+        type="text"
+        placeholder="输入搜索关键词…"
+        style="
+          width: 100%;
+          padding: 8px;
+          background: #0f172a;
+          border: 1px solid #475569;
+          border-radius: 4px;
+          color: #e2e8f0;
+        "
+      />
+      <div class="log" id="debounce-log">
+        输入文字，观察防抖效果（500ms 延迟）
+      </div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 13：IntersectionObserver 懒加载</h3>
+      <p class="desc">元素进入视口时才加载内容，替代 scroll 事件监听</p>
+      <div id="scroll-target">
+        <div>📌 顶部固定内容</div>
+        <div class="observer-box" data-observed>1. 滚动到我这里触发加载</div>
+        <div>（占位…）</div>
+        <div>（占位…）</div>
+        <div class="observer-box" data-observed>2. 滚动到我这里触发加载</div>
+        <div>（占位…）</div>
+        <div>（占位…）</div>
+        <div class="observer-box" data-observed>3. 滚动到我这里触发加载</div>
+        <div>（占位…）</div>
+        <div>（占位…）</div>
+        <div class="observer-box" data-observed>4. 滚动到我这里触发加载</div>
+        <div>📌 底部固定内容</div>
+      </div>
+      <div class="log" id="observer-log">
+        在上方容器内滚动，观察 IntersectionObserver 触发
+      </div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 14：CSS containment 优化重排</h3>
+      <p class="desc">使用 CSS contain 属性隔离局部 DOM 变化，避免全局重排</p>
+      <button id="contain-btn">修改局部内容</button>
+      <div
+        id="contain-area"
+        style="
+          contain: layout size;
+          padding: 12px;
+          margin-top: 8px;
+          background: #0f172a;
+          border-radius: 4px;
+          min-height: 60px;
+        "
+      >
+        这个区域使用了
+        <code style="color: #38bdf8">contain: layout size</code
+        >，修改它不会影响外部布局
+      </div>
+      <div class="log" id="contain-log">点击按钮修改内容，观察布局隔离效果</div>
+    </div>
+
+    <div class="demo">
+      <h3>示例 15：批量读取避免 Layout Thrashing</h3>
+      <p class="desc">
+        先批量读取所有 DOM 尺寸，再批量写入，避免读写交替导致的强制重排
+      </p>
+      <button id="thrash-bad">❌ 读写交替（Layout Thrashing）</button>
+      <button id="thrash-good">✅ 批量读写（Batched）</button>
+      <div
+        id="thrash-boxes"
+        style="display: flex; gap: 8px; margin-top: 8px"
+      ></div>
+      <div class="log" id="thrash-log">点击按钮对比两种方式的性能差异</div>
+    </div>
+
+    <script>
+      // ============================================================
+      //  示例 1：列表点击事件委托
+      // ============================================================
+      (function () {
+        const list = document.getElementById("delegation-list");
+        const log = document.getElementById("delegation-log");
+        list.addEventListener("click", function (e) {
+          const item = e.target.closest(".item");
+          if (!item) return;
+          const id = item.dataset.id;
+          const text = item.textContent.trim();
+          log.textContent = `[事件委托] 点击了 #${id}: ${text} | 实际绑定在 ul 上，通过 e.target 识别`;
+          item.classList.toggle("highlight");
+        });
+      })();
+
+      // ============================================================
+      //  示例 2：动态添加元素的事件委托
+      // ============================================================
+      (function () {
+        const list = document.getElementById("dynamic-list");
+        const log = document.getElementById("dynamic-log");
+        let counter = 0;
+
+        // 事件委托：绑定在父容器上
+        list.addEventListener("click", function (e) {
+          const item = e.target.closest(".item");
+          if (!item) return;
+          log.textContent = `[动态委托] 点击了: ${item.textContent.trim()} — 即使元素是后来添加的，事件仍然有效`;
+          item.classList.toggle("highlight");
+        });
+
+        document
+          .getElementById("add-item-btn")
+          .addEventListener("click", function () {
+            counter++;
+            const li = document.createElement("li");
+            li.className = "item";
+            li.textContent = `🆕 动态项 ${counter}`;
+            list.appendChild(li);
+            log.textContent = `[动态委托] 新增了「${li.textContent}」，无需重新绑定事件`;
+          });
+
+        document
+          .getElementById("remove-all-btn")
+          .addEventListener("click", function () {
+            list.innerHTML = "";
+            counter = 0;
+            log.textContent = `[动态委托] 已清空列表`;
+          });
+      })();
+
+      // ============================================================
+      //  示例 3：多级嵌套事件委托
+      // ============================================================
+      (function () {
+        const container = document.getElementById("card-container");
+        const log = document.getElementById("nested-log");
+
+        container.addEventListener("click", function (e) {
+          // 判断是否点击了按钮
+          const btn = e.target.closest(".card-btn");
+          if (btn) {
+            const action = btn.dataset.action;
+            const card = btn.closest(".item");
+            const docName = card.querySelector("span").textContent;
+            log.textContent = `[多级委托] 卡片「${docName}」→ 按钮 [${action}]`;
+            if (action === "delete") card.remove();
+            return;
           }
-          ops.push(`更新 [${i},${j}]: ${oldVal} → ${newVal}`);
+          // 判断是否点击了卡片本身
+          const card = e.target.closest(".item");
+          if (card) {
+            const docName = card.querySelector("span").textContent;
+            log.textContent = `[多级委托] 点击了卡片「${docName}」（非按钮区域）`;
+          }
+        });
+      })();
+
+      // ============================================================
+      //  示例 4：事件委托 + 节流
+      // ============================================================
+      (function () {
+        const area = document.getElementById("move-area");
+        const log = document.getElementById("move-log");
+        let lastTime = 0;
+        const THROTTLE_MS = 100;
+
+        area.addEventListener("mousemove", function (e) {
+          const now = Date.now();
+          if (now - lastTime < THROTTLE_MS) return;
+          lastTime = now;
+          const rect = area.getBoundingClientRect();
+          const x = Math.round(e.clientX - rect.left);
+          const y = Math.round(e.clientY - rect.top);
+          log.textContent = `[节流委托] 坐标 (${x}, ${y}) | 节流间隔 ${THROTTLE_MS}ms | 实际 mousemove 事件触发频率远高于此`;
+        });
+      })();
+
+      // ============================================================
+      //  示例 5：简易 DOM Diff 实现
+      // ============================================================
+      (function () {
+        const btn = document.getElementById("diff-demo-btn");
+        const log = document.getElementById("diff-log");
+        const newTable = document.getElementById("new-table");
+
+        btn.addEventListener("click", function () {
+          // 新数据
+          const newData = [
+            ["名称", "分数", "等级"],
+            ["张三", "90", "A"], // 分数变了
+            ["李四", "92", "A"], // 不变
+            // 王五被删除
+            ["赵六", "88", "B"], // 新增
+          ];
+
+          const oldRows = newTable.rows;
+          const ops = [];
+
+          // 简化 diff：逐行逐单元格对比
+          for (let i = 0; i < Math.max(oldRows.length, newData.length); i++) {
+            if (i >= newData.length) {
+              if (oldRows[i]) {
+                oldRows[i].style.textDecoration = "line-through";
+                oldRows[i].style.color = "#ef4444";
+              }
+              ops.push(`删除行 ${i}`);
+              continue;
+            }
+            if (!oldRows[i]) {
+              const tr = newTable.insertRow();
+              for (let j = 0; j < newData[i].length; j++) {
+                const td = tr.insertCell();
+                td.textContent = newData[i][j];
+                td.classList.add("diff-new");
+              }
+              ops.push(`新增行 ${i}: ${newData[i].join(", ")}`);
+              continue;
+            }
+            for (
+              let j = 0;
+              j < Math.max(oldRows[i].cells.length, newData[i].length);
+              j++
+            ) {
+              const oldVal = oldRows[i].cells[j]?.textContent;
+              const newVal = newData[i][j];
+              if (oldVal !== String(newVal)) {
+                if (oldRows[i].cells[j]) {
+                  oldRows[i].cells[j].textContent = newVal;
+                  oldRows[i].cells[j].classList.add("diff-highlight");
+                  oldRows[i].cells[j].style.background = "#fbbf2433";
+                }
+                ops.push(`更新 [${i},${j}]: ${oldVal} → ${newVal}`);
+              }
+            }
+          }
+
+          log.textContent = `[DOM Diff] 执行了 ${ops.length} 次最小更新操作: ${ops.join("; ")}`;
+        });
+      })();
+
+      // ============================================================
+      //  示例 6：列表 Diff（keyed 对比）
+      // ============================================================
+      (function () {
+        const container = document.getElementById("list-diff-container");
+        const log = document.getElementById("list-diff-log");
+        const btn = document.getElementById("list-diff-btn");
+        const names = [
+          "Alice",
+          "Bob",
+          "Charlie",
+          "David",
+          "Eve",
+          "Frank",
+          "Grace",
+        ];
+        let currentKeys = ["Alice", "Bob", "Charlie"];
+
+        function renderList(keys, ops) {
+          container.innerHTML = "";
+          keys.forEach(function (key) {
+            const span = document.createElement("span");
+            span.style.cssText =
+              "display:inline-block;padding:6px 14px;background:#334155;border-radius:4px;margin:4px;";
+            span.textContent = key;
+            container.appendChild(span);
+          });
+          log.textContent = `[Keyed Diff] 操作: ${ops.join(" → ")}`;
         }
-      }
-    }
 
-    log.textContent = `[DOM Diff] 执行了 ${ops.length} 次最小更新操作: ${ops.join('; ')}`;
-  });
-})();
+        btn.addEventListener("click", function () {
+          const ops = [];
+          const newKeys = [];
+          const used = new Set();
 
-// ============================================================
-//  示例 6：列表 Diff（keyed 对比）
-// ============================================================
-(function() {
-  const container = document.getElementById('list-diff-container');
-  const log = document.getElementById('list-diff-log');
-  const btn = document.getElementById('list-diff-btn');
-  const names = ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace'];
-  let currentKeys = ['Alice', 'Bob', 'Charlie'];
+          // 随机保留、删除、新增
+          currentKeys.forEach(function (k) {
+            if (Math.random() > 0.4) {
+              newKeys.push(k);
+              used.add(k);
+            } else ops.push(`删除 ${k}`);
+          });
 
-  function renderList(keys, ops) {
-    container.innerHTML = '';
-    keys.forEach(function(key) {
-      const span = document.createElement('span');
-      span.style.cssText = 'display:inline-block;padding:6px 14px;background:#334155;border-radius:4px;margin:4px;';
-      span.textContent = key;
-      container.appendChild(span);
-    });
-    log.textContent = `[Keyed Diff] 操作: ${ops.join(' → ')}`;
-  }
+          const remaining = names.filter(function (n) {
+            return !used.has(n);
+          });
+          const toAdd = remaining
+            .sort(function () {
+              return Math.random() - 0.5;
+            })
+            .slice(0, 2);
+          toAdd.forEach(function (k) {
+            newKeys.push(k);
+            ops.push(`新增 ${k}`);
+          });
 
-  btn.addEventListener('click', function() {
-    const ops = [];
-    const newKeys = [];
-    const used = new Set();
+          // 随机打乱顺序
+          if (Math.random() > 0.5) {
+            newKeys.sort(function () {
+              return Math.random() - 0.5;
+            });
+            ops.push("重新排序");
+          }
 
-    // 随机保留、删除、新增
-    currentKeys.forEach(function(k) {
-      if (Math.random() > 0.4) { newKeys.push(k); used.add(k); }
-      else ops.push(`删除 ${k}`);
-    });
+          currentKeys = newKeys;
+          renderList(currentKeys, ops);
+        });
 
-    const remaining = names.filter(function(n) { return !used.has(n); });
-    const toAdd = remaining.sort(function() { return Math.random() - 0.5; }).slice(0, 2);
-    toAdd.forEach(function(k) { newKeys.push(k); ops.push(`新增 ${k}`); });
+        renderList(currentKeys, ["初始渲染"]);
+      })();
 
-    // 随机打乱顺序
-    if (Math.random() > 0.5) {
-      newKeys.sort(function() { return Math.random() - 0.5; });
-      ops.push('重新排序');
-    }
+      // ============================================================
+      //  示例 7：Patch 函数实现
+      // ============================================================
+      (function () {
+        const btn = document.getElementById("patch-btn");
+        const target = document.getElementById("patch-target");
+        const log = document.getElementById("patch-log");
+        const ops = [];
 
-    currentKeys = newKeys;
-    renderList(currentKeys, ops);
-  });
-
-  renderList(currentKeys, ['初始渲染']);
-})();
-
-// ============================================================
-//  示例 7：Patch 函数实现
-// ============================================================
-(function() {
-  const btn = document.getElementById('patch-btn');
-  const target = document.getElementById('patch-target');
-  const log = document.getElementById('patch-log');
-  const ops = [];
-
-  function h(tag, props, children) {
-    return { tag, props: props || {}, children: children || [] };
-  }
-
-  function createElement(vnode) {
-    const el = document.createElement(vnode.tag);
-    Object.keys(vnode.props).forEach(function(key) {
-      if (key === 'textContent') { el.textContent = vnode.props[key]; }
-      else if (key === 'className') { el.className = vnode.props[key]; }
-      else { el.setAttribute(key, vnode.props[key]); }
-    });
-    vnode.children.forEach(function(child) {
-      el.appendChild(typeof child === 'string' ? document.createTextNode(child) : createElement(child));
-    });
-    ops.push(`createElement <${vnode.tag}>`);
-    return el;
-  }
-
-  function patch(oldEl, newVnode) {
-    if (!oldEl) return createElement(newVnode);
-    if (!newVnode) { ops.push(`removeNode`); oldEl.remove(); return null; }
-    if (typeof newVnode === 'string') {
-      if (oldEl.textContent !== newVnode) { oldEl.textContent = newVnode; ops.push(`updateText: "${newVnode}"`); }
-      return oldEl;
-    }
-    if (oldEl.tagName.toLowerCase() !== newVnode.tag) {
-      const newEl = createElement(newVnode);
-      oldEl.replaceWith(newEl);
-      ops.push(`replaceNode: <${oldEl.tagName}> → <${newVnode.tag}>`);
-      return newEl;
-    }
-    // 更新属性
-    const allKeys = new Set([...Object.keys(newVnode.props), ...Array.from(oldEl.attributes).map(a => a.name)]);
-    allKeys.forEach(function(key) {
-      if (newVnode.props[key] !== oldEl.getAttribute(key) && key !== 'textContent') {
-        if (newVnode.props[key]) oldEl.setAttribute(key, newVnode.props[key]);
-        else oldEl.removeAttribute(key);
-        ops.push(`updateAttr ${key}="${newVnode.props[key] || ''}"`);
-      }
-    });
-    // 递归 children
-    const oldChildren = Array.from(oldEl.childNodes);
-    const maxLen = Math.max(oldChildren.length, newVnode.children.length);
-    for (let i = 0; i < maxLen; i++) {
-      const oldChild = oldChildren[i];
-      const newChild = newVnode.children[i];
-      if (!oldChild) {
-        oldEl.appendChild(typeof newChild === 'string' ? document.createTextNode(newChild) : createElement(newChild));
-        ops.push(`appendChild <${typeof newChild === 'string' ? '#text' : newChild.tag}>`);
-      } else if (!newChild) {
-        oldChild.remove();
-        ops.push(`removeChild #${i}`);
-      } else {
-        patch(oldChild, newChild);
-      }
-    }
-    return oldEl;
-  }
-
-  let currentEl = null;
-  btn.addEventListener('click', function() {
-    ops.length = 0;
-    const newVNode = h('div', { className: 'patched' }, [
-      h('h3', { textContent: '' }, ['🎉 Patched!']),
-      h('p', { textContent: '' }, ['属性已更新，子节点已合并']),
-      h('span', { style: 'color:#22c55e' }, ['新增的 span'])
-    ]);
-    currentEl = patch(currentEl, newVNode);
-    if (btn.parentElement.contains(target) && !target.firstChild) {
-      target.appendChild(currentEl);
-    }
-    log.textContent = `[Patch] ${ops.length} 次操作: ${ops.join(' → ')}`;
-  });
-})();
-
-// ============================================================
-//  示例 8：双端 Diff（Double-end Diff）
-// ============================================================
-(function() {
-  const btn = document.getElementById('double-end-btn');
-  const log = document.getElementById('double-end-log');
-
-  btn.addEventListener('click', function() {
-    const oldList = ['A', 'B', 'C', 'D', 'E'];
-    const newList = ['B', 'A', 'D', 'E', 'C', 'F'];
-    const steps = [];
-
-    let oldStart = 0, oldEnd = oldList.length - 1;
-    let newStart = 0, newEnd = newList.length - 1;
-
-    while (oldStart <= oldEnd && newStart <= newEnd) {
-      if (oldList[oldStart] === newList[newStart]) {
-        steps.push(`首-首匹配: "${oldList[oldStart]}" → oldStart++, newStart++`);
-        oldStart++; newStart++;
-      } else if (oldList[oldEnd] === newList[newEnd]) {
-        steps.push(`尾-尾匹配: "${oldList[oldEnd]}" → oldEnd--, newEnd--`);
-        oldEnd--; newEnd--;
-      } else if (oldList[oldStart] === newList[newEnd]) {
-        steps.push(`首-尾匹配: "${oldList[oldStart]}" 移到末尾 → oldStart++, newEnd--`);
-        oldStart++; newEnd--;
-      } else if (oldList[oldEnd] === newList[newStart]) {
-        steps.push(`尾-首匹配: "${oldList[oldEnd]}" 移到开头 → oldEnd--, newStart++`);
-        oldEnd--; newStart++;
-      } else {
-        // 在旧列表中查找 newStart 对应项
-        const idx = oldList.indexOf(newList[newStart], oldStart);
-        if (idx > 0 && idx <= oldEnd) {
-          steps.push(`交叉匹配: "${newList[newStart]}" 在旧列表位置 ${idx} → 移动到开头`);
-        } else {
-          steps.push(`新增: "${newList[newStart]}" → newStart++`);
+        function h(tag, props, children) {
+          return { tag, props: props || {}, children: children || [] };
         }
-        newStart++;
-      }
-    }
 
-    while (newStart <= newEnd) {
-      steps.push(`新增尾部: "${newList[newEnd]}"`);
-      newEnd--;
-    }
-    while (oldStart <= oldEnd) {
-      steps.push(`删除尾部: "${oldList[oldEnd]}"`);
-      oldEnd--;
-    }
+        function createElement(vnode) {
+          const el = document.createElement(vnode.tag);
+          Object.keys(vnode.props).forEach(function (key) {
+            if (key === "textContent") {
+              el.textContent = vnode.props[key];
+            } else if (key === "className") {
+              el.className = vnode.props[key];
+            } else {
+              el.setAttribute(key, vnode.props[key]);
+            }
+          });
+          vnode.children.forEach(function (child) {
+            el.appendChild(
+              typeof child === "string"
+                ? document.createTextNode(child)
+                : createElement(child),
+            );
+          });
+          ops.push(`createElement <${vnode.tag}>`);
+          return el;
+        }
 
-    log.textContent = `[双端 Diff] 旧: [${oldList}] → 新: [${newList}]\n步骤:\n${steps.join('\n')}`;
-  });
-})();
+        function patch(oldEl, newVnode) {
+          if (!oldEl) return createElement(newVnode);
+          if (!newVnode) {
+            ops.push(`removeNode`);
+            oldEl.remove();
+            return null;
+          }
+          if (typeof newVnode === "string") {
+            if (oldEl.textContent !== newVnode) {
+              oldEl.textContent = newVnode;
+              ops.push(`updateText: "${newVnode}"`);
+            }
+            return oldEl;
+          }
+          if (oldEl.tagName.toLowerCase() !== newVnode.tag) {
+            const newEl = createElement(newVnode);
+            oldEl.replaceWith(newEl);
+            ops.push(`replaceNode: <${oldEl.tagName}> → <${newVnode.tag}>`);
+            return newEl;
+          }
+          // 更新属性
+          const allKeys = new Set([
+            ...Object.keys(newVnode.props),
+            ...Array.from(oldEl.attributes).map((a) => a.name),
+          ]);
+          allKeys.forEach(function (key) {
+            if (
+              newVnode.props[key] !== oldEl.getAttribute(key) &&
+              key !== "textContent"
+            ) {
+              if (newVnode.props[key])
+                oldEl.setAttribute(key, newVnode.props[key]);
+              else oldEl.removeAttribute(key);
+              ops.push(`updateAttr ${key}="${newVnode.props[key] || ""}"`);
+            }
+          });
+          // 递归 children
+          const oldChildren = Array.from(oldEl.childNodes);
+          const maxLen = Math.max(oldChildren.length, newVnode.children.length);
+          for (let i = 0; i < maxLen; i++) {
+            const oldChild = oldChildren[i];
+            const newChild = newVnode.children[i];
+            if (!oldChild) {
+              oldEl.appendChild(
+                typeof newChild === "string"
+                  ? document.createTextNode(newChild)
+                  : createElement(newChild),
+              );
+              ops.push(
+                `appendChild <${typeof newChild === "string" ? "#text" : newChild.tag}>`,
+              );
+            } else if (!newChild) {
+              oldChild.remove();
+              ops.push(`removeChild #${i}`);
+            } else {
+              patch(oldChild, newChild);
+            }
+          }
+          return oldEl;
+        }
 
-// ============================================================
-//  示例 9：DocumentFragment 批量插入
-// ============================================================
-(function() {
-  const fragLog = document.getElementById('frag-log');
-  const fragList = document.getElementById('frag-list');
+        let currentEl = null;
+        btn.addEventListener("click", function () {
+          ops.length = 0;
+          const newVNode = h("div", { className: "patched" }, [
+            h("h3", { textContent: "" }, ["🎉 Patched!"]),
+            h("p", { textContent: "" }, ["属性已更新，子节点已合并"]),
+            h("span", { style: "color:#22c55e" }, ["新增的 span"]),
+          ]);
+          currentEl = patch(currentEl, newVNode);
+          if (btn.parentElement.contains(target) && !target.firstChild) {
+            target.appendChild(currentEl);
+          }
+          log.textContent = `[Patch] ${ops.length} 次操作: ${ops.join(" → ")}`;
+        });
+      })();
 
-  document.getElementById('frag-insert-btn').addEventListener('click', function() {
-    fragList.innerHTML = '';
-    const start = performance.now();
-    const frag = document.createDocumentFragment();
-    for (let i = 0; i < 1000; i++) {
-      const li = document.createElement('li');
-      li.textContent = `Fragment 项 #${i + 1}`;
-      li.style.cssText = 'padding:4px;border-bottom:1px solid #334155;font-size:12px;';
-      frag.appendChild(li);
-    }
-    fragList.appendChild(frag);
-    const elapsed = (performance.now() - start).toFixed(2);
-    fragLog.textContent += `\n✅ DocumentFragment: 1000 条耗时 ${elapsed}ms (仅 1 次重排)`;
-  });
+      // ============================================================
+      //  示例 8：双端 Diff（Double-end Diff）
+      // ============================================================
+      (function () {
+        const btn = document.getElementById("double-end-btn");
+        const log = document.getElementById("double-end-log");
 
-  document.getElementById('direct-insert-btn').addEventListener('click', function() {
-    fragList.innerHTML = '';
-    const start = performance.now();
-    for (let i = 0; i < 1000; i++) {
-      const li = document.createElement('li');
-      li.textContent = `直接项 #${i + 1}`;
-      li.style.cssText = 'padding:4px;border-bottom:1px solid #334155;font-size:12px;';
-      fragList.appendChild(li); // 每次触发重排
-    }
-    const elapsed = (performance.now() - start).toFixed(2);
-    fragLog.textContent += `\n❌ 直接插入: 1000 条耗时 ${elapsed}ms (1000 次重排)`;
-  });
-})();
+        btn.addEventListener("click", function () {
+          const oldList = ["A", "B", "C", "D", "E"];
+          const newList = ["B", "A", "D", "E", "C", "F"];
+          const steps = [];
 
-// ============================================================
-//  示例 10：requestAnimationFrame 动画
-// ============================================================
-(function() {
-  const box = document.getElementById('raf-box');
-  const log = document.getElementById('raf-log');
-  let rafId = null;
-  let pos = 0;
-  let dir = 1;
-  let lastFrame = performance.now();
-  let frames = 0;
-  let fps = 0;
-  let fpsTimer = 0;
+          let oldStart = 0,
+            oldEnd = oldList.length - 1;
+          let newStart = 0,
+            newEnd = newList.length - 1;
 
-  function animate(now) {
-    // FPS 计算
-    frames++;
-    fpsTimer += now - lastFrame;
-    if (fpsTimer >= 1000) { fps = frames; frames = 0; fpsTimer = 0; }
-    lastFrame = now;
+          while (oldStart <= oldEnd && newStart <= newEnd) {
+            if (oldList[oldStart] === newList[newStart]) {
+              steps.push(
+                `首-首匹配: "${oldList[oldStart]}" → oldStart++, newStart++`,
+              );
+              oldStart++;
+              newStart++;
+            } else if (oldList[oldEnd] === newList[newEnd]) {
+              steps.push(
+                `尾-尾匹配: "${oldList[oldEnd]}" → oldEnd--, newEnd--`,
+              );
+              oldEnd--;
+              newEnd--;
+            } else if (oldList[oldStart] === newList[newEnd]) {
+              steps.push(
+                `首-尾匹配: "${oldList[oldStart]}" 移到末尾 → oldStart++, newEnd--`,
+              );
+              oldStart++;
+              newEnd--;
+            } else if (oldList[oldEnd] === newList[newStart]) {
+              steps.push(
+                `尾-首匹配: "${oldList[oldEnd]}" 移到开头 → oldEnd--, newStart++`,
+              );
+              oldEnd--;
+              newStart++;
+            } else {
+              // 在旧列表中查找 newStart 对应项
+              const idx = oldList.indexOf(newList[newStart], oldStart);
+              if (idx > 0 && idx <= oldEnd) {
+                steps.push(
+                  `交叉匹配: "${newList[newStart]}" 在旧列表位置 ${idx} → 移动到开头`,
+                );
+              } else {
+                steps.push(`新增: "${newList[newStart]}" → newStart++`);
+              }
+              newStart++;
+            }
+          }
 
-    pos += dir * 3;
-    if (pos >= 300 || pos <= 0) dir *= -1;
-    box.style.transform = `translateX(${pos}px)`;
-    log.textContent = `FPS: ${fps} | 位置: ${pos}px | 使用 requestAnimationFrame 保证 60fps 流畅动画`;
-    rafId = requestAnimationFrame(animate);
-  }
+          while (newStart <= newEnd) {
+            steps.push(`新增尾部: "${newList[newEnd]}"`);
+            newEnd--;
+          }
+          while (oldStart <= oldEnd) {
+            steps.push(`删除尾部: "${oldList[oldEnd]}"`);
+            oldEnd--;
+          }
 
-  document.getElementById('raf-start').addEventListener('click', function() {
-    if (!rafId) rafId = requestAnimationFrame(animate);
-  });
-  document.getElementById('raf-stop').addEventListener('click', function() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-  });
-})();
+          log.textContent = `[双端 Diff] 旧: [${oldList}] → 新: [${newList}]\n步骤:\n${steps.join("\n")}`;
+        });
+      })();
 
-// ============================================================
-//  示例 11：虚拟滚动
-// ============================================================
-(function() {
-  const TOTAL = 100000;
-  const ITEM_H = 40;
-  const container = document.getElementById('virtual-container');
-  const phantom = document.getElementById('virtual-phantom');
-  const window = document.getElementById('virtual-window');
-  const log = document.getElementById('virtual-log');
+      // ============================================================
+      //  示例 9：DocumentFragment 批量插入
+      // ============================================================
+      (function () {
+        const fragLog = document.getElementById("frag-log");
+        const fragList = document.getElementById("frag-list");
 
-  phantom.style.height = TOTAL * ITEM_H + 'px';
+        document
+          .getElementById("frag-insert-btn")
+          .addEventListener("click", function () {
+            fragList.innerHTML = "";
+            const start = performance.now();
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < 1000; i++) {
+              const li = document.createElement("li");
+              li.textContent = `Fragment 项 #${i + 1}`;
+              li.style.cssText =
+                "padding:4px;border-bottom:1px solid #334155;font-size:12px;";
+              frag.appendChild(li);
+            }
+            fragList.appendChild(frag);
+            const elapsed = (performance.now() - start).toFixed(2);
+            fragLog.textContent += `\n✅ DocumentFragment: 1000 条耗时 ${elapsed}ms (仅 1 次重排)`;
+          });
 
-  function render() {
-    const scrollTop = container.scrollTop;
-    const containerH = container.clientHeight;
-    const startIdx = Math.floor(scrollTop / ITEM_H);
-    const count = Math.ceil(containerH / ITEM_H) + 2; // 多渲染 2 条缓冲
-    const offsetTop = startIdx * ITEM_H;
+        document
+          .getElementById("direct-insert-btn")
+          .addEventListener("click", function () {
+            fragList.innerHTML = "";
+            const start = performance.now();
+            for (let i = 0; i < 1000; i++) {
+              const li = document.createElement("li");
+              li.textContent = `直接项 #${i + 1}`;
+              li.style.cssText =
+                "padding:4px;border-bottom:1px solid #334155;font-size:12px;";
+              fragList.appendChild(li); // 每次触发重排
+            }
+            const elapsed = (performance.now() - start).toFixed(2);
+            fragLog.textContent += `\n❌ 直接插入: 1000 条耗时 ${elapsed}ms (1000 次重排)`;
+          });
+      })();
 
-    window.style.transform = `translateY(${offsetTop}px)`;
-    window.innerHTML = '';
+      // ============================================================
+      //  示例 10：requestAnimationFrame 动画
+      // ============================================================
+      (function () {
+        const box = document.getElementById("raf-box");
+        const log = document.getElementById("raf-log");
+        let rafId = null;
+        let pos = 0;
+        let dir = 1;
+        let lastFrame = performance.now();
+        let frames = 0;
+        let fps = 0;
+        let fpsTimer = 0;
 
-    for (let i = startIdx; i < startIdx + count && i < TOTAL; i++) {
-      const div = document.createElement('div');
-      div.className = 'virtual-item';
-      div.textContent = `#${i.toLocaleString()} — 虚拟滚动项`;
-      div.style.height = ITEM_H + 'px';
-      window.appendChild(div);
-    }
+        function animate(now) {
+          // FPS 计算
+          frames++;
+          fpsTimer += now - lastFrame;
+          if (fpsTimer >= 1000) {
+            fps = frames;
+            frames = 0;
+            fpsTimer = 0;
+          }
+          lastFrame = now;
 
-    log.textContent = `总数据: ${TOTAL.toLocaleString()} 条 | 渲染: ${count} 条 | 可视范围: #${startIdx.toLocaleString()} ~ #${(startIdx + count - 1).toLocaleString()}`;
-  }
+          pos += dir * 3;
+          if (pos >= 300 || pos <= 0) dir *= -1;
+          box.style.transform = `translateX(${pos}px)`;
+          log.textContent = `FPS: ${fps} | 位置: ${pos}px | 使用 requestAnimationFrame 保证 60fps 流畅动画`;
+          rafId = requestAnimationFrame(animate);
+        }
 
-  container.addEventListener('scroll', render);
-  render();
-})();
+        document
+          .getElementById("raf-start")
+          .addEventListener("click", function () {
+            if (!rafId) rafId = requestAnimationFrame(animate);
+          });
+        document
+          .getElementById("raf-stop")
+          .addEventListener("click", function () {
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = null;
+            }
+          });
+      })();
 
-// ============================================================
-//  示例 12：防抖搜索
-// ============================================================
-(function() {
-  const input = document.getElementById('debounce-input');
-  const log = document.getElementById('debounce-log');
-  let timer = null;
-  let requestCount = 0;
+      // ============================================================
+      //  示例 11：虚拟滚动
+      // ============================================================
+      (function () {
+        const TOTAL = 100000;
+        const ITEM_H = 40;
+        const container = document.getElementById("virtual-container");
+        const phantom = document.getElementById("virtual-phantom");
+        const window = document.getElementById("virtual-window");
+        const log = document.getElementById("virtual-log");
 
-  function mockSearch(query) {
-    requestCount++;
-    log.textContent = `[防抖搜索] 第 ${requestCount} 次请求: "${query}" | 实际触发（500ms 无输入后）`;
-  }
+        phantom.style.height = TOTAL * ITEM_H + "px";
 
-  input.addEventListener('input', function() {
-    const val = input.value;
-    log.textContent = `[防抖搜索] 输入中: "${val}"… 等待 500ms 无输入后触发`;
-    clearTimeout(timer);
-    timer = setTimeout(function() {
-      mockSearch(val);
-    }, 500);
-  });
-})();
+        function render() {
+          const scrollTop = container.scrollTop;
+          const containerH = container.clientHeight;
+          const startIdx = Math.floor(scrollTop / ITEM_H);
+          const count = Math.ceil(containerH / ITEM_H) + 2; // 多渲染 2 条缓冲
+          const offsetTop = startIdx * ITEM_H;
 
-// ============================================================
-//  示例 13：IntersectionObserver 懒加载
-// ============================================================
-(function() {
-  const log = document.getElementById('observer-log');
-  const boxes = document.querySelectorAll('.observer-box');
-  let triggerCount = 0;
+          window.style.transform = `translateY(${offsetTop}px)`;
+          window.innerHTML = "";
 
-  const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        triggerCount++;
-        entry.target.classList.add('visible');
-        entry.target.textContent = `✅ 已加载! (${entry.target.dataset.observed})`;
-        log.textContent = `[IntersectionObserver] 触发 #${triggerCount}: 元素进入视口 | 比 scroll 事件高效 10x+`;
-        observer.unobserve(entry.target); // 只触发一次
-      }
-    });
-  }, { root: document.getElementById('scroll-target'), threshold: 0.5 });
+          for (let i = startIdx; i < startIdx + count && i < TOTAL; i++) {
+            const div = document.createElement("div");
+            div.className = "virtual-item";
+            div.textContent = `#${i.toLocaleString()} — 虚拟滚动项`;
+            div.style.height = ITEM_H + "px";
+            window.appendChild(div);
+          }
 
-  boxes.forEach(function(box) { observer.observe(box); });
-})();
+          log.textContent = `总数据: ${TOTAL.toLocaleString()} 条 | 渲染: ${count} 条 | 可视范围: #${startIdx.toLocaleString()} ~ #${(startIdx + count - 1).toLocaleString()}`;
+        }
 
-// ============================================================
-//  示例 14：CSS containment
-// ============================================================
-(function() {
-  const btn = document.getElementById('contain-btn');
-  const area = document.getElementById('contain-area');
-  const log = document.getElementById('contain-log');
-  let toggled = false;
+        container.addEventListener("scroll", render);
+        render();
+      })();
 
-  btn.addEventListener('click', function() {
-    toggled = !toggled;
-    if (toggled) {
-      area.innerHTML = '<h3 style="color:#38bdf8;">内容已大幅改变！</h3><p style="color:#94a3b8;">字体变大、行高改变、padding 增加 — 但因为 contain: layout size，这些变化被隔离在此区域内，不会引起外部布局重排。</p>';
-      area.style.padding = '24px';
-    } else {
-      area.innerHTML = '这个区域使用了 <code style="color:#38bdf8;">contain: layout size</code>，修改它不会影响外部布局';
-      area.style.padding = '12px';
-    }
-    log.textContent = `[CSS Containment] 内容已${toggled ? '展开' : '收缩'} | contain 属性告诉浏览器：此区域布局变化不影响外部`;
-  });
-})();
+      // ============================================================
+      //  示例 12：防抖搜索
+      // ============================================================
+      (function () {
+        const input = document.getElementById("debounce-input");
+        const log = document.getElementById("debounce-log");
+        let timer = null;
+        let requestCount = 0;
 
-// ============================================================
-//  示例 15：避免 Layout Thrashing
-// ============================================================
-(function() {
-  const boxesContainer = document.getElementById('thrash-boxes');
-  const log = document.getElementById('thrash-log');
+        function mockSearch(query) {
+          requestCount++;
+          log.textContent = `[防抖搜索] 第 ${requestCount} 次请求: "${query}" | 实际触发（500ms 无输入后）`;
+        }
 
-  // 创建 20 个盒子
-  for (let i = 0; i < 20; i++) {
-    const div = document.createElement('div');
-    div.style.cssText = 'width:40px;height:40px;background:#334155;border-radius:4px;';
-    boxesContainer.appendChild(div);
-  }
+        input.addEventListener("input", function () {
+          const val = input.value;
+          log.textContent = `[防抖搜索] 输入中: "${val}"… 等待 500ms 无输入后触发`;
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            mockSearch(val);
+          }, 500);
+        });
+      })();
 
-  document.getElementById('thrash-bad').addEventListener('click', function() {
-    const boxes = boxesContainer.children;
-    const start = performance.now();
-    // ❌ 读写交替 — 每次读 offsetHeight 都会触发强制同步布局
-    for (let i = 0; i < boxes.length; i++) {
-      const h = boxes[i].offsetHeight; // 读
-      boxes[i].style.width = h + 10 + 'px'; // 写 → 强制重排
-    }
-    const elapsed = (performance.now() - start).toFixed(2);
-    log.textContent = `❌ Layout Thrashing: ${boxes.length} 次读写交替, 耗时 ${elapsed}ms (触发 ${boxes.length} 次强制重排)`;
-  });
+      // ============================================================
+      //  示例 13：IntersectionObserver 懒加载
+      // ============================================================
+      (function () {
+        const log = document.getElementById("observer-log");
+        const boxes = document.querySelectorAll(".observer-box");
+        let triggerCount = 0;
 
-  document.getElementById('thrash-good').addEventListener('click', function() {
-    const boxes = boxesContainer.children;
-    const start = performance.now();
-    // ✅ 先批量读
-    const heights = [];
-    for (let i = 0; i < boxes.length; i++) {
-      heights.push(boxes[i].offsetHeight);
-    }
-    // 再批量写
-    for (let i = 0; i < boxes.length; i++) {
-      boxes[i].style.width = heights[i] + 10 + 'px';
-    }
-    const elapsed = (performance.now() - start).toFixed(2);
-    log.textContent = `✅ Batched: 先读后写, 耗时 ${elapsed}ms (仅 1 次重排)`;
-  });
-})();
-</script>
-</body>
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                triggerCount++;
+                entry.target.classList.add("visible");
+                entry.target.textContent = `✅ 已加载! (${entry.target.dataset.observed})`;
+                log.textContent = `[IntersectionObserver] 触发 #${triggerCount}: 元素进入视口 | 比 scroll 事件高效 10x+`;
+                observer.unobserve(entry.target); // 只触发一次
+              }
+            });
+          },
+          { root: document.getElementById("scroll-target"), threshold: 0.5 },
+        );
+
+        boxes.forEach(function (box) {
+          observer.observe(box);
+        });
+      })();
+
+      // ============================================================
+      //  示例 14：CSS containment
+      // ============================================================
+      (function () {
+        const btn = document.getElementById("contain-btn");
+        const area = document.getElementById("contain-area");
+        const log = document.getElementById("contain-log");
+        let toggled = false;
+
+        btn.addEventListener("click", function () {
+          toggled = !toggled;
+          if (toggled) {
+            area.innerHTML =
+              '<h3 style="color:#38bdf8;">内容已大幅改变！</h3><p style="color:#94a3b8;">字体变大、行高改变、padding 增加 — 但因为 contain: layout size，这些变化被隔离在此区域内，不会引起外部布局重排。</p>';
+            area.style.padding = "24px";
+          } else {
+            area.innerHTML =
+              '这个区域使用了 <code style="color:#38bdf8;">contain: layout size</code>，修改它不会影响外部布局';
+            area.style.padding = "12px";
+          }
+          log.textContent = `[CSS Containment] 内容已${toggled ? "展开" : "收缩"} | contain 属性告诉浏览器：此区域布局变化不影响外部`;
+        });
+      })();
+
+      // ============================================================
+      //  示例 15：避免 Layout Thrashing
+      // ============================================================
+      (function () {
+        const boxesContainer = document.getElementById("thrash-boxes");
+        const log = document.getElementById("thrash-log");
+
+        // 创建 20 个盒子
+        for (let i = 0; i < 20; i++) {
+          const div = document.createElement("div");
+          div.style.cssText =
+            "width:40px;height:40px;background:#334155;border-radius:4px;";
+          boxesContainer.appendChild(div);
+        }
+
+        document
+          .getElementById("thrash-bad")
+          .addEventListener("click", function () {
+            const boxes = boxesContainer.children;
+            const start = performance.now();
+            // ❌ 读写交替 — 每次读 offsetHeight 都会触发强制同步布局
+            for (let i = 0; i < boxes.length; i++) {
+              const h = boxes[i].offsetHeight; // 读
+              boxes[i].style.width = h + 10 + "px"; // 写 → 强制重排
+            }
+            const elapsed = (performance.now() - start).toFixed(2);
+            log.textContent = `❌ Layout Thrashing: ${boxes.length} 次读写交替, 耗时 ${elapsed}ms (触发 ${boxes.length} 次强制重排)`;
+          });
+
+        document
+          .getElementById("thrash-good")
+          .addEventListener("click", function () {
+            const boxes = boxesContainer.children;
+            const start = performance.now();
+            // ✅ 先批量读
+            const heights = [];
+            for (let i = 0; i < boxes.length; i++) {
+              heights.push(boxes[i].offsetHeight);
+            }
+            // 再批量写
+            for (let i = 0; i < boxes.length; i++) {
+              boxes[i].style.width = heights[i] + 10 + "px";
+            }
+            const elapsed = (performance.now() - start).toFixed(2);
+            log.textContent = `✅ Batched: 先读后写, 耗时 ${elapsed}ms (仅 1 次重排)`;
+          });
+      })();
+    </script>
+  </body>
 </html>

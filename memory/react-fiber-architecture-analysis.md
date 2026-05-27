@@ -67,6 +67,7 @@ Fiber 树：   每个节点只有 child（第一个子）+ sibling（下一个�
 ```
 
 **为什么用单链表？**
+
 - 内存更紧凑：3 个指针 vs 数组
 - 遍历简单：while (node = node.sibling) 即可
 - 方便中断/恢复：只需保存当前节点和上下文
@@ -89,7 +90,7 @@ workInProgress tree（正在构建的新树）
 export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
   // 1. 尝试复用 alternate（已存在的 WIP 节点）
   let workInProgress = current.alternate;
-  
+
   if (workInProgress === null) {
     // 2. 首次创建：从 current 复制所有字段
     workInProgress = createFiber(current.tag, pendingProps, current.key, current.mode);
@@ -123,6 +124,7 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
 ```
 
 **核心要点：**
+
 - `stateNode` 是共享的（class 实例 / DOM 节点），不会重新创建
 - 每次 commit 后，root 的 `current` 指针切换到 WIP 树
 - 旧树变成新的 alternate，等待下次复用
@@ -195,7 +197,12 @@ reconcileChildFibers(returnFiber, oldFiber, newChild, lanes)
 这是 React diff 的**灵魂**，分三阶段：
 
 ```javascript
-function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lanes) {
+function reconcileChildrenArray(
+  returnFiber,
+  currentFirstChild,
+  newChildren,
+  lanes,
+) {
   let resultingFirstChild = null;
   let previousNewFiber = null;
   let oldFiber = currentFirstChild;
@@ -206,8 +213,13 @@ function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lan
   // 第一阶段：同索引位置对比（快速路径）
   // ═══════════════════════════════════════════════════
   for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
-    const newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx], lanes);
-    
+    const newFiber = updateSlot(
+      returnFiber,
+      oldFiber,
+      newChildren[newIdx],
+      lanes,
+    );
+
     if (newFiber === null) {
       // 无法复用 → 跳出快速路径
       if (oldFiber === null) oldFiber = nextOldFiber;
@@ -254,10 +266,16 @@ function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lan
   // ═══════════════════════════════════════════════════
   // 第四阶段：慢速路径——构建 Map 查找复用
   // ═══════════════════════════════════════════════════
-  const existingChildren = mapRemainingChildren(oldFiber);  // key → Fiber Map
+  const existingChildren = mapRemainingChildren(oldFiber); // key → Fiber Map
 
   for (; newIdx < newChildren.length; newIdx++) {
-    const newFiber = updateFromMap(existingChildren, returnFiber, newIdx, newChildren[newIdx], lanes);
+    const newFiber = updateFromMap(
+      existingChildren,
+      returnFiber,
+      newIdx,
+      newChildren[newIdx],
+      lanes,
+    );
     if (newFiber !== null) {
       // 从 Map 中移除已复用的
       existingChildren.delete(newFiber.key ?? newIdx);
@@ -267,21 +285,21 @@ function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lan
   }
 
   // Map 中剩余的 = 需要删除的
-  existingChildren.forEach(child => deleteChild(returnFiber, child));
+  existingChildren.forEach((child) => deleteChild(returnFiber, child));
   return resultingFirstChild;
 }
 ```
 
 **算法复杂度分析：**
 
-| 场景 | 时间复杂度 | 说明 |
-|------|-----------|------|
-| 无变化（同索引同 type） | O(n) | 第一阶段全部命中 |
-| 末尾新增 | O(n) | 第一+二阶段 |
-| 开头新增 | O(n) | 第一+三阶段 |
-| 中间插入 | O(n) | 第一+三阶段 |
-| 顺序打乱 | O(n) | 需要 Map，但每个节点只遍历一次 |
-| 大量删除 | O(n) | Map + 遍历删除 |
+| 场景                    | 时间复杂度 | 说明                           |
+| ----------------------- | ---------- | ------------------------------ |
+| 无变化（同索引同 type） | O(n)       | 第一阶段全部命中               |
+| 末尾新增                | O(n)       | 第一+二阶段                    |
+| 开头新增                | O(n)       | 第一+三阶段                    |
+| 中间插入                | O(n)       | 第一+三阶段                    |
+| 顺序打乱                | O(n)       | 需要 Map，但每个节点只遍历一次 |
+| 大量删除                | O(n)       | Map + 遍历删除                 |
 
 **placeChild 的 Placement 判断逻辑：**
 
@@ -289,7 +307,7 @@ function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lan
 function placeChild(newFiber, lastPlacedIndex, newIndex) {
   newFiber.index = newIndex;
   const current = newFiber.alternate;
-  
+
   if (current !== null) {
     // 复用的旧节点
     const oldIndex = current.index;
@@ -383,6 +401,7 @@ function performUnitOfWork(unitOfWork: Fiber) {
 ```
 
 **shouldYield() 中断条件：**
+
 - 浏览器帧时间到了（约 5ms，vs 原来 React 15 的 50ms 全阻塞）
 - 有高优先级更新到来（如用户输入）
 - Suspense 等待数据
@@ -397,7 +416,7 @@ function beginWork(current, workInProgress, renderLanes) {
   if (current !== null) {
     const oldProps = current.memoizedProps;
     const newProps = workInProgress.pendingProps;
-    
+
     if (oldProps !== newProps || hasLegacyContextChanged()) {
       didReceiveUpdate = true;
     } else if (!includesSomeLane(renderLanes, updateLanes)) {
@@ -435,7 +454,13 @@ function beginWork(current, workInProgress, renderLanes) {
 ### 4.4 updateFunctionComponent——函数组件的渲染
 
 ```javascript
-function updateFunctionComponent(current, workInProgress, Component, nextProps, renderLanes) {
+function updateFunctionComponent(
+  current,
+  workInProgress,
+  Component,
+  nextProps,
+  renderLanes,
+) {
   // 1. 准备读取 context
   prepareToReadContext(workInProgress, renderLanes);
 
@@ -476,12 +501,12 @@ function completeWork(current, workInProgress, renderLanes) {
     case HostComponent: {
       // DOM 元素（div, span, input...）
       const type = workInProgress.type;
-      
+
       if (current === null) {
         // 首次创建 DOM
         const instance = createInstance(type, newProps, rootContainerInstance);
         workInProgress.stateNode = instance;
-        
+
         // 创建子 DOM 节点
         appendAllChildren(instance, workInProgress, false, false);
       } else {
@@ -537,8 +562,8 @@ OffscreenLane      = 0b1000000000000000000000000000000
 **Lane 的工作方式：**
 
 ```
-setState() 
-  → requestUpdateLane() 
+setState()
+  → requestUpdateLane()
   → 根据调用上下文决定优先级
     ├─ 用户点击 → SyncLane（立即执行）
     ├─ startTransition → TransitionLane（低优先级，可中断）
@@ -555,23 +580,23 @@ scheduleUpdateOnFiber(root, fiber, lane)
 
 ### 6.1 Fiber 链表 vs 传统 DOM 树
 
-| 方面 | DOM 树 | Fiber 树 |
-|------|--------|----------|
-| 结构 | 子节点数组 children[] | child + sibling 单链表 |
-| 遍历 | 递归深度优先 | 迭代 + 链表遍历（可中断） |
-| 版本 | 单一版本 | 双缓冲（current + WIP） |
-| 更新 | 同步阻塞 | 可中断、可优先级抢占 |
-| 副作用 | 直接操作 DOM | 收集 flags，commit 阶段统一执行 |
+| 方面   | DOM 树                | Fiber 树                        |
+| ------ | --------------------- | ------------------------------- |
+| 结构   | 子节点数组 children[] | child + sibling 单链表          |
+| 遍历   | 递归深度优先          | 迭代 + 链表遍历（可中断）       |
+| 版本   | 单一版本              | 双缓冲（current + WIP）         |
+| 更新   | 同步阻塞              | 可中断、可优先级抢占            |
+| 副作用 | 直接操作 DOM          | 收集 flags，commit 阶段统一执行 |
 
 ### 6.2 协调算法 vs Vue 3 diff
 
-| 方面 | React Fiber | Vue 3 |
-|------|-------------|-------|
-| 数据结构 | Fiber 链表 | VNode 数组 |
+| 方面      | React Fiber                      | Vue 3                          |
+| --------- | -------------------------------- | ------------------------------ |
+| 数据结构  | Fiber 链表                       | VNode 数组                     |
 | diff 策略 | O(n) 三路：快速路径 → 删除 → Map | O(n) 双端对比 + 最长递增子序列 |
-| 中断能力 | 可中断（时间切片） | 不可中断（同步） |
-| 优先级 | Lane 位图（31 级） | 无内置优先级 |
-| 复用策略 | alternate 双缓冲 | 直接修改 VNode |
+| 中断能力  | 可中断（时间切片）               | 不可中断（同步）               |
+| 优先级    | Lane 位图（31 级）               | 无内置优先级                   |
+| 复用策略  | alternate 双缓冲                 | 直接修改 VNode                 |
 
 ### 6.3 副作用收集机制
 
@@ -620,15 +645,15 @@ commit 阶段（同步，不可中断）：
 
 ## 九、与 Vue 3 响应式系统的对比
 
-| 方面 | React Fiber | Vue 3 响应式 |
-|------|-------------|-------------|
-| 更新触发 | 手动 setState / props 变化 | 自动 Proxy 依赖追踪 |
-| 更新粒度 | 组件级（需手动 memo 优化） | 属性级（精确到每个响应式属性） |
-| 渲染策略 | 全组件重新执行函数 | 只更新依赖变化的 DOM |
-| 并发能力 | Fiber + Lane（可中断渲染） | 无（同步渲染） |
-| 虚拟 DOM | Fiber 节点（链表） | VNode（对象） |
-| diff 算法 | O(n) 三路降级 | O(n) 双端对比 + LIS |
-| 内存模型 | 双缓冲（2 棵 Fiber 树） | 单棵树 + dep 双向链表 |
+| 方面      | React Fiber                | Vue 3 响应式                   |
+| --------- | -------------------------- | ------------------------------ |
+| 更新触发  | 手动 setState / props 变化 | 自动 Proxy 依赖追踪            |
+| 更新粒度  | 组件级（需手动 memo 优化） | 属性级（精确到每个响应式属性） |
+| 渲染策略  | 全组件重新执行函数         | 只更新依赖变化的 DOM           |
+| 并发能力  | Fiber + Lane（可中断渲染） | 无（同步渲染）                 |
+| 虚拟 DOM  | Fiber 节点（链表）         | VNode（对象）                  |
+| diff 算法 | O(n) 三路降级              | O(n) 双端对比 + LIS            |
+| 内存模型  | 双缓冲（2 棵 Fiber 树）    | 单棵树 + dep 双向链表          |
 
 ---
 

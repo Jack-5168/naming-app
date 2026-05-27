@@ -16,22 +16,25 @@
 ```js
 // === 方案 A：IntersectionObserver（现代推荐）===
 function lazyLoadImages() {
-  const imageObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        // data-src 存放真实 URL，src 放占位图
-        img.src = img.dataset.src;
-        img.classList.add('loaded');
-        observer.unobserve(img); // 加载后停止观察
-      }
-    });
-  }, {
-    rootMargin: '50px 0px', // 提前 50px 开始加载
-    threshold: 0.01
-  });
+  const imageObserver = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          // data-src 存放真实 URL，src 放占位图
+          img.src = img.dataset.src;
+          img.classList.add("loaded");
+          observer.unobserve(img); // 加载后停止观察
+        }
+      });
+    },
+    {
+      rootMargin: "50px 0px", // 提前 50px 开始加载
+      threshold: 0.01,
+    },
+  );
 
-  document.querySelectorAll('img[data-src]').forEach(img => {
+  document.querySelectorAll("img[data-src]").forEach((img) => {
     imageObserver.observe(img);
   });
 }
@@ -41,23 +44,26 @@ function lazyLoadImages() {
 
 // === 方案 C：带骨架屏 + 渐进式加载 ===
 function lazyLoadWithSkeleton(container) {
-  const imageObserver = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const wrapper = entry.target;
-        const img = document.createElement('img');
-        img.className = 'fade-in';
-        img.onload = () => {
-          wrapper.classList.remove('skeleton');
-          wrapper.appendChild(img);
-        };
-        img.src = wrapper.dataset.src;
-        obs.unobserve(wrapper);
-      }
-    });
-  }, { rootMargin: '200px' });
+  const imageObserver = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const wrapper = entry.target;
+          const img = document.createElement("img");
+          img.className = "fade-in";
+          img.onload = () => {
+            wrapper.classList.remove("skeleton");
+            wrapper.appendChild(img);
+          };
+          img.src = wrapper.dataset.src;
+          obs.unobserve(wrapper);
+        }
+      });
+    },
+    { rootMargin: "200px" },
+  );
 
-  container.querySelectorAll('.img-placeholder').forEach(el => {
+  container.querySelectorAll(".img-placeholder").forEach((el) => {
     imageObserver.observe(el);
   });
 }
@@ -72,15 +78,20 @@ function lazyLoadWithSkeleton(container) {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 img.fade-in {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-img.loaded, img.fade-in[src] {
+img.loaded,
+img.fade-in[src] {
   opacity: 1;
 }
 ```
@@ -91,21 +102,22 @@ img.loaded, img.fade-in[src] {
 // === Vue 3 路由懒加载 ===
 const routes = [
   {
-    path: '/dashboard',
+    path: "/dashboard",
     // 动态 import → 自动拆分为独立 chunk
-    component: () => import('../views/Dashboard.vue')
+    component: () => import("../views/Dashboard.vue"),
   },
   {
-    path: '/settings',
+    path: "/settings",
     // 魔法注释：强制合并到同一个 chunk
-    component: () => import(/* webpackChunkName: "admin" */ '../views/Settings.vue')
-  }
+    component: () =>
+      import(/* webpackChunkName: "admin" */ "../views/Settings.vue"),
+  },
 ];
 
 // === React 懒加载 ===
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from "react";
 
-const HeavyChart = lazy(() => import('./HeavyChart'));
+const HeavyChart = lazy(() => import("./HeavyChart"));
 
 function App() {
   return (
@@ -124,7 +136,7 @@ function LazyComponent({ loader, fallback, ...props }) {
     const el = ref.current;
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        loader().then(mod => setComponent(() => mod.default));
+        loader().then((mod) => setComponent(() => mod.default));
         observer.disconnect();
       }
     });
@@ -134,7 +146,7 @@ function LazyComponent({ loader, fallback, ...props }) {
 
   return (
     <div ref={ref}>
-      {Component ? <Component {...props} /> : (fallback || null)}
+      {Component ? <Component {...props} /> : fallback || null}
     </div>
   );
 }
@@ -142,12 +154,12 @@ function LazyComponent({ loader, fallback, ...props }) {
 
 ### 1.4 关键性能指标
 
-| 指标 | 说明 | 懒加载收益 |
-|------|------|-----------|
-| FCP (First Contentful Paint) | 首屏内容渲染时间 | ⬇️ 减少初始 HTML 体积 |
+| 指标                           | 说明             | 懒加载收益            |
+| ------------------------------ | ---------------- | --------------------- |
+| FCP (First Contentful Paint)   | 首屏内容渲染时间 | ⬇️ 减少初始 HTML 体积 |
 | LCP (Largest Contentful Paint) | 最大内容元素渲染 | ⬇️ 非首屏图片延迟加载 |
-| TTI (Time to Interactive) | 可交互时间 | ⬇️ JS chunk 按需加载 |
-| TBT (Total Blocking Time) | 总阻塞时间 | ⬇️ 减少主线程工作量 |
+| TTI (Time to Interactive)      | 可交互时间       | ⬇️ JS chunk 按需加载  |
+| TBT (Total Blocking Time)      | 总阻塞时间       | ⬇️ 减少主线程工作量   |
 
 ---
 
@@ -246,17 +258,17 @@ function debounceAdvanced(fn, delay, options = {}) {
 }
 
 // === 使用示例 ===
-const searchInput = document.getElementById('search');
+const searchInput = document.getElementById("search");
 const handleSearch = debounceAdvanced(
   (query) => {
-    console.log('搜索:', query);
+    console.log("搜索:", query);
     fetch(`/api/search?q=${encodeURIComponent(query)}`);
   },
   300,
-  { leading: false, trailing: true, maxWait: 1000 }
+  { leading: false, trailing: true, maxWait: 1000 },
 );
 
-searchInput.addEventListener('input', (e) => {
+searchInput.addEventListener("input", (e) => {
   handleSearch(e.target.value);
 });
 
@@ -336,25 +348,29 @@ function throttleAdvanced(fn, interval, options = {}) {
 
 // === 使用示例 ===
 // 滚动加载
-const handleScroll = throttleAdvanced(() => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight;
-  if (scrollTop + window.innerHeight >= docHeight - 200) {
-    loadMoreItems();
-  }
-}, 100, { leading: true, trailing: true });
+const handleScroll = throttleAdvanced(
+  () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight;
+    if (scrollTop + window.innerHeight >= docHeight - 200) {
+      loadMoreItems();
+    }
+  },
+  100,
+  { leading: true, trailing: true },
+);
 
-window.addEventListener('scroll', handleScroll);
+window.addEventListener("scroll", handleScroll);
 
 // 按钮防重复点击
-const submitBtn = document.getElementById('submit');
+const submitBtn = document.getElementById("submit");
 const handleSubmit = throttle(() => {
-  console.log('提交表单');
+  console.log("提交表单");
   submitBtn.disabled = true;
-  setTimeout(() => submitBtn.disabled = false, 2000);
+  setTimeout(() => (submitBtn.disabled = false), 2000);
 }, 1000);
 
-submitBtn.addEventListener('click', handleSubmit);
+submitBtn.addEventListener("click", handleSubmit);
 ```
 
 ### 2.4 选择指南
@@ -390,7 +406,7 @@ function badCreateUser(name) {
 }
 
 function goodCreateUser(name) {
-  const userName = name;  // ✅ 块级作用域
+  const userName = name; // ✅ 块级作用域
 }
 
 // === 泄漏 2：未清理的事件监听器 ===
@@ -398,7 +414,7 @@ class EventLeak {
   constructor(element) {
     this.element = element;
     // ❌ 组件销毁后监听器仍然存在
-    this.element.addEventListener('click', this.handleClick);
+    this.element.addEventListener("click", this.handleClick);
   }
 }
 
@@ -406,12 +422,12 @@ class EventNoLeak {
   constructor(element) {
     this.element = element;
     this.handleClick = this.handleClick.bind(this);
-    this.element.addEventListener('click', this.handleClick);
+    this.element.addEventListener("click", this.handleClick);
   }
 
   // ✅ 提供清理方法
   destroy() {
-    this.element.removeEventListener('click', this.handleClick);
+    this.element.removeEventListener("click", this.handleClick);
     this.element = null;
   }
 }
@@ -421,7 +437,7 @@ class TimerLeak {
   constructor() {
     // ❌ 组件销毁后定时器仍在运行
     this.timer = setInterval(() => {
-      console.log('tick');
+      console.log("tick");
     }, 1000);
   }
 }
@@ -430,7 +446,7 @@ class TimerNoLeak {
   constructor() {
     this.timer = setInterval(() => {
       if (this.isDestroyed) return; // 防御性检查
-      console.log('tick');
+      console.log("tick");
     }, 1000);
   }
 
@@ -443,17 +459,17 @@ class TimerNoLeak {
 
 // === 泄漏 4：闭包持有大对象 ===
 function processData() {
-  const largeData = new Array(1000000).fill('x'); // 大数组
+  const largeData = new Array(1000000).fill("x"); // 大数组
 
   return function () {
     // ❌ 闭包持有了 largeData，即使后续不需要
-    return 'result';
+    return "result";
   };
 }
 
 function processDataFixed() {
-  const largeData = new Array(1000000).fill('x');
-  const result = largeData.map(item => item.toUpperCase());
+  const largeData = new Array(1000000).fill("x");
+  const result = largeData.map((item) => item.toUpperCase());
 
   // ✅ 处理完立即释放
   largeData.length = 0;
@@ -468,7 +484,7 @@ const leakedElements = [];
 
 function badCollectElements() {
   // ❌ 即使 DOM 被移除，数组仍持有引用
-  document.querySelectorAll('.item').forEach(el => {
+  document.querySelectorAll(".item").forEach((el) => {
     leakedElements.push(el);
   });
 }
@@ -476,10 +492,10 @@ function badCollectElements() {
 function goodCollectElements() {
   // ✅ 只存储需要的数据，不存储 DOM 引用
   const items = [];
-  document.querySelectorAll('.item').forEach(el => {
+  document.querySelectorAll(".item").forEach((el) => {
     items.push({
       id: el.dataset.id,
-      text: el.textContent
+      text: el.textContent,
     });
   });
   return items;
@@ -552,16 +568,16 @@ class WeakCache {
 // === 泄漏 7：MessageChannel / Worker 未关闭 ===
 class WorkerLeak {
   constructor() {
-    this.worker = new Worker('heavy-worker.js');
+    this.worker = new Worker("heavy-worker.js");
     // ❌ 页面关闭后 Worker 仍在运行
   }
 }
 
 class WorkerNoLeak {
   constructor() {
-    this.worker = new Worker('heavy-worker.js');
+    this.worker = new Worker("heavy-worker.js");
     // ✅ 页面卸载时关闭 Worker
-    window.addEventListener('beforeunload', () => this.destroy());
+    window.addEventListener("beforeunload", () => this.destroy());
   }
 
   destroy() {
@@ -644,9 +660,7 @@ class ObjectPool {
   }
 
   acquire() {
-    return this.pool.length > 0
-      ? this.pool.pop()
-      : this.factory();
+    return this.pool.length > 0 ? this.pool.pop() : this.factory();
   }
 
   release(obj) {
@@ -658,7 +672,9 @@ class ObjectPool {
 // 使用示例：粒子系统
 const particlePool = new ObjectPool(
   () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0 }),
-  (p) => { p.x = p.y = p.vx = p.vy = p.life = 0; }
+  (p) => {
+    p.x = p.y = p.vx = p.vy = p.life = 0;
+  },
 );
 
 function spawnParticle() {
@@ -681,14 +697,14 @@ class VirtualList {
     this.visibleCount = Math.ceil(container.clientHeight / options.itemHeight);
     this.startIndex = 0;
 
-    this.contentEl = document.createElement('div');
-    this.contentEl.style.position = 'relative';
-    container.style.overflow = 'auto';
-    container.innerHTML = '';
+    this.contentEl = document.createElement("div");
+    this.contentEl.style.position = "relative";
+    container.style.overflow = "auto";
+    container.innerHTML = "";
     container.appendChild(this.contentEl);
 
     this.updateTotalHeight();
-    container.addEventListener('scroll', this.onScroll.bind(this));
+    container.addEventListener("scroll", this.onScroll.bind(this));
   }
 
   updateTotalHeight() {
@@ -704,15 +720,15 @@ class VirtualList {
   render() {
     const end = Math.min(
       this.startIndex + this.visibleCount + 1,
-      this.data.length
+      this.data.length,
     );
 
-    this.contentEl.innerHTML = '';
+    this.contentEl.innerHTML = "";
     const fragment = document.createDocumentFragment();
 
     for (let i = this.startIndex; i < end; i++) {
-      const item = document.createElement('div');
-      item.style.position = 'absolute';
+      const item = document.createElement("div");
+      item.style.position = "absolute";
       item.style.top = `${i * this.itemHeight}px`;
       item.style.height = `${this.itemHeight}px`;
       item.textContent = this.data[i];
@@ -723,8 +739,8 @@ class VirtualList {
   }
 
   destroy() {
-    this.container.removeEventListener('scroll', this.onScroll);
-    this.container.innerHTML = '';
+    this.container.removeEventListener("scroll", this.onScroll);
+    this.container.innerHTML = "";
     this.data = null;
     this.container = null;
   }
@@ -742,17 +758,17 @@ class VirtualList {
 
 // === 代码级检测 ===
 // 检查监听器数量
-console.log('Event listeners:', getEventListeners(document));
+console.log("Event listeners:", getEventListeners(document));
 
 // 检查 DOM 节点数
-console.log('DOM nodes:', document.querySelectorAll('*').length);
+console.log("DOM nodes:", document.querySelectorAll("*").length);
 
 // 检查缓存大小
 if (performance.memory) {
-  console.log('JS Heap:', {
-    used: (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2) + 'MB',
-    total: (performance.memory.totalJSHeapSize / 1024 / 1024).toFixed(2) + 'MB',
-    limit: (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2) + 'MB'
+  console.log("JS Heap:", {
+    used: (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2) + "MB",
+    total: (performance.memory.totalJSHeapSize / 1024 / 1024).toFixed(2) + "MB",
+    limit: (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2) + "MB",
   });
 }
 ```
@@ -792,23 +808,24 @@ class PerformanceList {
 
   _init() {
     // 创建 DOM 结构
-    this.scrollEl = document.createElement('div');
-    this.scrollEl.style.cssText = 'height:100%;overflow:auto;position:relative;';
+    this.scrollEl = document.createElement("div");
+    this.scrollEl.style.cssText =
+      "height:100%;overflow:auto;position:relative;";
 
-    this.contentEl = document.createElement('div');
-    this.contentEl.style.position = 'relative';
+    this.contentEl = document.createElement("div");
+    this.contentEl.style.position = "relative";
 
     this.scrollEl.appendChild(this.contentEl);
     this.container.appendChild(this.scrollEl);
 
     // 节流滚动（16ms ≈ 60fps）
     this._onScroll = this._throttle(this._handleScroll.bind(this), 16);
-    this.scrollEl.addEventListener('scroll', this._onScroll);
+    this.scrollEl.addEventListener("scroll", this._onScroll);
 
     // IntersectionObserver 懒加载图片
     this._imageObserver = new IntersectionObserver(
       this._lazyLoadImages.bind(this),
-      { rootMargin: '200px' }
+      { rootMargin: "200px" },
     );
 
     // 初始加载
@@ -820,7 +837,9 @@ class PerformanceList {
     this.loading = true;
 
     try {
-      const response = await fetch(`/api/items?page=${this.currentPage}&size=${this.pageSize}`);
+      const response = await fetch(
+        `/api/items?page=${this.currentPage}&size=${this.pageSize}`,
+      );
       const items = await response.json();
 
       if (items.length === 0) {
@@ -848,10 +867,14 @@ class PerformanceList {
     if (this.destroyed) return;
 
     const scrollTop = this.scrollEl.scrollTop;
-    this.startIndex = Math.max(0, Math.floor(scrollTop / this.itemHeight) - this.bufferSize);
+    this.startIndex = Math.max(
+      0,
+      Math.floor(scrollTop / this.itemHeight) - this.bufferSize,
+    );
     this.endIndex = Math.min(
       this.data.length,
-      Math.ceil((scrollTop + this.container.clientHeight) / this.itemHeight) + this.bufferSize
+      Math.ceil((scrollTop + this.container.clientHeight) / this.itemHeight) +
+        this.bufferSize,
     );
 
     this._renderVisibleItems();
@@ -875,12 +898,12 @@ class PerformanceList {
       fragment.appendChild(item);
     }
 
-    this.contentEl.innerHTML = '';
+    this.contentEl.innerHTML = "";
     this.contentEl.appendChild(fragment);
   }
 
   _createItemElement(item, index) {
-    const el = document.createElement('div');
+    const el = document.createElement("div");
     el.style.cssText = `
       height: ${this.itemHeight}px;
       display: flex;
@@ -903,19 +926,19 @@ class PerformanceList {
   }
 
   _lazyLoadImages(entries) {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const img = entry.target;
         img.src = img.dataset.src;
-        img.removeAttribute('data-src');
+        img.removeAttribute("data-src");
         this._imageObserver.unobserve(img);
       }
     });
   }
 
   _observeNewImages() {
-    const images = this.contentEl.querySelectorAll('img[data-src]');
-    images.forEach(img => this._imageObserver.observe(img));
+    const images = this.contentEl.querySelectorAll("img[data-src]");
+    images.forEach((img) => this._imageObserver.observe(img));
   }
 
   _updateContentHeight() {
@@ -934,11 +957,12 @@ class PerformanceList {
   }
 
   _showEmpty() {
-    this.contentEl.innerHTML = '<div style="padding:40px;text-align:center;color:#999;">没有更多数据了</div>';
+    this.contentEl.innerHTML =
+      '<div style="padding:40px;text-align:center;color:#999;">没有更多数据了</div>';
   }
 
   _showError(msg) {
-    console.error('列表加载失败:', msg);
+    console.error("列表加载失败:", msg);
   }
 
   // === 完整清理（防止内存泄漏）===
@@ -947,7 +971,7 @@ class PerformanceList {
 
     // 清理事件监听
     if (this.scrollEl) {
-      this.scrollEl.removeEventListener('scroll', this._onScroll);
+      this.scrollEl.removeEventListener("scroll", this._onScroll);
     }
 
     // 清理 IntersectionObserver
@@ -1046,7 +1070,7 @@ Paint → Composite（合成图层）
 
 // ❌ 反模式：读写交替触发多次 Layout
 function badResizeElements(elements) {
-  elements.forEach(el => {
+  elements.forEach((el) => {
     const height = el.offsetHeight; // 读 → 触发 Layout
     el.style.height = `${height + 10}px`; // 写 → 标记 Dirty
     // 下次循环读 offsetHeight 时，浏览器被迫重新 Layout
@@ -1057,11 +1081,11 @@ function badResizeElements(elements) {
 function goodResizeElements(elements) {
   const heights = new Map();
   // 阶段 1：批量读
-  elements.forEach(el => {
+  elements.forEach((el) => {
     heights.set(el, el.offsetHeight);
   });
   // 阶段 2：批量写
-  elements.forEach(el => {
+  elements.forEach((el) => {
     el.style.height = `${heights.get(el) + 10}px`;
   });
 }
@@ -1083,14 +1107,14 @@ const DOM = {
   _pendingWrites: [],
   _flushReads() {
     const reads = this._pendingReads.splice(0);
-    reads.forEach(fn => fn());
+    reads.forEach((fn) => fn());
     if (this._pendingWrites.length) {
       const writes = this._pendingWrites.splice(0);
-      requestAnimationFrame(() => writes.forEach(fn => fn()));
+      requestAnimationFrame(() => writes.forEach((fn) => fn()));
     }
     // 准备下一次
     if (this._pendingReads.length) this._flushReads();
-  }
+  },
 };
 
 // 使用
@@ -1154,13 +1178,16 @@ DOM.read(() => {
 }
 
 /* 方法 3：video/canvas 自动提升 */
-video, canvas {
+video,
+canvas {
   /* 浏览器自动创建合成层 */
 }
 
 /* ⚠️ will-change 使用警告 */
 /* ❌ 不要全局使用 */
-* { will-change: transform; } /* 内存爆炸 */
+* {
+  will-change: transform;
+} /* 内存爆炸 */
 
 /* ✅ 按需使用 + 交互后移除 */
 .card:hover {
@@ -1176,40 +1203,36 @@ class LayerManager {
   }
 
   // 交互前提升图层
-  prepare(element, property = 'transform') {
+  prepare(element, property = "transform") {
     element.style.willChange = property;
     this.activeElements.add(element);
   }
 
   // 交互后降级图层（释放 GPU 内存）
   release(element) {
-    element.style.willChange = 'auto';
+    element.style.willChange = "auto";
     this.activeElements.delete(element);
   }
 
   // 自动释放：动画结束后
-  autoRelease(element, property = 'transform') {
+  autoRelease(element, property = "transform") {
     this.prepare(element, property);
-    element.addEventListener(
-      'transitionend',
-      () => this.release(element),
-      { once: true }
-    );
-    element.addEventListener(
-      'animationend',
-      () => this.release(element),
-      { once: true }
-    );
+    element.addEventListener("transitionend", () => this.release(element), {
+      once: true,
+    });
+    element.addEventListener("animationend", () => this.release(element), {
+      once: true,
+    });
   }
 }
 
 const layerManager = new LayerManager();
 
 // 拖拽场景
-draggable.addEventListener('mousedown', () => {
-  layerManager.prepare(draggable, 'transform');
+draggable.addEventListener("mousedown", () => {
+  layerManager.prepare(draggable, "transform");
 });
-draggable.addEventListener('mouseup', () => {
+draggable.addEventListener("mouseup", () => {
   layerManager.autoRelease(draggable);
 });
 ```
@@ -1226,7 +1249,7 @@ class VisibleAnimationController {
     this.animations = new Map(); // element → animationId
     this.observer = new IntersectionObserver(
       this._onVisibilityChange.bind(this),
-      { rootMargin: '100px' }
+      { rootMargin: "100px" },
     );
   }
 
@@ -1235,13 +1258,13 @@ class VisibleAnimationController {
       onFrame,
       rafId: null,
       isVisible: false,
-      running: false
+      running: false,
     });
     this.observer.observe(element);
   }
 
   _onVisibilityChange(entries) {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       const anim = this.animations.get(entry.target);
       if (!anim) return;
 
@@ -1278,7 +1301,7 @@ class VisibleAnimationController {
 
   destroy() {
     this.observer.disconnect();
-    this.animations.forEach(anim => this._stopLoop(anim));
+    this.animations.forEach((anim) => this._stopLoop(anim));
     this.animations.clear();
   }
 }
@@ -1286,7 +1309,7 @@ class VisibleAnimationController {
 // 使用示例：多个滚动动画
 const controller = new VisibleAnimationController();
 
-document.querySelectorAll('.scroll-animated').forEach(el => {
+document.querySelectorAll(".scroll-animated").forEach((el) => {
   controller.register(el, (time) => {
     const progress = (time % 2000) / 2000;
     el.style.transform = `translateX(${Math.sin(progress * Math.PI * 2) * 50}px)`;
@@ -1321,29 +1344,29 @@ Worker Threads（Node.js）
 // === worker.js（独立文件，浏览器要求）===
 // 方式 1：独立文件
 // worker.js
-self.addEventListener('message', (e) => {
+self.addEventListener("message", (e) => {
   const { type, data } = e.data;
 
   switch (type) {
-    case 'SORT':
+    case "SORT":
       // 大数据排序（主线程会卡顿 500ms+）
       const sorted = data.sort((a, b) => a.value - b.value);
-      self.postMessage({ type: 'SORT_DONE', data: sorted });
+      self.postMessage({ type: "SORT_DONE", data: sorted });
       break;
 
-    case 'IMAGE_PROCESS':
+    case "IMAGE_PROCESS":
       // 图片像素处理（灰度化）
       const result = processImageGrayscale(data);
-      self.postMessage({ type: 'IMAGE_DONE', data: result }, [result]); // Transferable
+      self.postMessage({ type: "IMAGE_DONE", data: result }, [result]); // Transferable
       break;
 
-    case 'HASH':
+    case "HASH":
       // 大量数据哈希计算
-      const hashes = data.map(item => simpleHash(item));
-      self.postMessage({ type: 'HASH_DONE', data: hashes });
+      const hashes = data.map((item) => simpleHash(item));
+      self.postMessage({ type: "HASH_DONE", data: hashes });
       break;
 
-    case 'TERMINATE':
+    case "TERMINATE":
       self.close();
       break;
   }
@@ -1367,7 +1390,7 @@ function processImageGrayscale(imageData) {
 function simpleHash(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0;
   }
   return hash.toString(16);
@@ -1375,23 +1398,22 @@ function simpleHash(str) {
 
 // === 主线程使用 ===
 // 方式 A：独立文件
-const worker = new Worker('/workers/compute.js');
-worker.postMessage({ type: 'SORT', data: largeArray });
+const worker = new Worker("/workers/compute.js");
+worker.postMessage({ type: "SORT", data: largeArray });
 worker.onmessage = (e) => {
-  console.log('排序完成:', e.data.data.length, '条');
+  console.log("排序完成:", e.data.data.length, "条");
 };
 
 // 方式 B：Blob URL（内联 Worker，无需独立文件）
 function createInlineWorker(fn) {
-  const blob = new Blob(
-    [`(${fn.toString()})()`],
-    { type: 'application/javascript' }
-  );
+  const blob = new Blob([`(${fn.toString()})()`], {
+    type: "application/javascript",
+  });
   return new Worker(URL.createObjectURL(blob));
 }
 
 const computeWorker = createInlineWorker(function () {
-  self.addEventListener('message', (e) => {
+  self.addEventListener("message", (e) => {
     const { numbers } = e.data;
     // 在主线程外执行密集计算
     const result = numbers.reduce((sum, n) => sum + n * n, 0);
@@ -1399,9 +1421,11 @@ const computeWorker = createInlineWorker(function () {
   });
 });
 
-computeWorker.postMessage({ numbers: new Array(10000000).fill(0).map(() => Math.random()) });
+computeWorker.postMessage({
+  numbers: new Array(10000000).fill(0).map(() => Math.random()),
+});
 computeWorker.onmessage = (e) => {
-  console.log('计算结果:', e.data.result);
+  console.log("计算结果:", e.data.result);
   computeWorker.terminate(); // 用完即销毁
 };
 ```
@@ -1531,18 +1555,18 @@ self.onconnect = (e) => {
     const { type, data, senderId } = e.data;
 
     switch (type) {
-      case 'BROADCAST':
+      case "BROADCAST":
         // 广播给所有其他标签页
-        clients.forEach(client => {
+        clients.forEach((client) => {
           if (client !== port) {
-            client.postMessage({ type: 'BROADCAST', data, from: senderId });
+            client.postMessage({ type: "BROADCAST", data, from: senderId });
           }
         });
         break;
 
-      case 'SYNC_STATE':
+      case "SYNC_STATE":
         // 同步状态给新打开的标签页
-        client.postMessage({ type: 'STATE_SYNC', data: globalState });
+        client.postMessage({ type: "STATE_SYNC", data: globalState });
         break;
     }
   };
@@ -1553,16 +1577,16 @@ self.onconnect = (e) => {
 };
 
 // === 主线程 ===
-const sharedWorker = new SharedWorker('/workers/shared.js');
+const sharedWorker = new SharedWorker("/workers/shared.js");
 sharedWorker.port.postMessage({
-  type: 'BROADCAST',
-  data: { action: 'user_login', userId: '123' },
-  senderId: 'tab-' + Date.now()
+  type: "BROADCAST",
+  data: { action: "user_login", userId: "123" },
+  senderId: "tab-" + Date.now(),
 });
 
 sharedWorker.port.onmessage = (e) => {
-  if (e.data.type === 'BROADCAST') {
-    console.log('其他标签页操作:', e.data.data);
+  if (e.data.type === "BROADCAST") {
+    console.log("其他标签页操作:", e.data.data);
     // 更新本地 UI 保持同步
   }
 };
@@ -1577,32 +1601,44 @@ sharedWorker.port.onmessage = (e) => {
 ```html
 <!-- === preconnect：提前建立连接（DNS + TCP + TLS）=== -->
 <!-- 适用于你知道一定会请求的第三方域名 -->
-<link rel="preconnect" href="https://api.example.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://api.example.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
 <!-- 节省 ~200-500ms 连接时间 -->
 
 <!-- === dns-prefetch：仅解析 DNS（轻量级预连接）=== -->
 <!-- 适用于不确定是否需要的域名 -->
-<link rel="dns-prefetch" href="https://analytics.example.com">
+<link rel="dns-prefetch" href="https://analytics.example.com" />
 <!-- 节省 ~20-120ms DNS 时间 -->
 
 <!-- === prefetch：空闲时预加载未来可能需要的资源 === -->
 <!-- 低优先级，不阻塞当前页面渲染 -->
-<link rel="prefetch" href="/next-page.html" as="document">
-<link rel="prefetch" href="/assets/heavy-chart.js" as="script">
-<link rel="prefetch" href="/images/hero.webp" as="image">
+<link rel="prefetch" href="/next-page.html" as="document" />
+<link rel="prefetch" href="/assets/heavy-chart.js" as="script" />
+<link rel="prefetch" href="/images/hero.webp" as="image" />
 <!-- ⚠️ 不要 prefetch 当前页面需要的资源（用 preload） -->
 
 <!-- === preload：高优先级预加载当前页面必需资源 === -->
 <!-- 阻塞渲染的关键资源 -->
-<link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/css/critical.css" as="style">
-<link rel="preload" href="/js/main.js" as="script">
-<link rel="preload" href="/images/above-fold.webp" as="image" imagesrcset="/images/hero-320w.webp 320w, /images/hero-768w.webp 768w, /images/hero-1440w.webp 1440w" imagesizes="100vw">
+<link
+  rel="preload"
+  href="/fonts/main.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link rel="preload" href="/css/critical.css" as="style" />
+<link rel="preload" href="/js/main.js" as="script" />
+<link
+  rel="preload"
+  href="/images/above-fold.webp"
+  as="image"
+  imagesrcset="/images/hero-320w.webp 320w, /images/hero-768w.webp 768w, /images/hero-1440w.webp 1440w"
+  imagesizes="100vw"
+/>
 
 <!-- === prerender：预渲染整个页面（最激进）=== -->
 <!-- 浏览器在后台完整渲染目标页面 -->
-<link rel="prerender" href="https://next-page.example.com">
+<link rel="prerender" href="https://next-page.example.com" />
 <!-- ⚠️ 消耗大量带宽和 CPU，仅在确定用户会跳转时使用 -->
 ```
 
@@ -1622,10 +1658,10 @@ class ResourceHintManager {
   // 预连接
   preconnect(url, crossorigin = true) {
     if (document.querySelector(`link[rel="preconnect"][href="${url}"]`)) return;
-    const link = document.createElement('link');
-    link.rel = 'preconnect';
+    const link = document.createElement("link");
+    link.rel = "preconnect";
     link.href = url;
-    if (crossorigin) link.crossOrigin = 'anonymous';
+    if (crossorigin) link.crossOrigin = "anonymous";
     document.head.appendChild(link);
   }
 
@@ -1634,12 +1670,12 @@ class ResourceHintManager {
     if (this.preloaded.has(href)) return;
     this.preloaded.add(href);
 
-    const link = document.createElement('link');
-    link.rel = 'preload';
+    const link = document.createElement("link");
+    link.rel = "preload";
     link.href = href;
     link.as = asType;
     if (options.type) link.type = options.type;
-    if (options.crossorigin) link.crossOrigin = 'anonymous';
+    if (options.crossorigin) link.crossOrigin = "anonymous";
     if (options.imagesrcset) link.imagesrcset = options.imagesrcset;
     if (options.imagesizes) link.imagesizes = options.imagesizes;
     document.head.appendChild(link);
@@ -1650,8 +1686,8 @@ class ResourceHintManager {
     if (this.prefetched.has(href)) return;
     this.prefetched.add(href);
 
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
+    const link = document.createElement("link");
+    link.rel = "prefetch";
     link.href = href;
     link.as = asType;
     document.head.appendChild(link);
@@ -1659,8 +1695,10 @@ class ResourceHintManager {
 
   // 空闲时间预取（使用 requestIdleCallback）
   idlePrefetch(href, asType, deadline = 50) {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => this.prefetch(href, asType), { timeout: deadline });
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => this.prefetch(href, asType), {
+        timeout: deadline,
+      });
     } else {
       setTimeout(() => this.prefetch(href, asType), 1000);
     }
@@ -1670,16 +1708,20 @@ class ResourceHintManager {
 const hints = new ResourceHintManager();
 
 // 使用：用户 hover 链接时预取目标页面
-document.querySelectorAll('a[data-prefetch]').forEach(link => {
-  link.addEventListener('mouseenter', () => {
-    hints.prefetch(link.href, 'document');
-  }, { once: true });
+document.querySelectorAll("a[data-prefetch]").forEach((link) => {
+  link.addEventListener(
+    "mouseenter",
+    () => {
+      hints.prefetch(link.href, "document");
+    },
+    { once: true },
+  );
 });
 
 // 使用：SPA 路由切换前预加载目标 chunk
 router.beforeEach((to, from, next) => {
   if (to.chunkUrl) {
-    hints.preload(to.chunkUrl, 'script');
+    hints.preload(to.chunkUrl, "script");
   }
   next();
 });
@@ -1702,7 +1744,7 @@ class PredictivePreloader {
 
   _bindMouseTracking() {
     let lastMove = 0;
-    document.addEventListener('mousemove', (e) => {
+    document.addEventListener("mousemove", (e) => {
       const now = Date.now();
       if (now - lastMove < 50) return; // 限流
       lastMove = now;
@@ -1720,7 +1762,8 @@ class PredictivePreloader {
     const recent = this.mouseHistory.slice(-5);
     const dx = recent[4].x - recent[0].x;
     const dy = recent[4].y - recent[0].y;
-    const speed = Math.sqrt(dx * dx + dy * dy) / (recent[4].time - recent[0].time);
+    const speed =
+      Math.sqrt(dx * dx + dy * dy) / (recent[4].time - recent[0].time);
 
     // 鼠标速度 < 2px/ms → 可能在浏览/选择
     if (speed < 2) {
@@ -1737,7 +1780,7 @@ class PredictivePreloader {
           const url = new URL(target.href, location.href);
           hints.preconnect(`${url.protocol}//${url.host}`);
           // 空闲时 prefetch
-          hints.idlePrefetch(target.href, 'document');
+          hints.idlePrefetch(target.href, "document");
         }
       }
     }
@@ -1750,13 +1793,16 @@ class PredictivePreloader {
 
   _findTargetAhead(x, y) {
     // 简化的前方目标检测
-    const elements = document.querySelectorAll('a[data-prefetch], a[href]');
+    const elements = document.querySelectorAll("a[data-prefetch], a[href]");
     let closest = null;
     let minDist = Infinity;
 
-    elements.forEach(el => {
+    elements.forEach((el) => {
       const rect = el.getBoundingClientRect();
-      const dist = Math.hypot(rect.left + rect.width / 2 - x, rect.top + rect.height / 2 - y);
+      const dist = Math.hypot(
+        rect.left + rect.width / 2 - x,
+        rect.top + rect.height / 2 - y,
+      );
       if (dist < minDist && dist < 200) {
         minDist = dist;
         closest = el;
@@ -1774,7 +1820,7 @@ class PredictivePreloader {
     const lastPos = this.mouseHistory[this.mouseHistory.length - 1];
     const dist = Math.hypot(
       lastPos.x - (rect.left + rect.width / 2),
-      lastPos.y - (rect.top + rect.height / 2)
+      lastPos.y - (rect.top + rect.height / 2),
     );
     if (dist < 50) confidence += 0.3;
 
@@ -1800,46 +1846,46 @@ const preloader = new PredictivePreloader();
 module.exports = {
   optimization: {
     splitChunks: {
-      chunks: 'all',
+      chunks: "all",
       cacheGroups: {
         // 策略 1：vendor 分离（第三方库单独打包）
         vendor: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
+          name: "vendor",
+          chunks: "all",
           priority: 10,
           // 只打包首次需要的 vendor
-          enforce: true
+          enforce: true,
         },
         // 策略 2：common 分离（多页面共享的代码）
         common: {
           minChunks: 2,
           priority: 5,
           reuseExistingChunk: true,
-          enforce: true
+          enforce: true,
         },
         // 策略 3：大型库单独拆分
         echarts: {
           test: /[\\/]node_modules[\\/]echarts[\\/]/,
-          name: 'echarts',
-          chunks: 'all',
+          name: "echarts",
+          chunks: "all",
           priority: 15,
-          enforce: true
+          enforce: true,
         },
         // 策略 4：样式分离
         styles: {
-          name: 'styles',
+          name: "styles",
           test: /\.css$/,
-          chunks: 'all',
-          enforce: true
-        }
-      }
+          chunks: "all",
+          enforce: true,
+        },
+      },
     },
     // 运行时单独提取（长期缓存）
     runtimeChunk: {
-      name: 'runtime'
-    }
-  }
+      name: "runtime",
+    },
+  },
 };
 
 // === Vite 分割策略 ===
@@ -1849,30 +1895,30 @@ export default {
       output: {
         manualChunks: {
           // Vue 生态单独打包
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          "vue-vendor": ["vue", "vue-router", "pinia"],
           // UI 库单独打包
-          'ui-vendor': ['element-plus'],
+          "ui-vendor": ["element-plus"],
           // 工具库单独打包
-          'utils-vendor': ['lodash-es', 'dayjs'],
+          "utils-vendor": ["lodash-es", "dayjs"],
           // 大型可视化库按需加载
-          'charts': ['echarts']
-        }
-      }
+          charts: ["echarts"],
+        },
+      },
     },
     // 目标浏览器
-    target: 'es2015',
+    target: "es2015",
     // CSS 代码分割
     cssCodeSplit: true,
     // 压缩
-    minify: 'terser',
+    minify: "terser",
     terserOptions: {
       compress: {
-        drop_console: true,      // 移除 console
-        drop_debugger: true,     // 移除 debugger
-        pure_funcs: ['console.log'] // 移除特定函数调用
-      }
-    }
-  }
+        drop_console: true, // 移除 console
+        drop_debugger: true, // 移除 debugger
+        pure_funcs: ["console.log"], // 移除特定函数调用
+      },
+    },
+  },
 };
 ```
 
@@ -1885,22 +1931,22 @@ export default {
 
 // === 使用 ESM 而非 CJS ===
 // ❌ CJS 无法 Tree Shaking
-const lodash = require('lodash');
-const result = lodash.chunk([1,2,3], 2);
+const lodash = require("lodash");
+const result = lodash.chunk([1, 2, 3], 2);
 
 // ✅ ESM 可以 Tree Shaking
-import { chunk } from 'lodash-es';
-const result = chunk([1,2,3], 2);
+import { chunk } from "lodash-es";
+const result = chunk([1, 2, 3], 2);
 
 // ✅ 单文件导入（最彻底）
-import chunk from 'lodash-es/chunk';
-const result = chunk([1,2,3], 2);
+import chunk from "lodash-es/chunk";
+const result = chunk([1, 2, 3], 2);
 
 // === 条件代码消除 ===
 // Vite/Webpack 会自动消除死代码
 if (import.meta.env.DEV) {
   // 生产环境这段代码会被完全移除
-  console.log('开发环境调试信息');
+  console.log("开发环境调试信息");
   enableDebugTools();
 }
 
@@ -1908,14 +1954,15 @@ if (import.meta.env.DEV) {
 // 只有访问路由时才加载对应代码
 const routes = [
   {
-    path: '/dashboard',
-    component: () => import('./views/Dashboard.vue')
+    path: "/dashboard",
+    component: () => import("./views/Dashboard.vue"),
     // 只有访问 /dashboard 时才下载 Dashboard.vue 及其依赖
   },
   {
-    path: '/settings',
-    component: () => import(/* webpackChunkName: "settings" */ './views/Settings.vue')
-  }
+    path: "/settings",
+    component: () =>
+      import(/* webpackChunkName: "settings" */ "./views/Settings.vue"),
+  },
 ];
 ```
 
@@ -1933,13 +1980,13 @@ class BundleAnalyzer {
   analyzeImportGraph(stats) {
     const graph = {};
 
-    stats.modules.forEach(mod => {
+    stats.modules.forEach((mod) => {
       graph[mod.name] = {
         size: mod.size,
         gzipSize: this._gzipSize(mod.source),
         dependencies: mod.dependencies || [],
         isEntry: mod.isEntry,
-        isAsync: mod.async
+        isAsync: mod.async,
       };
     });
 
@@ -1952,7 +1999,7 @@ class BundleAnalyzer {
       modules: graph,
       duplicates: Array.from(this.duplicates.entries()),
       largestModules: this._getLargest(stats, 10),
-      asyncChunks: stats.modules.filter(m => m.async)
+      asyncChunks: stats.modules.filter((m) => m.async),
     };
   }
 
@@ -1960,7 +2007,7 @@ class BundleAnalyzer {
   _findDuplicates(stats) {
     const libVersions = new Map();
 
-    stats.modules.forEach(mod => {
+    stats.modules.forEach((mod) => {
       const match = mod.name.match(/node_modules[\\/](.+?)(?:[\\/]|$)/);
       if (match) {
         const lib = match[1];
@@ -1984,31 +2031,30 @@ class BundleAnalyzer {
   }
 
   _getLargest(stats, n) {
-    return [...stats.modules]
-      .sort((a, b) => b.size - a.size)
-      .slice(0, n);
+    return [...stats.modules].sort((a, b) => b.size - a.size).slice(0, n);
   }
 }
 
 // === 运行时 Bundle 监控 ===
 // 监控实际加载的 chunk 大小
-if ('PerformanceObserver' in window) {
+if ("PerformanceObserver" in window) {
   const observer = new PerformanceObserver((list) => {
-    list.getEntries().forEach(entry => {
-      if (entry.entryType === 'resource') {
-        const isJS = entry.name.endsWith('.js');
-        const isChunk = entry.name.includes('chunk') || entry.name.includes('assets');
+    list.getEntries().forEach((entry) => {
+      if (entry.entryType === "resource") {
+        const isJS = entry.name.endsWith(".js");
+        const isChunk =
+          entry.name.includes("chunk") || entry.name.includes("assets");
         if (isJS && isChunk) {
           console.log(`Chunk 加载: ${entry.name}`, {
             transferSize: entry.transferSize,
             decodedSize: entry.decodedBodySize,
-            duration: Math.round(entry.duration)
+            duration: Math.round(entry.duration),
           });
         }
       }
     });
   });
-  observer.observe({ entryTypes: ['resource'] });
+  observer.observe({ entryTypes: ["resource"] });
 }
 ```
 
@@ -2020,14 +2066,14 @@ if ('PerformanceObserver' in window) {
 
 ```js
 // === service-worker.js ===
-const CACHE_NAME = 'app-v1';
+const CACHE_NAME = "app-v1";
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/critical.css',
-  '/js/runtime.js',
-  '/fonts/main.woff2',
-  '/images/logo.svg'
+  "/",
+  "/index.html",
+  "/css/critical.css",
+  "/js/runtime.js",
+  "/fonts/main.woff2",
+  "/images/logo.svg",
 ];
 
 // === 策略 1：Cache First（缓存优先）===
@@ -2044,14 +2090,14 @@ async function cacheFirst(request) {
     }
     return response;
   } catch (err) {
-    return new Response('离线', { status: 503 });
+    return new Response("离线", { status: 503 });
   }
 }
 
 // === 策略 2：Network First（网络优先）===
 // 适用：API 数据、用户内容，需要最新
 async function networkFirst(request) {
-  const cache = await caches.open(CACHE_NAME + '-api');
+  const cache = await caches.open(CACHE_NAME + "-api");
   try {
     const response = await fetch(request);
     if (response.ok) {
@@ -2060,7 +2106,7 @@ async function networkFirst(request) {
     return response;
   } catch (err) {
     const cached = await cache.match(request);
-    return cached || new Response('离线', { status: 503 });
+    return cached || new Response("离线", { status: 503 });
   }
 }
 
@@ -2070,12 +2116,14 @@ async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  }).catch(() => null);
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
 
   return cached || fetchPromise;
 }
@@ -2094,21 +2142,21 @@ async function networkOnly(request) {
 }
 
 // === 路由分发 ===
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   // 同源请求
   if (url.origin === location.origin) {
-    if (request.destination === 'style') {
+    if (request.destination === "style") {
       event.respondWith(cacheFirst(request));
-    } else if (request.destination === 'script') {
+    } else if (request.destination === "script") {
       event.respondWith(staleWhileRevalidate(request));
-    } else if (request.destination === 'image') {
+    } else if (request.destination === "image") {
       event.respondWith(cacheFirst(request));
-    } else if (request.destination === 'font') {
+    } else if (request.destination === "font") {
       event.respondWith(cacheFirst(request));
-    } else if (url.pathname.startsWith('/api/')) {
+    } else if (url.pathname.startsWith("/api/")) {
       event.respondWith(networkFirst(request));
     } else {
       event.respondWith(staleWhileRevalidate(request));
@@ -2120,21 +2168,26 @@ self.addEventListener('fetch', (event) => {
 });
 
 // === 安装：预缓存静态资源 ===
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
   );
   self.skipWaiting(); // 跳过等待，立即激活
 });
 
 // === 激活：清理旧缓存 ===
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
       )
-    ).then(() => self.clients.claim()) // 立即接管所有客户端
+      .then(() => self.clients.claim()), // 立即接管所有客户端
   );
 });
 ```
@@ -2148,7 +2201,7 @@ self.addEventListener('activate', (event) => {
  */
 class OfflineManager {
   constructor() {
-    this.dbName = 'offline-store';
+    this.dbName = "offline-store";
     this.dbVersion = 1;
     this.syncQueue = [];
   }
@@ -2159,11 +2212,11 @@ class OfflineManager {
       const request = indexedDB.open(this.dbName, this.dbVersion);
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
-        if (!db.objectStoreNames.contains('queue')) {
-          db.createObjectStore('queue', { keyPath: 'id', autoIncrement: true });
+        if (!db.objectStoreNames.contains("queue")) {
+          db.createObjectStore("queue", { keyPath: "id", autoIncrement: true });
         }
-        if (!db.objectStoreNames.contains('cache')) {
-          db.createObjectStore('cache', { keyPath: 'key' });
+        if (!db.objectStoreNames.contains("cache")) {
+          db.createObjectStore("cache", { keyPath: "key" });
         }
       };
       request.onsuccess = (e) => resolve(e.target.result);
@@ -2174,12 +2227,12 @@ class OfflineManager {
   // 离线写入：存入队列，在线后同步
   async queueWrite(operation) {
     const db = await this.init();
-    const tx = db.transaction('queue', 'readwrite');
-    const store = tx.objectStore('queue');
+    const tx = db.transaction("queue", "readwrite");
+    const store = tx.objectStore("queue");
     store.add({
       ...operation,
       timestamp: Date.now(),
-      synced: false
+      synced: false,
     });
     return tx.complete;
   }
@@ -2187,26 +2240,26 @@ class OfflineManager {
   // 在线同步：发送队列中的操作
   async sync() {
     const db = await this.init();
-    const tx = db.transaction('queue', 'readwrite');
-    const store = tx.objectStore('queue');
+    const tx = db.transaction("queue", "readwrite");
+    const store = tx.objectStore("queue");
     const request = store.getAll();
 
     request.onsuccess = async () => {
-      const pending = request.result.filter(item => !item.synced);
+      const pending = request.result.filter((item) => !item.synced);
 
       for (const item of pending) {
         try {
           await fetch(item.url, {
-            method: item.method || 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(item.body)
+            method: item.method || "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(item.body),
           });
 
           // 标记已同步
           item.synced = true;
           store.put(item);
         } catch (err) {
-          console.error('同步失败:', item.id, err);
+          console.error("同步失败:", item.id, err);
           break; // 失败后停止，下次重试
         }
       }
@@ -2215,11 +2268,11 @@ class OfflineManager {
 }
 
 // SW 中监听 online 事件
-self.addEventListener('online', () => {
+self.addEventListener("online", () => {
   // 通知主线程执行同步
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({ type: 'SYNC_REQUEST' });
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({ type: "SYNC_REQUEST" });
     });
   });
 });
@@ -2256,10 +2309,12 @@ self.addEventListener('online', () => {
 ```html
 <!-- === 方案 1：srcset + sizes（根据屏幕密度选择）=== -->
 <img
-  srcset="/images/photo-320w.webp 320w,
-          /images/photo-640w.webp 640w,
-          /images/photo-1024w.webp 1024w,
-          /images/photo-1440w.webp 1440w"
+  srcset="
+    /images/photo-320w.webp   320w,
+    /images/photo-640w.webp   640w,
+    /images/photo-1024w.webp 1024w,
+    /images/photo-1440w.webp 1440w
+  "
   sizes="(max-width: 640px) 100vw,
          (max-width: 1024px) 50vw,
          33vw"
@@ -2267,34 +2322,45 @@ self.addEventListener('online', () => {
   alt="描述"
   loading="lazy"
   decoding="async"
->
+/>
 
 <!-- === 方案 2：picture 元素（根据格式支持选择）=== -->
 <picture>
   <!-- 浏览器选择第一个支持的格式 -->
-  <source type="image/avif" srcset="/images/photo.avif">
-  <source type="image/webp" srcset="/images/photo.webp">
-  <img src="/images/photo.jpg" alt="描述" loading="lazy">
+  <source type="image/avif" srcset="/images/photo.avif" />
+  <source type="image/webp" srcset="/images/photo.webp" />
+  <img src="/images/photo.jpg" alt="描述" loading="lazy" />
 </picture>
 
 <!-- === 方案 3：组合使用（最佳实践）=== -->
 <picture>
-  <source type="image/avif"
-    srcset="/images/hero-320.avif 320w,
-            /images/hero-768.avif 768w,
-            /images/hero-1440.avif 1440w"
-    sizes="100vw">
-  <source type="image/webp"
-    srcset="/images/hero-320.webp 320w,
-            /images/hero-768.webp 768w,
-            /images/hero-1440.webp 1440w"
-    sizes="100vw">
-  <img src="/images/hero-768.jpg"
-       alt="Hero Image"
-       width="1440" height="800"
-       loading="eager"
-       decoding="async"
-       fetchpriority="high">
+  <source
+    type="image/avif"
+    srcset="
+      /images/hero-320.avif   320w,
+      /images/hero-768.avif   768w,
+      /images/hero-1440.avif 1440w
+    "
+    sizes="100vw"
+  />
+  <source
+    type="image/webp"
+    srcset="
+      /images/hero-320.webp   320w,
+      /images/hero-768.webp   768w,
+      /images/hero-1440.webp 1440w
+    "
+    sizes="100vw"
+  />
+  <img
+    src="/images/hero-768.jpg"
+    alt="Hero Image"
+    width="1440"
+    height="800"
+    loading="eager"
+    decoding="async"
+    fetchpriority="high"
+  />
 </picture>
 ```
 
@@ -2307,28 +2373,27 @@ self.addEventListener('online', () => {
  */
 class ProgressiveImageLoader {
   constructor() {
-    this.observer = new IntersectionObserver(
-      this._onIntersect.bind(this),
-      { rootMargin: '200px' }
-    );
+    this.observer = new IntersectionObserver(this._onIntersect.bind(this), {
+      rootMargin: "200px",
+    });
     this.loaded = new Set();
   }
 
   // 注册图片
   register(imgElement, options = {}) {
     const {
-      placeholder = '',    // 低质量占位图（blurhash/小图）
-      webpSrc = '',        // WebP 源
-      avifSrc = '',        // AVIF 源
-      jpgSrc = '',         // JPEG 回退
-      quality = 'medium'   // low/medium/high
+      placeholder = "", // 低质量占位图（blurhash/小图）
+      webpSrc = "", // WebP 源
+      avifSrc = "", // AVIF 源
+      jpgSrc = "", // JPEG 回退
+      quality = "medium", // low/medium/high
     } = options;
 
     // 设置占位图
     if (placeholder) {
       imgElement.src = placeholder;
-      imgElement.style.filter = 'blur(10px)';
-      imgElement.style.transition = 'filter 0.5s ease, opacity 0.5s ease';
+      imgElement.style.filter = "blur(10px)";
+      imgElement.style.transition = "filter 0.5s ease, opacity 0.5s ease";
     }
 
     // 存储真实源
@@ -2341,7 +2406,7 @@ class ProgressiveImageLoader {
   }
 
   _onIntersect(entries) {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
 
       const img = entry.target;
@@ -2377,14 +2442,16 @@ class ProgressiveImageLoader {
 
     // 切换图片（带淡入效果）
     img.src = src;
-    img.style.filter = 'blur(0)';
-    img.style.opacity = '1';
+    img.style.filter = "blur(0)";
+    img.style.opacity = "1";
   }
 
   _supportsWebp() {
     if (this._webpSupport !== undefined) return this._webpSupport;
-    const el = document.createElement('canvas');
-    this._webpSupport = el.toDataURL('image/webp').startsWith('data:image/webp');
+    const el = document.createElement("canvas");
+    this._webpSupport = el
+      .toDataURL("image/webp")
+      .startsWith("data:image/webp");
     return this._webpSupport;
   }
 
@@ -2392,9 +2459,12 @@ class ProgressiveImageLoader {
     if (this._avifSupport !== undefined) return this._avifSupport;
     const image = new Image();
     // AVIF 特征检测（1x1 像素的 AVIF base64）
-    image.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BWkYAAADzaXplcwAAAAABAAEAA+QAAAVjbm9kdQADAA==';
+    image.src =
+      "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BWkYAAADzaXplcwAAAAABAAEAA+QAAAVjbm9kdQADAA==";
     this._avifSupport = false;
-    image.onload = () => { this._avifSupport = image.width === 1; };
+    image.onload = () => {
+      this._avifSupport = image.width === 1;
+    };
     return this._avifSupport;
   }
 
@@ -2407,12 +2477,12 @@ class ProgressiveImageLoader {
 // 使用示例
 const imageLoader = new ProgressiveImageLoader();
 
-document.querySelectorAll('.progressive-img').forEach(img => {
+document.querySelectorAll(".progressive-img").forEach((img) => {
   imageLoader.register(img, {
     placeholder: img.dataset.placeholder, // blurhash 生成的小图
     avifSrc: img.dataset.avif,
     webpSrc: img.dataset.webp,
-    jpgSrc: img.dataset.jpg
+    jpgSrc: img.dataset.jpg,
   });
 });
 ```
@@ -2442,10 +2512,10 @@ class BlurHashDecoder {
 
   // 生成占位图 data URL
   static toDataURL(hash, width = 32, height = 32) {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     ctx.putImageData(this.decode(hash, width, height), 0, 0);
     return canvas.toDataURL();
   }
@@ -2471,9 +2541,13 @@ class BlurHashDecoder {
 // 使用：服务端生成 BlurHash → 客户端解码为占位图
 // 服务端：sharp(image).blurhash() → "LEHV6nWBASH+dRjRX*%2Myd*"
 // 客户端：
-const placeholder = BlurHashDecoder.toDataURL('LEHV6nWBASH+dRjRX*%2Myd*', 32, 32);
+const placeholder = BlurHashDecoder.toDataURL(
+  "LEHV6nWBASH+dRjRX*%2Myd*",
+  32,
+  32,
+);
 imgElement.src = placeholder;
-imgElement.style.filter = 'blur(20px)';
+imgElement.style.filter = "blur(20px)";
 // 然后 ProgressiveImageLoader 加载真实图片
 ```
 
@@ -2490,7 +2564,7 @@ imgElement.style.filter = 'blur(20px)';
  */
 class PerformanceMonitor {
   constructor(options = {}) {
-    this.reportUrl = options.reportUrl || '/api/metrics';
+    this.reportUrl = options.reportUrl || "/api/metrics";
     this.sampleRate = options.sampleRate || 1; // 采样率
     this.metrics = {};
     this.observers = [];
@@ -2512,9 +2586,9 @@ class PerformanceMonitor {
     this._observeErrors();
 
     // 页面卸载时上报
-    window.addEventListener('beforeunload', () => this._flush());
+    window.addEventListener("beforeunload", () => this._flush());
     // 也使用 sendBeacon（更可靠）
-    window.addEventListener('pagehide', () => this._flush());
+    window.addEventListener("pagehide", () => this._flush());
   }
 
   // === Largest Contentful Paint ===
@@ -2523,9 +2597,9 @@ class PerformanceMonitor {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1];
       this.metrics.lcp = lastEntry.startTime;
-      this._sendToAnalytics('LCP', lastEntry.startTime);
+      this._sendToAnalytics("LCP", lastEntry.startTime);
     });
-    observer.observe({ type: 'largest-contentful-paint', buffered: true });
+    observer.observe({ type: "largest-contentful-paint", buffered: true });
     this.observers.push(observer);
   }
 
@@ -2538,22 +2612,26 @@ class PerformanceMonitor {
         interactions.push({
           startTime: entry.startTime,
           duration: entry.duration,
-          target: entry.target?.tagName
+          target: entry.target?.tagName,
         });
       }
     });
-    observer.observe({ type: 'interaction', buffered: true, durationThreshold: 16 });
+    observer.observe({
+      type: "interaction",
+      buffered: true,
+      durationThreshold: 16,
+    });
     this.observers.push(observer);
 
     // 页面卸载时计算 INP
-    window.addEventListener('pagehide', () => {
+    window.addEventListener("pagehide", () => {
       if (interactions.length === 0) return;
       // INP = 最长的交互延迟（排除最长的那 5%）
       const sorted = interactions.sort((a, b) => b.duration - a.duration);
       const p95Index = Math.floor(sorted.length * 0.05);
       const inp = sorted[p95Index]?.duration || sorted[0]?.duration;
       this.metrics.inp = inp;
-      this._sendToAnalytics('INP', inp);
+      this._sendToAnalytics("INP", inp);
     });
   }
 
@@ -2571,12 +2649,12 @@ class PerformanceMonitor {
         }
       }
     });
-    observer.observe({ type: 'layout-shift', buffered: true });
+    observer.observe({ type: "layout-shift", buffered: true });
     this.observers.push(observer);
 
-    window.addEventListener('pagehide', () => {
+    window.addEventListener("pagehide", () => {
       this.metrics.cls = clsValue;
-      this._sendToAnalytics('CLS', clsValue);
+      this._sendToAnalytics("CLS", clsValue);
     });
   }
 
@@ -2585,9 +2663,9 @@ class PerformanceMonitor {
     const observer = new PerformanceObserver((list) => {
       const entry = list.getEntries()[0];
       this.metrics.fcp = entry.startTime;
-      this._sendToAnalytics('FCP', entry.startTime);
+      this._sendToAnalytics("FCP", entry.startTime);
     });
-    observer.observe({ type: 'paint', buffered: true });
+    observer.observe({ type: "paint", buffered: true });
     this.observers.push(observer);
   }
 
@@ -2596,59 +2674,63 @@ class PerformanceMonitor {
     const observer = new PerformanceObserver((list) => {
       const entry = list.getEntries()[0];
       this.metrics.ttfb = entry.responseStart;
-      this._sendToAnalytics('TTFB', entry.responseStart);
+      this._sendToAnalytics("TTFB", entry.responseStart);
     });
-    observer.observe({ type: 'navigation', buffered: true });
+    observer.observe({ type: "navigation", buffered: true });
     this.observers.push(observer);
   }
 
   // === 长任务监控（>50ms 的任务会阻塞主线程）===
   _observeLongTasks() {
     const observer = new PerformanceObserver((list) => {
-      list.getEntries().forEach(entry => {
+      list.getEntries().forEach((entry) => {
         this.metrics.longTasks = (this.metrics.longTasks || 0) + 1;
-        console.warn('长任务检测:', {
+        console.warn("长任务检测:", {
           duration: Math.round(entry.duration),
-          attribution: entry.attribution?.[0]?.name
+          attribution: entry.attribution?.[0]?.name,
         });
       });
     });
-    observer.observe({ type: 'longtask', buffered: true });
+    observer.observe({ type: "longtask", buffered: true });
     this.observers.push(observer);
   }
 
   // === 资源加载监控 ===
   _observeResources() {
     const observer = new PerformanceObserver((list) => {
-      list.getEntries().forEach(entry => {
+      list.getEntries().forEach((entry) => {
         // 只关注慢资源（>1s）
         if (entry.duration > 1000) {
-          console.warn('慢资源:', {
+          console.warn("慢资源:", {
             name: entry.name,
             duration: Math.round(entry.duration),
-            size: entry.transferSize
+            size: entry.transferSize,
           });
         }
       });
     });
-    observer.observe({ type: 'resource', buffered: true });
+    observer.observe({ type: "resource", buffered: true });
     this.observers.push(observer);
   }
 
   // === 错误监控 ===
   _observeErrors() {
-    window.addEventListener('error', (e) => {
+    window.addEventListener("error", (e) => {
       this.metrics.errors = (this.metrics.errors || 0) + 1;
-      this._sendToAnalytics('ERROR', {
+      this._sendToAnalytics("ERROR", {
         message: e.message,
         filename: e.filename,
-        lineno: e.lineno
+        lineno: e.lineno,
       });
     });
 
-    window.addEventListener('unhandledrejection', (e) => {
-      this.metrics.unhandledRejections = (this.metrics.unhandledRejections || 0) + 1;
-      this._sendToAnalytics('UNHANDLED_REJECTION', e.reason?.message || String(e.reason));
+    window.addEventListener("unhandledrejection", (e) => {
+      this.metrics.unhandledRejections =
+        (this.metrics.unhandledRejections || 0) + 1;
+      this._sendToAnalytics(
+        "UNHANDLED_REJECTION",
+        e.reason?.message || String(e.reason),
+      );
     });
   }
 
@@ -2660,20 +2742,20 @@ class PerformanceMonitor {
       timestamp: Date.now(),
       url: location.href,
       userAgent: navigator.userAgent,
-      connection: navigator.connection?.effectiveType || 'unknown'
+      connection: navigator.connection?.effectiveType || "unknown",
     };
 
     // 使用 sendBeacon（页面卸载时也能发送）
     if (navigator.sendBeacon) {
       const blob = new Blob([JSON.stringify(payload)], {
-        type: 'application/json'
+        type: "application/json",
       });
       navigator.sendBeacon(this.reportUrl, blob);
     } else {
       fetch(this.reportUrl, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-        keepalive: true
+        keepalive: true,
       }).catch(() => {});
     }
   }
@@ -2686,7 +2768,7 @@ class PerformanceMonitor {
       metrics: this.metrics,
       timestamp: Date.now(),
       url: location.href,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
 
     if (navigator.sendBeacon) {
@@ -2696,15 +2778,15 @@ class PerformanceMonitor {
 
   // === 销毁 ===
   destroy() {
-    this.observers.forEach(obs => obs.disconnect());
+    this.observers.forEach((obs) => obs.disconnect());
     this.observers = [];
   }
 }
 
 // 启动监控
 const monitor = new PerformanceMonitor({
-  reportUrl: '/api/metrics',
-  sampleRate: 0.1 // 10% 采样
+  reportUrl: "/api/metrics",
+  sampleRate: 0.1, // 10% 采样
 });
 ```
 
@@ -2722,7 +2804,7 @@ class PerformanceBenchmark {
   }
 
   // 测试函数性能
-  async test(fn, iterations = 100, label = '') {
+  async test(fn, iterations = 100, label = "") {
     // 预热
     for (let i = 0; i < 10; i++) await fn();
 
@@ -2743,7 +2825,7 @@ class PerformanceBenchmark {
   // 对比多个函数
   async compare(tests, iterations = 100) {
     console.log(`\n📊 性能对比: ${this.name}`);
-    console.log('═'.repeat(60));
+    console.log("═".repeat(60));
 
     const results = [];
     for (const [label, fn] of Object.entries(tests)) {
@@ -2754,11 +2836,14 @@ class PerformanceBenchmark {
     // 排序并标记最快
     results.sort((a, b) => a.avg - b.avg);
     results.forEach((r, i) => {
-      const speed = i === 0 ? '🏆 最快' : `比最快慢 ${(r.avg / results[0].avg - 1).toFixed(1)}x`;
+      const speed =
+        i === 0
+          ? "🏆 最快"
+          : `比最快慢 ${(r.avg / results[0].avg - 1).toFixed(1)}x`;
       console.log(`${i + 1}. ${r.label}: ${r.avg.toFixed(2)}ms (${speed})`);
     });
 
-    console.log('═'.repeat(60));
+    console.log("═".repeat(60));
     return results;
   }
 
@@ -2780,30 +2865,39 @@ class PerformanceBenchmark {
       p99: Math.round(p99 * 100) / 100,
       min: Math.round(min * 100) / 100,
       max: Math.round(max * 100) / 100,
-      iterations: times.length
+      iterations: times.length,
     };
   }
 }
 
 // 使用示例：对比不同实现的性能
-const bench = new PerformanceBenchmark('数组去重');
+const bench = new PerformanceBenchmark("数组去重");
 
-await bench.compare({
-  'Set 去重': () => {
-    const arr = Array.from({ length: 10000 }, () => Math.floor(Math.random() * 5000));
-    return [...new Set(arr)];
+await bench.compare(
+  {
+    "Set 去重": () => {
+      const arr = Array.from({ length: 10000 }, () =>
+        Math.floor(Math.random() * 5000),
+      );
+      return [...new Set(arr)];
+    },
+    "filter + indexOf": () => {
+      const arr = Array.from({ length: 10000 }, () =>
+        Math.floor(Math.random() * 5000),
+      );
+      return arr.filter((item, index) => arr.indexOf(item) === index);
+    },
+    "Map 去重": () => {
+      const arr = Array.from({ length: 10000 }, () =>
+        Math.floor(Math.random() * 5000),
+      );
+      const map = new Map();
+      arr.forEach((item) => map.set(item, true));
+      return [...map.keys()];
+    },
   },
-  'filter + indexOf': () => {
-    const arr = Array.from({ length: 10000 }, () => Math.floor(Math.random() * 5000));
-    return arr.filter((item, index) => arr.indexOf(item) === index);
-  },
-  'Map 去重': () => {
-    const arr = Array.from({ length: 10000 }, () => Math.floor(Math.random() * 5000));
-    const map = new Map();
-    arr.forEach(item => map.set(item, true));
-    return [...map.keys()];
-  }
-}, 100);
+  100,
+);
 
 // 输出示例:
 // 📊 性能对比: 数组去重
@@ -2836,15 +2930,15 @@ class PerformanceDashboard {
 
   async _init(container, options) {
     // 1. 启动性能监控
-    this.monitor = new PerformanceMonitor({ reportUrl: '/api/metrics' });
+    this.monitor = new PerformanceMonitor({ reportUrl: "/api/metrics" });
 
     // 2. 创建 Worker 池（数据处理）
-    this.workerPool = new WorkerPool('/workers/data-process.js', 2);
+    this.workerPool = new WorkerPool("/workers/data-process.js", 2);
 
     // 3. 创建虚拟列表（大数据渲染）
     this.virtualList = new VirtualList(container, {
       itemHeight: 80,
-      bufferSize: 3
+      bufferSize: 3,
     });
 
     // 4. 节流滚动加载
@@ -2854,11 +2948,11 @@ class PerformanceDashboard {
       }
     }, 100);
 
-    this.virtualList.container.addEventListener('scroll', this._onScroll);
+    this.virtualList.container.addEventListener("scroll", this._onScroll);
 
     // 5. 防抖搜索
     this._onSearch = this._debounce(async (query) => {
-      const results = await this.workerPool.submit({ type: 'SEARCH', query });
+      const results = await this.workerPool.submit({ type: "SEARCH", query });
       this.virtualList.updateData(results);
     }, 300);
 
@@ -2870,17 +2964,23 @@ class PerformanceDashboard {
     if (this.destroyed) return;
 
     // 使用 Worker 并行处理数据
-    const chunk1 = this.workerPool.submit({ type: 'FETCH', page: this.currentPage });
-    const chunk2 = this.workerPool.submit({ type: 'AGGREGATE', page: this.currentPage });
+    const chunk1 = this.workerPool.submit({
+      type: "FETCH",
+      page: this.currentPage,
+    });
+    const chunk2 = this.workerPool.submit({
+      type: "AGGREGATE",
+      page: this.currentPage,
+    });
 
     const [rawData, aggregated] = await Promise.all([chunk1, chunk2]);
 
     // 只保留需要的字段（减少内存）
-    const processed = rawData.map(item => ({
+    const processed = rawData.map((item) => ({
       id: item.id,
       title: item.title,
       value: item.value,
-      thumbnail: item.thumbnail
+      thumbnail: item.thumbnail,
     }));
 
     this.virtualList.appendData(processed);
@@ -3006,6 +3106,7 @@ class PerformanceDashboard {
 ---
 
 **累计覆盖专项（5/11 更新）：**
+
 - 算法与数据结构 (04-28 ~ 05-11)
 - JavaScript 深度 (05-10 ~ 05-11)
 - 设计模式 10 个 (观察者/策略/单例/工厂/代理/装饰器/适配器/模板方法/建造者/命令)

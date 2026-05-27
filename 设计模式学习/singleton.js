@@ -214,7 +214,9 @@ class DatabaseConnection {
       createdAt: Date.now(),
     };
     this.connections.push(conn);
-    console.log(`[DatabaseConnection] Connection created (${this.connections.length}/${this.maxConnections})`);
+    console.log(
+      `[DatabaseConnection] Connection created (${this.connections.length}/${this.maxConnections})`,
+    );
     return conn;
   }
 
@@ -222,7 +224,9 @@ class DatabaseConnection {
     const index = this.connections.indexOf(conn);
     if (index > -1) {
       this.connections.splice(index, 1);
-      console.log(`[DatabaseConnection] Connection released (${this.connections.length}/${this.maxConnections})`);
+      console.log(
+        `[DatabaseConnection] Connection released (${this.connections.length}/${this.maxConnections})`,
+      );
     }
   }
 

@@ -1,10 +1,15 @@
-import React, { ButtonHTMLAttributes, forwardRef } from 'react';
-import './Button.css';
+import React, { ButtonHTMLAttributes, forwardRef } from "react";
+import "./Button.css";
 
 // ============ Types ============
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "ghost"
+  | "link";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** 按钮变体 */
@@ -27,61 +32,70 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 // ============ Component ============
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  {
-    variant = 'primary',
-    size = 'md',
-    loading = false,
-    fullWidth = false,
-    leftIcon,
-    rightIcon,
-    iconOnly = false,
-    className = '',
-    children,
-    disabled,
-    ...props
-  },
-  ref
-) {
-  const classes = [
-    'btn',
-    `btn-${variant}`,
-    `btn-${size}`,
-    fullWidth && 'btn-full-width',
-    iconOnly && 'btn-icon-only',
-    loading && 'btn-loading',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button(
+    {
+      variant = "primary",
+      size = "md",
+      loading = false,
+      fullWidth = false,
+      leftIcon,
+      rightIcon,
+      iconOnly = false,
+      className = "",
+      children,
+      disabled,
+      ...props
+    },
+    ref,
+  ) {
+    const classes = [
+      "btn",
+      `btn-${variant}`,
+      `btn-${size}`,
+      fullWidth && "btn-full-width",
+      iconOnly && "btn-icon-only",
+      loading && "btn-loading",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-  return (
-    <button
-      ref={ref}
-      className={classes}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading && (
-        <span className="btn-spinner" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="30 70" />
-          </svg>
-        </span>
-      )}
-      {leftIcon && <span className="btn-icon-left">{leftIcon}</span>}
-      {!iconOnly && <span className="btn-content">{children}</span>}
-      {rightIcon && <span className="btn-icon-right">{rightIcon}</span>}
-    </button>
-  );
-});
+    return (
+      <button
+        ref={ref}
+        className={classes}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading && (
+          <span className="btn-spinner" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeDasharray="30 70"
+              />
+            </svg>
+          </span>
+        )}
+        {leftIcon && <span className="btn-icon-left">{leftIcon}</span>}
+        {!iconOnly && <span className="btn-content">{children}</span>}
+        {rightIcon && <span className="btn-icon-right">{rightIcon}</span>}
+      </button>
+    );
+  },
+);
 
 // ============ Compound Components ============
 
 export const ButtonGroup: React.FC<{
   children: React.ReactNode;
   className?: string;
-}> = ({ children, className = '' }) => {
+}> = ({ children, className = "" }) => {
   return (
     <div className={`btn-group ${className}`} role="group">
       {children}

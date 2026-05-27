@@ -1,7 +1,7 @@
-import { View, Text, Button } from '@tarojs/components';
-import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
-import './Paywall.css';
+import { View, Text, Button } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { useState, useEffect } from "react";
+import "./Paywall.css";
 
 interface PaywallProps {
   onClose: () => void;
@@ -30,7 +30,7 @@ const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
   const fetchProducts = async () => {
     try {
       const res = await Taro.request({
-        url: 'http://localhost:3000/api/v1/memberships/products',
+        url: "http://localhost:3000/api/v1/memberships/products",
       });
       setProducts(res.data.products);
       setLoading(false);
@@ -41,10 +41,10 @@ const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
 
   const handlePurchase = async (product: Product) => {
     try {
-      const token = Taro.getStorageSync('accessToken');
+      const token = Taro.getStorageSync("accessToken");
       const res = await Taro.request({
-        url: 'http://localhost:3000/api/v1/payments/create-order',
-        method: 'POST',
+        url: "http://localhost:3000/api/v1/payments/create-order",
+        method: "POST",
         header: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,22 +63,22 @@ const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
         paySign: res.data.paymentParams.paySign,
         success: () => {
           Taro.showToast({
-            title: '支付成功',
-            icon: 'success',
+            title: "支付成功",
+            icon: "success",
           });
           onUnlock();
         },
         fail: () => {
           Taro.showToast({
-            title: '支付取消',
-            icon: 'none',
+            title: "支付取消",
+            icon: "none",
           });
         },
       });
     } catch (error) {
       Taro.showToast({
-        title: '创建订单失败',
-        icon: 'none',
+        title: "创建订单失败",
+        icon: "none",
       });
     }
   };
@@ -89,14 +89,16 @@ const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
         <View className="paywall-header">
           <Text className="paywall-title">解锁完整报告</Text>
           <Text className="paywall-subtitle">选择适合您的会员方案</Text>
-          <Button className="close-btn" onClick={onClose}>✕</Button>
+          <Button className="close-btn" onClick={onClose}>
+            ✕
+          </Button>
         </View>
 
         <View className="products-list">
           {products.map((product) => (
             <View
               key={product.id}
-              className={`product-card ${product.popular ? 'popular' : ''}`}
+              className={`product-card ${product.popular ? "popular" : ""}`}
             >
               {product.popular && (
                 <View className="popular-badge">热门推荐</View>
@@ -106,7 +108,9 @@ const Paywall: React.FC<PaywallProps> = ({ onClose, onUnlock }) => {
                 <Text className="product-price">{product.priceDisplay}</Text>
               </View>
               <Text className="product-description">{product.description}</Text>
-              <Text className="product-duration">{product.duration}天有效期</Text>
+              <Text className="product-duration">
+                {product.duration}天有效期
+              </Text>
 
               <View className="product-features">
                 {product.features.map((feature, index) => (

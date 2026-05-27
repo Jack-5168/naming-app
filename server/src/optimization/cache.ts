@@ -9,7 +9,7 @@
  * - Multi-level caching strategy
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -37,18 +37,20 @@ let redisClient: any = null;
 
 export async function initializeRedis(redisUrl: string) {
   try {
-    const { createClient } = await import('redis');
+    const { createClient } = await import("redis");
 
     redisClient = createClient({ url: redisUrl });
 
-    redisClient.on('error', (err: any) => console.error('Redis Client Error:', err));
-    redisClient.on('connect', () => console.log('Redis connected'));
+    redisClient.on("error", (err: any) =>
+      console.error("Redis Client Error:", err),
+    );
+    redisClient.on("connect", () => console.log("Redis connected"));
 
     await redisClient.connect();
 
     return true;
   } catch (error) {
-    console.error('Failed to initialize Redis:', error);
+    console.error("Failed to initialize Redis:", error);
 
     return false;
   }
@@ -62,7 +64,7 @@ export function getRedisClient() {
 
 const CacheKeys = {
   userMembership: (userId: number) => `membership:${userId}`,
-  products: () => 'products:all',
+  products: () => "products:all",
   stabilityScore: (userId: number) => `stability:${userId}`,
   personalityProfile: (userId: number) => `profile:${userId}`,
   testRecord: (testId: string) => `test:${testId}`,
@@ -89,7 +91,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
 
     return JSON.parse(value) as T;
   } catch (error) {
-    console.error('Cache get error:', error);
+    console.error("Cache get error:", error);
 
     return null;
   }
@@ -110,7 +112,7 @@ export async function setCache<T>(
   try {
     await redisClient.setEx(key, ttl, JSON.stringify(value));
   } catch (error) {
-    console.error('Cache set error:', error);
+    console.error("Cache set error:", error);
   }
 }
 
@@ -125,7 +127,7 @@ export async function deleteCache(key: string): Promise<void> {
   try {
     await redisClient.del(key);
   } catch (error) {
-    console.error('Cache delete error:', error);
+    console.error("Cache delete error:", error);
   }
 }
 
@@ -144,7 +146,7 @@ export async function deleteCacheByPattern(pattern: string): Promise<void> {
       await redisClient.del(keys);
     }
   } catch (error) {
-    console.error('Cache delete pattern error:', error);
+    console.error("Cache delete pattern error:", error);
   }
 }
 
@@ -242,7 +244,7 @@ export async function getProductsWithCache() {
   // Cache miss - fetch from database
   const products = await prisma.membershipProduct.findMany({
     where: { isActive: true },
-    orderBy: { sortOrder: 'asc' },
+    orderBy: { sortOrder: "asc" },
   });
 
   // Update cache
@@ -258,7 +260,7 @@ export async function getProductsWithCache() {
  */
 export function getStaticCacheHeaders() {
   return {
-    'Cache-Control': `public, max-age=${CACHE_CONFIG.STATIC_ASSETS}`,
+    "Cache-Control": `public, max-age=${CACHE_CONFIG.STATIC_ASSETS}`,
     ETag: `"static-${CACHE_CONFIG.STATIC_ASSETS}"`,
   };
 }
@@ -268,7 +270,7 @@ export function getStaticCacheHeaders() {
  */
 export function getReportCacheHeaders(reportId: string) {
   return {
-    'Cache-Control': `public, max-age=${CACHE_CONFIG.REPORT_IMAGES}`,
+    "Cache-Control": `public, max-age=${CACHE_CONFIG.REPORT_IMAGES}`,
     ETag: `"report-${reportId}"`,
   };
 }
@@ -278,9 +280,9 @@ export function getReportCacheHeaders(reportId: string) {
  */
 export function getNoCacheHeaders() {
   return {
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    Pragma: 'no-cache',
-    Expires: '0',
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
   };
 }
 
@@ -300,29 +302,36 @@ export function configureCDN(config: CDNConfig) {
 /**
  * Upload asset to CDN
  */
-export async function uploadToCDN(filePath: string, contentType: string): Promise<string> {
+export async function uploadToCDN(
+  filePath: string,
+  contentType: string,
+): Promise<string> {
   if (!cdnConfig) {
     return filePath; // Return local path if CDN not configured
   }
 
   try {
-    const fs = await import('fs');
+    const fs = await import("fs");
     const fileContent = fs.readFileSync(filePath);
 
     // In production, use actual CDN API (Cloudflare, AWS CloudFront, etc.)
     // This is a placeholder
-    const cdnUrl = `${cdnConfig.baseUrl}/${Date.now()}-${filePath.split('/').pop()}`;
+    const cdnUrl = `${cdnConfig.baseUrl}/${Date.now()}-${filePath.split("/").pop()}`;
 
     // Set CDN cache headers
-    await setCache(`cdn:${cdnUrl}`, {
-      url: cdnUrl,
-      contentType,
-      cachedAt: Date.now(),
-    }, CACHE_CONFIG.CDN_STATIC);
+    await setCache(
+      `cdn:${cdnUrl}`,
+      {
+        url: cdnUrl,
+        contentType,
+        cachedAt: Date.now(),
+      },
+      CACHE_CONFIG.CDN_STATIC,
+    );
 
     return cdnUrl;
   } catch (error) {
-    console.error('CDN upload error:', error);
+    console.error("CDN upload error:", error);
 
     return filePath;
   }
@@ -338,9 +347,9 @@ export async function purgeCDNCache(urls: string[]): Promise<void> {
 
   try {
     // In production, call CDN purge API
-    console.log('Purging CDN cache for:', urls);
+    console.log("Purging CDN cache for:", urls);
   } catch (error) {
-    console.error('CDN purge error:', error);
+    console.error("CDN purge error:", error);
   }
 }
 
@@ -351,7 +360,7 @@ export async function purgeCDNCache(urls: string[]): Promise<void> {
  * Run this during deployment or low-traffic periods
  */
 export async function warmCache() {
-  console.log('Warming cache...');
+  console.log("Warming cache...");
 
   try {
     // Warm products cache
@@ -373,9 +382,9 @@ export async function warmCache() {
       }
     }
 
-    console.log('Cache warming completed');
+    console.log("Cache warming completed");
   } catch (error) {
-    console.error('Cache warming error:', error);
+    console.error("Cache warming error:", error);
   }
 }
 
@@ -393,7 +402,7 @@ export async function getCacheStats() {
   }
 
   try {
-    const info = await redisClient.info('stats');
+    const info = await redisClient.info("stats");
     const keys = await redisClient.dbSize();
 
     return {

@@ -1,26 +1,26 @@
 /**
  * Redis 缓存服务层
- * 
+ *
  * 缓存策略：
  * - 测试结果缓存：1 小时
  * - 会员权益缓存：30 分钟
  * - 热门分享卡片缓存：24 小时
  * - 题库缓存：7 天
- * 
+ *
  * 预期效果：
  * - API 响应时间降低 60%
  * - 数据库查询减少 80%
  */
 
-import Redis from 'ioredis';
-import { promisify } from 'util';
+import Redis from "ioredis";
+import { promisify } from "util";
 
 // Redis 连接配置
 const REDIS_CONFIG = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+  host: process.env.REDIS_HOST || "localhost",
+  port: parseInt(process.env.REDIS_PORT || "6379"),
   password: process.env.REDIS_PASSWORD || undefined,
-  db: parseInt(process.env.REDIS_DB || '0'),
+  db: parseInt(process.env.REDIS_DB || "0"),
   maxRetriesPerRequest: 3,
   retryStrategy: (times: number) => {
     if (times > 3) return null; // 放弃重连
@@ -30,20 +30,20 @@ const REDIS_CONFIG = {
 
 // 缓存过期时间配置（秒）
 const CACHE_TTL = {
-  TEST_RESULT: 3600,        // 1 小时
-  MEMBER_BENEFIT: 1800,     // 30 分钟
-  SHARE_CARD: 86400,        // 24 小时
-  QUESTION_BANK: 604800,    // 7 天
-  DEFAULT: 300,             // 5 分钟默认
+  TEST_RESULT: 3600, // 1 小时
+  MEMBER_BENEFIT: 1800, // 30 分钟
+  SHARE_CARD: 86400, // 24 小时
+  QUESTION_BANK: 604800, // 7 天
+  DEFAULT: 300, // 5 分钟默认
 };
 
 // 缓存键前缀
 const CACHE_PREFIX = {
-  TEST_RESULT: 'cache:test:',
-  MEMBER_BENEFIT: 'cache:member:',
-  SHARE_CARD: 'cache:share:',
-  QUESTION_BANK: 'cache:question:',
-  USER_SESSION: 'cache:session:',
+  TEST_RESULT: "cache:test:",
+  MEMBER_BENEFIT: "cache:member:",
+  SHARE_CARD: "cache:share:",
+  QUESTION_BANK: "cache:question:",
+  USER_SESSION: "cache:session:",
 };
 
 interface CacheOptions {
@@ -78,20 +78,20 @@ class CacheService {
   }
 
   private setupConnectionHandlers() {
-    this.redis.on('connect', () => {
+    this.redis.on("connect", () => {
       this.isConnected = true;
-      console.log('[CacheService] Redis connected');
+      console.log("[CacheService] Redis connected");
     });
 
-    this.redis.on('error', (err) => {
+    this.redis.on("error", (err) => {
       this.isConnected = false;
       this.stats.errors++;
-      console.error('[CacheService] Redis error:', err.message);
+      console.error("[CacheService] Redis error:", err.message);
     });
 
-    this.redis.on('close', () => {
+    this.redis.on("close", () => {
       this.isConnected = false;
-      console.warn('[CacheService] Redis connection closed');
+      console.warn("[CacheService] Redis connection closed");
     });
   }
 
@@ -100,10 +100,10 @@ class CacheService {
    */
   async get<T>(key: string, options: CacheOptions = {}): Promise<T | null> {
     const fullKey = this.buildKey(key, options.prefix);
-    
+
     try {
       const value = await this.redis.get(fullKey);
-      
+
       if (value === null) {
         this.stats.misses++;
         return null;
@@ -126,14 +126,15 @@ class CacheService {
   async set<T>(
     key: string,
     value: T,
-    options: CacheOptions = {}
+    options: CacheOptions = {},
   ): Promise<boolean> {
     const fullKey = this.buildKey(key, options.prefix);
     const ttl = options.ttl || CACHE_TTL.DEFAULT;
 
     try {
-      const serialized = options.serialize !== false ? JSON.stringify(value) : value as string;
-      
+      const serialized =
+        options.serialize !== false ? JSON.stringify(value) : (value as string);
+
       if (ttl > 0) {
         await this.redis.setex(fullKey, ttl, serialized as string);
       } else {
@@ -153,7 +154,7 @@ class CacheService {
    */
   async delete(key: string, options: CacheOptions = {}): Promise<boolean> {
     const fullKey = this.buildKey(key, options.prefix);
-    
+
     try {
       await this.redis.del(fullKey);
       return true;
@@ -176,7 +177,10 @@ class CacheService {
       return deleted;
     } catch (error) {
       this.stats.errors++;
-      console.error(`[CacheService] Delete pattern error for ${pattern}:`, error);
+      console.error(
+        `[CacheService] Delete pattern error for ${pattern}:`,
+        error,
+      );
       return 0;
     }
   }
@@ -187,7 +191,7 @@ class CacheService {
   async getOrSet<T>(
     key: string,
     fetchFn: () => Promise<T>,
-    options: CacheOptions = {}
+    options: CacheOptions = {},
   ): Promise<T> {
     // 尝试从缓存获取
     const cached = await this.get<T>(key, options);
@@ -197,10 +201,10 @@ class CacheService {
 
     // 缓存未命中，执行获取函数
     const value = await fetchFn();
-    
+
     // 写入缓存
     await this.set(key, value, options);
-    
+
     return value;
   }
 
@@ -212,7 +216,7 @@ class CacheService {
   async cacheTestResult(
     userId: string,
     testId: string,
-    result: any
+    result: any,
   ): Promise<boolean> {
     const key = `${userId}:${testId}`;
     return this.set(key, result, {
@@ -224,10 +228,7 @@ class CacheService {
   /**
    * 获取测试结果缓存
    */
-  async getTestResult(
-    userId: string,
-    testId: string
-  ): Promise<any | null> {
+  async getTestResult(userId: string, testId: string): Promise<any | null> {
     const key = `${userId}:${testId}`;
     return this.get(key, { prefix: CACHE_PREFIX.TEST_RESULT });
   }
@@ -235,10 +236,7 @@ class CacheService {
   /**
    * 缓存会员权益
    */
-  async cacheMemberBenefits(
-    userId: string,
-    benefits: any
-  ): Promise<boolean> {
+  async cacheMemberBenefits(userId: string, benefits: any): Promise<boolean> {
     return this.set(userId, benefits, {
       ttl: CACHE_TTL.MEMBER_BENEFIT,
       prefix: CACHE_PREFIX.MEMBER_BENEFIT,
@@ -255,10 +253,7 @@ class CacheService {
   /**
    * 缓存热门分享卡片
    */
-  async cacheShareCard(
-    cardId: string,
-    cardData: any
-  ): Promise<boolean> {
+  async cacheShareCard(cardId: string, cardData: any): Promise<boolean> {
     return this.set(cardId, cardData, {
       ttl: CACHE_TTL.SHARE_CARD,
       prefix: CACHE_PREFIX.SHARE_CARD,
@@ -277,7 +272,7 @@ class CacheService {
    */
   async cacheQuestionBank(
     category: string,
-    questions: any[]
+    questions: any[],
   ): Promise<boolean> {
     return this.set(category, questions, {
       ttl: CACHE_TTL.QUESTION_BANK,
@@ -321,7 +316,7 @@ class CacheService {
       const info = await this.redis.info();
       return info;
     } catch (error) {
-      console.error('[CacheService] Get Redis info error:', error);
+      console.error("[CacheService] Get Redis info error:", error);
       return null;
     }
   }
@@ -378,7 +373,7 @@ export function Cacheable(options: CacheOptions = {}) {
   return function (
     target: any,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
 

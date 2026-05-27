@@ -47,7 +47,9 @@ class IndexedDB {
       // 版本升级
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        console.log(`[IndexedDB] 版本升级: ${event.oldVersion} → ${event.newVersion}`);
+        console.log(
+          `[IndexedDB] 版本升级: ${event.oldVersion} → ${event.newVersion}`,
+        );
 
         if (this.upgradeCallback) {
           this.upgradeCallback(db, event.oldVersion);
@@ -57,13 +59,18 @@ class IndexedDB {
       // 打开成功
       request.onsuccess = (event) => {
         this.db = event.target.result;
-        console.log(`[IndexedDB] 数据库已打开: ${this.dbName} (v${this.version})`);
+        console.log(
+          `[IndexedDB] 数据库已打开: ${this.dbName} (v${this.version})`,
+        );
         resolve(this.db);
       };
 
       // 打开失败
       request.onerror = (event) => {
-        console.error(`[IndexedDB] 打开失败: ${this.dbName}`, event.target.error);
+        console.error(
+          `[IndexedDB] 打开失败: ${this.dbName}`,
+          event.target.error,
+        );
         reject(event.target.error);
       };
     });
@@ -150,9 +157,7 @@ class IndexedDB {
       const tx = this.db.transaction(storeName, 'readonly');
       const store = tx.objectStore(storeName);
 
-      const request = query
-        ? store.getAll(query, count)
-        : store.getAll();
+      const request = query ? store.getAll(query, count) : store.getAll();
       request.onsuccess = () => resolve(request.result);
       request.onerror = (e) => reject(e.target.error);
     });
@@ -497,9 +502,11 @@ class NotesDatabase extends IndexedDB {
     const notes = await this.getAll('notes');
     const lowerQuery = query.toLowerCase();
 
-    return notes.filter((note) => note.title.toLowerCase().includes(lowerQuery)
-      || note.content.toLowerCase().includes(lowerQuery)
-      || (note.tags || []).some((tag) => tag.toLowerCase().includes(lowerQuery)));
+    return notes.filter(
+      (note) => note.title.toLowerCase().includes(lowerQuery)
+        || note.content.toLowerCase().includes(lowerQuery)
+        || (note.tags || []).some((tag) => tag.toLowerCase().includes(lowerQuery)),
+    );
   }
 
   /**

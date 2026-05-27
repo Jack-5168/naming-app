@@ -14,47 +14,47 @@ dom-training/
 
 ### 基础篇（examples.html 示例 1-4）
 
-| 示例 | 主题 | 文件位置 | 核心 API |
-|------|------|----------|----------|
-| 1 | 基础 DOM 操作 | `#ex1` | `createElement`, `appendChild`, `textContent` |
-| 2 | 事件委托 | `#ex2` | `addEventListener`, `event.target`, `dataset` |
-| 3 | DOM Diff | `#ex3` | 虚拟 DOM 比较算法 |
-| 4 | DocumentFragment | `#ex4` | `createDocumentFragment` |
+| 示例 | 主题             | 文件位置 | 核心 API                                      |
+| ---- | ---------------- | -------- | --------------------------------------------- |
+| 1    | 基础 DOM 操作    | `#ex1`   | `createElement`, `appendChild`, `textContent` |
+| 2    | 事件委托         | `#ex2`   | `addEventListener`, `event.target`, `dataset` |
+| 3    | DOM Diff         | `#ex3`   | 虚拟 DOM 比较算法                             |
+| 4    | DocumentFragment | `#ex4`   | `createDocumentFragment`                      |
 
 ### 进阶篇（examples.html 示例 5-8）
 
-| 示例 | 主题 | 文件位置 | 核心 API |
-|------|------|----------|----------|
-| 5 | 防抖与节流 | `#ex5` | `setTimeout`, `clearTimeout` |
-| 6 | 虚拟滚动 | `#ex6` | `scrollTop`, 可见区域计算 |
-| 7 | MutationObserver | `#ex7` | `MutationObserver`, `observe` |
-| 8 | requestAnimationFrame | `#ex8` | `requestAnimationFrame`, `cancelAnimationFrame` |
+| 示例 | 主题                  | 文件位置 | 核心 API                                        |
+| ---- | --------------------- | -------- | ----------------------------------------------- |
+| 5    | 防抖与节流            | `#ex5`   | `setTimeout`, `clearTimeout`                    |
+| 6    | 虚拟滚动              | `#ex6`   | `scrollTop`, 可见区域计算                       |
+| 7    | MutationObserver      | `#ex7`   | `MutationObserver`, `observe`                   |
+| 8    | requestAnimationFrame | `#ex8`   | `requestAnimationFrame`, `cancelAnimationFrame` |
 
 ### 高级篇（examples.html 示例 9-12）
 
-| 示例 | 主题 | 文件位置 | 核心 API |
-|------|------|----------|----------|
-| 9 | 事件监听器管理 | `#ex9` | `addEventListener`, `removeEventListener` |
-| 10 | classList API | `#ex10` | `classList.add/remove/toggle` |
-| 11 | template 克隆 | `#ex11` | `<template>`, `cloneNode` |
-| 12 | dataset 属性 | `#ex12` | `element.dataset` |
+| 示例 | 主题           | 文件位置 | 核心 API                                  |
+| ---- | -------------- | -------- | ----------------------------------------- |
+| 9    | 事件监听器管理 | `#ex9`   | `addEventListener`, `removeEventListener` |
+| 10   | classList API  | `#ex10`  | `classList.add/remove/toggle`             |
+| 11   | template 克隆  | `#ex11`  | `<template>`, `cloneNode`                 |
+| 12   | dataset 属性   | `#ex12`  | `element.dataset`                         |
 
 ### 工具库（advanced-examples.js）
 
-| 函数 | 用途 | 场景 |
-|------|------|------|
-| `$`, `$$` | 安全选择器 | 替代 querySelector |
-| `createEl` | 元素创建工厂 | 快速创建带属性的元素 |
-| `DOMBatch` | 批量更新队列 | 合并多帧操作 |
-| `renderList` | 高效列表渲染 | 带 key 追踪的列表更新 |
-| `EventBus` | 事件总线 | 组件间通信 |
-| `whenVisible` | 可见性检测 | 懒加载、动画触发 |
-| `createDebouncedSearch` | 防抖搜索 | 搜索框优化 |
-| `makeSortable` | 拖拽排序 | 可排序列表 |
-| `FormValidator` | 表单验证 | 实时表单验证 |
-| `InfiniteScroll` | 无限滚动 | 分页加载 |
-| `DOMPerformanceMonitor` | 性能监控 | 检测慢操作 |
-| `detectMemoryLeaks` | 内存泄漏检测 | 监听器追踪 |
+| 函数                    | 用途         | 场景                  |
+| ----------------------- | ------------ | --------------------- |
+| `$`, `$$`               | 安全选择器   | 替代 querySelector    |
+| `createEl`              | 元素创建工厂 | 快速创建带属性的元素  |
+| `DOMBatch`              | 批量更新队列 | 合并多帧操作          |
+| `renderList`            | 高效列表渲染 | 带 key 追踪的列表更新 |
+| `EventBus`              | 事件总线     | 组件间通信            |
+| `whenVisible`           | 可见性检测   | 懒加载、动画触发      |
+| `createDebouncedSearch` | 防抖搜索     | 搜索框优化            |
+| `makeSortable`          | 拖拽排序     | 可排序列表            |
+| `FormValidator`         | 表单验证     | 实时表单验证          |
+| `InfiniteScroll`        | 无限滚动     | 分页加载              |
+| `DOMPerformanceMonitor` | 性能监控     | 检测慢操作            |
+| `detectMemoryLeaks`     | 内存泄漏检测 | 监听器追踪            |
 
 ## 🎯 学习目标
 
@@ -76,21 +76,25 @@ dom-training/
 ## 📝 练习建议
 
 ### 第一遍：浏览体验
+
 1. 打开 `examples.html`
 2. 逐个点击按钮，观察效果
 3. 阅读每个示例的说明文字
 
 ### 第二遍：代码阅读
+
 1. 打开开发者工具（F12）
 2. 查看 Sources 面板中的代码
 3. 理解每个函数的实现逻辑
 
 ### 第三遍：动手修改
+
 1. 修改示例参数（如防抖延迟、节流间隔）
 2. 观察性能变化
 3. 尝试添加新功能
 
 ### 第四遍：独立实现
+
 1. 关闭示例文件
 2. 尝试从零实现类似功能
 3. 对照参考答案优化代码
@@ -110,12 +114,12 @@ dom-training/
 
 ## ⏱️ 预计学习时间
 
-| 阶段 | 时间 | 内容 |
-|------|------|------|
-| 入门 | 1-2 小时 | 浏览所有示例，理解基本概念 |
-| 进阶 | 3-4 小时 | 深入阅读代码，理解实现细节 |
-| 实践 | 4-6 小时 | 动手修改、扩展示例 |
-| 精通 | 8+ 小时 | 独立实现类似功能，应用到实际项目 |
+| 阶段 | 时间     | 内容                             |
+| ---- | -------- | -------------------------------- |
+| 入门 | 1-2 小时 | 浏览所有示例，理解基本概念       |
+| 进阶 | 3-4 小时 | 深入阅读代码，理解实现细节       |
+| 实践 | 4-6 小时 | 动手修改、扩展示例               |
+| 精通 | 8+ 小时  | 独立实现类似功能，应用到实际项目 |
 
 ---
 

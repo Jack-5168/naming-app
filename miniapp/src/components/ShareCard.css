@@ -175,7 +175,7 @@
 
 .stability-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4ECDC4 0%, #45B7D1 100%);
+  background: linear-gradient(90deg, #4ecdc4 0%, #45b7d1 100%);
   border-radius: 6px;
   transition: width 0.5s ease;
 }

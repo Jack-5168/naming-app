@@ -50,6 +50,7 @@ WeChat mini-program login with OAuth code.
 **Access:** Public
 
 **Request Body:**
+
 ```json
 {
   "code": "wechat_login_code"
@@ -57,6 +58,7 @@ WeChat mini-program login with OAuth code.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -84,6 +86,7 @@ Refresh access token using refresh token.
 **Access:** Public
 
 **Request Body:**
+
 ```json
 {
   "refreshToken": "eyJhbG..."
@@ -91,6 +94,7 @@ Refresh access token using refresh token.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -111,11 +115,13 @@ Logout user and revoke all tokens.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -132,11 +138,13 @@ Get current authenticated user information.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -165,11 +173,13 @@ Get current authenticated user information.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -205,11 +215,13 @@ Create a new test session with CAT (Computerized Adaptive Testing) algorithm.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -231,11 +243,13 @@ Get test session details and progress.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -259,11 +273,13 @@ Get next question using CAT algorithm.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -294,11 +310,13 @@ Submit answer for current question.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "questionId": 42,
@@ -308,6 +326,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -327,11 +346,13 @@ Complete test session and calculate final results.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -353,8 +374,18 @@ Authorization: Bearer <token>
       "upper": 0.92
     },
     "perDimension": {
-      "E": { "stabilityIndex": 0.88, "stabilityProbability": 0.89, "mean": 72, "std": 8.5 },
-      "N": { "stabilityIndex": 0.75, "stabilityProbability": 0.78, "mean": 65, "std": 12.3 }
+      "E": {
+        "stabilityIndex": 0.88,
+        "stabilityProbability": 0.89,
+        "mean": 72,
+        "std": 8.5
+      },
+      "N": {
+        "stabilityIndex": 0.75,
+        "stabilityProbability": 0.78,
+        "mean": 65,
+        "std": 12.3
+      }
     },
     "completedAt": "2026-05-01T10:08:00Z"
   }
@@ -370,11 +401,13 @@ Get detailed test results.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -416,6 +449,7 @@ Get sample report for preview.
 **Access:** Public
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -446,11 +480,13 @@ Generate a new report based on test results.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "testResultId": 123,
@@ -459,6 +495,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -481,15 +518,18 @@ Get user's report history.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `page` (optional, default: 1)
 - `limit` (optional, default: 10)
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -519,11 +559,13 @@ Get detailed report by ID.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -568,11 +610,13 @@ Unlock premium report using membership or payment.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -596,11 +640,13 @@ Create a payment order for membership or report unlock.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "productId": 2,
@@ -609,6 +655,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -638,6 +685,7 @@ WeChat payment webhook callback.
 **Access:** Public (Webhook)
 
 **Request Body:**
+
 ```json
 {
   "orderId": 789,
@@ -649,6 +697,7 @@ WeChat payment webhook callback.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true
@@ -664,16 +713,19 @@ Get user's payment order history.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
+
 - `page` (optional, default: 1)
 - `limit` (optional, default: 10)
 - `status` (optional: pending, success, failed, refunded)
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -707,11 +759,13 @@ Get detailed order information.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -740,11 +794,13 @@ Process refund for an order.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "orderId": 789,
@@ -753,6 +809,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -777,6 +834,7 @@ Get all available membership products.
 **Access:** Public
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -785,27 +843,27 @@ Get all available membership products.
       "id": 1,
       "name": "单次测试解锁",
       "description": "解锁单次完整测试报告",
-      "price": 29.00,
+      "price": 29.0,
       "currency": "CNY",
       "durationDays": 0,
       "level": "basic",
-      "pricePerUse": 29.00
+      "pricePerUse": 29.0
     },
     {
       "id": 2,
       "name": "标准会员",
       "description": "30 天内无限次测试",
-      "price": 99.00,
+      "price": 99.0,
       "currency": "CNY",
       "durationDays": 30,
       "level": "standard",
-      "pricePerUse": 9.90
+      "pricePerUse": 9.9
     },
     {
       "id": 3,
       "name": "高级会员",
       "description": "90 天无限次测试 + 高级报告",
-      "price": 199.00,
+      "price": 199.0,
       "currency": "CNY",
       "durationDays": 90,
       "level": "premium",
@@ -824,11 +882,13 @@ Get current user's membership status and benefits.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -836,11 +896,7 @@ Authorization: Bearer <token>
     "membership": {
       "level": "standard",
       "expiresAt": "2024-02-01T10:00:00Z",
-      "benefits": [
-        "无限次测试",
-        "基础报告",
-        "双人对测"
-      ]
+      "benefits": ["无限次测试", "基础报告", "双人对测"]
     },
     "isActive": true,
     "daysRemaining": 30
@@ -857,11 +913,13 @@ Upgrade user's membership level.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "productId": 2
@@ -869,6 +927,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -888,20 +947,13 @@ Get detailed benefits for all membership levels.
 **Access:** Public
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
   "data": {
-    "basic": [
-      "单次测试解锁",
-      "基础报告"
-    ],
-    "standard": [
-      "30 天无限次测试",
-      "基础报告",
-      "双人对测",
-      "分享卡片"
-    ],
+    "basic": ["单次测试解锁", "基础报告"],
+    "standard": ["30 天无限次测试", "基础报告", "双人对测", "分享卡片"],
     "premium": [
       "90 天无限次测试",
       "高级报告",
@@ -926,11 +978,13 @@ Create a new life event record.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "eventType": "career",
@@ -943,6 +997,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -979,6 +1034,7 @@ Get all life events for the current user.
 | `pageSize` | number | Page size (default: 20) |
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1003,6 +1059,7 @@ Get a specific life event by ID.
 **Access:** Private
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1033,6 +1090,7 @@ Update a life event.
 **Access:** Private
 
 **Request Body:**
+
 ```json
 {
   "title": "新工作入职 (更新)",
@@ -1041,6 +1099,7 @@ Update a life event.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1057,6 +1116,7 @@ Delete a life event.
 **Access:** Private
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1073,6 +1133,7 @@ Analyze the impact of a life event on personality dimensions.
 **Access:** Private
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1102,11 +1163,13 @@ Create a dual test invitation for friend comparison.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "inviteeWechat": "wx_id_or_phone"
@@ -1114,6 +1177,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1134,11 +1198,13 @@ Accept a dual test invitation.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
   "inviteCode": "ABC123"
@@ -1146,6 +1212,7 @@ Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1165,11 +1232,13 @@ Complete dual test and generate comparison report.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1192,11 +1261,13 @@ Get dual test session details.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1219,11 +1290,13 @@ Generate personality share card for social media.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1243,11 +1316,13 @@ Generate stability index share card.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1267,11 +1342,13 @@ Get user's unique referral link.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1291,21 +1368,23 @@ Get commission history and balance.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
   "data": {
-    "balance": 299.00,
+    "balance": 299.0,
     "currency": "CNY",
     "commissions": [
       {
         "id": 1,
-        "amount": 29.00,
+        "amount": 29.0,
         "referralUserId": 456,
         "status": "completed",
         "createdAt": "2026-05-01T10:00:00Z"
@@ -1324,26 +1403,29 @@ Request commission withdrawal.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Request Body:**
+
 ```json
 {
-  "amount": 100.00,
+  "amount": 100.0,
   "withdrawMethod": "wechat",
   "withdrawAccount": "wx_id"
 }
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
   "data": {
     "withdrawId": "wd_xxx",
-    "amount": 100.00,
+    "amount": 100.0,
     "status": "processing"
   }
 }
@@ -1358,18 +1440,20 @@ Get KOC dashboard with stats and analytics.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
   "data": {
     "totalReferrals": 15,
-    "totalEarnings": 435.00,
-    "pendingWithdrawals": 100.00,
+    "totalEarnings": 435.0,
+    "pendingWithdrawals": 100.0,
     "conversionRate": 0.25,
     "recentActivity": []
   }
@@ -1389,6 +1473,7 @@ Validate an invite code.
 **Access:** Public
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1407,11 +1492,13 @@ Create a new invite code.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1430,6 +1517,7 @@ Use an invite code.
 **Access:** Public
 
 **Request Body:**
+
 ```json
 {
   "userId": 1
@@ -1437,6 +1525,7 @@ Use an invite code.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1453,11 +1542,13 @@ Generate personality share card for social media.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1475,11 +1566,13 @@ Generate stability index share card.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1497,11 +1590,13 @@ Generate dual test comparison share card.
 **Access:** Private
 
 **Headers:**
+
 ```http
 Authorization: Bearer <token>
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1519,6 +1614,7 @@ Track share analytics.
 **Access:** Private
 
 **Request Body:**
+
 ```json
 {
   "shareType": "personality_card",
@@ -1527,6 +1623,7 @@ Track share analytics.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1543,6 +1640,7 @@ Get share statistics for current user.
 **Access:** Private
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1569,6 +1667,7 @@ Health check endpoint for monitoring.
 **Access:** Public
 
 **Response (200 OK):**
+
 ```json
 {
   "status": "ok",
@@ -1596,30 +1695,30 @@ All errors follow a standardized format:
 
 ### HTTP Status Codes
 
-| Code | Description |
-|------|-------------|
-| 200 | Success |
-| 400 | Bad Request - Invalid input |
-| 401 | Unauthorized - Missing or invalid token |
-| 403 | Forbidden - Insufficient permissions |
-| 404 | Not Found - Resource doesn't exist |
-| 429 | Too Many Requests - Rate limit exceeded |
-| 500 | Internal Server Error |
+| Code | Description                             |
+| ---- | --------------------------------------- |
+| 200  | Success                                 |
+| 400  | Bad Request - Invalid input             |
+| 401  | Unauthorized - Missing or invalid token |
+| 403  | Forbidden - Insufficient permissions    |
+| 404  | Not Found - Resource doesn't exist      |
+| 429  | Too Many Requests - Rate limit exceeded |
+| 500  | Internal Server Error                   |
 
 ### Error Codes
 
-| Code | Description |
-|------|-------------|
-| 40001 | Invalid request body |
-| 40002 | Missing required field |
-| 40101 | No token provided |
-| 40102 | Invalid token |
-| 40103 | Token expired |
+| Code  | Description              |
+| ----- | ------------------------ |
+| 40001 | Invalid request body     |
+| 40002 | Missing required field   |
+| 40101 | No token provided        |
+| 40102 | Invalid token            |
+| 40103 | Token expired            |
 | 40301 | Insufficient permissions |
-| 40302 | Membership required |
-| 40401 | Resource not found |
-| 42901 | Rate limit exceeded |
-| 50001 | Internal server error |
+| 40302 | Membership required      |
+| 40401 | Resource not found       |
+| 42901 | Rate limit exceeded      |
+| 50001 | Internal server error    |
 
 ---
 
@@ -1677,4 +1776,4 @@ Future versions will follow the pattern: `/api/v2/...`
 
 ---
 
-*Last updated: 2026-05-01*
+_Last updated: 2026-05-01_

@@ -10,25 +10,28 @@
 ## 一、Point-Free 风格 (Tacit Programming)
 
 ### 概念
+
 Point-Free 是一种不显式提及函数参数的编程风格，通过函数组合和部分应用来构建新函数。参数被"隐式传递"。
 
 ### 示例 1: Point-Free vs 非 Point-Free
+
 ```javascript
 // ❌ 非 Point-Free — 显式提及参数 words
-const countWords = (words) => words.split(' ').length;
+const countWords = (words) => words.split(" ").length;
 
 // ✅ Point-Free — 没有提及参数
 const countWords = pipe(
-  (s) => s.split(' '),
-  (arr) => arr.length
+  (s) => s.split(" "),
+  (arr) => arr.length,
 );
 
 // 更优雅：用 map + length
 const splitBy = (sep) => (s) => s.split(sep);
-const countWords = pipe(splitBy(' '), (arr) => arr.length);
+const countWords = pipe(splitBy(" "), (arr) => arr.length);
 ```
 
 ### 示例 2: 用柯里化实现 Point-Free
+
 ```javascript
 // Ramda 风格的柯里化工具
 const R_map = (fn) => (arr) => arr.map(fn);
@@ -38,33 +41,34 @@ const R_reduce = (fn) => (init) => (arr) => arr.reduce(fn, init);
 // Point-Free 数据处理管道
 const getAdultNames = pipe(
   R_filter((u) => u.age >= 18),
-  R_map((u) => u.name.toUpperCase())
+  R_map((u) => u.name.toUpperCase()),
 );
 
 // 完全 Point-Free（假设 prop 是柯里化的）
 const prop = (key) => (obj) => obj[key];
 const getAdultNames2 = pipe(
   R_filter((u) => u.age >= 18),
-  R_map(prop('name')),
-  R_map((s) => s.toUpperCase())
+  R_map(prop("name")),
+  R_map((s) => s.toUpperCase()),
 );
 ```
 
 ### 示例 3: Point-Free 的陷阱与平衡
+
 ```javascript
 // ❌ 过度 Point-Free — 可读性差
 const f = pipe(
   R_map((x) => x * 2),
   R_filter((x) => x > 10),
-  R_reduce((a) => (b) => (c) => a + b)
+  R_reduce((a) => (b) => (c) => a + b),
 );
 
 // ✅ 适度 Point-Free — 关键步骤显式化
 const process = (data) =>
   pipe(
-    R_map(double),       // 可读：明确是 double
-    R_filter(gt(10)),    // 可读：明确是 > 10
-    R_reduce(add)(0)     // 可读：明确是求和
+    R_map(double), // 可读：明确是 double
+    R_filter(gt(10)), // 可读：明确是 > 10
+    R_reduce(add)(0), // 可读：明确是求和
   )(data);
 
 // 辅助函数
@@ -78,9 +82,11 @@ const add = (a) => (b) => a + b;
 ## 二、Transducer — 高效数据转换
 
 ### 概念
+
 Transducer（变换器）是一种可组合的数据转换抽象。它将 map/filter/reduce 分解为**转换逻辑**和**归约逻辑**，避免中间数组的创建。
 
 ### 示例 4: Transducer 核心实现
+
 ```javascript
 // 转换函数 — 定义"如何转换每个元素"
 const mapping = (transform) => (reducer) => (acc, item) =>
@@ -106,46 +112,44 @@ const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // 传统方式：创建 2 个中间数组
 const traditional = numbers
-  .filter((n) => n % 2 === 0)    // [2, 4, 6, 8, 10] — 中间数组
-  .map((n) => n * 3);            // [6, 12, 18, 24, 30] — 中间数组
+  .filter((n) => n % 2 === 0) // [2, 4, 6, 8, 10] — 中间数组
+  .map((n) => n * 3); // [6, 12, 18, 24, 30] — 中间数组
 
 // Transducer 方式：零中间数组，单次遍历
 const result = transduce(
-  (reducer) =>
-    filtering((n) => n % 2 === 0)(
-      mapping((n) => n * 3)(reducer)
-    ),
+  (reducer) => filtering((n) => n % 2 === 0)(mapping((n) => n * 3)(reducer)),
   toArray,
   [],
-  numbers
+  numbers,
 );
 console.log(result); // [6, 12, 18, 24, 30]
 ```
 
 ### 示例 5: Transducer 组合 — compose 变换器
+
 ```javascript
 // Transducer 组合（从右向左）
-const composeTransducers = (...xforms) => (reducer) =>
-  xforms.reduceRight((r, xf) => xf(r), reducer);
+const composeTransducers =
+  (...xforms) =>
+  (reducer) =>
+    xforms.reduceRight((r, xf) => xf(r), reducer);
 
 // 预定义变换器
 const xfilter = (pred) => (reducer) => (acc, item) =>
   pred(item) ? reducer(acc, item) : acc;
 
-const xmap = (fn) => (reducer) => (acc, item) =>
-  reducer(acc, fn(item));
+const xmap = (fn) => (reducer) => (acc, item) => reducer(acc, fn(item));
 
 const xtake = (n) => (reducer) => {
   let remaining = n;
-  return (acc, item) =>
-    remaining-- > 0 ? reducer(acc, item) : acc;
+  return (acc, item) => (remaining-- > 0 ? reducer(acc, item) : acc);
 };
 
 // 组合多个变换器
 const xform = composeTransducers(
   xfilter((n) => n % 2 === 0),
   xmap((n) => n * 3),
-  xtake(3)
+  xtake(3),
 );
 
 const result = transduce(xform, toArray, [], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
@@ -153,29 +157,30 @@ console.log(result); // [6, 12, 18] — 只遍历到第 6 个元素就停止
 ```
 
 ### 示例 6: Transducer 性能对比
+
 ```javascript
 // 大数据集性能测试
 const bigData = Array.from({ length: 1_000_000 }, (_, i) => i);
 
 // 传统链式调用
-console.time('traditional');
+console.time("traditional");
 const t1 = bigData
   .filter((n) => n % 2 === 0)
   .map((n) => n * 3)
   .filter((n) => n > 100)
   .slice(0, 100);
-console.timeEnd('traditional'); // ~30ms, 创建 3 个中间数组
+console.timeEnd("traditional"); // ~30ms, 创建 3 个中间数组
 
 // Transducer 单次遍历
-console.time('transducer');
+console.time("transducer");
 const xform2 = composeTransducers(
   xfilter((n) => n % 2 === 0),
   xmap((n) => n * 3),
   xfilter((n) => n > 100),
-  xtake(100)
+  xtake(100),
 );
 const t2 = transduce(xform2, toArray, [], bigData);
-console.timeEnd('transducer'); // ~8ms, 零中间数组
+console.timeEnd("transducer"); // ~8ms, 零中间数组
 
 // 结论：大数据集 + 多步转换，Transducer 性能提升 3-5x
 ```
@@ -185,9 +190,11 @@ console.timeEnd('transducer'); // ~8ms, 零中间数组
 ## 三、Lens — 不可变数据的聚焦操作
 
 ### 概念
+
 Lens 是一种专注于嵌套数据结构中某个字段的抽象。提供 `get`（读取）和 `set`（不可变更新）操作，支持组合。
 
 ### 示例 7: Lens 基础实现
+
 ```javascript
 // Lens 构造器
 const Lens = (getter) => (setter) => ({
@@ -197,14 +204,14 @@ const Lens = (getter) => (setter) => ({
   modify: (fn) => (obj) => {
     const current = getter(obj);
     return setter(fn(current))(obj);
-  }
+  },
 });
 
 // 属性 Lens
 const propLens = (key) =>
   Lens(
     (obj) => obj[key],
-    (val) => (obj) => ({ ...obj, [key]: val })
+    (val) => (obj) => ({ ...obj, [key]: val }),
   );
 
 // 索引 Lens
@@ -215,14 +222,14 @@ const indexLens = (idx) =>
       const copy = [...arr];
       copy[idx] = val;
       return copy;
-    }
+    },
   );
 
 // 使用
-const nameLens = propLens('name');
-const ageLens = propLens('age');
+const nameLens = propLens("name");
+const ageLens = propLens("age");
 
-const user = { name: 'Alice', age: 25, city: 'Shanghai' };
+const user = { name: "Alice", age: 25, city: "Shanghai" };
 
 console.log(nameLens.get(user)); // 'Alice'
 console.log(ageLens.set(26)(user)); // { name: 'Alice', age: 26, city: 'Shanghai' }
@@ -231,32 +238,32 @@ console.log(ageLens.modify((a) => a + 1)(user)); // { name: 'Alice', age: 26, ci
 ```
 
 ### 示例 8: Lens 组合 — 聚焦嵌套数据
+
 ```javascript
 // Lens 组合：从右向左
 const composeLens = (outer) => (inner) =>
   Lens(
     (obj) => inner.get(outer.get(obj)),
-    (val) => (obj) =>
-      outer.set(inner.set(val)(outer.get(obj)))(obj)
+    (val) => (obj) => outer.set(inner.set(val)(outer.get(obj)))(obj),
   );
 
 // 嵌套数据
 const company = {
-  name: 'TechCorp',
+  name: "TechCorp",
   department: {
-    name: 'Engineering',
+    name: "Engineering",
     lead: {
-      name: 'Bob',
-      skills: ['JavaScript', 'Python', 'Go']
-    }
-  }
+      name: "Bob",
+      skills: ["JavaScript", "Python", "Go"],
+    },
+  },
 };
 
 // 组合 Lens
-const deptLens = propLens('department');
-const leadLens = propLens('lead');
-const nameLens = propLens('name');
-const skillsLens = propLens('skills');
+const deptLens = propLens("department");
+const leadLens = propLens("lead");
+const nameLens = propLens("name");
+const skillsLens = propLens("skills");
 const firstSkillLens = indexLens(0);
 
 // 聚焦到 lead.name
@@ -264,21 +271,22 @@ const leadNameLens = composeLens(composeLens(deptLens)(leadLens))(nameLens);
 console.log(leadNameLens.get(company)); // 'Bob'
 
 // 不可变更新 lead.name
-const updated = leadNameLens.set('Charlie')(company);
+const updated = leadNameLens.set("Charlie")(company);
 console.log(updated.department.lead.name); // 'Charlie'
 console.log(company.department.lead.name); // 'Bob' (原数据不变)
 
 // 聚焦到 lead.skills[0]
 const firstSkillOfLead = composeLens(
-  composeLens(composeLens(deptLens)(leadLens))(skillsLens)
+  composeLens(composeLens(deptLens)(leadLens))(skillsLens),
 )(firstSkillLens);
 console.log(firstSkillOfLead.get(company)); // 'JavaScript'
 
-const updated2 = firstSkillOfLead.set('TypeScript')(company);
+const updated2 = firstSkillOfLead.set("TypeScript")(company);
 console.log(updated2.department.lead.skills[0]); // 'TypeScript'
 ```
 
 ### 示例 9: 实用的 over / view / set 函数式 API
+
 ```javascript
 // Ramda 风格的 Lens API
 const view = (lens) => (obj) => lens.get(obj);
@@ -287,29 +295,29 @@ const over = (lens) => (fn) => (obj) => lens.modify(fn)(obj);
 
 // 快速操作嵌套数据
 const state = {
-  ui: { theme: 'dark', sidebar: { collapsed: false, width: 250 } },
-  data: { users: [{ name: 'Alice' }, { name: 'Bob' }] }
+  ui: { theme: "dark", sidebar: { collapsed: false, width: 250 } },
+  data: { users: [{ name: "Alice" }, { name: "Bob" }] },
 };
 
-const uiLens = propLens('ui');
-const themeLens = propLens('theme');
-const sidebarLens = propLens('sidebar');
-const collapsedLens = propLens('collapsed');
-const dataLens = propLens('data');
-const usersLens = propLens('users');
+const uiLens = propLens("ui");
+const themeLens = propLens("theme");
+const sidebarLens = propLens("sidebar");
+const collapsedLens = propLens("collapsed");
+const dataLens = propLens("data");
+const usersLens = propLens("users");
 const secondUserLens = indexLens(1);
-const userNameLens = propLens('name');
+const userNameLens = propLens("name");
 
 // 组合完整路径
 const themeOfUi = composeLens(uiLens)(themeLens);
 const collapsedOfSidebar = composeLens(sidebarLens)(collapsedLens);
 const uiCollapsed = composeLens(uiLens)(collapsedOfSidebar);
 const secondUserName = composeLens(
-  composeLens(composeLens(dataLens)(usersLens))(secondUserLens)
+  composeLens(composeLens(dataLens)(usersLens))(secondUserLens),
 )(userNameLens);
 
 // 操作
-const s1 = over(themeOfUi)((t) => (t === 'dark' ? 'light' : 'dark'))(state);
+const s1 = over(themeOfUi)((t) => (t === "dark" ? "light" : "dark"))(state);
 console.log(view(themeOfUi)(s1)); // 'light'
 
 const s2 = set(uiCollapsed)(true)(state);
@@ -324,13 +332,14 @@ console.log(view(secondUserName)(s3)); // 'BOB'
 ## 四、Monad 进阶 — IO / Task / Reader
 
 ### 示例 10: IO Monad — 延迟副作用
+
 ```javascript
 // IO Monad: 将副作用操作包装为纯值
 const IO = (fn) => ({
   _value: fn,
   map: (g) => IO(() => g(fn())),
   chain: (g) => IO(() => g(fn())._value()),
-  run: () => fn()
+  run: () => fn(),
 });
 
 IO.of = (x) => IO(() => x);
@@ -340,7 +349,7 @@ const getLine = (prompt) =>
   IO(() => {
     // 实际环境中是 readline/prompts
     console.log(prompt);
-    return 'user input';
+    return "user input";
   });
 
 const writeFile = (path) => (content) =>
@@ -352,18 +361,16 @@ const writeFile = (path) => (content) =>
 const readFile = (path) =>
   IO(() => {
     console.log(`Reading from ${path}`);
-    return 'file content';
+    return "file content";
   });
 
 // 组合 IO 操作 — 纯函数，直到 run() 才执行
-const program = getLine('Enter name:')
+const program = getLine("Enter name:")
   .chain((name) =>
-    readFile('config.txt').chain((config) =>
-      IO.of({ name, config })
-    )
+    readFile("config.txt").chain((config) => IO.of({ name, config })),
   )
   .map(({ name, config }) => `${name}: ${config}`)
-  .chain((result) => writeFile('output.txt')(result));
+  .chain((result) => writeFile("output.txt")(result));
 
 // 纯值组合，无副作用
 // 只有 run() 时才真正执行
@@ -371,41 +378,41 @@ const program = getLine('Enter name:')
 ```
 
 ### 示例 11: Task (Future) Monad — 异步纯函数
+
 ```javascript
 // Task Monad: 将异步操作包装为纯值
 const Task = (fork) => ({
   fork,
-  map: (fn) =>
-    Task((reject, resolve) =>
-      fork(reject, (x) => resolve(fn(x)))
-    ),
+  map: (fn) => Task((reject, resolve) => fork(reject, (x) => resolve(fn(x)))),
   chain: (fn) =>
-    Task((reject, resolve) =>
-      fork(reject, (x) => fn(x).fork(reject, resolve))
-    )
+    Task((reject, resolve) => fork(reject, (x) => fn(x).fork(reject, resolve))),
 });
 
 Task.of = (x) => Task((_, resolve) => resolve(x));
 Task.reject = (x) => Task((reject, _) => reject(x));
 
 // 从 Promise 创建 Task
-const taskFromPromise = (fn) => (...args) =>
-  Task((reject, resolve) =>
-    fn(...args).then(resolve).catch(reject)
-  );
+const taskFromPromise =
+  (fn) =>
+  (...args) =>
+    Task((reject, resolve) =>
+      fn(...args)
+        .then(resolve)
+        .catch(reject),
+    );
 
 // 模拟异步 API
 const fetchUser = (id) =>
   Task((reject, resolve) =>
     setTimeout(() => {
       if (id > 0) resolve({ id, name: `User ${id}` });
-      else reject(new Error('Invalid ID'));
-    }, 100)
+      else reject(new Error("Invalid ID"));
+    }, 100),
   );
 
 const fetchPosts = (userId) =>
   Task((reject, resolve) =>
-    setTimeout(() => resolve([{ id: 1, title: 'Hello FP' }]), 100)
+    setTimeout(() => resolve([{ id: 1, title: "Hello FP" }]), 100),
   );
 
 // 组合异步操作 — 纯函数组合
@@ -413,33 +420,33 @@ const getUserWithPosts = (id) =>
   fetchUser(id).chain((user) =>
     fetchPosts(user.id).map((posts) => ({
       ...user,
-      posts
-    }))
+      posts,
+    })),
   );
 
 // 执行
 getUserWithPosts(1).fork(
-  (err) => console.error('Error:', err.message),
-  (result) => console.log('Result:', result)
+  (err) => console.error("Error:", err.message),
+  (result) => console.log("Result:", result),
 );
 // { id: 1, name: 'User 1', posts: [{ id: 1, title: 'Hello FP' }] }
 
 // 错误处理
 getUserWithPosts(-1).fork(
-  (err) => console.error('Error:', err.message),
-  (result) => console.log('Result:', result)
+  (err) => console.error("Error:", err.message),
+  (result) => console.log("Result:", result),
 );
 // Error: Invalid ID
 ```
 
 ### 示例 12: Reader Monad — 依赖注入
+
 ```javascript
 // Reader Monad: 将环境/配置作为隐式参数传递
 const Reader = (run) => ({
   run,
   map: (fn) => Reader((env) => fn(run(env))),
-  chain: (fn) =>
-    Reader((env) => fn(run(env)).run(env))
+  chain: (fn) => Reader((env) => fn(run(env)).run(env)),
 });
 
 Reader.of = (x) => Reader(() => x);
@@ -449,13 +456,12 @@ const ask = () => Reader((env) => env);
 const asks = (fn) => Reader((env) => fn(env));
 
 // 模拟依赖注入
-const db = { users: [{ id: 1, name: 'Alice' }] };
+const db = { users: [{ id: 1, name: "Alice" }] };
 const config = { maxResults: 10, cache: true };
 const env = { db, config };
 
 // 纯函数组合，依赖通过 Reader 注入
-const getUser = (id) =>
-  asks((env) => env.db.users.find((u) => u.id === id));
+const getUser = (id) => asks((env) => env.db.users.find((u) => u.id === id));
 
 const getConfig = () => asks((env) => env.config);
 
@@ -464,8 +470,8 @@ const getUserWithLimit = (id) =>
     getConfig().map((cfg) => ({
       user,
       maxResults: cfg.maxResults,
-      cached: cfg.cache
-    }))
+      cached: cfg.cache,
+    })),
   );
 
 // 执行时注入环境
@@ -475,8 +481,8 @@ console.log(result);
 
 // 测试时注入 mock 环境
 const mockEnv = {
-  db: { users: [{ id: 1, name: 'Test User' }] },
-  config: { maxResults: 5, cache: false }
+  db: { users: [{ id: 1, name: "Test User" }] },
+  config: { maxResults: 5, cache: false },
 };
 const testResult = getUserWithLimit(1).run(mockEnv);
 console.log(testResult);
@@ -488,6 +494,7 @@ console.log(testResult);
 ## 五、函数式错误处理模式
 
 ### 示例 13: Result/Either 完整实现
+
 ```javascript
 // Result 类型：Ok | Err
 const Ok = (value) => ({
@@ -500,7 +507,7 @@ const Ok = (value) => ({
   unwrap: () => value,
   unwrapOr: (defaultVal) => value,
   unwrapOrElse: (fn) => value,
-  toString: () => `Ok(${value})`
+  toString: () => `Ok(${value})`,
 });
 
 const Err = (error) => ({
@@ -510,10 +517,12 @@ const Err = (error) => ({
   chain: () => Err(error),
   mapErr: (fn) => Err(fn(error)),
   orElse: (fn) => fn(error),
-  unwrap: () => { throw new Error(`unwrap on Err: ${error}`); },
+  unwrap: () => {
+    throw new Error(`unwrap on Err: ${error}`);
+  },
   unwrapOr: (defaultVal) => defaultVal,
   unwrapOrElse: (fn) => fn(error),
-  toString: () => `Err(${error})`
+  toString: () => `Err(${error})`,
 });
 
 const Result = { ok: Ok, err: Err };
@@ -528,7 +537,7 @@ const tryCatch = (fn) => {
 };
 
 const fromNullable = (value) =>
-  value != null ? Ok(value) : Err('Value is null/undefined');
+  value != null ? Ok(value) : Err("Value is null/undefined");
 
 // 使用
 const parseJSON = (str) => tryCatch(() => JSON.parse(str));
@@ -540,11 +549,10 @@ const result = parseJSON('{"name": "Alice"}')
 console.log(result.toString()); // Ok(ALICE)
 console.log(result.unwrap()); // 'ALICE'
 
-const badResult = parseJSON('invalid json')
-  .map((obj) => obj.name);
+const badResult = parseJSON("invalid json").map((obj) => obj.name);
 
 console.log(badResult.toString()); // Err(Unexpected token...)
-console.log(badResult.unwrapOr('Guest')); // 'Guest'
+console.log(badResult.unwrapOr("Guest")); // 'Guest'
 
 // 链式处理
 const processUser = (input) =>
@@ -554,32 +562,31 @@ const processUser = (input) =>
     .mapErr((e) => `Parse failed: ${e}`);
 
 console.log(processUser('{"name":"Bob"}').unwrap()); // 'Bob'
-console.log(processUser(null).unwrapOr('Anonymous')); // 'Anonymous'
-console.log(processUser('bad').unwrapOrElse((e) => `Error: ${e}`)); // 'Error: Parse failed: ...'
+console.log(processUser(null).unwrapOr("Anonymous")); // 'Anonymous'
+console.log(processUser("bad").unwrapOrElse((e) => `Error: ${e}`)); // 'Error: Parse failed: ...'
 ```
 
 ### 示例 14: 验证器组合 — 函数式验证
+
 ```javascript
 // 验证器：输入 → Result<错误, 值>
 const validate = (predicate) => (errorMsg) => (value) =>
   predicate(value) ? Ok(value) : Err(errorMsg);
 
 // 组合验证器
-const and = (v1) => (v2) => (value) =>
-  v1(value).chain((_) => v2(value));
+const and = (v1) => (v2) => (value) => v1(value).chain((_) => v2(value));
 
-const or = (v1) => (v2) => (value) =>
-  v1(value).orElse((_) => v2(value));
+const or = (v1) => (v2) => (value) => v1(value).orElse((_) => v2(value));
 
 // 预定义验证器
-const isNonEmpty = validate((s) => s.length > 0)('Cannot be empty');
+const isNonEmpty = validate((s) => s.length > 0)("Cannot be empty");
 const minLength = (n) => validate((s) => s.length >= n)(`Min length: ${n}`);
 const maxLength = (n) => validate((s) => s.length <= n)(`Max length: ${n}`);
-const isEmail = validate(
-  (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)
-)('Invalid email');
-const isNumber = validate((x) => typeof x === 'number' && !isNaN(x))(
-  'Must be a number'
+const isEmail = validate((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))(
+  "Invalid email",
+);
+const isNumber = validate((x) => typeof x === "number" && !isNaN(x))(
+  "Must be a number",
 );
 const inRange = (min, max) =>
   validate((x) => x >= min && x <= max)(`Range: ${min}-${max}`);
@@ -600,13 +607,13 @@ const validateUser = (user) => {
     .filter((r) => r.isErr)
     .map((r) => r.unwrapOrElse((e) => e));
 
-  return errors.length === 0
-    ? Ok(user)
-    : Err(errors);
+  return errors.length === 0 ? Ok(user) : Err(errors);
 };
 
-console.log(validateUser({ name: 'Alice', age: 25, email: 'a@b.com' }).isOk()); // true
-console.log(validateUser({ name: '', age: -1, email: 'bad' }).unwrapOrElse((e) => e));
+console.log(validateUser({ name: "Alice", age: 25, email: "a@b.com" }).isOk()); // true
+console.log(
+  validateUser({ name: "", age: -1, email: "bad" }).unwrapOrElse((e) => e),
+);
 // ['Cannot be empty', 'Range: 0-150', 'Invalid email']
 ```
 
@@ -615,6 +622,7 @@ console.log(validateUser({ name: '', age: -1, email: 'bad' }).unwrapOrElse((e) =
 ## 六、函数式数据结构
 
 ### 示例 15: 持久化链表
+
 ```javascript
 // 不可变链表
 const Empty = {
@@ -625,7 +633,7 @@ const Empty = {
   head: undefined,
   tail: Empty,
   toArray: () => [],
-  toString: () => 'Empty'
+  toString: () => "Empty",
 };
 
 const Cons = (head, tail) => ({
@@ -648,14 +656,14 @@ const Cons = (head, tail) => ({
   },
   toString() {
     return `Cons(${head}, ${tail})`;
-  }
+  },
 });
 
 const List = {
   empty: Empty,
   of(...items) {
     return items.reduceRight((acc, item) => Cons(item, acc), Empty);
-  }
+  },
 };
 
 // 使用
@@ -680,17 +688,26 @@ console.log(extended.toArray()); // [0, 1, 2, 3, 4, 5]
 ```
 
 ### 示例 16: 不可变二叉搜索树
+
 ```javascript
 // 不可变 BST
 const EmptyTree = {
   insert(val) {
     return { value: val, left: EmptyTree, right: EmptyTree, height: 1 };
   },
-  contains(val) { return false; },
-  toArray() { return []; },
-  min() { return null; },
-  max() { return null; },
-  height: 0
+  contains(val) {
+    return false;
+  },
+  toArray() {
+    return [];
+  },
+  min() {
+    return null;
+  },
+  max() {
+    return null;
+  },
+  height: 0,
 };
 
 const height = (tree) => tree?.height ?? 0;
@@ -707,8 +724,13 @@ const balance = (tree) => {
       return {
         value: tree.left.value,
         left: tree.left.left,
-        right: { value: tree.value, left: tree.left.right, right: tree.right, height: 0 },
-        height: 0
+        right: {
+          value: tree.value,
+          left: tree.left.right,
+          right: tree.right,
+          height: 0,
+        },
+        height: 0,
       };
     } else {
       // LR 旋转
@@ -716,19 +738,19 @@ const balance = (tree) => {
         value: tree.value,
         left: tree.left.left,
         right: tree.left.right.left,
-        height: 0
+        height: 0,
       };
       const newRight = {
         value: tree.value,
         left: tree.left.right.right,
         right: tree.right,
-        height: 0
+        height: 0,
       };
       return {
         value: tree.left.right.value,
         left: newLeft,
         right: newRight,
-        height: 0
+        height: 0,
       };
     }
   }
@@ -738,9 +760,14 @@ const balance = (tree) => {
     if (rrh >= rlh) {
       return {
         value: tree.right.value,
-        left: { value: tree.value, left: tree.left, right: tree.right.left, height: 0 },
+        left: {
+          value: tree.value,
+          left: tree.left,
+          right: tree.right.left,
+          height: 0,
+        },
         right: tree.right.right,
-        height: 0
+        height: 0,
       };
     }
   }
@@ -759,13 +786,13 @@ const BST = {
       return balance({
         ...tree,
         left: this.insert(tree.left, val),
-        height: 0
+        height: 0,
       });
     }
     return balance({
       ...tree,
       right: this.insert(tree.right, val),
-      height: 0
+      height: 0,
     });
   },
   contains(tree, val) {
@@ -780,9 +807,9 @@ const BST = {
     return [
       ...this.toArray(tree.left),
       tree.value,
-      ...this.toArray(tree.right)
+      ...this.toArray(tree.right),
     ];
-  }
+  },
 };
 
 // 使用
@@ -805,6 +832,7 @@ console.log(BST.toArray(tree)); // [1, 3, 4, 5, 6, 7, 8] — 原树不变
 ## 七、综合实战 — 函数式 ETL 管道
 
 ### 示例 17: 完整 ETL 管道
+
 ```javascript
 // ============ 工具函数库 ============
 
@@ -818,11 +846,18 @@ const curry = (fn) => {
 };
 
 // 组合
-const pipe = (...fns) => (x) => fns.reduce((acc, fn) => fn(acc), x);
+const pipe =
+  (...fns) =>
+  (x) =>
+    fns.reduce((acc, fn) => fn(acc), x);
 
 // Point-Free 工具
 const prop = curry((key, obj) => obj[key]);
-const method = curry((name, ...args) => (obj) => obj[name](...args));
+const method = curry(
+  (name, ...args) =>
+    (obj) =>
+      obj[name](...args),
+);
 const eq = curry((a, b) => a === b);
 const gt = curry((a, b) => a > b);
 const gte = curry((a, b) => a >= b);
@@ -835,16 +870,19 @@ const tap = curry((fn, x) => (fn(x), x)); // 调试用
 const map = curry((fn, arr) => arr.map(fn));
 const filter = curry((fn, arr) => arr.filter(fn));
 const reduce = curry((fn, init, arr) => arr.reduce(fn, init));
-const sortBy = curry((fn, arr) => [...arr].sort((a, b) => {
-  const va = fn(a), vb = fn(b);
-  return va < vb ? -1 : va > vb ? 1 : 0;
-}));
+const sortBy = curry((fn, arr) =>
+  [...arr].sort((a, b) => {
+    const va = fn(a),
+      vb = fn(b);
+    return va < vb ? -1 : va > vb ? 1 : 0;
+  }),
+);
 const groupBy = curry((fn, arr) =>
   arr.reduce((acc, item) => {
     const key = fn(item);
     (acc[key] = acc[key] || []).push(item);
     return acc;
-  }, {})
+  }, {}),
 );
 const pluck = curry((key, arr) => arr.map((obj) => obj[key]));
 const uniqBy = curry((fn, arr) => {
@@ -859,42 +897,92 @@ const uniqBy = curry((fn, arr) => {
 
 // ============ 业务数据 ============
 const rawData = [
-  { id: 1, name: 'Alice', age: 28, dept: 'Engineering', salary: 95000, rating: 4.5 },
-  { id: 2, name: 'Bob', age: 35, dept: 'Engineering', salary: 110000, rating: 3.8 },
-  { id: 3, name: 'Charlie', age: 24, dept: 'Marketing', salary: 65000, rating: 4.2 },
-  { id: 4, name: 'Diana', age: 31, dept: 'Engineering', salary: 105000, rating: 4.7 },
-  { id: 5, name: 'Eve', age: 27, dept: 'Marketing', salary: 70000, rating: 3.5 },
-  { id: 6, name: 'Frank', age: 42, dept: 'Sales', salary: 85000, rating: 4.0 },
-  { id: 7, name: 'Grace', age: 29, dept: 'Sales', salary: 78000, rating: 4.6 },
-  { id: 8, name: 'Hank', age: 38, dept: 'Engineering', salary: 120000, rating: 3.2 },
-  { id: 9, name: 'Ivy', age: 26, dept: 'Marketing', salary: 68000, rating: 4.8 },
-  { id: 10, name: 'Jack', age: 33, dept: 'Sales', salary: 92000, rating: 4.1 }
+  {
+    id: 1,
+    name: "Alice",
+    age: 28,
+    dept: "Engineering",
+    salary: 95000,
+    rating: 4.5,
+  },
+  {
+    id: 2,
+    name: "Bob",
+    age: 35,
+    dept: "Engineering",
+    salary: 110000,
+    rating: 3.8,
+  },
+  {
+    id: 3,
+    name: "Charlie",
+    age: 24,
+    dept: "Marketing",
+    salary: 65000,
+    rating: 4.2,
+  },
+  {
+    id: 4,
+    name: "Diana",
+    age: 31,
+    dept: "Engineering",
+    salary: 105000,
+    rating: 4.7,
+  },
+  {
+    id: 5,
+    name: "Eve",
+    age: 27,
+    dept: "Marketing",
+    salary: 70000,
+    rating: 3.5,
+  },
+  { id: 6, name: "Frank", age: 42, dept: "Sales", salary: 85000, rating: 4.0 },
+  { id: 7, name: "Grace", age: 29, dept: "Sales", salary: 78000, rating: 4.6 },
+  {
+    id: 8,
+    name: "Hank",
+    age: 38,
+    dept: "Engineering",
+    salary: 120000,
+    rating: 3.2,
+  },
+  {
+    id: 9,
+    name: "Ivy",
+    age: 26,
+    dept: "Marketing",
+    salary: 68000,
+    rating: 4.8,
+  },
+  { id: 10, name: "Jack", age: 33, dept: "Sales", salary: 92000, rating: 4.1 },
 ];
 
 // ============ ETL 管道 ============
 
 // Extract: 清洗和标准化
-const cleanName = pipe(
-  prop('name'),
-  method('trim')(),
-  method('toUpperCase')()
-);
+const cleanName = pipe(prop("name"), method("trim")(), method("toUpperCase")());
 
 const normalize = (record) => ({
   ...record,
   name: cleanName(record),
-  salaryBand: record.salary >= 100000 ? 'senior' : record.salary >= 75000 ? 'mid' : 'junior',
-  isTopPerformer: record.rating >= 4.5
+  salaryBand:
+    record.salary >= 100000
+      ? "senior"
+      : record.salary >= 75000
+        ? "mid"
+        : "junior",
+  isTopPerformer: record.rating >= 4.5,
 });
 
 // Transform: 多维度分析
 const getDeptStats = pipe(
-  groupBy(prop('dept')),
+  groupBy(prop("dept")),
   map((deptGroup) => ({
     department: deptGroup[0].dept,
     headcount: deptGroup.length,
     avgSalary: Math.round(
-      deptGroup.reduce((sum, e) => sum + e.salary, 0) / deptGroup.length
+      deptGroup.reduce((sum, e) => sum + e.salary, 0) / deptGroup.length,
     ),
     avgRating: (
       deptGroup.reduce((sum, e) => sum + e.rating, 0) / deptGroup.length
@@ -902,34 +990,32 @@ const getDeptStats = pipe(
     topPerformers: deptGroup.filter((e) => e.isTopPerformer).length,
     salaryRange: {
       min: Math.min(...deptGroup.map((e) => e.salary)),
-      max: Math.max(...deptGroup.map((e) => e.salary))
-    }
+      max: Math.max(...deptGroup.map((e) => e.salary)),
+    },
   })),
-  sortBy(prop('avgSalary'))
+  sortBy(prop("avgSalary")),
 );
 
 const getTopPerformers = pipe(
-  filter(prop('isTopPerformer')),
-  sortBy(prop('rating')),
+  filter(prop("isTopPerformer")),
+  sortBy(prop("rating")),
   reverse,
   map((e) => ({
     name: e.name,
     dept: e.dept,
     rating: e.rating,
-    salary: e.salary
-  }))
+    salary: e.salary,
+  })),
 );
 
 const getSalaryDistribution = pipe(
-  groupBy(prop('salaryBand')),
+  groupBy(prop("salaryBand")),
   map((band) => ({
     band: band[0].salaryBand,
     count: band.length,
-    avgSalary: Math.round(
-      band.reduce((s, e) => s + e.salary, 0) / band.length
-    )
+    avgSalary: Math.round(band.reduce((s, e) => s + e.salary, 0) / band.length),
   })),
-  sortBy(prop('band'))
+  sortBy(prop("band")),
 );
 
 // Load: 格式化输出
@@ -948,14 +1034,14 @@ const etl = pipe(
   // Extract + Transform
   map(normalize),
   // 部门统计
-  tap(formatReport('部门统计')),
+  tap(formatReport("部门统计")),
   // 顶级表现者
   getTopPerformers,
-  tap(formatReport('顶级表现者 (Rating ≥ 4.5)')),
+  tap(formatReport("顶级表现者 (Rating ≥ 4.5)")),
   // 回到原始数据做薪资分布
   (_) => rawData.map(normalize),
   getSalaryDistribution,
-  tap(formatReport('薪资分布'))
+  tap(formatReport("薪资分布")),
 );
 
 const report = etl(rawData);
@@ -991,12 +1077,12 @@ function getActivePremiumUsers(users) {
   const result = [];
   for (let i = 0; i < users.length; i++) {
     const user = users[i];
-    if (user.active && user.plan === 'premium') {
+    if (user.active && user.plan === "premium") {
       const displayName = user.name.toUpperCase();
       result.push({
         name: displayName,
         id: user.id,
-        joinedYear: new Date(user.joined).getFullYear()
+        joinedYear: new Date(user.joined).getFullYear(),
       });
     }
   }
@@ -1006,21 +1092,21 @@ function getActivePremiumUsers(users) {
 
 // ============ 函数式 ============
 const getActivePremiumUsersFP = pipe(
-  filter((u) => u.active && u.plan === 'premium'),
+  filter((u) => u.active && u.plan === "premium"),
   map((u) => ({
-    name: pipe(prop('name'), method('toUpperCase')())(u),
-    id: prop('id')(u),
-    joinedYear: pipe(prop('joined'), (d) => new Date(d).getFullYear())(u)
+    name: pipe(prop("name"), method("toUpperCase")())(u),
+    id: prop("id")(u),
+    joinedYear: pipe(prop("joined"), (d) => new Date(d).getFullYear())(u),
   })),
-  sortBy(prop('name'))
+  sortBy(prop("name")),
 );
 
 // ============ 对比 ============
 const users = [
-  { id: 1, name: 'alice', active: true, plan: 'premium', joined: '2023-01-15' },
-  { id: 2, name: 'bob', active: false, plan: 'premium', joined: '2023-03-20' },
-  { id: 3, name: 'charlie', active: true, plan: 'basic', joined: '2024-06-01' },
-  { id: 4, name: 'diana', active: true, plan: 'premium', joined: '2022-11-10' }
+  { id: 1, name: "alice", active: true, plan: "premium", joined: "2023-01-15" },
+  { id: 2, name: "bob", active: false, plan: "premium", joined: "2023-03-20" },
+  { id: 3, name: "charlie", active: true, plan: "basic", joined: "2024-06-01" },
+  { id: 4, name: "diana", active: true, plan: "premium", joined: "2022-11-10" },
 ];
 
 console.log(getActivePremiumUsers(users));
@@ -1036,16 +1122,16 @@ console.log(getActivePremiumUsersFP(users));
 
 ## 九、核心概念总结
 
-| 概念 | 核心思想 | 实际价值 |
-|------|----------|----------|
-| **Point-Free** | 不提及参数的函数风格 | 代码更简洁，强调"做什么"而非"怎么做" |
-| **Transducer** | 可组合的变换器，零中间数组 | 大数据处理性能提升 3-5x |
-| **Lens** | 聚焦嵌套数据的读写抽象 | 不可变更新深层属性，避免展开地狱 |
-| **IO Monad** | 延迟副作用为纯值 | 测试性、可组合性、副作用隔离 |
-| **Task Monad** | 异步操作的纯函数包装 | 替代 Promise 链，错误处理更优雅 |
-| **Reader Monad** | 隐式环境传递 | 依赖注入、测试友好 |
-| **Result/Either** | 显式错误类型 | 替代 try/catch，错误类型安全 |
-| **持久化数据结构** | 结构共享的不可变集合 | 高效不可变操作，历史版本保留 |
+| 概念               | 核心思想                   | 实际价值                             |
+| ------------------ | -------------------------- | ------------------------------------ |
+| **Point-Free**     | 不提及参数的函数风格       | 代码更简洁，强调"做什么"而非"怎么做" |
+| **Transducer**     | 可组合的变换器，零中间数组 | 大数据处理性能提升 3-5x              |
+| **Lens**           | 聚焦嵌套数据的读写抽象     | 不可变更新深层属性，避免展开地狱     |
+| **IO Monad**       | 延迟副作用为纯值           | 测试性、可组合性、副作用隔离         |
+| **Task Monad**     | 异步操作的纯函数包装       | 替代 Promise 链，错误处理更优雅      |
+| **Reader Monad**   | 隐式环境传递               | 依赖注入、测试友好                   |
+| **Result/Either**  | 显式错误类型               | 替代 try/catch，错误类型安全         |
+| **持久化数据结构** | 结构共享的不可变集合       | 高效不可变操作，历史版本保留         |
 
 ---
 

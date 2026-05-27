@@ -12,28 +12,32 @@
 
 #### 三种实现方式
 
-| 方式 | 优点 | 缺点 | 适用场景 |
-|------|------|------|----------|
-| `loading="lazy"` | 原生支持，零 JS | 旧浏览器不支持，自定义有限 | 简单图片懒加载 |
-| Intersection Observer | 性能好，API 简洁 | 需要 polyfill | 推荐方案，通用场景 |
-| 滚动事件 + 节流 | 兼容性好 | 性能较差 | 需要兼容旧浏览器 |
+| 方式                  | 优点             | 缺点                       | 适用场景           |
+| --------------------- | ---------------- | -------------------------- | ------------------ |
+| `loading="lazy"`      | 原生支持，零 JS  | 旧浏览器不支持，自定义有限 | 简单图片懒加载     |
+| Intersection Observer | 性能好，API 简洁 | 需要 polyfill              | 推荐方案，通用场景 |
+| 滚动事件 + 节流       | 兼容性好         | 性能较差                   | 需要兼容旧浏览器   |
 
 #### 核心代码片段
 
 ```javascript
 // Intersection Observer 懒加载
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const img = entry.target;
-      img.src = img.dataset.src;
-      observer.unobserve(img);
-    }
-  });
-}, { rootMargin: '50px 0px' });
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        observer.unobserve(img);
+      }
+    });
+  },
+  { rootMargin: "50px 0px" },
+);
 ```
 
 #### 扩展应用
+
 - 组件懒加载 (React.lazy / Vue defineAsyncComponent)
 - 路由懒加载
 - 虚拟列表 (Virtual Scrolling)
@@ -45,17 +49,17 @@ const observer = new IntersectionObserver((entries) => {
 
 #### 核心区别
 
-| 技术 | 行为 | 典型场景 |
-|------|------|----------|
-| 防抖 | 等待事件停止后执行 | 搜索框、表单提交 |
-| 节流 | 固定间隔执行一次 | 滚动、resize、鼠标移动 |
+| 技术 | 行为               | 典型场景               |
+| ---- | ------------------ | ---------------------- |
+| 防抖 | 等待事件停止后执行 | 搜索框、表单提交       |
+| 节流 | 固定间隔执行一次   | 滚动、resize、鼠标移动 |
 
 #### 防抖实现
 
 ```javascript
 function debounce(fn, delay) {
   let timerId = null;
-  return function(...args) {
+  return function (...args) {
     if (timerId) clearTimeout(timerId);
     timerId = setTimeout(() => fn.apply(this, args), delay);
   };
@@ -67,7 +71,7 @@ function debounce(fn, delay) {
 ```javascript
 function throttle(fn, interval) {
   let lastCall = 0;
-  return function(...args) {
+  return function (...args) {
     const now = Date.now();
     if (now - lastCall >= interval) {
       lastCall = now;
@@ -78,6 +82,7 @@ function throttle(fn, interval) {
 ```
 
 #### 高级用法
+
 - 带取消/立即执行的防抖
 - 带头尾执行的节流
 - RAF 节流 (requestAnimationFrame)
@@ -88,12 +93,12 @@ function throttle(fn, interval) {
 
 #### 常见泄漏场景
 
-| 场景 | 原因 | 解决方案 |
-|------|------|----------|
-| 定时器 | 未清除 setInterval | 保存 ID，组件卸载时清除 |
-| 事件监听 | 未移除监听器 | 成对添加/移除 |
-| 闭包 | 引用大对象 | 只引用需要的数据 |
-| DOM 节点 | 分离节点仍被引用 | 清理引用，使用 WeakMap |
+| 场景     | 原因               | 解决方案                |
+| -------- | ------------------ | ----------------------- |
+| 定时器   | 未清除 setInterval | 保存 ID，组件卸载时清除 |
+| 事件监听 | 未移除监听器       | 成对添加/移除           |
+| 闭包     | 引用大对象         | 只引用需要的数据        |
+| DOM 节点 | 分离节点仍被引用   | 清理引用，使用 WeakMap  |
 
 #### 最佳实践工具
 
@@ -107,7 +112,7 @@ function throttle(fn, interval) {
 ```javascript
 // 使用 WeakMap 避免内存泄漏
 const dataStore = new WeakMap();
-dataStore.set(domElement, { data: 'value' });
+dataStore.set(domElement, { data: "value" });
 // DOM 移除后自动 GC
 ```
 
@@ -117,12 +122,12 @@ dataStore.set(domElement, { data: 'value' });
 
 #### Core Web Vitals
 
-| 指标 | 含义 | 良好阈值 |
-|------|------|----------|
-| LCP | 最大内容绘制 | < 2.5s |
-| FID | 首次输入延迟 | < 100ms |
-| CLS | 累积布局偏移 | < 0.1 |
-| INP | 交互到下次绘制 | < 200ms |
+| 指标 | 含义           | 良好阈值 |
+| ---- | -------------- | -------- |
+| LCP  | 最大内容绘制   | < 2.5s   |
+| FID  | 首次输入延迟   | < 100ms  |
+| CLS  | 累积布局偏移   | < 0.1    |
+| INP  | 交互到下次绘制 | < 200ms  |
 
 #### 监控维度
 

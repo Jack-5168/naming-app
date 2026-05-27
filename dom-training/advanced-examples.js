@@ -167,14 +167,17 @@ class EventBus {
  * 6. 元素可见性检测（Intersection Observer）
  */
 function whenVisible(elements, callback, options = {}) {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        callback(entry.target, entry);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, ...options });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          callback(entry.target, entry);
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1, ...options },
+  );
 
   elements.forEach((el) => observer.observe(el));
   return () => observer.disconnect();
@@ -188,7 +191,12 @@ function whenVisible(elements, callback, options = {}) {
 /**
  * 7. 防抖搜索输入（带取消功能）
  */
-function createDebouncedSearch(inputSelector, resultSelector, searchFn, delay = 300) {
+function createDebouncedSearch(
+  inputSelector,
+  resultSelector,
+  searchFn,
+  delay = 300,
+) {
   const input = $(inputSelector);
   const result = $(resultSelector);
   let timer = null;
@@ -261,16 +269,21 @@ function makeSortable(container, options = {}) {
 }
 
 function getDragAfterElement(container, y) {
-  const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+  const draggableElements = [
+    ...container.querySelectorAll('.draggable:not(.dragging)'),
+  ];
 
-  return draggableElements.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height / 2;
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
-    }
-    return closest;
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      }
+      return closest;
+    },
+    { offset: Number.NEGATIVE_INFINITY },
+  ).element;
 }
 
 /**
@@ -445,7 +458,8 @@ class DOMPerformanceMonitor {
     const result = fn();
     const duration = performance.now() - start;
 
-    if (duration > 16) { // 超过一帧
+    if (duration > 16) {
+      // 超过一帧
       this.metrics.longTasks.push({ name, duration });
       console.warn(`慢操作: ${name} (${duration.toFixed(2)}ms)`);
     }
@@ -456,9 +470,11 @@ class DOMPerformanceMonitor {
   getReport() {
     return {
       ...this.metrics,
-      avgLongTask: this.metrics.longTasks.length > 0
-        ? this.metrics.longTasks.reduce((a, b) => a + b.duration, 0) / this.metrics.longTasks.length
-        : 0,
+      avgLongTask:
+        this.metrics.longTasks.length > 0
+          ? this.metrics.longTasks.reduce((a, b) => a + b.duration, 0)
+            / this.metrics.longTasks.length
+          : 0,
     };
   }
 }
@@ -496,7 +512,9 @@ function detectMemoryLeaks() {
   return {
     getTotalListeners: () => {
       let total = 0;
-      listeners.forEach((set) => { total += set.size; });
+      listeners.forEach((set) => {
+        total += set.size;
+      });
       return total;
     },
     getElementsWithListeners: () => {

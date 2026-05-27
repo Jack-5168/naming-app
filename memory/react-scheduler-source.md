@@ -12,6 +12,7 @@
 ### 1.1 问题背景
 
 在 React 15 及之前，reconciliation 是**同步递归**的——一旦开始就不能中断。这导致：
+
 - 大型组件树更新会阻塞主线程 ≥100ms
 - 用户交互（输入、点击）响应迟钝
 - 动画掉帧
@@ -56,13 +57,13 @@ export const IdlePriority = 5;
 // scheduler/src/Scheduler.js
 function createTask(priorityLevel, callback, options) {
   return {
-    id: taskIdCounter++,                    // 全局递增 ID
-    callback,                               // 实际要执行的函数
-    priorityLevel,                          // 优先级 1-5
-    startTime: startTime,                   // 任务创建时间
-    expirationTime: expirationTime,         // 超时时间（优先级越高越短）
-    sortIndex: expirationTime,              // 排序索引（用于堆排序）
-    isQueued: false,                        // 是否已在任务队列中
+    id: taskIdCounter++, // 全局递增 ID
+    callback, // 实际要执行的函数
+    priorityLevel, // 优先级 1-5
+    startTime: startTime, // 任务创建时间
+    expirationTime: expirationTime, // 超时时间（优先级越高越短）
+    sortIndex: expirationTime, // 排序索引（用于堆排序）
+    isQueued: false, // 是否已在任务队列中
   };
 }
 ```
@@ -113,10 +114,11 @@ let timerQueue = [];
 // 最小堆上浮（插入后维护堆性质）
 function siftUp(heap, node, index) {
   while (true) {
-    const parentIndex = (index - 1) >>> 1;  // 父节点索引
+    const parentIndex = (index - 1) >>> 1; // 父节点索引
     if (parentIndex >= 0) {
       const parent = heap[parentIndex];
-      if (compare(parent, node) > 0) {      // 父节点 > 子节点，交换
+      if (compare(parent, node) > 0) {
+        // 父节点 > 子节点，交换
         heap[parentIndex] = node;
         heap[index] = parent;
         index = parentIndex;
@@ -132,9 +134,9 @@ function siftDown(heap, node, index) {
   const length = heap.length;
   const halfLength = length >>> 1;
   while (index < halfLength) {
-    const leftIndex = (index + 1) * 2 - 1;  // 左子节点
+    const leftIndex = (index + 1) * 2 - 1; // 左子节点
     const left = heap[leftIndex];
-    const rightIndex = leftIndex + 1;       // 右子节点
+    const rightIndex = leftIndex + 1; // 右子节点
     const right = heap[rightIndex];
 
     // 找左右子节点中较小的
@@ -173,10 +175,10 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
   // options.delay 支持延迟调度（如 setTimeout 效果）
   let currentTime = getCurrentTime();
   let startTime;
-  if (typeof options === 'object' && options !== null) {
+  if (typeof options === "object" && options !== null) {
     let delay = options.delay;
     startTime =
-      typeof delay === 'number' && delay > 0
+      typeof delay === "number" && delay > 0
         ? currentTime + delay
         : currentTime;
   } else {
@@ -188,20 +190,20 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
   let timeout;
   switch (priorityLevel) {
     case ImmediatePriority:
-      timeout = IMMEDIATE_PRIORITY_TIMEOUT;  // -1 (立即执行，不超时)
+      timeout = IMMEDIATE_PRIORITY_TIMEOUT; // -1 (立即执行，不超时)
       break;
     case UserBlockingPriority:
-      timeout = USER_BLOCKING_PRIORITY_TIMEOUT;  // 250ms
+      timeout = USER_BLOCKING_PRIORITY_TIMEOUT; // 250ms
       break;
     case IdlePriority:
-      timeout = IDLE_PRIORITY_TIMEOUT;  // 1073741823ms (~12.4天)
+      timeout = IDLE_PRIORITY_TIMEOUT; // 1073741823ms (~12.4天)
       break;
     case LowPriority:
-      timeout = LOW_PRIORITY_TIMEOUT;  // 10000ms (10秒)
+      timeout = LOW_PRIORITY_TIMEOUT; // 10000ms (10秒)
       break;
     case NormalPriority:
     default:
-      timeout = NORMAL_PRIORITY_TIMEOUT;  // 5000ms (5秒)
+      timeout = NORMAL_PRIORITY_TIMEOUT; // 5000ms (5秒)
   }
   let expirationTime = startTime + timeout;
 
@@ -243,14 +245,14 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
 
 **逐行分析要点：**
 
-| 行 | 作用 | 设计意图 |
-|---|------|---------|
-| `startTime = currentTime + delay` | 支持延迟调度 | 让低优先级任务可以延迟执行，给高优先级让路 |
-| `timeout` 按优先级分级 | 不同优先级不同超时 | Immediate 不超时（同步执行），Idle 几乎永不过期 |
-| `sortIndex = expirationTime` | 堆排序依据 | 最早过期的任务优先执行（EDF 算法） |
-| `startTime > currentTime` 分支 | 延迟任务走 timerQueue | 避免未到期任务阻塞就绪任务 |
-| `peek(taskQueue) === null` 时设定时器 | 唤醒机制 | 确保延迟任务到期后能被调度 |
-| `!isHostCallbackScheduled` 检查 | 防重入 | 避免重复请求浏览器调度 |
+| 行                                    | 作用                  | 设计意图                                        |
+| ------------------------------------- | --------------------- | ----------------------------------------------- |
+| `startTime = currentTime + delay`     | 支持延迟调度          | 让低优先级任务可以延迟执行，给高优先级让路      |
+| `timeout` 按优先级分级                | 不同优先级不同超时    | Immediate 不超时（同步执行），Idle 几乎永不过期 |
+| `sortIndex = expirationTime`          | 堆排序依据            | 最早过期的任务优先执行（EDF 算法）              |
+| `startTime > currentTime` 分支        | 延迟任务走 timerQueue | 避免未到期任务阻塞就绪任务                      |
+| `peek(taskQueue) === null` 时设定时器 | 唤醒机制              | 确保延迟任务到期后能被调度                      |
+| `!isHostCallbackScheduled` 检查       | 防重入                | 避免重复请求浏览器调度                          |
 
 ### 3.2 浏览器适配层：requestHostCallback
 
@@ -260,22 +262,22 @@ Scheduler 需要跨环境运行（浏览器、Node.js、React Native），所以
 // ── 现代浏览器：使用 MessageChannel ──
 // scheduler/src/forks/Scheduler.js
 
-if (typeof MessageChannel !== 'undefined') {
+if (typeof MessageChannel !== "undefined") {
   const channel = new MessageChannel();
   const port = channel.port2;
   channel.port1.onmessage = performWorkUntilDeadline;
-  
-  requestHostCallback = function(callback) {
+
+  requestHostCallback = function (callback) {
     scheduledHostCallback = callback;
-    port.postMessage(null);  // 微任务级别触发
+    port.postMessage(null); // 微任务级别触发
   };
-  
-  cancelHostCallback = function() {
+
+  cancelHostCallback = function () {
     scheduledHostCallback = null;
   };
 } else {
   // 降级：使用 setTimeout
-  requestHostCallback = function(callback) {
+  requestHostCallback = function (callback) {
     scheduledHostCallback = callback;
     scheduledTimeoutId = setTimeout(performWorkUntilDeadline, 0);
   };
@@ -284,12 +286,12 @@ if (typeof MessageChannel !== 'undefined') {
 
 **为什么用 MessageChannel 而不是 setTimeout？**
 
-| 特性 | MessageChannel | setTimeout(fn, 0) |
-|------|---------------|-------------------|
-| 执行时机 | 微任务之后、宏任务之前 | 下一个宏任务 |
-| 延迟 | ~0-2ms | 4-10ms（浏览器最小延迟） |
-| 可靠性 | 不受节流影响 | 后台标签页会被节流到 1000ms |
-| 优先级 | 高于 setTimeout | 最低 |
+| 特性     | MessageChannel         | setTimeout(fn, 0)           |
+| -------- | ---------------------- | --------------------------- |
+| 执行时机 | 微任务之后、宏任务之前 | 下一个宏任务                |
+| 延迟     | ~0-2ms                 | 4-10ms（浏览器最小延迟）    |
+| 可靠性   | 不受节流影响           | 后台标签页会被节流到 1000ms |
+| 优先级   | 高于 setTimeout        | 最低                        |
 
 **关键洞察：React 选择 MessageChannel 是因为它比 setTimeout 更快、更可靠，但又比 Promise.then（微任务）更可控——微任务无法让出主线程，而 Scheduler 需要精确控制时间片。**
 
@@ -349,24 +351,25 @@ function workLoop(hasTimeRemaining, initialTime) {
     // 默认每帧 5ms（约 120fps），hasTimeRemaining 为 false 时立即让出
 
     if (
-      !shouldYield ||           // 还有时间，继续执行
+      !shouldYield || // 还有时间，继续执行
       shouldYieldForHydration() // 或需要 hydration
     ) {
       // ── 执行任务回调 ──
       const callback = currentTask.callback;
-      if (typeof callback === 'function') {
+      if (typeof callback === "function") {
         currentTask.callback = null;
         currentIsPending = false;
         currentPriorityLevel = currentTask.priorityLevel;
         currentStartTime = currentTask.startTime;
 
         // 执行回调，可能有返回值（表示还有后续工作）
-        const didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
+        const didUserCallbackTimeout =
+          currentTask.expirationTime <= currentTime;
         const continuationCallback = callback(didUserCallbackTimeout);
         currentTime = getCurrentTime();
 
         // ── 处理返回值 ──
-        if (typeof continuationCallback === 'function') {
+        if (typeof continuationCallback === "function") {
           // 任务未完成，保存剩余工作
           currentTask.callback = continuationCallback;
         } else {
@@ -395,28 +398,28 @@ function workLoop(hasTimeRemaining, initialTime) {
 
   // 所有任务处理完毕
   if (currentTask !== null) {
-    return true;  // 还有任务，通知宿主继续调度
+    return true; // 还有任务，通知宿主继续调度
   } else {
-    return false;  // 所有任务完成
+    return false; // 所有任务完成
   }
 }
 ```
 
 **逐行分析要点：**
 
-| 关键逻辑 | 作用 | 类比 |
-|---------|------|------|
-| `advanceTimers(currentTime)` | 延迟→就绪 | 快递分拣：到站的包裹移到待取区 |
-| `shouldYieldToHost()` | 时间片检查 | 红绿灯：时间到就停车让行 |
+| 关键逻辑                           | 作用            | 类比                             |
+| ---------------------------------- | --------------- | -------------------------------- |
+| `advanceTimers(currentTime)`       | 延迟→就绪       | 快递分拣：到站的包裹移到待取区   |
+| `shouldYieldToHost()`              | 时间片检查      | 红绿灯：时间到就停车让行         |
 | `callback(didUserCallbackTimeout)` | 执行 Fiber 工作 | 执行一个 chunk 的 reconciliation |
-| `continuationCallback` | 分片续传 | 大文件上传断点续传 |
-| `requestHostCallback(flushWork)` | 请求下一帧 | 预约下次执行 |
+| `continuationCallback`             | 分片续传        | 大文件上传断点续传               |
+| `requestHostCallback(flushWork)`   | 请求下一帧      | 预约下次执行                     |
 
 ### 3.5 时间片判断：shouldYieldToHost
 
 ```javascript
 // 每帧可用时间（毫秒）
-const frameInterval = 5;  // 默认 5ms，留给浏览器渲染/用户交互
+const frameInterval = 5; // 默认 5ms，留给浏览器渲染/用户交互
 
 let frameDeadline = 0;
 let needsPaint = false;
@@ -529,7 +532,7 @@ function ensureRootIsScheduled(root, currentTime) {
   // 选择优先级
   const newCallbackNode = scheduleCallback(
     schedulerPriorityLevel,
-    performConcurrentWorkOnRoot.bind(null, root)
+    performConcurrentWorkOnRoot.bind(null, root),
   );
 
   // 保存引用，用于取消
@@ -545,7 +548,7 @@ function performConcurrentWorkOnRoot(root) {
   // ── 第 1 步：检查是否有 pending 的 hydration ──
   const didFlushPassiveEffects = flushPassiveEffects();
   if (didFlushPassiveEffects) {
-    return null;  // 让出，等下一帧
+    return null; // 让出，等下一帧
   }
 
   // ── 第 2 步：检查是否需要降级优先级 ──
@@ -656,7 +659,7 @@ if (还有任务) {
 
 ```javascript
 function unstable_cancelScheduledTask(task) {
-  task.callback = null;  // 标记为已取消
+  task.callback = null; // 标记为已取消
   // 实际移除在 workLoop 中处理（peek 时检查 callback === null）
 }
 ```
@@ -693,9 +696,9 @@ await act(async () => {
 ```javascript
 class SimpleScheduler {
   constructor() {
-    this.taskQueue = [];  // 最小堆
+    this.taskQueue = []; // 最小堆
     this.isRunning = false;
-    this.frameInterval = 5;  // ms
+    this.frameInterval = 5; // ms
     this.frameDeadline = 0;
   }
 
@@ -706,7 +709,7 @@ class SimpleScheduler {
       callback,
       priority,
       startTime: now + delay,
-      expirationTime: now + delay + (5000 / priority),  // 优先级越高超时越短
+      expirationTime: now + delay + 5000 / priority, // 优先级越高超时越短
     };
     this.taskQueue.push(task);
     this.taskQueue.sort((a, b) => a.expirationTime - b.expirationTime);
@@ -727,11 +730,11 @@ class SimpleScheduler {
 
     while (this.taskQueue.length > 0 && now < this.frameDeadline) {
       const task = this.taskQueue[0];
-      if (task.startTime > now) break;  // 还没到期
+      if (task.startTime > now) break; // 还没到期
 
       this.taskQueue.shift();
       const continuation = task.callback(now >= task.expirationTime);
-      if (typeof continuation === 'function') {
+      if (typeof continuation === "function") {
         this.taskQueue.push({ ...task, callback: continuation });
         this.taskQueue.sort((a, b) => a.expirationTime - b.expirationTime);
       }
@@ -749,49 +752,53 @@ class SimpleScheduler {
 const scheduler = new SimpleScheduler();
 
 scheduler.schedule(1, () => {
-  console.log('高优先级任务');
-  return null;  // 完成
+  console.log("高优先级任务");
+  return null; // 完成
 });
 
-scheduler.schedule(3, () => {
-  console.log('低优先级任务');
-  return () => {
-    console.log('低优先级任务 - 续传');
-    return null;
-  };
-}, 100);  // 延迟 100ms
+scheduler.schedule(
+  3,
+  () => {
+    console.log("低优先级任务");
+    return () => {
+      console.log("低优先级任务 - 续传");
+      return null;
+    };
+  },
+  100,
+); // 延迟 100ms
 ```
 
 ---
 
 ## 九、核心要点回顾
 
-| 概念 | 说明 | 源码位置 |
-|------|------|---------|
-| **双堆结构** | taskQueue（就绪）+ timerQueue（延迟） | `Scheduler.js` |
-| **EDF 算法** | 最早过期优先，非最高优先级优先 | `siftUp/siftDown` |
-| **时间切片** | 每帧 5ms，让出给渲染/交互 | `shouldYieldToHost` |
-| **MessageChannel** | 比 setTimeout 更快的调度触发 | `requestHostCallback` |
-| **超时降级** | 任务超时 = 优先级提升 | `expirationTime` |
-| **continuationCallback** | 分片续传，支持中断恢复 | `workLoop` 返回值 |
-| **Fiber 桥梁** | `performConcurrentWorkOnRoot` | `ReactFiberWorkLoop.js` |
+| 概念                     | 说明                                  | 源码位置                |
+| ------------------------ | ------------------------------------- | ----------------------- |
+| **双堆结构**             | taskQueue（就绪）+ timerQueue（延迟） | `Scheduler.js`          |
+| **EDF 算法**             | 最早过期优先，非最高优先级优先        | `siftUp/siftDown`       |
+| **时间切片**             | 每帧 5ms，让出给渲染/交互             | `shouldYieldToHost`     |
+| **MessageChannel**       | 比 setTimeout 更快的调度触发          | `requestHostCallback`   |
+| **超时降级**             | 任务超时 = 优先级提升                 | `expirationTime`        |
+| **continuationCallback** | 分片续传，支持中断恢复                | `workLoop` 返回值       |
+| **Fiber 桥梁**           | `performConcurrentWorkOnRoot`         | `ReactFiberWorkLoop.js` |
 
 ---
 
 ## 十、与 Vue 3 Scheduler 对比
 
-| 特性 | React Scheduler | Vue 3 Scheduler |
-|------|-----------------|-----------------|
-| 优先级 | 5 级 | 2 级（flushPre/Post） |
-| 时间切片 | 5ms/帧 | 无（依赖微任务） |
-| 调度触发 | MessageChannel | Promise.then / MutationObserver |
-| 任务队列 | 双堆（最小堆） | 数组去重 + 排序 |
-| 超时机制 | 有（expirationTime） | 无 |
-| 取消任务 | 支持 | 不支持（直接过滤） |
-| 设计目标 | 并发渲染（时间切片） | 批量更新（去重合并） |
+| 特性     | React Scheduler      | Vue 3 Scheduler                 |
+| -------- | -------------------- | ------------------------------- |
+| 优先级   | 5 级                 | 2 级（flushPre/Post）           |
+| 时间切片 | 5ms/帧               | 无（依赖微任务）                |
+| 调度触发 | MessageChannel       | Promise.then / MutationObserver |
+| 任务队列 | 双堆（最小堆）       | 数组去重 + 排序                 |
+| 超时机制 | 有（expirationTime） | 无                              |
+| 取消任务 | 支持                 | 不支持（直接过滤）              |
+| 设计目标 | 并发渲染（时间切片） | 批量更新（去重合并）            |
 
 **核心差异：React Scheduler 是"时间感知"的（知道每帧还剩多少时间），Vue 3 Scheduler 是"微任务感知"的（利用微任务的批量执行特性）。**
 
 ---
 
-*精读完成。下一个建议方向：React Compiler（React 19 自动 memo 优化）或 Vue 3 Template Compiler（模板编译为 render function）。*
+_精读完成。下一个建议方向：React Compiler（React 19 自动 memo 优化）或 Vue 3 Template Compiler（模板编译为 render function）。_

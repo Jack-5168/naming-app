@@ -11,17 +11,18 @@
  * - Commission paid notifications
  */
 
-import { PrismaClient, PushNotificationType, PushStatus } from '@prisma/client';
-import webpush from 'web-push';
+import { PrismaClient, PushNotificationType, PushStatus } from "@prisma/client";
+import webpush from "web-push";
 
 const prisma = new PrismaClient();
 
 // ==================== Configuration ====================
 
 // VAPID keys for web push (generate with: npx web-push generate-vapid-keys)
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:support@personaalab.com';
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "";
+const VAPID_SUBJECT =
+  process.env.VAPID_SUBJECT || "mailto:support@personaalab.com";
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
@@ -31,7 +32,7 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 
 export interface PushStrategy {
   type: PushNotificationType;
-  trigger: 'immediate' | 'scheduled' | 'behavioral';
+  trigger: "immediate" | "scheduled" | "behavioral";
   delay: number; // seconds
   template: string;
   deepLink: string;
@@ -50,46 +51,46 @@ export interface PushNotificationPayload {
 
 const NOTIFICATION_TEMPLATES: Record<PushNotificationType, PushStrategy> = {
   report_ready: {
-    type: 'report_ready',
-    trigger: 'immediate',
+    type: "report_ready",
+    trigger: "immediate",
     delay: 0,
-    template: '📊 你的报告已生成！点击查看完整分析',
-    deepLink: '/report/{reportId}',
+    template: "📊 你的报告已生成！点击查看完整分析",
+    deepLink: "/report/{reportId}",
   },
   retest_reminder: {
-    type: 'retest_reminder',
-    trigger: 'scheduled',
+    type: "retest_reminder",
+    trigger: "scheduled",
     delay: 30 * 24 * 60 * 60, // 30 days
-    template: '🔍 距离上次测试已经过去 30 天，你的性格维度可能发生了变化',
-    deepLink: '/test/start',
+    template: "🔍 距离上次测试已经过去 30 天，你的性格维度可能发生了变化",
+    deepLink: "/test/start",
   },
   membership_expiring: {
-    type: 'membership_expiring',
-    trigger: 'scheduled',
+    type: "membership_expiring",
+    trigger: "scheduled",
     delay: 7 * 24 * 60 * 60, // 7 days before expiry
-    template: '⏰ 会员即将到期，续费享优惠',
-    deepLink: '/membership/renew',
+    template: "⏰ 会员即将到期，续费享优惠",
+    deepLink: "/membership/renew",
   },
   personalized: {
-    type: 'personalized',
-    trigger: 'behavioral',
+    type: "personalized",
+    trigger: "behavioral",
     delay: 0,
-    template: '📈 你的外向维度可能变化了 {change}%！',
-    deepLink: '/report/compare',
+    template: "📈 你的外向维度可能变化了 {change}%！",
+    deepLink: "/report/compare",
   },
   dual_test_invite: {
-    type: 'dual_test_invite',
-    trigger: 'immediate',
+    type: "dual_test_invite",
+    trigger: "immediate",
     delay: 0,
-    template: '👥 {inviter} 邀请你进行双人合测',
-    deepLink: '/dual-test/{inviteCode}',
+    template: "👥 {inviter} 邀请你进行双人合测",
+    deepLink: "/dual-test/{inviteCode}",
   },
   commission_paid: {
-    type: 'commission_paid',
-    trigger: 'immediate',
+    type: "commission_paid",
+    trigger: "immediate",
     delay: 0,
-    template: '💰 佣金已到账：¥{amount}',
-    deepLink: '/koc/commissions',
+    template: "💰 佣金已到账：¥{amount}",
+    deepLink: "/koc/commissions",
   },
 };
 
@@ -110,7 +111,7 @@ export async function createPushNotification(payload: PushNotificationPayload) {
         body: content,
         content,
         deepLink,
-        status: scheduledAt ? 'pending' : 'pending',
+        status: scheduledAt ? "pending" : "pending",
         scheduledAt,
       },
     });
@@ -122,7 +123,7 @@ export async function createPushNotification(payload: PushNotificationPayload) {
 
     return notification;
   } catch (error) {
-    console.error('Error creating push notification:', error);
+    console.error("Error creating push notification:", error);
     throw error;
   }
 }
@@ -144,7 +145,7 @@ export async function sendNotification(notificationId: number) {
     });
 
     if (!notification) {
-      throw new Error('Notification not found');
+      throw new Error("Notification not found");
     }
 
     const subscriptions = notification.user.pushSubscriptions;
@@ -153,7 +154,7 @@ export async function sendNotification(notificationId: number) {
       console.log(`No push subscriptions for user ${notification.userId}`);
       await prisma.pushNotification.update({
         where: { id: notificationId },
-        data: { status: 'failed' },
+        data: { status: "failed" },
       });
 
       return;
@@ -163,8 +164,8 @@ export async function sendNotification(notificationId: number) {
       title: notification.title,
       body: notification.content,
       deepLink: notification.deepLink,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/badge-72.png',
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge-72.png",
     });
 
     // Send to all user devices
@@ -198,17 +199,17 @@ export async function sendNotification(notificationId: number) {
     await prisma.pushNotification.update({
       where: { id: notificationId },
       data: {
-        status: 'sent',
+        status: "sent",
         sentAt: new Date(),
       },
     });
 
     return { success: true };
   } catch (error) {
-    console.error('Error sending notification:', error);
+    console.error("Error sending notification:", error);
     await prisma.pushNotification.update({
       where: { id: notificationId },
-      data: { status: 'failed' },
+      data: { status: "failed" },
     });
     throw error;
   }
@@ -224,7 +225,7 @@ export async function scheduleNotifications() {
     // Schedule membership expiring reminders (7 days before)
     const expiringMemberships = await prisma.membership.findMany({
       where: {
-        status: 'active',
+        status: "active",
         endDate: {
           gte: now,
           lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
@@ -238,7 +239,7 @@ export async function scheduleNotifications() {
       const existingReminder = await prisma.pushNotification.findFirst({
         where: {
           userId: membership.userId,
-          type: 'membership_expiring',
+          type: "membership_expiring",
           createdAt: {
             gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
           },
@@ -248,10 +249,10 @@ export async function scheduleNotifications() {
       if (!existingReminder) {
         await createPushNotification({
           userId: membership.userId,
-          type: 'membership_expiring',
-          title: '会员即将到期',
+          type: "membership_expiring",
+          title: "会员即将到期",
           content: `您的会员将于${membership.endDate.toLocaleDateString()}到期，及时续费享受优惠`,
-          deepLink: '/membership/renew',
+          deepLink: "/membership/renew",
         });
       }
     }
@@ -259,20 +260,21 @@ export async function scheduleNotifications() {
     // Schedule retest reminders (30 days after last test) - simplified version
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const usersNeedingRetest = await prisma.testResult.groupBy({
-      by: ['userId', 'createdAt'],
+      by: ["userId", "createdAt"],
       having: {
         createdAt: { gte: thirtyDaysAgo },
       },
     });
 
     for (const record of usersNeedingRetest) {
-      const userId = typeof record === 'string' ? record : (record as any).userId;
+      const userId =
+        typeof record === "string" ? record : (record as any).userId;
 
       // Check if reminder already sent
       const existingReminder = await prisma.pushNotification.findFirst({
         where: {
           userId,
-          type: 'retest_reminder',
+          type: "retest_reminder",
           createdAt: {
             gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
           },
@@ -282,17 +284,18 @@ export async function scheduleNotifications() {
       if (!existingReminder) {
         await createPushNotification({
           userId,
-          type: 'retest_reminder',
-          title: '重测提醒',
-          content: '距离上次测试已经过去 30 天，你的性格维度可能发生了变化，快来重新测试吧！',
-          deepLink: '/test/start',
+          type: "retest_reminder",
+          title: "重测提醒",
+          content:
+            "距离上次测试已经过去 30 天，你的性格维度可能发生了变化，快来重新测试吧！",
+          deepLink: "/test/start",
         });
       }
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error scheduling notifications:', error);
+    console.error("Error scheduling notifications:", error);
     throw error;
   }
 }
@@ -306,16 +309,16 @@ export async function sendPersonalizedNotification(
   change: number,
 ) {
   const template = NOTIFICATION_TEMPLATES.personalized.template.replace(
-    '{change}',
+    "{change}",
     Math.abs(change).toFixed(1),
   );
 
   await createPushNotification({
     userId,
-    type: 'personalized',
-    title: '性格维度变化',
+    type: "personalized",
+    title: "性格维度变化",
     content: template,
-    deepLink: '/report/compare',
+    deepLink: "/report/compare",
   });
 }
 
@@ -351,7 +354,7 @@ export async function subscribeUser(
 
     return subscription;
   } catch (error) {
-    console.error('Error subscribing user:', error);
+    console.error("Error subscribing user:", error);
     throw error;
   }
 }
@@ -367,7 +370,7 @@ export async function unsubscribeUser(endpoint: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('Error unsubscribing user:', error);
+    console.error("Error unsubscribing user:", error);
     throw error;
   }
 }
@@ -383,7 +386,7 @@ export async function processScheduledNotifications() {
 
     const pendingNotifications = await prisma.pushNotification.findMany({
       where: {
-        status: 'pending',
+        status: "pending",
         scheduledAt: {
           lte: now,
         },
@@ -396,7 +399,7 @@ export async function processScheduledNotifications() {
 
     return { processed: pendingNotifications.length };
   } catch (error) {
-    console.error('Error processing scheduled notifications:', error);
+    console.error("Error processing scheduled notifications:", error);
     throw error;
   }
 }

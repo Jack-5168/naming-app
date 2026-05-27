@@ -14,11 +14,11 @@
 
 ### 1.2 三种变体
 
-| 变体 | 描述 | 适用场景 |
-|------|------|----------|
-| 简单工厂 | 一个工厂函数/方法创建多种对象 | 对象类型有限且固定 |
-| 工厂方法 | 定义创建接口，子类决定实例化哪个类 | 创建逻辑需要扩展 |
-| 抽象工厂 | 创建一组相关对象，不指定具体类 | 产品族（多系列） |
+| 变体     | 描述                               | 适用场景           |
+| -------- | ---------------------------------- | ------------------ |
+| 简单工厂 | 一个工厂函数/方法创建多种对象      | 对象类型有限且固定 |
+| 工厂方法 | 定义创建接口，子类决定实例化哪个类 | 创建逻辑需要扩展   |
+| 抽象工厂 | 创建一组相关对象，不指定具体类     | 产品族（多系列）   |
 
 ### 1.3 简单工厂 — 基础实现
 
@@ -26,7 +26,7 @@
 // 简单工厂：根据类型创建不同形状
 class Circle {
   constructor(radius) {
-    this.type = 'circle';
+    this.type = "circle";
     this.radius = radius;
   }
   area() {
@@ -39,7 +39,7 @@ class Circle {
 
 class Rectangle {
   constructor(width, height) {
-    this.type = 'rectangle';
+    this.type = "rectangle";
     this.width = width;
     this.height = height;
   }
@@ -53,7 +53,7 @@ class Rectangle {
 
 class Triangle {
   constructor(base, height) {
-    this.type = 'triangle';
+    this.type = "triangle";
     this.base = base;
     this.height = height;
   }
@@ -69,9 +69,9 @@ class Triangle {
 class ShapeFactory {
   static create(type, ...args) {
     const creators = {
-      circle:    () => new Circle(...args),
+      circle: () => new Circle(...args),
       rectangle: () => new Rectangle(...args),
-      triangle:  () => new Triangle(...args),
+      triangle: () => new Triangle(...args),
     };
     const creator = creators[type.toLowerCase()];
     if (!creator) {
@@ -83,12 +83,12 @@ class ShapeFactory {
 
 // 使用
 const shapes = [
-  ShapeFactory.create('circle', 5),
-  ShapeFactory.create('rectangle', 4, 6),
-  ShapeFactory.create('triangle', 3, 8),
+  ShapeFactory.create("circle", 5),
+  ShapeFactory.create("rectangle", 4, 6),
+  ShapeFactory.create("triangle", 3, 8),
 ];
 
-shapes.forEach(s => console.log(s.describe()));
+shapes.forEach((s) => console.log(s.describe()));
 // 圆形 (r=5, area=78.54)
 // 矩形 (4x6, area=24.00)
 // 三角形 (b=3, h=8, area=12.00)
@@ -101,8 +101,8 @@ shapes.forEach(s => console.log(s.describe()));
 class HttpRequest {
   constructor(config) {
     this.url = config.url;
-    this.method = config.method || 'GET';
-    this.headers = { 'Content-Type': 'application/json', ...config.headers };
+    this.method = config.method || "GET";
+    this.headers = { "Content-Type": "application/json", ...config.headers };
     this.timeout = config.timeout || 5000;
     this.body = config.body || null;
   }
@@ -122,7 +122,11 @@ class HttpRequest {
         signal: controller.signal,
       });
       clearTimeout(timer);
-      return { ok: response.ok, status: response.status, data: await response.json() };
+      return {
+        ok: response.ok,
+        status: response.status,
+        data: await response.json(),
+      };
     } catch (error) {
       clearTimeout(timer);
       return { ok: false, error: error.message };
@@ -133,26 +137,26 @@ class HttpRequest {
 class RequestFactory {
   // GET 请求
   static get(url, headers = {}) {
-    return new HttpRequest({ url, method: 'GET', headers });
+    return new HttpRequest({ url, method: "GET", headers });
   }
 
   // POST 请求
   static post(url, body, headers = {}) {
-    return new HttpRequest({ url, method: 'POST', body, headers });
+    return new HttpRequest({ url, method: "POST", body, headers });
   }
 
   // 文件上传
   static upload(url, formData, headers = {}) {
     return new HttpRequest({
       url,
-      method: 'POST',
+      method: "POST",
       body: formData,
       headers: { ...headers }, // 不设置 Content-Type，让浏览器自动设置 multipart
     });
   }
 
   // 带认证的请求
-  static authenticated(url, method = 'GET', body = null, token = '') {
+  static authenticated(url, method = "GET", body = null, token = "") {
     return new HttpRequest({
       url,
       method,
@@ -163,24 +167,24 @@ class RequestFactory {
 
   // 批量请求
   static batch(requests) {
-    return Promise.all(requests.map(req => req.execute()));
+    return Promise.all(requests.map((req) => req.execute()));
   }
 }
 
 // 使用
-const getUser = RequestFactory.get('https://api.example.com/users/1');
-const createUser = RequestFactory.post('https://api.example.com/users', {
-  name: '张三',
-  email: 'zhangsan@example.com',
+const getUser = RequestFactory.get("https://api.example.com/users/1");
+const createUser = RequestFactory.post("https://api.example.com/users", {
+  name: "张三",
+  email: "zhangsan@example.com",
 });
 const protectedReq = RequestFactory.authenticated(
-  'https://api.example.com/admin',
-  'GET',
+  "https://api.example.com/admin",
+  "GET",
   null,
-  'eyJhbGciOiJIUzI1NiJ9...'
+  "eyJhbGciOiJIUzI1NiJ9...",
 );
 
-console.log(getUser.method);    // GET
+console.log(getUser.method); // GET
 console.log(createUser.method); // POST
 console.log(protectedReq.headers.Authorization); // Bearer eyJ...
 ```
@@ -192,10 +196,10 @@ console.log(protectedReq.headers.Authorization); // Bearer eyJ...
 class Dialog {
   // 工厂方法 — 子类必须实现
   createButton() {
-    throw new Error('子类必须实现 createButton()');
+    throw new Error("子类必须实现 createButton()");
   }
   createCheckbox() {
-    throw new Error('子类必须实现 createCheckbox()');
+    throw new Error("子类必须实现 createCheckbox()");
   }
 
   render() {
@@ -209,41 +213,65 @@ class Dialog {
 }
 
 // 产品接口
-class Button { render() { throw new Error('必须实现 render()'); } }
-class Checkbox { render() { throw new Error('必须实现 render()'); } }
+class Button {
+  render() {
+    throw new Error("必须实现 render()");
+  }
+}
+class Checkbox {
+  render() {
+    throw new Error("必须实现 render()");
+  }
+}
 
 // 具体产品：Windows 风格
 class WindowsButton extends Button {
-  render() { return '🪟 Windows Button (rectangular, blue border)'; }
+  render() {
+    return "🪟 Windows Button (rectangular, blue border)";
+  }
 }
 class WindowsCheckbox extends Checkbox {
-  render() { return '☐ Windows Checkbox (square, gray)'; }
+  render() {
+    return "☐ Windows Checkbox (square, gray)";
+  }
 }
 
 // 具体产品：Mac 风格
 class MacButton extends Button {
-  render() { return '🍎 Mac Button (rounded, gradient)'; }
+  render() {
+    return "🍎 Mac Button (rounded, gradient)";
+  }
 }
 class MacCheckbox extends Checkbox {
-  render() { return '☑ Mac Checkbox (rounded, blue check)'; }
+  render() {
+    return "☑ Mac Checkbox (rounded, blue check)";
+  }
 }
 
 // 具体工厂
 class WindowsDialog extends Dialog {
-  createButton() { return new WindowsButton(); }
-  createCheckbox() { return new WindowsCheckbox(); }
+  createButton() {
+    return new WindowsButton();
+  }
+  createCheckbox() {
+    return new WindowsCheckbox();
+  }
 }
 
 class MacDialog extends Dialog {
-  createButton() { return new MacButton(); }
-  createCheckbox() { return new MacCheckbox(); }
+  createButton() {
+    return new MacButton();
+  }
+  createCheckbox() {
+    return new MacCheckbox();
+  }
 }
 
 // 使用 — 客户端代码无需知道具体产品类
 function renderApp(dialog) {
   const result = dialog.render();
   console.log(`=== ${result.type} ===`);
-  result.components.forEach(c => console.log(c));
+  result.components.forEach((c) => console.log(c));
 }
 
 renderApp(new WindowsDialog());
@@ -264,25 +292,85 @@ renderApp(new MacDialog());
 // 场景：主题系统 — 每个主题包含颜色、字体、间距
 
 // 抽象产品
-class ColorScheme { getColors() { throw new Error('必须实现'); } }
-class Typography { getFonts() { throw new Error('必须实现'); } }
-class Spacing { getSpacing() { throw new Error('必须实现'); } }
+class ColorScheme {
+  getColors() {
+    throw new Error("必须实现");
+  }
+}
+class Typography {
+  getFonts() {
+    throw new Error("必须实现");
+  }
+}
+class Spacing {
+  getSpacing() {
+    throw new Error("必须实现");
+  }
+}
 
 // 产品族 A: Light 主题
-class LightColors extends ColorScheme { getColors() { return { bg: '#FFFFFF', text: '#333333', accent: '#0066CC', border: '#E0E0E0' }; } }
-class LightFonts extends Typography { getFonts() { return { heading: 'Inter, sans-serif', body: 'Roboto, sans-serif', mono: 'Fira Code, monospace' }; } }
-class LightSpacing extends Spacing { getSpacing() { return { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 }; } }
+class LightColors extends ColorScheme {
+  getColors() {
+    return {
+      bg: "#FFFFFF",
+      text: "#333333",
+      accent: "#0066CC",
+      border: "#E0E0E0",
+    };
+  }
+}
+class LightFonts extends Typography {
+  getFonts() {
+    return {
+      heading: "Inter, sans-serif",
+      body: "Roboto, sans-serif",
+      mono: "Fira Code, monospace",
+    };
+  }
+}
+class LightSpacing extends Spacing {
+  getSpacing() {
+    return { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
+  }
+}
 
 // 产品族 B: Dark 主题
-class DarkColors extends ColorScheme { getColors() { return { bg: '#1A1A2E', text: '#E0E0E0', accent: '#E94560', border: '#16213E' }; } }
-class DarkFonts extends Typography { getFonts() { return { heading: 'Outfit, sans-serif', body: 'Noto Sans, sans-serif', mono: 'JetBrains Mono, monospace' }; } }
-class DarkSpacing extends Spacing { getSpacing() { return { xs: 4, sm: 8, md: 16, lg: 24, xl: 40 }; } }
+class DarkColors extends ColorScheme {
+  getColors() {
+    return {
+      bg: "#1A1A2E",
+      text: "#E0E0E0",
+      accent: "#E94560",
+      border: "#16213E",
+    };
+  }
+}
+class DarkFonts extends Typography {
+  getFonts() {
+    return {
+      heading: "Outfit, sans-serif",
+      body: "Noto Sans, sans-serif",
+      mono: "JetBrains Mono, monospace",
+    };
+  }
+}
+class DarkSpacing extends Spacing {
+  getSpacing() {
+    return { xs: 4, sm: 8, md: 16, lg: 24, xl: 40 };
+  }
+}
 
 // 抽象工厂
 class ThemeFactory {
-  createColors() { throw new Error('必须实现'); }
-  createTypography() { throw new Error('必须实现'); }
-  createSpacing() { throw new Error('必须实现'); }
+  createColors() {
+    throw new Error("必须实现");
+  }
+  createTypography() {
+    throw new Error("必须实现");
+  }
+  createSpacing() {
+    throw new Error("必须实现");
+  }
 
   // 获取完整主题配置
   getTheme() {
@@ -296,24 +384,36 @@ class ThemeFactory {
 
 // 具体工厂
 class LightThemeFactory extends ThemeFactory {
-  createColors() { return new LightColors(); }
-  createTypography() { return new LightFonts(); }
-  createSpacing() { return new LightSpacing(); }
+  createColors() {
+    return new LightColors();
+  }
+  createTypography() {
+    return new LightFonts();
+  }
+  createSpacing() {
+    return new LightSpacing();
+  }
 }
 
 class DarkThemeFactory extends ThemeFactory {
-  createColors() { return new DarkColors(); }
-  createTypography() { return new DarkFonts(); }
-  createSpacing() { return new DarkSpacing(); }
+  createColors() {
+    return new DarkColors();
+  }
+  createTypography() {
+    return new DarkFonts();
+  }
+  createSpacing() {
+    return new DarkSpacing();
+  }
 }
 
 // 使用
 function applyTheme(factory) {
   const theme = factory.getTheme();
-  console.log('=== 主题配置 ===');
-  console.log('颜色:', JSON.stringify(theme.colors, null, 2));
-  console.log('字体:', JSON.stringify(theme.fonts, null, 2));
-  console.log('间距:', JSON.stringify(theme.spacing, null, 2));
+  console.log("=== 主题配置 ===");
+  console.log("颜色:", JSON.stringify(theme.colors, null, 2));
+  console.log("字体:", JSON.stringify(theme.fonts, null, 2));
+  console.log("间距:", JSON.stringify(theme.spacing, null, 2));
 }
 
 applyTheme(new LightThemeFactory());
@@ -342,14 +442,14 @@ applyTheme(new DarkThemeFactory());
 // 策略接口：所有策略实现相同的方法
 class PricingStrategy {
   calculate(price) {
-    throw new Error('子类必须实现 calculate()');
+    throw new Error("子类必须实现 calculate()");
   }
 }
 
 // 具体策略 A: 无折扣
 class RegularPrice extends PricingStrategy {
   calculate(price) {
-    return { final: price, discount: 0, label: '原价' };
+    return { final: price, discount: 0, label: "原价" };
   }
 }
 
@@ -361,7 +461,11 @@ class PercentageDiscount extends PricingStrategy {
   }
   calculate(price) {
     const discount = price * (this.percent / 100);
-    return { final: +(price - discount).toFixed(2), discount: +discount.toFixed(2), label: `${this.percent}% 折扣` };
+    return {
+      final: +(price - discount).toFixed(2),
+      discount: +discount.toFixed(2),
+      label: `${this.percent}% 折扣`,
+    };
   }
 }
 
@@ -374,7 +478,11 @@ class TieredDiscount extends PricingStrategy {
   }
   calculate(price) {
     const discount = price >= this.threshold ? this.amount : 0;
-    return { final: +(price - discount).toFixed(2), discount: +discount.toFixed(2), label: discount ? `满${this.threshold}减${this.amount}` : '无优惠' };
+    return {
+      final: +(price - discount).toFixed(2),
+      discount: +discount.toFixed(2),
+      label: discount ? `满${this.threshold}减${this.amount}` : "无优惠",
+    };
   }
 }
 
@@ -384,15 +492,19 @@ class MemberPrice extends PricingStrategy {
     super();
     this.levels = {
       bronze: 0.95,
-      silver: 0.90,
+      silver: 0.9,
       gold: 0.85,
-      platinum: 0.80,
+      platinum: 0.8,
     };
     this.multiplier = this.levels[memberLevel] || 1;
   }
   calculate(price) {
     const discount = +(price * (1 - this.multiplier)).toFixed(2);
-    return { final: +(price * this.multiplier).toFixed(2), discount, label: `会员价 (${this.multiplier * 100}%)` };
+    return {
+      final: +(price * this.multiplier).toFixed(2),
+      discount,
+      label: `会员价 (${this.multiplier * 100}%)`,
+    };
   }
 }
 
@@ -428,7 +540,7 @@ console.log(calculator.getPrice(150)); // 未满门槛
 console.log(calculator.getPrice(250)); // 满足门槛
 // { final: 200, discount: 50, label: '满200减50' }
 
-calculator.setStrategy(new MemberPrice('gold'));
+calculator.setStrategy(new MemberPrice("gold"));
 console.log(calculator.getPrice(100));
 // { final: 85, discount: 15, label: '会员价 (85%)' }
 ```
@@ -439,7 +551,7 @@ console.log(calculator.getPrice(100));
 // 验证策略接口
 class ValidationStrategy {
   validate(value) {
-    throw new Error('子类必须实现 validate()');
+    throw new Error("子类必须实现 validate()");
   }
 }
 
@@ -447,8 +559,9 @@ class ValidationStrategy {
 class RequiredValidator extends ValidationStrategy {
   validate(value) {
     return {
-      valid: value !== null && value !== undefined && String(value).trim() !== '',
-      message: '此字段为必填项',
+      valid:
+        value !== null && value !== undefined && String(value).trim() !== "",
+      message: "此字段为必填项",
     };
   }
 }
@@ -458,7 +571,7 @@ class EmailValidator extends ValidationStrategy {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return {
       valid: emailRegex.test(value),
-      message: '请输入有效的邮箱地址',
+      message: "请输入有效的邮箱地址",
     };
   }
 }
@@ -537,27 +650,39 @@ class FormValidator {
 // 使用
 const validator = new FormValidator();
 
-validator.addRule('email', new RequiredValidator(), new EmailValidator());
-validator.addRule('username', new RequiredValidator(), new MinLengthValidator(3), new MaxLengthValidator(20));
-validator.addRule('password', new RequiredValidator(), new MinLengthValidator(8),
-  new PatternValidator(/[A-Z]/, '密码必须包含大写字母'),
-  new PatternValidator(/[0-9]/, '密码必须包含数字'),
+validator.addRule("email", new RequiredValidator(), new EmailValidator());
+validator.addRule(
+  "username",
+  new RequiredValidator(),
+  new MinLengthValidator(3),
+  new MaxLengthValidator(20),
+);
+validator.addRule(
+  "password",
+  new RequiredValidator(),
+  new MinLengthValidator(8),
+  new PatternValidator(/[A-Z]/, "密码必须包含大写字母"),
+  new PatternValidator(/[0-9]/, "密码必须包含数字"),
 );
 
 // 验证通过
-console.log(validator.validate({
-  email: 'test@example.com',
-  username: 'alice',
-  password: 'MyPass123',
-}));
+console.log(
+  validator.validate({
+    email: "test@example.com",
+    username: "alice",
+    password: "MyPass123",
+  }),
+);
 // { valid: true, errors: {} }
 
 // 验证失败
-console.log(validator.validate({
-  email: 'invalid',
-  username: 'ab',
-  password: 'weak',
-}));
+console.log(
+  validator.validate({
+    email: "invalid",
+    username: "ab",
+    password: "weak",
+  }),
+);
 // { valid: false, errors: { email: '请输入有效的邮箱地址', username: '最少需要 3 个字符', password: '密码必须包含大写字母' } }
 ```
 
@@ -567,7 +692,7 @@ console.log(validator.validate({
 // 排序策略
 class SortStrategy {
   sort(arr) {
-    throw new Error('子类必须实现 sort()');
+    throw new Error("子类必须实现 sort()");
   }
 }
 
@@ -590,9 +715,9 @@ class QuickSort extends SortStrategy {
   sort(arr) {
     if (arr.length <= 1) return [...arr];
     const pivot = arr[Math.floor(arr.length / 2)];
-    const left = arr.filter(v => v < pivot);
-    const middle = arr.filter(v => v === pivot);
-    const right = arr.filter(v => v > pivot);
+    const left = arr.filter((v) => v < pivot);
+    const middle = arr.filter((v) => v === pivot);
+    const right = arr.filter((v) => v > pivot);
     return [...this.sort(left), ...middle, ...this.sort(right)];
   }
 }
@@ -607,7 +732,8 @@ class MergeSort extends SortStrategy {
   }
   merge(left, right) {
     const result = [];
-    let i = 0, j = 0;
+    let i = 0,
+      j = 0;
     while (i < left.length && j < right.length) {
       if (left[i] <= right[j]) result.push(left[i++]);
       else result.push(right[j++]);
@@ -621,21 +747,25 @@ class Sorter {
   constructor(strategy) {
     this.strategy = strategy;
   }
-  setStrategy(strategy) { this.strategy = strategy; }
-  sort(arr) { return this.strategy.sort(arr); }
+  setStrategy(strategy) {
+    this.strategy = strategy;
+  }
+  sort(arr) {
+    return this.strategy.sort(arr);
+  }
 }
 
 // 使用 — 根据数据量选择策略
 const data = [64, 34, 25, 12, 22, 11, 90, 1, 55, 42];
 
 const sorter = new Sorter(new BubbleSort());
-console.log('冒泡排序:', sorter.sort(data));
+console.log("冒泡排序:", sorter.sort(data));
 
 sorter.setStrategy(new QuickSort());
-console.log('快速排序:', sorter.sort(data));
+console.log("快速排序:", sorter.sort(data));
 
 sorter.setStrategy(new MergeSort());
-console.log('归并排序:', sorter.sort(data));
+console.log("归并排序:", sorter.sort(data));
 ```
 
 ### 2.5 策略模式 — JS 函数式风格
@@ -646,8 +776,8 @@ const strategies = {
   add: (a, b) => a + b,
   subtract: (a, b) => a - b,
   multiply: (a, b) => a * b,
-  divide: (a, b) => b !== 0 ? a / b : NaN,
-  modulo: (a, b) => b !== 0 ? a % b : NaN,
+  divide: (a, b) => (b !== 0 ? a / b : NaN),
+  modulo: (a, b) => (b !== 0 ? a % b : NaN),
 };
 
 function calculate(a, b, operation) {
@@ -656,13 +786,13 @@ function calculate(a, b, operation) {
   return fn(a, b);
 }
 
-console.log(calculate(10, 3, 'add'));      // 13
-console.log(calculate(10, 3, 'multiply')); // 30
-console.log(calculate(10, 3, 'modulo'));   // 1
+console.log(calculate(10, 3, "add")); // 13
+console.log(calculate(10, 3, "multiply")); // 30
+console.log(calculate(10, 3, "modulo")); // 1
 
 // 动态注册策略
 strategies.power = (a, b) => a ** b;
-console.log(calculate(2, 10, 'power'));    // 1024
+console.log(calculate(2, 10, "power")); // 1024
 ```
 
 ### 2.6 策略模式要点
@@ -683,25 +813,39 @@ console.log(calculate(2, 10, 'power'));    // 1024
 // 支付策略
 class PaymentStrategy {
   async pay(amount) {
-    throw new Error('子类必须实现 pay()');
+    throw new Error("子类必须实现 pay()");
   }
   getFee(amount) {
-    throw new Error('子类必须实现 getFee()');
+    throw new Error("子类必须实现 getFee()");
   }
 }
 
 class AlipayStrategy extends PaymentStrategy {
   async pay(amount) {
-    return { method: '支付宝', amount, status: 'success', transactionId: `ALIPAY_${Date.now()}` };
+    return {
+      method: "支付宝",
+      amount,
+      status: "success",
+      transactionId: `ALIPAY_${Date.now()}`,
+    };
   }
-  getFee(amount) { return +(amount * 0.006).toFixed(2); } // 0.6%
+  getFee(amount) {
+    return +(amount * 0.006).toFixed(2);
+  } // 0.6%
 }
 
 class WechatStrategy extends PaymentStrategy {
   async pay(amount) {
-    return { method: '微信支付', amount, status: 'success', transactionId: `WECHAT_${Date.now()}` };
+    return {
+      method: "微信支付",
+      amount,
+      status: "success",
+      transactionId: `WECHAT_${Date.now()}`,
+    };
   }
-  getFee(amount) { return +(amount * 0.0055).toFixed(2); } // 0.55%
+  getFee(amount) {
+    return +(amount * 0.0055).toFixed(2);
+  } // 0.55%
 }
 
 class CreditCardStrategy extends PaymentStrategy {
@@ -710,7 +854,12 @@ class CreditCardStrategy extends PaymentStrategy {
     this.cardType = cardType; // 'visa' | 'mastercard' | 'unionpay'
   }
   async pay(amount) {
-    return { method: `信用卡(${this.cardType})`, amount, status: 'success', transactionId: `CARD_${Date.now()}` };
+    return {
+      method: `信用卡(${this.cardType})`,
+      amount,
+      status: "success",
+      transactionId: `CARD_${Date.now()}`,
+    };
   }
   getFee(amount) {
     const rates = { visa: 0.015, mastercard: 0.015, unionpay: 0.012 };
@@ -720,19 +869,26 @@ class CreditCardStrategy extends PaymentStrategy {
 
 class CryptoStrategy extends PaymentStrategy {
   async pay(amount) {
-    return { method: '加密货币', amount, status: 'pending', transactionId: `CRYPTO_${Date.now()}` };
+    return {
+      method: "加密货币",
+      amount,
+      status: "pending",
+      transactionId: `CRYPTO_${Date.now()}`,
+    };
   }
-  getFee(amount) { return +(amount * 0.01).toFixed(2); } // 1%
+  getFee(amount) {
+    return +(amount * 0.01).toFixed(2);
+  } // 1%
 }
 
 // 支付工厂
 class PaymentFactory {
   static create(method, options = {}) {
     const creators = {
-      alipay:     () => new AlipayStrategy(),
-      wechat:     () => new WechatStrategy(),
-      creditcard: () => new CreditCardStrategy(options.cardType || 'visa'),
-      crypto:     () => new CryptoStrategy(),
+      alipay: () => new AlipayStrategy(),
+      wechat: () => new WechatStrategy(),
+      creditcard: () => new CreditCardStrategy(options.cardType || "visa"),
+      crypto: () => new CryptoStrategy(),
     };
     const creator = creators[method.toLowerCase()];
     if (!creator) throw new Error(`不支持的支付方式: ${method}`);
@@ -752,7 +908,7 @@ class PaymentProcessor {
   }
 
   async process(amount) {
-    if (!this.strategy) throw new Error('请先设置支付方式');
+    if (!this.strategy) throw new Error("请先设置支付方式");
     const fee = this.strategy.getFee(amount);
     const result = await this.strategy.pay(amount);
     return {
@@ -768,18 +924,20 @@ async function demo() {
   const processor = new PaymentProcessor();
 
   // 支付宝
-  const alipayResult = await processor.setMethod('alipay').process(100);
-  console.log('支付宝:', JSON.stringify(alipayResult));
+  const alipayResult = await processor.setMethod("alipay").process(100);
+  console.log("支付宝:", JSON.stringify(alipayResult));
   // { method: '支付宝', amount: 100, status: 'success', fee: 0.60, total: 100.60 }
 
   // 信用卡 (Visa)
-  const cardResult = await processor.setMethod('creditcard', { cardType: 'visa' }).process(100);
-  console.log('信用卡:', JSON.stringify(cardResult));
+  const cardResult = await processor
+    .setMethod("creditcard", { cardType: "visa" })
+    .process(100);
+  console.log("信用卡:", JSON.stringify(cardResult));
   // { method: '信用卡(visa)', amount: 100, status: 'success', fee: 1.50, total: 101.50 }
 
   // 加密货币
-  const cryptoResult = await processor.setMethod('crypto').process(100);
-  console.log('加密货币:', JSON.stringify(cryptoResult));
+  const cryptoResult = await processor.setMethod("crypto").process(100);
+  console.log("加密货币:", JSON.stringify(cryptoResult));
   // { method: '加密货币', amount: 100, status: 'pending', fee: 1.00, total: 101.00 }
 }
 
@@ -790,26 +948,26 @@ demo();
 
 ## 四、总结对比
 
-| 特性 | 工厂模式 | 策略模式 |
-|------|----------|----------|
-| 核心目的 | 封装对象创建 | 封装算法/行为 |
-| 解决的问题 | new 操作分散、创建逻辑复杂 | 大量条件分支、行为硬编码 |
-| 关键方法 | create()/createXxx() | calculate()/validate()/sort() |
-| 典型应用 | 创建不同形状/请求/产品 | 促销/验证/排序/支付 |
-| 优点 | 创建逻辑集中、易扩展 | 消除条件分支、运行时切换 |
-| JS 特色写法 | 对象映射 + 静态方法 | 函数即策略 |
-| 组合使用 | 工厂创建策略对象 | 策略执行具体行为 |
+| 特性        | 工厂模式                   | 策略模式                      |
+| ----------- | -------------------------- | ----------------------------- |
+| 核心目的    | 封装对象创建               | 封装算法/行为                 |
+| 解决的问题  | new 操作分散、创建逻辑复杂 | 大量条件分支、行为硬编码      |
+| 关键方法    | create()/createXxx()       | calculate()/validate()/sort() |
+| 典型应用    | 创建不同形状/请求/产品     | 促销/验证/排序/支付           |
+| 优点        | 创建逻辑集中、易扩展       | 消除条件分支、运行时切换      |
+| JS 特色写法 | 对象映射 + 静态方法        | 函数即策略                    |
+| 组合使用    | 工厂创建策略对象           | 策略执行具体行为              |
 
 ---
 
 ## 五、四种核心设计模式总览
 
-| 模式 | 一句话 | 关键词 |
-|------|--------|--------|
-| 单例 | 全局唯一实例 | getInstance, 闭包, 配置管理 |
-| 观察者 | 一对多通知机制 | subscribe, emit, 事件总线 |
-| 工厂 | 统一创建对象 | create, 产品族, 开闭原则 |
-| 策略 | 算法可互换 | setStrategy, 消除 if/else |
+| 模式   | 一句话         | 关键词                      |
+| ------ | -------------- | --------------------------- |
+| 单例   | 全局唯一实例   | getInstance, 闭包, 配置管理 |
+| 观察者 | 一对多通知机制 | subscribe, emit, 事件总线   |
+| 工厂   | 统一创建对象   | create, 产品族, 开闭原则    |
+| 策略   | 算法可互换     | setStrategy, 消除 if/else   |
 
 ---
 

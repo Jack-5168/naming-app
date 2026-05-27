@@ -3,10 +3,10 @@
  * Phase 2 Integration: Real-time ability estimates and CAT question selection
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, Progress } from '@tarojs/components';
-import { useNavigate } from '@tarojs/taro';
-import { Question, AnswerResponse } from '../../types';
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, Progress } from "@tarojs/components";
+import { useNavigate } from "@tarojs/taro";
+import { Question, AnswerResponse } from "../../types";
 
 interface TestPageProps {
   sessionId: string;
@@ -21,10 +21,14 @@ interface AbilityEstimate {
 
 export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
   const navigate = useNavigate();
-  
+
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 20, percentage: 0 });
+  const [progress, setProgress] = useState({
+    current: 0,
+    total: 20,
+    percentage: 0,
+  });
   const [ability, setAbility] = useState<AbilityEstimate | null>(null);
   const [sem, setSem] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +45,7 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
       // For now, we assume the session is already created
       setError(null);
     } catch (err) {
-      setError('Failed to load test');
+      setError("Failed to load test");
     } finally {
       setLoading(false);
     }
@@ -51,21 +55,28 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
    * Handle answer submission with CAT integration
    * Phase 2: Receives real-time ability estimates and next question from CAT engine
    */
-  const onAnswerSubmit = async (answer: { questionId: string; dimension: string; selectedOption: string }) => {
+  const onAnswerSubmit = async (answer: {
+    questionId: string;
+    dimension: string;
+    selectedOption: string;
+  }) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/v1/tests/sessions/${sessionId}/answer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(answer)
-      });
+      const response = await fetch(
+        `/api/v1/tests/sessions/${sessionId}/answer`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(answer),
+        },
+      );
 
       const data: AnswerResponse = await response.json();
 
       if (!data.accepted) {
-        throw new Error('Answer not accepted');
+        throw new Error("Answer not accepted");
       }
 
       if (data.completed) {
@@ -75,7 +86,7 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
         // Test continues - update UI with next question and real-time estimates
         setCurrentQuestion(data.nextQuestion!);
         setProgress(data.progress);
-        
+
         // Phase 2: Display real-time ability estimates (optional feature)
         if (data.ability) {
           setAbility(data.ability);
@@ -84,7 +95,7 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
         }
       }
     } catch (err) {
-      setError('Failed to submit answer');
+      setError("Failed to submit answer");
       console.error(err);
     } finally {
       setLoading(false);
@@ -96,18 +107,21 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
    */
   const navigateToResult = (result: any, stability: any) => {
     navigate({
-      url: `/pages/result/result?sessionId=${sessionId}&result=${JSON.stringify(result)}&stability=${JSON.stringify(stability)}`
+      url: `/pages/result/result?sessionId=${sessionId}&result=${JSON.stringify(result)}&stability=${JSON.stringify(stability)}`,
     });
   };
 
   /**
    * Update progress display with optional ability estimates
    */
-  const updateProgress = (abilityEstimate: AbilityEstimate, semValue: number) => {
+  const updateProgress = (
+    abilityEstimate: AbilityEstimate,
+    semValue: number,
+  ) => {
     // Could show a live chart of ability estimates
     // For now, just update state for optional display
-    console.log('Current ability estimates:', abilityEstimate);
-    console.log('Standard error:', semValue);
+    console.log("Current ability estimates:", abilityEstimate);
+    console.log("Standard error:", semValue);
   };
 
   if (loading && !currentQuestion) {
@@ -140,8 +154,8 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
     <View className="test-page">
       {/* Progress Bar */}
       <View className="progress-section">
-        <Progress 
-          percent={progress.percentage} 
+        <Progress
+          percent={progress.percentage}
           color="#4A90E2"
           backgroundColor="#E0E0E0"
         />
@@ -167,18 +181,20 @@ export const TestPage: React.FC<TestPageProps> = ({ sessionId }) => {
       {/* Question Content */}
       <View className="question-section">
         <Text className="question-text">{currentQuestion.content}</Text>
-        
+
         {/* Answer Options */}
         <View className="options-section">
           {currentQuestion.options.map((option) => (
             <Button
               key={option.id}
               className="option-button"
-              onClick={() => onAnswerSubmit({
-                questionId: currentQuestion.id,
-                dimension: currentQuestion.dimension,
-                selectedOption: option.id
-              })}
+              onClick={() =>
+                onAnswerSubmit({
+                  questionId: currentQuestion.id,
+                  dimension: currentQuestion.dimension,
+                  selectedOption: option.id,
+                })
+              }
               disabled={loading}
             >
               {option.text}

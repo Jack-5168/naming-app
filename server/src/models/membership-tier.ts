@@ -8,21 +8,21 @@
 // ==================== Membership Tier Enum ====================
 
 export enum MembershipTier {
-  FREE = 'FREE', // 免费版
-  BASIC = 'BASIC', // 基础报告
-  PRO_REPORT = 'PRO_REPORT', // 专业报告
-  PRO_MONTHLY = 'PRO_MONTHLY', // 月会员
-  PRO_YEARLY = 'PRO_YEARLY', // 年会员
-  DUAL_TEST = 'DUAL_TEST', // 双人合测
+  FREE = "FREE", // 免费版
+  BASIC = "BASIC", // 基础报告
+  PRO_REPORT = "PRO_REPORT", // 专业报告
+  PRO_MONTHLY = "PRO_MONTHLY", // 月会员
+  PRO_YEARLY = "PRO_YEARLY", // 年会员
+  DUAL_TEST = "DUAL_TEST", // 双人合测
 }
 
 // ==================== Benefits Configuration ====================
 
 export interface BenefitLimits {
-  report_basic: number | 'unlimited'; // 基础报告次数
-  report_pro: number | 'unlimited'; // 专业报告次数
-  life_event: number | 'unlimited'; // 生活事件次数
-  dual_test: number | 'unlimited'; // 双人合测次数
+  report_basic: number | "unlimited"; // 基础报告次数
+  report_pro: number | "unlimited"; // 专业报告次数
+  life_event: number | "unlimited"; // 生活事件次数
+  dual_test: number | "unlimited"; // 双人合测次数
   priority_support: boolean; // 优先支持
 }
 
@@ -33,7 +33,7 @@ export interface MembershipTierConfig {
   price: number; // 价格（分）
   priceDisplay: string; // 价格显示
   durationDays: number; // 有效期（0 为永久）
-  billingCycle?: 'once' | 'monthly' | 'yearly'; // 计费周期
+  billingCycle?: "once" | "monthly" | "yearly"; // 计费周期
   benefits: BenefitLimits;
   features: string[]; // 特性列表
   sortOrder: number; // 排序顺序
@@ -45,12 +45,12 @@ export interface MembershipTierConfig {
 export const MEMBERSHIP_TIERS: Record<MembershipTier, MembershipTierConfig> = {
   [MembershipTier.FREE]: {
     tier: MembershipTier.FREE,
-    name: '免费版',
-    nameEn: 'Free',
+    name: "免费版",
+    nameEn: "Free",
     price: 0,
-    priceDisplay: '¥0',
+    priceDisplay: "¥0",
     durationDays: 0,
-    billingCycle: 'once',
+    billingCycle: "once",
     benefits: {
       report_basic: 1,
       report_pro: 0,
@@ -58,22 +58,17 @@ export const MEMBERSHIP_TIERS: Record<MembershipTier, MembershipTierConfig> = {
       dual_test: 0,
       priority_support: false,
     },
-    features: [
-      '1 次基础报告',
-      '5 次生活事件',
-      '基础人格分析',
-      '四维得分详情',
-    ],
+    features: ["1 次基础报告", "5 次生活事件", "基础人格分析", "四维得分详情"],
     sortOrder: 0,
   },
   [MembershipTier.BASIC]: {
     tier: MembershipTier.BASIC,
-    name: '基础报告',
-    nameEn: 'Basic Report',
+    name: "基础报告",
+    nameEn: "Basic Report",
     price: 990, // ¥9.9
-    priceDisplay: '¥9.9',
+    priceDisplay: "¥9.9",
     durationDays: 0,
-    billingCycle: 'once',
+    billingCycle: "once",
     benefits: {
       report_basic: 1,
       report_pro: 0,
@@ -82,114 +77,114 @@ export const MEMBERSHIP_TIERS: Record<MembershipTier, MembershipTierConfig> = {
       priority_support: false,
     },
     features: [
-      '解锁完整人格报告',
-      '查看四维得分详情',
-      '基础发展建议',
-      '5 次生活事件',
+      "解锁完整人格报告",
+      "查看四维得分详情",
+      "基础发展建议",
+      "5 次生活事件",
     ],
     sortOrder: 1,
   },
   [MembershipTier.PRO_REPORT]: {
     tier: MembershipTier.PRO_REPORT,
-    name: '专业报告',
-    nameEn: 'Pro Report',
+    name: "专业报告",
+    nameEn: "Pro Report",
     price: 2900, // ¥29
-    priceDisplay: '¥29',
+    priceDisplay: "¥29",
     durationDays: 0,
-    billingCycle: 'once',
+    billingCycle: "once",
     benefits: {
-      report_basic: 'unlimited',
+      report_basic: "unlimited",
       report_pro: 1,
       life_event: 10,
       dual_test: 0,
       priority_support: false,
     },
     features: [
-      '无限次基础报告',
-      '1 次专业报告',
-      '10 次生活事件',
-      '职业匹配分析',
-      '人际关系指南',
-      '压力管理建议',
+      "无限次基础报告",
+      "1 次专业报告",
+      "10 次生活事件",
+      "职业匹配分析",
+      "人际关系指南",
+      "压力管理建议",
     ],
     sortOrder: 2,
     isPopular: true,
   },
   [MembershipTier.PRO_MONTHLY]: {
     tier: MembershipTier.PRO_MONTHLY,
-    name: '月会员',
-    nameEn: 'Pro Monthly',
+    name: "月会员",
+    nameEn: "Pro Monthly",
     price: 4900, // ¥49/月
-    priceDisplay: '¥49/月',
+    priceDisplay: "¥49/月",
     durationDays: 30,
-    billingCycle: 'monthly',
+    billingCycle: "monthly",
     benefits: {
-      report_basic: 'unlimited',
+      report_basic: "unlimited",
       report_pro: 3,
-      life_event: 'unlimited',
+      life_event: "unlimited",
       dual_test: 1,
       priority_support: false,
     },
     features: [
-      '无限次基础报告',
-      '3 次专业报告/月',
-      '无限次生活事件',
-      '1 次双人合测/月',
-      '成长任务系统',
-      '月度专属报告',
+      "无限次基础报告",
+      "3 次专业报告/月",
+      "无限次生活事件",
+      "1 次双人合测/月",
+      "成长任务系统",
+      "月度专属报告",
     ],
     sortOrder: 3,
   },
   [MembershipTier.PRO_YEARLY]: {
     tier: MembershipTier.PRO_YEARLY,
-    name: '年会员',
-    nameEn: 'Pro Yearly',
+    name: "年会员",
+    nameEn: "Pro Yearly",
     price: 19900, // ¥199/年
-    priceDisplay: '¥199/年',
+    priceDisplay: "¥199/年",
     durationDays: 365,
-    billingCycle: 'yearly',
+    billingCycle: "yearly",
     benefits: {
-      report_basic: 'unlimited',
-      report_pro: 'unlimited',
-      life_event: 'unlimited',
+      report_basic: "unlimited",
+      report_pro: "unlimited",
+      life_event: "unlimited",
       dual_test: 3,
       priority_support: true,
     },
     features: [
-      '无限次基础报告',
-      '无限次专业报告',
-      '无限次生活事件',
-      '3 次双人合测/年',
-      '优先客户支持',
-      '专属成长顾问',
-      '年度深度报告',
-      '最早体验新功能',
+      "无限次基础报告",
+      "无限次专业报告",
+      "无限次生活事件",
+      "3 次双人合测/年",
+      "优先客户支持",
+      "专属成长顾问",
+      "年度深度报告",
+      "最早体验新功能",
     ],
     sortOrder: 4,
     isPopular: true,
   },
   [MembershipTier.DUAL_TEST]: {
     tier: MembershipTier.DUAL_TEST,
-    name: '双人合测',
-    nameEn: 'Dual Test',
+    name: "双人合测",
+    nameEn: "Dual Test",
     price: 9900, // ¥99
-    priceDisplay: '¥99',
+    priceDisplay: "¥99",
     durationDays: 0,
-    billingCycle: 'once',
+    billingCycle: "once",
     benefits: {
-      report_basic: 'unlimited',
+      report_basic: "unlimited",
       report_pro: 2,
-      life_event: 'unlimited',
+      life_event: "unlimited",
       dual_test: 1,
       priority_support: false,
     },
     features: [
-      '无限次基础报告',
-      '2 次专业报告',
-      '无限次生活事件',
-      '1 次双人合测',
-      '关系匹配分析',
-      '相处建议报告',
+      "无限次基础报告",
+      "2 次专业报告",
+      "无限次生活事件",
+      "1 次双人合测",
+      "关系匹配分析",
+      "相处建议报告",
     ],
     sortOrder: 5,
   },
@@ -228,7 +223,7 @@ export function isUnlimited(
 
   const limit = config.benefits[benefit];
 
-  return limit === 'unlimited';
+  return limit === "unlimited";
 }
 
 /**
@@ -246,7 +241,7 @@ export function getBenefitLimit(
 
   const limit = config.benefits[benefit];
 
-  return limit === 'unlimited' ? Number.MAX_SAFE_INTEGER : limit;
+  return limit === "unlimited" ? Number.MAX_SAFE_INTEGER : limit;
 }
 
 /**

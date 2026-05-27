@@ -7,39 +7,40 @@
 
 ## 📋 12 个示例概览
 
-| # | 示例 | 核心概念 | 关键代码行数 |
-|---|------|----------|-------------|
-| 1 | Mini Redux | createStore, dispatch, subscribe | ~50 |
-| 2 | Mini Zustand | Proxy 响应式，直接可变状态 | ~40 |
-| 3 | Combine Reducers | 状态拆分与组合 | ~60 |
-| 4 | Middleware | compose 函数，副作用处理 | ~70 |
-| 5 | Selectors | Memoization，派生状态 | ~50 |
-| 6 | Immer | 可变语法实现不可变更新 | ~60 |
-| 7 | React Hooks | useReducer 模式 | ~80 |
-| 8 | Async State | pending/fulfilled/rejected | ~90 |
-| 9 | Undo/Redo | 历史状态管理 | ~80 |
-| 10 | Optimistic Updates | 乐观更新与回滚 | ~100 |
-| 11 | Normalization | 扁平化嵌套数据 | ~100 |
-| 12 | Persistence | LocalStorage + 版本迁移 | ~120 |
+| #   | 示例               | 核心概念                         | 关键代码行数 |
+| --- | ------------------ | -------------------------------- | ------------ |
+| 1   | Mini Redux         | createStore, dispatch, subscribe | ~50          |
+| 2   | Mini Zustand       | Proxy 响应式，直接可变状态       | ~40          |
+| 3   | Combine Reducers   | 状态拆分与组合                   | ~60          |
+| 4   | Middleware         | compose 函数，副作用处理         | ~70          |
+| 5   | Selectors          | Memoization，派生状态            | ~50          |
+| 6   | Immer              | 可变语法实现不可变更新           | ~60          |
+| 7   | React Hooks        | useReducer 模式                  | ~80          |
+| 8   | Async State        | pending/fulfilled/rejected       | ~90          |
+| 9   | Undo/Redo          | 历史状态管理                     | ~80          |
+| 10  | Optimistic Updates | 乐观更新与回滚                   | ~100         |
+| 11  | Normalization      | 扁平化嵌套数据                   | ~100         |
+| 12  | Persistence        | LocalStorage + 版本迁移          | ~120         |
 
 ---
 
 ## 🧠 核心原理总结
 
 ### Redux 三大原则
+
 1. **单一数据源** - 整个应用状态在一个 store 中
 2. **状态只读** - 只能通过 dispatch action 修改
 3. **纯函数更新** - reducers 必须是纯函数
 
 ### Zustand vs Redux
 
-| 特性 | Redux | Zustand |
-|------|-------|---------|
+| 特性     | Redux                | Zustand        |
+| -------- | -------------------- | -------------- |
 | 状态更新 | 不可变，通过 reducer | 可变，直接修改 |
-| 代码量 | 多（boilerplate） | 少 |
-| 学习曲线 | 陡峭 | 平缓 |
-| 中间件 | 成熟生态 | 简单 |
-| DevTools | 完善 | 支持 |
+| 代码量   | 多（boilerplate）    | 少             |
+| 学习曲线 | 陡峭                 | 平缓           |
+| 中间件   | 成熟生态             | 简单           |
+| DevTools | 完善                 | 支持           |
 
 ### 关键设计模式
 
@@ -68,14 +69,16 @@
 ## 💡 关键洞察
 
 ### 1. 为什么需要不可变更新？
+
 - 便于比较引用判断是否变化
 - 支持时间旅行调试
 - 避免意外副作用
 
 ### 2. Middleware 的本质
+
 ```javascript
 // 中间件签名
-const middleware = store => next => action => {
+const middleware = (store) => (next) => (action) => {
   // 在 dispatch 前后做点什么
   return next(action);
 };
@@ -85,11 +88,13 @@ const middleware = store => next => action => {
 ```
 
 ### 3. Selector Memoization 的价值
+
 - 避免不必要的重计算
 - 避免不必要的重渲染
 - 只有依赖变化时才重新计算
 
 ### 4. 规范化的好处
+
 - 避免数据重复
 - 更新只需改一处
 - 便于缓存和查询
@@ -99,6 +104,7 @@ const middleware = store => next => action => {
 ## 🎯 实践建议
 
 ### 选择指南
+
 - **小项目** → Zustand / React Context
 - **中大型项目** → Redux Toolkit / Zustand
 - **需要时间旅行** → Redux
@@ -106,12 +112,14 @@ const middleware = store => next => action => {
 - **表单密集** → React Hook Form + Zustand
 
 ### 避免的陷阱
+
 1. ❌ 在 reducer 中直接修改 state
 2. ❌ 在 selector 中创建新对象（破坏 memoization）
 3. ❌ 过度规范化（增加复杂度）
 4. ❌ 把所有东西都放进全局 store
 
 ### 最佳实践
+
 1. ✅ 保持 reducer 纯函数
 2. ✅ 使用 createSelector 优化派生状态
 3. ✅ 异步逻辑放在 middleware/thunk 中

@@ -1,6 +1,6 @@
 /**
  * 安全加固方案
- * 
+ *
  * 加固内容：
  * - 速率限制（防刷）
  * - SQL 注入防护
@@ -9,9 +9,9 @@
  * - 敏感数据加密
  */
 
-import crypto from 'crypto';
-import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
+import crypto from "crypto";
+import { Request, Response, NextFunction } from "express";
+import rateLimit from "express-rate-limit";
 
 // ==================== 速率限制（防刷） ====================
 
@@ -19,54 +19,59 @@ import rateLimit from 'express-rate-limit';
  * 通用速率限制配置
  */
 interface RateLimitConfig {
-  windowMs: number;      // 时间窗口（毫秒）
-  max: number;           // 最大请求数
-  message: string;       // 超出限制时的消息
-  statusCode: number;    // HTTP 状态码
+  windowMs: number; // 时间窗口（毫秒）
+  max: number; // 最大请求数
+  message: string; // 超出限制时的消息
+  statusCode: number; // HTTP 状态码
 }
 
 const DEFAULT_RATE_LIMIT: RateLimitConfig = {
-  windowMs: 60 * 1000,  // 1 分钟
-  max: 100,             // 100 次请求
-  message: { error: '请求过于频繁，请稍后再试', code: 'RATE_LIMIT_EXCEEDED' },
+  windowMs: 60 * 1000, // 1 分钟
+  max: 100, // 100 次请求
+  message: { error: "请求过于频繁，请稍后再试", code: "RATE_LIMIT_EXCEEDED" },
   statusCode: 429,
 };
 
 const STRICT_RATE_LIMIT: RateLimitConfig = {
-  windowMs: 60 * 1000,  // 1 分钟
-  max: 20,              // 20 次请求（敏感操作）
-  message: { error: '操作过于频繁，请稍后再试', code: 'STRICT_RATE_LIMIT_EXCEEDED' },
+  windowMs: 60 * 1000, // 1 分钟
+  max: 20, // 20 次请求（敏感操作）
+  message: {
+    error: "操作过于频繁，请稍后再试",
+    code: "STRICT_RATE_LIMIT_EXCEEDED",
+  },
   statusCode: 429,
 };
 
 const API_RATE_LIMIT: RateLimitConfig = {
-  windowMs: 15 * 60 * 1000,  // 15 分钟
-  max: 1000,                 // 1000 次请求
-  message: { error: 'API 调用过于频繁', code: 'API_RATE_LIMIT_EXCEEDED' },
+  windowMs: 15 * 60 * 1000, // 15 分钟
+  max: 1000, // 1000 次请求
+  message: { error: "API 调用过于频繁", code: "API_RATE_LIMIT_EXCEEDED" },
   statusCode: 429,
 };
 
 /**
  * 创建速率限制中间件
  */
-export function createRateLimiter(config: RateLimitConfig = DEFAULT_RATE_LIMIT) {
+export function createRateLimiter(
+  config: RateLimitConfig = DEFAULT_RATE_LIMIT,
+) {
   return rateLimit({
     windowMs: config.windowMs,
     max: config.max,
     message: config.message,
     statusCode: config.statusCode,
-    standardHeaders: true,  // 返回 RateLimit-* 头
-    legacyHeaders: false,   // 禁用 X-RateLimit-* 头
+    standardHeaders: true, // 返回 RateLimit-* 头
+    legacyHeaders: false, // 禁用 X-RateLimit-* 头
     keyGenerator: (req: Request) => {
       // 优先使用用户 ID，其次使用 IP
-      return (req as any).user?.id || req.ip || 'unknown';
+      return (req as any).user?.id || req.ip || "unknown";
     },
     handler: (req: Request, res: Response) => {
       res.status(config.statusCode).json(config.message);
     },
     skip: (req: Request) => {
       // 跳过健康检查和监控请求
-      return req.path === '/health' || req.path === '/metrics';
+      return req.path === "/health" || req.path === "/metrics";
     },
   });
 }
@@ -145,12 +150,12 @@ export function ipBlacklistMiddleware() {
   setInterval(() => ipBlacklist.cleanup(), 5 * 60 * 1000);
 
   return (req: Request, res: Response, next: NextFunction) => {
-    const ip = req.ip || 'unknown';
-    
+    const ip = req.ip || "unknown";
+
     if (ipBlacklist.isBlocked(ip)) {
       return res.status(403).json({
-        error: 'IP 地址已被封禁',
-        code: 'IP_BLACKLISTED',
+        error: "IP 地址已被封禁",
+        code: "IP_BLACKLISTED",
       });
     }
 
@@ -165,20 +170,20 @@ export function ipBlacklistMiddleware() {
  */
 const SQL_INJECTION_PATTERNS = [
   /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|TRUNCATE)\b)/i,
-  /(--|#|\/\*)/,                          // SQL 注释
-  /(\b(OR|AND)\b\s+\d+\s*=\s*\d+)/i,      // OR 1=1 攻击
-  /(\b(OR|AND)\b\s+'[^']*'\s*=\s*'[^']*')/i,  // OR 'a'='a' 攻击
-  /(;.*(\b(SELECT|INSERT|UPDATE|DELETE)\b))/i,  // 分号注入
-  /(\bEXEC(\UTE)?\b\s*\()/i,              // 存储过程执行
-  /(\b(WAITFOR|BENCHMARK|SLEEP)\b)/i,     // 时间盲注
-  /(\b(LOAD_FILE|INTO\s+OUTFILE)\b)/i,    // 文件操作
+  /(--|#|\/\*)/, // SQL 注释
+  /(\b(OR|AND)\b\s+\d+\s*=\s*\d+)/i, // OR 1=1 攻击
+  /(\b(OR|AND)\b\s+'[^']*'\s*=\s*'[^']*')/i, // OR 'a'='a' 攻击
+  /(;.*(\b(SELECT|INSERT|UPDATE|DELETE)\b))/i, // 分号注入
+  /(\bEXEC(\UTE)?\b\s*\()/i, // 存储过程执行
+  /(\b(WAITFOR|BENCHMARK|SLEEP)\b)/i, // 时间盲注
+  /(\b(LOAD_FILE|INTO\s+OUTFILE)\b)/i, // 文件操作
 ];
 
 /**
  * 检测 SQL 注入
  */
 export function detectSQLInjection(input: string): boolean {
-  if (!input || typeof input !== 'string') {
+  if (!input || typeof input !== "string") {
     return false;
   }
 
@@ -204,16 +209,16 @@ export function detectSQLInjection(input: string): boolean {
  * 清理 SQL 注入字符
  */
 export function sanitizeSQLInput(input: string): string {
-  if (!input || typeof input !== 'string') {
-    return '';
+  if (!input || typeof input !== "string") {
+    return "";
   }
 
   // 移除危险字符
   return input
-    .replace(/['"\\;]/g, '')  // 移除引号、反斜杠、分号
-    .replace(/--/g, '')        // 移除 SQL 注释
-    .replace(/\/\*/g, '')      // 移除块注释开始
-    .replace(/\*\//g, '');     // 移除块注释结束
+    .replace(/['"\\;]/g, "") // 移除引号、反斜杠、分号
+    .replace(/--/g, "") // 移除 SQL 注释
+    .replace(/\/\*/g, "") // 移除块注释开始
+    .replace(/\*\//g, ""); // 移除块注释结束
 }
 
 /**
@@ -229,16 +234,19 @@ export function sqlInjectionMiddleware() {
     ].filter(Boolean);
 
     for (const input of inputsToCheck) {
-      if (typeof input === 'string' && detectSQLInjection(input)) {
-        const ip = req.ip || 'unknown';
-        console.warn(`[Security] SQL injection attempt detected from ${ip}:`, input.substring(0, 100));
-        
+      if (typeof input === "string" && detectSQLInjection(input)) {
+        const ip = req.ip || "unknown";
+        console.warn(
+          `[Security] SQL injection attempt detected from ${ip}:`,
+          input.substring(0, 100),
+        );
+
         // 临时封禁 IP
         ipBlacklist.temporaryBlock(ip, 30 * 60 * 1000); // 30 分钟
-        
+
         return res.status(400).json({
-          error: '非法输入',
-          code: 'SQL_INJECTION_DETECTED',
+          error: "非法输入",
+          code: "SQL_INJECTION_DETECTED",
         });
       }
     }
@@ -263,25 +271,34 @@ export class SafeQueryBuilder {
    */
   where(column: string, operator: string, value: any): this {
     const safeColumn = this.sanitizeIdentifier(column);
-    const safeOperator = ['=', '!=', '<', '>', '<=', '>=', 'LIKE', 'IN'].includes(operator.toUpperCase())
+    const safeOperator = [
+      "=",
+      "!=",
+      "<",
+      ">",
+      "<=",
+      ">=",
+      "LIKE",
+      "IN",
+    ].includes(operator.toUpperCase())
       ? operator
-      : '=';
-    
+      : "=";
+
     this.query += ` WHERE ${safeColumn} ${safeOperator} $${this.params.length + 1}`;
     this.params.push(value);
-    
+
     return this;
   }
 
   /**
    * 添加 ORDER BY
    */
-  orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): this {
+  orderBy(column: string, direction: "ASC" | "DESC" = "ASC"): this {
     const safeColumn = this.sanitizeIdentifier(column);
-    const safeDirection = direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-    
+    const safeDirection = direction.toUpperCase() === "DESC" ? "DESC" : "ASC";
+
     this.query += ` ORDER BY ${safeColumn} ${safeDirection}`;
-    
+
     return this;
   }
 
@@ -290,10 +307,10 @@ export class SafeQueryBuilder {
    */
   limit(count: number): this {
     const safeCount = Math.min(Math.max(1, count), 1000); // 限制 1-1000
-    
+
     this.query += ` LIMIT $${this.params.length + 1}`;
     this.params.push(safeCount);
-    
+
     return this;
   }
 
@@ -312,7 +329,7 @@ export class SafeQueryBuilder {
    */
   private sanitizeIdentifier(identifier: string): string {
     // 只允许字母、数字、下划线
-    return identifier.replace(/[^a-zA-Z0-9_]/g, '');
+    return identifier.replace(/[^a-zA-Z0-9_]/g, "");
   }
 }
 
@@ -322,22 +339,22 @@ export class SafeQueryBuilder {
  * XSS 攻击模式检测
  */
 const XSS_PATTERNS = [
-  /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,  // script 标签
-  /javascript:/gi,                                          // javascript: 协议
-  /on\w+\s*=/gi,                                            // 事件处理器
-  /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,    // iframe
-  /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,    // object
-  /<embed\b[^<]*>/gi,                                       // embed
-  /<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi,             // svg
-  /expression\s*\(/gi,                                      // CSS expression
-  /url\s*\(\s*["']?\s*javascript:/gi,                       // CSS url javascript
+  /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // script 标签
+  /javascript:/gi, // javascript: 协议
+  /on\w+\s*=/gi, // 事件处理器
+  /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, // iframe
+  /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, // object
+  /<embed\b[^<]*>/gi, // embed
+  /<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, // svg
+  /expression\s*\(/gi, // CSS expression
+  /url\s*\(\s*["']?\s*javascript:/gi, // CSS url javascript
 ];
 
 /**
  * 检测 XSS 攻击
  */
 export function detectXSS(input: string): boolean {
-  if (!input || typeof input !== 'string') {
+  if (!input || typeof input !== "string") {
     return false;
   }
 
@@ -354,17 +371,17 @@ export function detectXSS(input: string): boolean {
  * HTML 转义
  */
 export function escapeHTML(input: string): string {
-  if (!input || typeof input !== 'string') {
-    return '';
+  if (!input || typeof input !== "string") {
+    return "";
   }
 
   const escapeMap: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "/": "&#x2F;",
   };
 
   return input.replace(/[&<>"'/]/g, (char) => escapeMap[char]);
@@ -374,23 +391,39 @@ export function escapeHTML(input: string): string {
  * 清理 HTML（白名单过滤）
  */
 export function sanitizeHTML(input: string): string {
-  if (!input || typeof input !== 'string') {
-    return '';
+  if (!input || typeof input !== "string") {
+    return "";
   }
 
   // 允许的标签
-  const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'img', 'ul', 'ol', 'li'];
-  
+  const allowedTags = [
+    "p",
+    "br",
+    "strong",
+    "b",
+    "em",
+    "i",
+    "u",
+    "a",
+    "img",
+    "ul",
+    "ol",
+    "li",
+  ];
+
   // 移除不允许的标签
-  let sanitized = input.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (match, tagName) => {
-    if (allowedTags.includes(tagName.toLowerCase())) {
-      return match;
-    }
-    return '';
-  });
+  let sanitized = input.replace(
+    /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
+    (match, tagName) => {
+      if (allowedTags.includes(tagName.toLowerCase())) {
+        return match;
+      }
+      return "";
+    },
+  );
 
   // 清理危险属性
-  sanitized = sanitized.replace(/\s+(on\w+|href)\s*=\s*["'][^"']*["']/gi, '');
+  sanitized = sanitized.replace(/\s+(on\w+|href)\s*=\s*["'][^"']*["']/gi, "");
 
   return sanitized;
 }
@@ -407,13 +440,16 @@ export function xssMiddleware() {
     ].filter(Boolean);
 
     for (const input of inputsToCheck) {
-      if (typeof input === 'string' && detectXSS(input)) {
-        const ip = req.ip || 'unknown';
-        console.warn(`[Security] XSS attempt detected from ${ip}:`, input.substring(0, 100));
-        
+      if (typeof input === "string" && detectXSS(input)) {
+        const ip = req.ip || "unknown";
+        console.warn(
+          `[Security] XSS attempt detected from ${ip}:`,
+          input.substring(0, 100),
+        );
+
         return res.status(400).json({
-          error: '非法输入',
-          code: 'XSS_DETECTED',
+          error: "非法输入",
+          code: "XSS_DETECTED",
         });
       }
     }
@@ -443,11 +479,11 @@ class CSRFProtection {
     const timestamp = Date.now();
     const data = `${sessionId}:${timestamp}`;
     const signature = crypto
-      .createHmac('sha256', this.secret)
+      .createHmac("sha256", this.secret)
       .update(data)
-      .digest('hex');
-    
-    return Buffer.from(`${data}:${signature}`).toString('base64');
+      .digest("hex");
+
+    return Buffer.from(`${data}:${signature}`).toString("base64");
   }
 
   /**
@@ -455,9 +491,9 @@ class CSRFProtection {
    */
   validateToken(sessionId: string, token: string): boolean {
     try {
-      const decoded = Buffer.from(token, 'base64').toString('utf-8');
-      const [sessionPart, timestampStr, signature] = decoded.split(':');
-      
+      const decoded = Buffer.from(token, "base64").toString("utf-8");
+      const [sessionPart, timestampStr, signature] = decoded.split(":");
+
       if (sessionPart !== sessionId) {
         return false;
       }
@@ -469,13 +505,13 @@ class CSRFProtection {
 
       // 验证签名
       const expectedSignature = crypto
-        .createHmac('sha256', this.secret)
+        .createHmac("sha256", this.secret)
         .update(`${sessionPart}:${timestampStr}`)
-        .digest('hex');
+        .digest("hex");
 
       return crypto.timingSafeEqual(
-        Buffer.from(signature, 'hex'),
-        Buffer.from(expectedSignature, 'hex')
+        Buffer.from(signature, "hex"),
+        Buffer.from(expectedSignature, "hex"),
       );
     } catch {
       return false;
@@ -497,7 +533,7 @@ export function initCSRF(secret: string, expiryMs?: number) {
  */
 export function getCSRFToken(sessionId: string): string {
   if (!csrfProtection) {
-    throw new Error('CSRF protection not initialized');
+    throw new Error("CSRF protection not initialized");
   }
   return csrfProtection.generateToken(sessionId);
 }
@@ -508,24 +544,24 @@ export function getCSRFToken(sessionId: string): string {
 export function csrfMiddleware() {
   return (req: Request, res: Response, next: NextFunction) => {
     // 跳过安全方法
-    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       return next();
     }
 
     const sessionId = (req as any).session?.id;
-    const token = req.headers['x-csrf-token'] as string || req.body._csrf;
+    const token = (req.headers["x-csrf-token"] as string) || req.body._csrf;
 
     if (!sessionId || !token) {
       return res.status(403).json({
-        error: 'CSRF token required',
-        code: 'CSRF_TOKEN_MISSING',
+        error: "CSRF token required",
+        code: "CSRF_TOKEN_MISSING",
       });
     }
 
     if (!csrfProtection?.validateToken(sessionId, token)) {
       return res.status(403).json({
-        error: 'Invalid CSRF token',
-        code: 'CSRF_TOKEN_INVALID',
+        error: "Invalid CSRF token",
+        code: "CSRF_TOKEN_INVALID",
       });
     }
 
@@ -539,7 +575,7 @@ export function csrfMiddleware() {
  * 加密配置
  */
 const ENCRYPTION_CONFIG = {
-  algorithm: 'aes-256-gcm',
+  algorithm: "aes-256-gcm",
   keyLength: 32,
   ivLength: 16,
   authTagLength: 16,
@@ -553,7 +589,7 @@ class EncryptionService {
 
   constructor(key: string) {
     // 确保 key 长度正确
-    this.key = crypto.createHash('sha256').update(key).digest();
+    this.key = crypto.createHash("sha256").update(key).digest();
   }
 
   /**
@@ -565,36 +601,36 @@ class EncryptionService {
       ENCRYPTION_CONFIG.algorithm,
       this.key,
       iv,
-      { authTagLength: ENCRYPTION_CONFIG.authTagLength }
+      { authTagLength: ENCRYPTION_CONFIG.authTagLength },
     );
 
-    let encrypted = cipher.update(data, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    const authTag = cipher.getAuthTag().toString('hex');
+    let encrypted = cipher.update(data, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    const authTag = cipher.getAuthTag().toString("hex");
 
     // 返回：iv:authTag:encryptedData
-    return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+    return `${iv.toString("hex")}:${authTag}:${encrypted}`;
   }
 
   /**
    * 解密数据
    */
   decrypt(encryptedData: string): string {
-    const [ivHex, authTagHex, encrypted] = encryptedData.split(':');
-    
-    const iv = Buffer.from(ivHex, 'hex');
-    const authTag = Buffer.from(authTagHex, 'hex');
+    const [ivHex, authTagHex, encrypted] = encryptedData.split(":");
+
+    const iv = Buffer.from(ivHex, "hex");
+    const authTag = Buffer.from(authTagHex, "hex");
 
     const decipher = crypto.createDecipheriv(
       ENCRYPTION_CONFIG.algorithm,
       this.key,
       iv,
-      { authTagLength: ENCRYPTION_CONFIG.authTagLength }
+      { authTagLength: ENCRYPTION_CONFIG.authTagLength },
     );
     decipher.setAuthTag(authTag);
 
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
 
     return decrypted;
   }
@@ -604,14 +640,14 @@ class EncryptionService {
    */
   hash(data: string, salt?: string): string {
     const saltedData = salt ? `${data}:${salt}` : data;
-    return crypto.createHash('sha256').update(saltedData).digest('hex');
+    return crypto.createHash("sha256").update(saltedData).digest("hex");
   }
 
   /**
    * 生成随机盐
    */
   generateSalt(): string {
-    return crypto.randomBytes(16).toString('hex');
+    return crypto.randomBytes(16).toString("hex");
   }
 
   /**
@@ -620,8 +656,8 @@ class EncryptionService {
   verifyHash(data: string, hash: string, salt: string): boolean {
     const computedHash = this.hash(data, salt);
     return crypto.timingSafeEqual(
-      Buffer.from(computedHash, 'hex'),
-      Buffer.from(hash, 'hex')
+      Buffer.from(computedHash, "hex"),
+      Buffer.from(hash, "hex"),
     );
   }
 }
@@ -640,7 +676,7 @@ export function initEncryption(key: string) {
  */
 export function encryptSensitiveData(data: string): string {
   if (!encryptionService) {
-    throw new Error('Encryption service not initialized');
+    throw new Error("Encryption service not initialized");
   }
   return encryptionService.encrypt(data);
 }
@@ -650,7 +686,7 @@ export function encryptSensitiveData(data: string): string {
  */
 export function decryptSensitiveData(encryptedData: string): string {
   if (!encryptionService) {
-    throw new Error('Encryption service not initialized');
+    throw new Error("Encryption service not initialized");
   }
   return encryptionService.decrypt(encryptedData);
 }
@@ -658,25 +694,32 @@ export function decryptSensitiveData(encryptedData: string): string {
 /**
  * 哈希密码
  */
-export function hashPassword(password: string, salt?: string): { hash: string; salt: string } {
+export function hashPassword(
+  password: string,
+  salt?: string,
+): { hash: string; salt: string } {
   if (!encryptionService) {
-    initEncryption(process.env.ENCRYPTION_KEY || 'default-key-change-me');
+    initEncryption(process.env.ENCRYPTION_KEY || "default-key-change-me");
   }
-  
+
   const actualSalt = salt || encryptionService!.generateSalt();
   const hash = encryptionService!.hash(password, actualSalt);
-  
+
   return { hash, salt: actualSalt };
 }
 
 /**
  * 验证密码
  */
-export function verifyPassword(password: string, hash: string, salt: string): boolean {
+export function verifyPassword(
+  password: string,
+  hash: string,
+  salt: string,
+): boolean {
   if (!encryptionService) {
-    initEncryption(process.env.ENCRYPTION_KEY || 'default-key-change-me');
+    initEncryption(process.env.ENCRYPTION_KEY || "default-key-change-me");
   }
-  
+
   return encryptionService!.verifyHash(password, hash, salt);
 }
 
@@ -688,34 +731,43 @@ export function verifyPassword(password: string, hash: string, salt: string): bo
 export function securityHeadersMiddleware() {
   return (req: Request, res: Response, next: NextFunction) => {
     // 防止点击劫持
-    res.setHeader('X-Frame-Options', 'DENY');
-    
+    res.setHeader("X-Frame-Options", "DENY");
+
     // 防止 MIME 类型嗅探
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    
+    res.setHeader("X-Content-Type-Options", "nosniff");
+
     // XSS 防护
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+
     // 严格传输安全（HSTS）
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains",
+    );
+
     // 内容安全策略
-    res.setHeader('Content-Security-Policy', [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self'",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-    ].join('; '));
-    
+    res.setHeader(
+      "Content-Security-Policy",
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: https:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "frame-ancestors 'none'",
+      ].join("; "),
+    );
+
     // Referrer 策略
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+
     // 权限策略
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    
+    res.setHeader(
+      "Permissions-Policy",
+      "geolocation=(), microphone=(), camera=()",
+    );
+
     next();
   };
 }
@@ -728,25 +780,25 @@ export function securityHeadersMiddleware() {
 export function applySecurityMiddleware(app: any) {
   // 安全响应头
   app.use(securityHeadersMiddleware());
-  
+
   // IP 黑名单
   app.use(ipBlacklistMiddleware());
-  
+
   // 速率限制
-  app.use('/api/', createRateLimiter(API_RATE_LIMIT));
-  app.use('/api/auth/', createRateLimiter(STRICT_RATE_LIMIT));
-  app.use('/api/payment/', createRateLimiter(STRICT_RATE_LIMIT));
-  
+  app.use("/api/", createRateLimiter(API_RATE_LIMIT));
+  app.use("/api/auth/", createRateLimiter(STRICT_RATE_LIMIT));
+  app.use("/api/payment/", createRateLimiter(STRICT_RATE_LIMIT));
+
   // SQL 注入防护
   app.use(sqlInjectionMiddleware());
-  
+
   // XSS 防护
   app.use(xssMiddleware());
-  
+
   // CSRF 防护（需要初始化）
   // app.use(csrfMiddleware());
-  
-  console.log('[Security] All security middleware applied');
+
+  console.log("[Security] All security middleware applied");
 }
 
 // ==================== 导出 ====================

@@ -8,12 +8,16 @@
  * - KOC Distribution (KOC 分销系统)
  */
 
-import { Request, Response } from 'express';
-import { DualTestStatus, ReferralStatus, CommissionStatus } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import QRCode from 'qrcode';
-import { createPushNotification } from '../services/push-notification';
-import { prisma } from '../lib/prisma';
+import { Request, Response } from "express";
+import {
+  DualTestStatus,
+  ReferralStatus,
+  CommissionStatus,
+} from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import QRCode from "qrcode";
+import { createPushNotification } from "../services/push-notification";
+import { prisma } from "../lib/prisma";
 
 // ==================== Dual Test (双人合测) ====================
 
@@ -28,18 +32,18 @@ export async function createDualTest(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
     // Check if user has dual test access
-    const { checkFeatureAccess } = await import('../controllers/memberships');
-    const access = await checkFeatureAccess(userId, 'dual_test');
+    const { checkFeatureAccess } = await import("../controllers/memberships");
+    const access = await checkFeatureAccess(userId, "dual_test");
 
     if (!access.allowed) {
       return res.status(403).json({
         success: false,
-        error: 'No dual test access. Please upgrade membership.',
+        error: "No dual test access. Please upgrade membership.",
         remaining: access.remaining,
       });
     }
@@ -50,7 +54,7 @@ export async function createDualTest(req: Request, res: Response) {
       data: {
         initiatorId: userId,
         inviteCode,
-        status: 'pending',
+        status: "pending",
       },
     });
 
@@ -70,10 +74,10 @@ export async function createDualTest(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error creating dual test:', error);
+    console.error("Error creating dual test:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create dual test',
+      error: "Failed to create dual test",
     });
   }
 }
@@ -90,7 +94,7 @@ export async function acceptDualTest(req: Request, res: Response) {
     if (!userId || !inviteCode) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters',
+        error: "Missing required parameters",
       });
     }
 
@@ -101,14 +105,14 @@ export async function acceptDualTest(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Invitation not found',
+        error: "Invitation not found",
       });
     }
 
-    if (dualTest.status !== 'pending') {
+    if (dualTest.status !== "pending") {
       return res.status(400).json({
         success: false,
-        error: 'This invitation has already been used',
+        error: "This invitation has already been used",
       });
     }
 
@@ -117,16 +121,16 @@ export async function acceptDualTest(req: Request, res: Response) {
       where: { id: dualTest.id },
       data: {
         participantId: userId,
-        status: 'accepted',
+        status: "accepted",
       },
     });
 
     // Notify initiator
     await createPushNotification({
       userId: dualTest.initiatorId,
-      type: 'dual_test_invite',
-      title: '好友已接受合测邀请',
-      content: '你们可以开始进行双人合测了',
+      type: "dual_test_invite",
+      title: "好友已接受合测邀请",
+      content: "你们可以开始进行双人合测了",
       deepLink: `/dual-test/${inviteCode}`,
     });
 
@@ -134,14 +138,14 @@ export async function acceptDualTest(req: Request, res: Response) {
       success: true,
       data: {
         dualTestId: dualTest.id,
-        status: 'accepted',
+        status: "accepted",
       },
     });
   } catch (error) {
-    console.error('Error accepting dual test:', error);
+    console.error("Error accepting dual test:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to accept dual test',
+      error: "Failed to accept dual test",
     });
   }
 }
@@ -158,7 +162,7 @@ export async function completeDualTest(req: Request, res: Response) {
     if (!userId || !dualTestId || !scores) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters',
+        error: "Missing required parameters",
       });
     }
 
@@ -173,14 +177,14 @@ export async function completeDualTest(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Dual test not found',
+        error: "Dual test not found",
       });
     }
 
     // Calculate compatibility score
     const compatibilityScore = calculateCompatibility(
       scores,
-      dualTest.initiator.id === userId ? 'initiator' : 'participant',
+      dualTest.initiator.id === userId ? "initiator" : "participant",
     );
 
     // Generate conflict warnings
@@ -189,7 +193,7 @@ export async function completeDualTest(req: Request, res: Response) {
     await prisma.dualTest.update({
       where: { id: dualTestId },
       data: {
-        status: 'completed',
+        status: "completed",
         compatibilityScore,
         conflictWarnings,
         completedAt: new Date(),
@@ -197,29 +201,31 @@ export async function completeDualTest(req: Request, res: Response) {
     });
 
     // Record feature usage
-    const { recordFeatureUsage } = await import('../controllers/memberships');
+    const { recordFeatureUsage } = await import("../controllers/memberships");
 
-    await recordFeatureUsage(dualTest.initiatorId, 'dual_test', { dualTestId });
+    await recordFeatureUsage(dualTest.initiatorId, "dual_test", { dualTestId });
 
     if (dualTest.participantId) {
-      await recordFeatureUsage(dualTest.participantId, 'dual_test', { dualTestId });
+      await recordFeatureUsage(dualTest.participantId, "dual_test", {
+        dualTestId,
+      });
     }
 
     // Notify both users
     await createPushNotification({
       userId: dualTest.initiatorId,
-      type: 'report_ready',
-      title: '双人合测报告已生成',
-      content: '点击查看你们的契合度分析和关系建议',
+      type: "report_ready",
+      title: "双人合测报告已生成",
+      content: "点击查看你们的契合度分析和关系建议",
       deepLink: `/dual-test/${dualTestId}/report`,
     });
 
     if (dualTest.participantId) {
       await createPushNotification({
         userId: dualTest.participantId,
-        type: 'report_ready',
-        title: '双人合测报告已生成',
-        content: '点击查看你们的契合度分析和关系建议',
+        type: "report_ready",
+        title: "双人合测报告已生成",
+        content: "点击查看你们的契合度分析和关系建议",
         deepLink: `/dual-test/${dualTestId}/report`,
       });
     }
@@ -234,10 +240,10 @@ export async function completeDualTest(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error completing dual test:', error);
+    console.error("Error completing dual test:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to complete dual test',
+      error: "Failed to complete dual test",
     });
   }
 }
@@ -254,7 +260,7 @@ export async function getDualTest(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -281,7 +287,7 @@ export async function getDualTest(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Dual test not found',
+        error: "Dual test not found",
       });
     }
 
@@ -289,7 +295,7 @@ export async function getDualTest(req: Request, res: Response) {
     if (dualTest.initiatorId !== userId && dualTest.participantId !== userId) {
       return res.status(403).json({
         success: false,
-        error: 'Access denied',
+        error: "Access denied",
       });
     }
 
@@ -298,10 +304,10 @@ export async function getDualTest(req: Request, res: Response) {
       data: dualTest,
     });
   } catch (error) {
-    console.error('Error getting dual test:', error);
+    console.error("Error getting dual test:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get dual test',
+      error: "Failed to get dual test",
     });
   }
 }
@@ -320,7 +326,7 @@ export async function generatePersonalityCard(req: Request, res: Response) {
     if (!userId || !testId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters',
+        error: "Missing required parameters",
       });
     }
 
@@ -335,7 +341,7 @@ export async function generatePersonalityCard(req: Request, res: Response) {
     if (!testResult) {
       return res.status(404).json({
         success: false,
-        error: 'Test record not found',
+        error: "Test record not found",
       });
     }
 
@@ -356,10 +362,10 @@ export async function generatePersonalityCard(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error generating personality card:', error);
+    console.error("Error generating personality card:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to generate card',
+      error: "Failed to generate card",
     });
   }
 }
@@ -375,14 +381,14 @@ export async function generateStabilityCard(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
     // Get user's stability data
     const testResults = await prisma.testResult.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 10,
     });
 
@@ -399,10 +405,10 @@ export async function generateStabilityCard(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error generating stability card:', error);
+    console.error("Error generating stability card:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to generate card',
+      error: "Failed to generate card",
     });
   }
 }
@@ -420,7 +426,7 @@ export async function getReferralLink(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -435,9 +441,9 @@ export async function getReferralLink(req: Request, res: Response) {
       referral = await prisma.referral.create({
         data: {
           referrerId: userId,
-          refereeEmail: '',
+          refereeEmail: "",
           code,
-          status: 'pending',
+          status: "pending",
           commissionRate: 0.15, // 15% commission
         },
       });
@@ -456,10 +462,10 @@ export async function getReferralLink(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error getting referral link:', error);
+    console.error("Error getting referral link:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get referral link',
+      error: "Failed to get referral link",
     });
   }
 }
@@ -475,21 +481,21 @@ export async function getCommissions(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
     const commissions = await prisma.commission.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     const totalPending = commissions
-      .filter((c) => c.status === 'pending' || c.status === 'approved')
+      .filter((c) => c.status === "pending" || c.status === "approved")
       .reduce((sum, c) => sum + Number(c.amount), 0);
 
     const totalPaid = commissions
-      .filter((c) => c.status === 'paid')
+      .filter((c) => c.status === "paid")
       .reduce((sum, c) => sum + Number(c.amount), 0);
 
     res.json({
@@ -502,10 +508,10 @@ export async function getCommissions(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error getting commissions:', error);
+    console.error("Error getting commissions:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get commissions',
+      error: "Failed to get commissions",
     });
   }
 }
@@ -522,7 +528,7 @@ export async function withdrawCommission(req: Request, res: Response) {
     if (!userId || !amount || !alipayAccount) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters',
+        error: "Missing required parameters",
       });
     }
 
@@ -530,7 +536,7 @@ export async function withdrawCommission(req: Request, res: Response) {
     const pendingCommissions = await prisma.commission.findMany({
       where: {
         userId,
-        status: { in: ['pending', 'approved'] },
+        status: { in: ["pending", "approved"] },
       },
     });
 
@@ -542,14 +548,14 @@ export async function withdrawCommission(req: Request, res: Response) {
     if (totalPending < amount) {
       return res.status(400).json({
         success: false,
-        error: 'Insufficient balance',
+        error: "Insufficient balance",
       });
     }
 
     if (amount < 50) {
       return res.status(400).json({
         success: false,
-        error: 'Minimum withdrawal amount is ¥50',
+        error: "Minimum withdrawal amount is ¥50",
       });
     }
 
@@ -558,17 +564,17 @@ export async function withdrawCommission(req: Request, res: Response) {
       data: {
         userId,
         amount: -amount,
-        status: 'pending',
+        status: "pending",
       },
     });
 
     // Notify user
     await createPushNotification({
       userId,
-      type: 'commission_paid',
-      title: '提现申请已提交',
+      type: "commission_paid",
+      title: "提现申请已提交",
       content: `提现¥${amount}至支付宝${alipayAccount}，将在 3 个工作日内到账`,
-      deepLink: '/koc/commissions',
+      deepLink: "/koc/commissions",
     });
 
     res.json({
@@ -576,15 +582,15 @@ export async function withdrawCommission(req: Request, res: Response) {
       data: {
         withdrawalId: withdrawal.id,
         amount,
-        status: 'pending',
+        status: "pending",
         estimatedArrival: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       },
     });
   } catch (error) {
-    console.error('Error withdrawing commission:', error);
+    console.error("Error withdrawing commission:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to process withdrawal',
+      error: "Failed to process withdrawal",
     });
   }
 }
@@ -600,7 +606,7 @@ export async function getKOCDashboard(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -610,8 +616,11 @@ export async function getKOCDashboard(req: Request, res: Response) {
     });
 
     const totalReferrals = referrals.length;
-    const convertedReferrals = referrals.filter((r) => r.status === 'converted').length;
-    const conversionRate = totalReferrals > 0 ? convertedReferrals / totalReferrals : 0;
+    const convertedReferrals = referrals.filter(
+      (r) => r.status === "converted",
+    ).length;
+    const conversionRate =
+      totalReferrals > 0 ? convertedReferrals / totalReferrals : 0;
 
     // Get commission stats
     const commissions = await prisma.commission.findMany({
@@ -638,10 +647,10 @@ export async function getKOCDashboard(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error getting KOC dashboard:', error);
+    console.error("Error getting KOC dashboard:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get dashboard',
+      error: "Failed to get dashboard",
     });
   }
 }
@@ -656,14 +665,14 @@ async function generateQRCode(url: string): Promise<string> {
     const qrCode = await QRCode.toDataURL(url, {
       width: 300,
       margin: 2,
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: "M",
     });
 
     return qrCode;
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    console.error("Error generating QR code:", error);
 
-    return '';
+    return "";
   }
 }
 
@@ -676,7 +685,7 @@ function calculatePersonalityType(scores: any): string {
   const T = scores.T || 50;
   const J = scores.J || 50;
 
-  return `${E >= 50 ? 'E' : 'I'}${N >= 50 ? 'N' : 'S'}${T >= 50 ? 'T' : 'F'}${J >= 50 ? 'J' : 'P'}`;
+  return `${E >= 50 ? "E" : "I"}${N >= 50 ? "N" : "S"}${T >= 50 ? "T" : "F"}${J >= 50 ? "J" : "P"}`;
 }
 
 /**
@@ -684,13 +693,13 @@ function calculatePersonalityType(scores: any): string {
  */
 function getGoldenQuote(type: string): string {
   const quotes: Record<string, string> = {
-    ENTJ: '天生领导者，用战略眼光改变世界',
-    ENTP: '创新思考者，在可能性中寻找真理',
-    INFJ: '理想主义者，用洞察力照亮他人',
+    ENTJ: "天生领导者，用战略眼光改变世界",
+    ENTP: "创新思考者，在可能性中寻找真理",
+    INFJ: "理想主义者，用洞察力照亮他人",
     // ... add more quotes
   };
 
-  return quotes[type] || '探索自我，发现无限可能';
+  return quotes[type] || "探索自我，发现无限可能";
 }
 
 /**
@@ -711,9 +720,9 @@ function generateConflictWarnings(scores: any): any[] {
 
   if (Math.abs(scores.E - 50) > 30) {
     warnings.push({
-      dimension: 'E-I',
-      level: 'medium',
-      suggestion: '外向性差异较大，注意沟通方式',
+      dimension: "E-I",
+      level: "medium",
+      suggestion: "外向性差异较大，注意沟通方式",
     });
   }
 

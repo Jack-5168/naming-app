@@ -11,7 +11,7 @@ import {
   MonteCarloConfig,
   DEFAULT_CONFIG,
   MBTIDimension,
-} from './stability-types';
+} from "./stability-types";
 
 /**
  * 优化的稳定性计算器 (高性能版)
@@ -42,7 +42,8 @@ export class StabilityCalculatorOptimized {
     const perDimension = this.calculateDimensionStatsOptimized(testHistory);
     const stabilityIndex = this.calculateStabilityIndex(perDimension);
     const bootstrapCVs = this.runMonteCarloSimulationOptimized(testHistory);
-    const { stabilityProbability, isRange, stabilityProbabilityDisplay } = this.calculateStabilityProbability(bootstrapCVs, testCount);
+    const { stabilityProbability, isRange, stabilityProbabilityDisplay } =
+      this.calculateStabilityProbability(bootstrapCVs, testCount);
     const confidenceBand = this.calculateConfidenceInterval(bootstrapCVs);
     const status = this.determineStatus(stabilityIndex, testCount);
     const stabilityWarning = this.generateWarning(stabilityIndex, testCount);
@@ -77,7 +78,7 @@ export class StabilityCalculatorOptimized {
     N: DimensionStats;
   } {
     const n = testHistory.length;
-    const dims: MBTIDimension[] = ['O', 'C', 'E', 'A', 'N'];
+    const dims: MBTIDimension[] = ["O", "C", "E", "A", "N"];
 
     // 一次性收集所有分数
     const scoresByDim: Record<MBTIDimension, number[]> = {
@@ -121,11 +122,13 @@ export class StabilityCalculatorOptimized {
   /**
    * 优化的 Monte Carlo 模拟 (使用 TypedArray)
    */
-  private runMonteCarloSimulationOptimized(testHistory: TestResult[]): number[] {
+  private runMonteCarloSimulationOptimized(
+    testHistory: TestResult[],
+  ): number[] {
     const iterations = this.config.bootstrapIterations;
     const cvs = new Float64Array(iterations);
     const n = testHistory.length;
-    const dims: MBTIDimension[] = ['O', 'C', 'E', 'A', 'N'];
+    const dims: MBTIDimension[] = ["O", "C", "E", "A", "N"];
 
     // 预分配重采样数组
     const resampledIndices = new Int32Array(n);
@@ -219,7 +222,7 @@ export class StabilityCalculatorOptimized {
     A: DimensionStats;
     N: DimensionStats;
   }): number {
-    const dims: MBTIDimension[] = ['O', 'C', 'E', 'A', 'N'];
+    const dims: MBTIDimension[] = ["O", "C", "E", "A", "N"];
     let totalCV = 0;
 
     for (const dim of dims) {
@@ -254,7 +257,7 @@ export class StabilityCalculatorOptimized {
       return {
         stabilityProbability: probability,
         isRange: false,
-        stabilityProbabilityDisplay: '数据不足',
+        stabilityProbabilityDisplay: "数据不足",
       };
     }
 
@@ -277,7 +280,9 @@ export class StabilityCalculatorOptimized {
     };
   }
 
-  private calculateConfidenceInterval(bootstrapCVs: number[]): [number, number] {
+  private calculateConfidenceInterval(
+    bootstrapCVs: number[],
+  ): [number, number] {
     const sorted = [...bootstrapCVs].sort((a, b) => a - b);
     const n = sorted.length;
     const lowerIndex = Math.floor(n * 0.025);
@@ -293,24 +298,24 @@ export class StabilityCalculatorOptimized {
   private determineStatus(
     stabilityIndex: number,
     testCount: number,
-  ): 'stable' | 'evolving' | 'unstable' | 'insufficient_data' {
+  ): "stable" | "evolving" | "unstable" | "insufficient_data" {
     if (testCount < 3) {
-      return 'insufficient_data';
+      return "insufficient_data";
     }
 
     if (testCount <= 5) {
-      return 'evolving';
+      return "evolving";
     }
 
     if (stabilityIndex >= 0.8) {
-      return 'stable';
+      return "stable";
     }
 
     if (stabilityIndex >= 0.6) {
-      return 'evolving';
+      return "evolving";
     }
 
-    return 'unstable';
+    return "unstable";
   }
 
   private generateWarning(
@@ -318,15 +323,15 @@ export class StabilityCalculatorOptimized {
     testCount: number,
   ): string | null {
     if (testCount < 3) {
-      return '测试次数不足，建议完成至少 3 次测试以获得有效评估';
+      return "测试次数不足，建议完成至少 3 次测试以获得有效评估";
     }
 
     if (testCount <= 5) {
-      return '测试次数较少，结果可能存在波动，建议继续测试以提高准确性';
+      return "测试次数较少，结果可能存在波动，建议继续测试以提高准确性";
     }
 
     if (stabilityIndex < 0.6) {
-      return '人格稳定性较低，建议关注情绪和行为的一致性';
+      return "人格稳定性较低，建议关注情绪和行为的一致性";
     }
 
     return null;
@@ -342,11 +347,11 @@ export class StabilityCalculatorOptimized {
     return {
       stabilityIndex: 0,
       stabilityProbability: 0,
-      stabilityProbabilityDisplay: '数据不足',
+      stabilityProbabilityDisplay: "数据不足",
       isRange: false,
-      stabilityWarning: '测试次数不足，建议完成至少 3 次测试以获得有效评估',
+      stabilityWarning: "测试次数不足，建议完成至少 3 次测试以获得有效评估",
       confidenceBand: [0, 0],
-      status: 'insufficient_data',
+      status: "insufficient_data",
       perDimension: {
         O: { mean: 0, std: 0, cv: 0 },
         C: { mean: 0, std: 0, cv: 0 },

@@ -10,10 +10,7 @@
  */
 
 import { Router } from 'express';
-import {
-  createSession,
-  submitAnswer,
-} from '../controllers/tests';
+import { createSession, submitAnswer } from '../controllers/tests';
 import { authMiddleware } from '../middleware/auth';
 
 const router = Router();

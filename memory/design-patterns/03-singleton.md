@@ -1,9 +1,11 @@
 # 单例模式 (Singleton Pattern)
 
 ## 核心思想
+
 确保一个类只有一个实例，并提供全局访问点。适用于需要全局唯一性的场景。
 
 ## 适用场景
+
 - 数据库连接池
 - 配置管理器
 - 日志服务
@@ -20,7 +22,7 @@ const Database = (function () {
 
   function Constructor() {
     if (instance) {
-      throw new Error('请使用 Database.getInstance()');
+      throw new Error("请使用 Database.getInstance()");
     }
     this.pool = [];
     this.connected = false;
@@ -29,11 +31,11 @@ const Database = (function () {
 
   Constructor.prototype._connect = function () {
     this.connected = true;
-    console.log('[DB] 数据库连接已建立');
+    console.log("[DB] 数据库连接已建立");
   };
 
   Constructor.prototype.query = function (sql) {
-    if (!this.connected) throw new Error('未连接');
+    if (!this.connected) throw new Error("未连接");
     console.log(`[DB] 执行: ${sql}`);
     return { rows: [] };
   };
@@ -42,7 +44,7 @@ const Database = (function () {
     getInstance: function () {
       if (!instance) instance = new Constructor();
       return instance;
-    }
+    },
   };
 })();
 
@@ -72,24 +74,30 @@ class ConfigManager {
 
   _load() {
     this.#config = {
-      apiUrl: 'https://api.example.com',
+      apiUrl: "https://api.example.com",
       timeout: 5000,
-      retries: 3
+      retries: 3,
     };
-    console.log('[Config] 配置已加载');
+    console.log("[Config] 配置已加载");
   }
 
-  get(key) { return this.#config[key]; }
-  set(key, value) { this.#config[key] = value; }
-  getAll() { return { ...this.#config }; }
+  get(key) {
+    return this.#config[key];
+  }
+  set(key, value) {
+    this.#config[key] = value;
+  }
+  getAll() {
+    return { ...this.#config };
+  }
 }
 
 // ============ 使用 ============
 const c1 = new ConfigManager();
 const c2 = new ConfigManager();
 console.log(c1 === c2); // true
-c1.set('debug', true);
-console.log(c2.get('debug')); // true
+c1.set("debug", true);
+console.log(c2.get("debug")); // true
 ```
 
 ## 实现方式三：ES6 Module（最简洁）
@@ -99,17 +107,27 @@ console.log(c2.get('debug')); // true
 
 // logger.js
 class Logger {
-  constructor() { this.logs = []; }
-  info(msg) { const e = `[INFO] ${new Date().toISOString()} ${msg}`; this.logs.push(e); console.log(e); }
-  error(msg) { const e = `[ERROR] ${new Date().toISOString()} ${msg}`; this.logs.push(e); console.error(e); }
+  constructor() {
+    this.logs = [];
+  }
+  info(msg) {
+    const e = `[INFO] ${new Date().toISOString()} ${msg}`;
+    this.logs.push(e);
+    console.log(e);
+  }
+  error(msg) {
+    const e = `[ERROR] ${new Date().toISOString()} ${msg}`;
+    this.logs.push(e);
+    console.error(e);
+  }
 }
 
 // ES6 Module 天然单例
 export default new Logger();
 
 // app.js
-import logger from './logger.js';
-logger.info('应用启动');
+import logger from "./logger.js";
+logger.info("应用启动");
 ```
 
 ## 实战：HTTP 客户端单例
@@ -119,7 +137,7 @@ logger.info('应用启动');
 
 class HttpClient {
   static #instance = null;
-  #baseURL = '';
+  #baseURL = "";
   #headers = {};
   #interceptors = { request: [], response: [] };
 
@@ -130,15 +148,26 @@ class HttpClient {
 
   configure({ baseURL, headers = {} }) {
     this.#baseURL = baseURL;
-    this.#headers = { 'Content-Type': 'application/json', ...headers };
+    this.#headers = { "Content-Type": "application/json", ...headers };
     return this;
   }
 
-  onRequest(fn) { this.#interceptors.request.push(fn); return this; }
-  onResponse(fn) { this.#interceptors.response.push(fn); return this; }
+  onRequest(fn) {
+    this.#interceptors.request.push(fn);
+    return this;
+  }
+  onResponse(fn) {
+    this.#interceptors.response.push(fn);
+    return this;
+  }
 
   async request(method, url, data = null) {
-    let config = { method, url: `${this.#baseURL}${url}`, data, headers: { ...this.#headers } };
+    let config = {
+      method,
+      url: `${this.#baseURL}${url}`,
+      data,
+      headers: { ...this.#headers },
+    };
     for (const fn of this.#interceptors.request) config = await fn(config);
     console.log(`[HTTP] ${method.toUpperCase()} ${config.url}`);
     let response = { status: 200, data: { success: true } };
@@ -146,21 +175,32 @@ class HttpClient {
     return response;
   }
 
-  get(url) { return this.request('GET', url); }
-  post(url, data) { return this.request('POST', url, data); }
+  get(url) {
+    return this.request("GET", url);
+  }
+  post(url, data) {
+    return this.request("POST", url, data);
+  }
 }
 
 // ============ 使用 ============
 const http = new HttpClient()
-  .configure({ baseURL: 'https://api.example.com' })
-  .onRequest(cfg => { cfg.headers['X-Time'] = Date.now(); return cfg; })
-  .onResponse(res => { console.log(`[拦截器] ${res.status}`); return res; });
+  .configure({ baseURL: "https://api.example.com" })
+  .onRequest((cfg) => {
+    cfg.headers["X-Time"] = Date.now();
+    return cfg;
+  })
+  .onResponse((res) => {
+    console.log(`[拦截器] ${res.status}`);
+    return res;
+  });
 
-http.get('/users');
-http.post('/orders', { item: 'laptop' });
+http.get("/users");
+http.post("/orders", { item: "laptop" });
 ```
 
 ## 要点总结
+
 1. 全局唯一实例 + 惰性创建
 2. JS 中 ES6 Module 天然单例最简洁
 3. 适用：配置、连接池、日志、全局状态

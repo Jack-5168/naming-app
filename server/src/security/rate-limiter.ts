@@ -9,9 +9,9 @@
  * - DDoS protection
  */
 
-import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response, NextFunction } from "express";
+import rateLimit from "express-rate-limit";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -45,13 +45,16 @@ let redisClient: any = null;
 
 export async function initializeRedisStore(redisUrl: string) {
   try {
-    const { createClient } = await import('redis');
+    const { createClient } = await import("redis");
 
     redisClient = createClient({ url: redisUrl });
     await redisClient.connect();
-    console.log('Redis rate limiter store initialized');
+    console.log("Redis rate limiter store initialized");
   } catch (error) {
-    console.error('Failed to initialize Redis store, using in-memory store:', error);
+    console.error(
+      "Failed to initialize Redis store, using in-memory store:",
+      error,
+    );
   }
 }
 
@@ -60,7 +63,9 @@ export async function initializeRedisStore(redisUrl: string) {
 /**
  * Check if user has exceeded test generation limit
  */
-export async function checkUserTestLimit(userId: number): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
+export async function checkUserTestLimit(
+  userId: number,
+): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
   const now = Date.now();
   const userKey = `user:${userId}:test`;
 
@@ -69,9 +74,13 @@ export async function checkUserTestLimit(userId: number): Promise<{ allowed: boo
     const record = await redisClient.get(userKey);
 
     if (!record) {
-      await redisClient.setEx(userKey, DAY_MS / 1000, '1');
+      await redisClient.setEx(userKey, DAY_MS / 1000, "1");
 
-      return { allowed: true, remaining: USER_TEST_LIMIT - 1, resetAt: new Date(now + DAY_MS) };
+      return {
+        allowed: true,
+        remaining: USER_TEST_LIMIT - 1,
+        resetAt: new Date(now + DAY_MS),
+      };
     }
 
     const count = parseInt(record);
@@ -79,12 +88,20 @@ export async function checkUserTestLimit(userId: number): Promise<{ allowed: boo
     if (count >= USER_TEST_LIMIT) {
       const ttl = await redisClient.ttl(userKey);
 
-      return { allowed: false, remaining: 0, resetAt: new Date(now + ttl * 1000) };
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: new Date(now + ttl * 1000),
+      };
     }
 
     await redisClient.incr(userKey);
 
-    return { allowed: true, remaining: USER_TEST_LIMIT - count - 1, resetAt: new Date(now + DAY_MS) };
+    return {
+      allowed: true,
+      remaining: USER_TEST_LIMIT - count - 1,
+      resetAt: new Date(now + DAY_MS),
+    };
   }
 
   // In-memory implementation
@@ -101,21 +118,28 @@ export async function checkUserTestLimit(userId: number): Promise<{ allowed: boo
   record.count++;
   userStore.set(userKey, record);
 
-  return { allowed: true, remaining: USER_TEST_LIMIT - record.count, resetAt: new Date(record.resetAt) };
+  return {
+    allowed: true,
+    remaining: USER_TEST_LIMIT - record.count,
+    resetAt: new Date(record.resetAt),
+  };
 }
 
 /**
  * User rate limiter middleware
  */
-export function userRateLimiter(limit: number = USER_TEST_LIMIT, windowMs: number = DAY_MS) {
+export function userRateLimiter(
+  limit: number = USER_TEST_LIMIT,
+  windowMs: number = DAY_MS,
+) {
   return rateLimit({
     windowMs,
     max: limit,
     message: {
       success: false,
-      error: 'Rate limit exceeded. Please try again later.',
+      error: "Rate limit exceeded. Please try again later.",
     },
-    keyGenerator: (req: Request) => `user:${req.user?.id || 'anonymous'}`,
+    keyGenerator: (req: Request) => `user:${req.user?.id || "anonymous"}`,
     standardHeaders: true,
     legacyHeaders: false,
   });
@@ -126,36 +150,40 @@ export function userRateLimiter(limit: number = USER_TEST_LIMIT, windowMs: numbe
 /**
  * IP rate limiter middleware
  */
-export function ipRateLimiter(limit: number = IP_LIMIT, windowMs: number = DAY_MS) {
+export function ipRateLimiter(
+  limit: number = IP_LIMIT,
+  windowMs: number = DAY_MS,
+) {
   return rateLimit({
     windowMs,
     max: limit,
     message: {
       success: false,
-      error: 'Too many requests from this IP. Please try again later.',
+      error: "Too many requests from this IP. Please try again later.",
     },
-    keyGenerator: (req: Request) => req.ip || req.socket.remoteAddress || 'unknown',
+    keyGenerator: (req: Request) =>
+      req.ip || req.socket.remoteAddress || "unknown",
     standardHeaders: true,
     legacyHeaders: false,
     handler: async (req: Request, res: Response) => {
       // Log potential abuse
       await prisma.securityLog.create({
         data: {
-          eventType: 'rate_limit_exceeded',
-          identifier: req.user?.id?.toString() || req.ip || 'unknown',
+          eventType: "rate_limit_exceeded",
+          identifier: req.user?.id?.toString() || req.ip || "unknown",
           ipAddress: req.ip,
           userId: req.user?.id,
           metadata: {
             path: req.path,
             method: req.method,
-            userAgent: req.headers['user-agent'],
+            userAgent: req.headers["user-agent"],
           },
         },
       });
 
       res.status(429).json({
         success: false,
-        error: 'Too many requests from this IP',
+        error: "Too many requests from this IP",
       });
     },
   });
@@ -166,23 +194,26 @@ export function ipRateLimiter(limit: number = IP_LIMIT, windowMs: number = DAY_M
 /**
  * Global rate limiter middleware (DDoS protection)
  */
-export function globalRateLimiter(limit: number = GLOBAL_LIMIT, windowMs: number = WINDOW_MS) {
+export function globalRateLimiter(
+  limit: number = GLOBAL_LIMIT,
+  windowMs: number = WINDOW_MS,
+) {
   return rateLimit({
     windowMs,
     max: limit,
     message: {
       success: false,
-      error: 'Server is experiencing high traffic. Please try again later.',
+      error: "Server is experiencing high traffic. Please try again later.",
     },
-    keyGenerator: () => 'global',
+    keyGenerator: () => "global",
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: false,
     handler: (req: Request, res: Response) => {
-      console.warn('Global rate limit exceeded');
+      console.warn("Global rate limit exceeded");
       res.status(429).json({
         success: false,
-        error: 'Server is experiencing high traffic',
+        error: "Server is experiencing high traffic",
       });
     },
   });
@@ -199,7 +230,7 @@ export function strictRateLimiter(limit = 5, windowMs: number = 60 * 1000) {
     max: limit,
     message: {
       success: false,
-      error: 'Too many attempts. Please try again later.',
+      error: "Too many attempts. Please try again later.",
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -215,7 +246,7 @@ export function lenientRateLimiter(limit = 100, windowMs: number = 60 * 1000) {
     max: limit,
     message: {
       success: false,
-      error: 'Rate limit exceeded',
+      error: "Rate limit exceeded",
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -238,9 +269,13 @@ export async function checkRateLimit(
     const record = await redisClient.get(`ratelimit:${key}`);
 
     if (!record) {
-      await redisClient.setEx(`ratelimit:${key}`, windowMs / 1000, '1');
+      await redisClient.setEx(`ratelimit:${key}`, windowMs / 1000, "1");
 
-      return { allowed: true, remaining: limit - 1, resetAt: new Date(now + windowMs) };
+      return {
+        allowed: true,
+        remaining: limit - 1,
+        resetAt: new Date(now + windowMs),
+      };
     }
 
     const count = parseInt(record);
@@ -248,12 +283,20 @@ export async function checkRateLimit(
     if (count >= limit) {
       const ttl = await redisClient.ttl(`ratelimit:${key}`);
 
-      return { allowed: false, remaining: 0, resetAt: new Date(now + ttl * 1000) };
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: new Date(now + ttl * 1000),
+      };
     }
 
     await redisClient.incr(`ratelimit:${key}`);
 
-    return { allowed: true, remaining: limit - count - 1, resetAt: new Date(now + windowMs) };
+    return {
+      allowed: true,
+      remaining: limit - count - 1,
+      resetAt: new Date(now + windowMs),
+    };
   }
 
   const storeKey = `ratelimit:${key}`;
@@ -270,7 +313,11 @@ export async function checkRateLimit(
   record.count++;
   userStore.set(storeKey, record);
 
-  return { allowed: true, remaining: limit - record.count, resetAt: new Date(record.resetAt) };
+  return {
+    allowed: true,
+    remaining: limit - record.count,
+    resetAt: new Date(record.resetAt),
+  };
 }
 
 // ==================== Security Log Middleware ====================
@@ -278,18 +325,22 @@ export async function checkRateLimit(
 /**
  * Log suspicious activity
  */
-export async function securityLogMiddleware(req: Request, res: Response, next: NextFunction) {
+export async function securityLogMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   const startTime = Date.now();
 
-  res.on('finish', async () => {
+  res.on("finish", async () => {
     const duration = Date.now() - startTime;
 
     // Log slow requests
     if (duration > 5000) {
       await prisma.securityLog.create({
         data: {
-          eventType: 'slow_request',
-          identifier: req.user?.id?.toString() || req.ip || 'unknown',
+          eventType: "slow_request",
+          identifier: req.user?.id?.toString() || req.ip || "unknown",
           ipAddress: req.ip,
           userId: req.user?.id,
           metadata: {
@@ -306,8 +357,8 @@ export async function securityLogMiddleware(req: Request, res: Response, next: N
     if (res.statusCode >= 400) {
       await prisma.securityLog.create({
         data: {
-          eventType: 'error_response',
-          identifier: req.user?.id?.toString() || req.ip || 'unknown',
+          eventType: "error_response",
+          identifier: req.user?.id?.toString() || req.ip || "unknown",
           ipAddress: req.ip,
           userId: req.user?.id,
           metadata: {
@@ -329,21 +380,25 @@ export async function securityLogMiddleware(req: Request, res: Response, next: N
 /**
  * Add rate limit headers to response
  */
-export function rateLimitHeadersMiddleware(req: Request, res: Response, next: NextFunction) {
-  const limit = res.getHeader('RateLimit-Limit');
-  const remaining = res.getHeader('RateLimit-Remaining');
-  const reset = res.getHeader('RateLimit-Reset');
+export function rateLimitHeadersMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const limit = res.getHeader("RateLimit-Limit");
+  const remaining = res.getHeader("RateLimit-Remaining");
+  const reset = res.getHeader("RateLimit-Reset");
 
   if (limit) {
-    res.setHeader('X-RateLimit-Limit', limit);
+    res.setHeader("X-RateLimit-Limit", limit);
   }
 
   if (remaining) {
-    res.setHeader('X-RateLimit-Remaining', remaining);
+    res.setHeader("X-RateLimit-Remaining", remaining);
   }
 
   if (reset) {
-    res.setHeader('X-RateLimit-Reset', reset);
+    res.setHeader("X-RateLimit-Reset", reset);
   }
 
   next();

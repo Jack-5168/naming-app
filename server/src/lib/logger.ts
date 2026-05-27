@@ -8,18 +8,18 @@
  * Usage: import { logger } from '../lib/logger';
  */
 
-import winston from 'winston';
-import path from 'path';
+import winston from "winston";
+import path from "path";
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === "development";
 
 // Create logs directory path
-const logDir = path.join(process.cwd(), 'logs');
+const logDir = path.join(process.cwd(), "logs");
 
 export const logger = winston.createLogger({
-  level: isDevelopment ? 'debug' : 'info',
+  level: isDevelopment ? "debug" : "info",
   format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
     winston.format.json(),
@@ -28,17 +28,20 @@ export const logger = winston.createLogger({
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.printf(({ timestamp, level, message, ...meta }) => `${timestamp} [${level}]: ${message} ${
-          Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
-        }`),
+        winston.format.printf(
+          ({ timestamp, level, message, ...meta }) =>
+            `${timestamp} [${level}]: ${message} ${
+              Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ""
+            }`,
+        ),
       ),
     }),
     new winston.transports.File({
-      filename: path.join(logDir, 'error.log'),
-      level: 'error',
+      filename: path.join(logDir, "error.log"),
+      level: "error",
     }),
     new winston.transports.File({
-      filename: path.join(logDir, 'combined.log'),
+      filename: path.join(logDir, "combined.log"),
     }),
   ],
 });

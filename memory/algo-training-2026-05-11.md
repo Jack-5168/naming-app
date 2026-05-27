@@ -11,6 +11,7 @@
 **题目：** 给定整数数组 nums 和整数 k，判断是否存在两个不同索引 i 和 j，使得 nums[i] = nums[j]，且 |i - j| ≤ k。
 
 **输入输出：**
+
 ```
 nums = [1,2,3,1], k = 3          → true  (索引 0 和 3，值都是 1，差值 3 ≤ 3)
 nums = [1,0,1,1], k = 1          → true  (索引 2 和 3，值都是 1，差值 1 ≤ 1)
@@ -20,6 +21,7 @@ nums = [1,2,3,1,2,3], k = 2      → false (相同元素的最小距离都 > 2)
 **思路：** 滑动窗口 + 哈希表。维护一个大小为 k 的 Set 作为窗口，遍历数组时：如果当前元素已在窗口中 → 返回 true；否则加入窗口；如果窗口大小超过 k，移除最旧的元素（nums[i-k]）。本质是只关心"最近 k 个元素内是否有重复"。
 
 **代码：**
+
 ```javascript
 /**
  * @param {number[]} nums
@@ -28,17 +30,17 @@ nums = [1,2,3,1,2,3], k = 2      → false (相同元素的最小距离都 > 2)
  */
 function containsNearbyDuplicate(nums, k) {
   const window = new Set();
-  
+
   for (let i = 0; i < nums.length; i++) {
     if (window.has(nums[i])) return true;
     window.add(nums[i]);
-    
+
     // 窗口大小超过 k 时，移除最早进入的元素
     if (window.size > k) {
       window.delete(nums[i - k]);
     }
   }
-  
+
   return false;
 }
 ```
@@ -56,6 +58,7 @@ function containsNearbyDuplicate(nums, k) {
 **题目：** 给定两个字符串 s 和 t，t 由 s 的随机重排后再在随机位置添加一个字母得到。找出 t 中添加的那个字母。
 
 **输入输出：**
+
 ```
 s = "abcd", t = "abcde"    → 'e'
 s = "", t = "y"            → 'y'
@@ -72,6 +75,7 @@ s = "ae", t = "aea"        → 'a'
 ③ **异或法（最优）**：将所有字符的 charCode 异或，s 中的字符和 t 中对应的字符会互相抵消（x ^ x = 0），最后剩下的就是多出来的那个字符。
 
 **代码（异或法）：**
+
 ```javascript
 /**
  * @param {string} s
@@ -80,33 +84,34 @@ s = "ae", t = "aea"        → 'a'
  */
 function findTheDifference(s, t) {
   let result = 0;
-  
+
   // 异或 s 中所有字符
   for (let i = 0; i < s.length; i++) {
     result ^= s.charCodeAt(i);
   }
-  
+
   // 异或 t 中所有字符（多一个字符，不会被抵消）
   for (let i = 0; i < t.length; i++) {
     result ^= t.charCodeAt(i);
   }
-  
+
   return String.fromCharCode(result);
 }
 ```
 
 **代码（求差法，同样简洁）：**
+
 ```javascript
 function findTheDifference(s, t) {
   let sum = 0;
-  
+
   for (let i = 0; i < t.length; i++) {
     sum += t.charCodeAt(i);
   }
   for (let i = 0; i < s.length; i++) {
     sum -= s.charCodeAt(i);
   }
-  
+
   return String.fromCharCode(sum);
 }
 ```
@@ -124,6 +129,7 @@ function findTheDifference(s, t) {
 **题目：** 给定一种规律 pattern 和一个字符串 str，判断 str 是否遵循相同的规律。pattern 中的每个字母和 str 中的每个非空单词之间存在着双向连接（双射）关系。
 
 **输入输出：**
+
 ```
 pattern = "abba", str = "dog cat cat dog"     → true
 pattern = "abba", str = "dog cat cat fish"    → false
@@ -134,6 +140,7 @@ pattern = "abba", str = "dog dog dog dog"     → false
 **思路：** 双向哈希表。需要维护两个映射：① pattern 字符 → 单词，② 单词 → pattern 字符。遍历时同时检查两个方向是否一致。单向检查不够，因为 "abba" 映射到 "dog dog dog dog" 时，a→dog 和 b→dog 在单向检查中不会冲突，但违反了双射。
 
 **代码：**
+
 ```javascript
 /**
  * @param {string} pattern
@@ -141,25 +148,25 @@ pattern = "abba", str = "dog dog dog dog"     → false
  * @return {boolean}
  */
 function wordPattern(pattern, s) {
-  const words = s.split(' ');
-  
+  const words = s.split(" ");
+
   // 长度不匹配直接 false
   if (pattern.length !== words.length) return false;
-  
-  const charToWord = new Map();  // pattern 字符 → 单词
-  const wordToChar = new Map();  // 单词 → pattern 字符
-  
+
+  const charToWord = new Map(); // pattern 字符 → 单词
+  const wordToChar = new Map(); // 单词 → pattern 字符
+
   for (let i = 0; i < pattern.length; i++) {
     const ch = pattern[i];
     const word = words[i];
-    
+
     // 检查正向映射
     if (charToWord.has(ch)) {
       if (charToWord.get(ch) !== word) return false;
     } else {
       charToWord.set(ch, word);
     }
-    
+
     // 检查反向映射
     if (wordToChar.has(word)) {
       if (wordToChar.get(word) !== ch) return false;
@@ -167,7 +174,7 @@ function wordPattern(pattern, s) {
       wordToChar.set(word, ch);
     }
   }
-  
+
   return true;
 }
 ```
@@ -189,6 +196,7 @@ function wordPattern(pattern, s) {
 **题目：** 编写一个函数来查找字符串数组中的最长公共前缀。如果不存在公共前缀，返回空字符串 ""。
 
 **输入输出：**
+
 ```
 ["flower","flow","flight"]        → "fl"
 ["dog","racecar","car"]           → ""
@@ -200,38 +208,40 @@ function wordPattern(pattern, s) {
 **思路：** 水平扫描。先取第一个字符串作为基准，然后逐个与后续字符串比较前缀。每次比较时，找到当前公共前缀和下一个字符串的公共部分，不断缩短。如果公共前缀缩短到空，提前返回。
 
 **代码：**
+
 ```javascript
 /**
  * @param {string[]} strs
  * @return {string}
  */
 function longestCommonPrefix(strs) {
-  if (strs.length === 0) return '';
-  
+  if (strs.length === 0) return "";
+
   let prefix = strs[0];
-  
+
   for (let i = 1; i < strs.length; i++) {
     // 当前字符串不以 prefix 开头时，不断缩短 prefix
     while (strs[i].indexOf(prefix) !== 0) {
       prefix = prefix.slice(0, -1);
-      if (prefix === '') return '';
+      if (prefix === "") return "";
     }
   }
-  
+
   return prefix;
 }
 ```
 
 **代码（逐字符比较，更高效的版本）：**
+
 ```javascript
 function longestCommonPrefix(strs) {
-  if (strs.length === 0) return '';
-  
+  if (strs.length === 0) return "";
+
   const first = strs[0];
-  
+
   for (let i = 0; i < first.length; i++) {
     const ch = first[i];
-    
+
     for (let j = 1; j < strs.length; j++) {
       // 某个字符串在此位置字符不同，或已到达末尾
       if (i >= strs[j].length || strs[j][i] !== ch) {
@@ -239,7 +249,7 @@ function longestCommonPrefix(strs) {
       }
     }
   }
-  
+
   return first;
 }
 ```
@@ -249,6 +259,7 @@ function longestCommonPrefix(strs) {
 **考点：** 水平扫描 / 逐字符比较 / 提前终止
 
 **其他解法：**
+
 - **垂直扫描**：按列比较（上面第二个解法），在公共前缀较短时比水平扫描更快，因为可以提前终止。
 - **分治**：将数组分成两半，分别求公共前缀，再合并。T(n) = 2T(n/2) + O(m)，O(m·n)。
 - **二分搜索**：对前缀长度做二分，检查该长度是否为公共前缀。O(m·log n)。
@@ -263,6 +274,7 @@ function longestCommonPrefix(strs) {
 **题目：** 编写一个高效的算法，在 m × n 矩阵中搜索一个值 target。矩阵每行的整数从左到右升序排列，每列的整数从上到下升序排列。
 
 **输入输出：**
+
 ```
 matrix = [
   [1,  4,  7, 11, 15],
@@ -276,11 +288,13 @@ target = 20 → false
 ```
 
 **思路：** 从**右上角**（或左下角）开始搜索。右上角是关键位置——它左边的元素都比它小，下边的元素都比它大。每次比较后可以排除一行或一列：
+
 - target < 当前值 → 当前列所有元素都 > target，排除当前列（左移）
 - target > 当前值 → 当前行所有元素都 < target，排除当前行（下移）
 - target = 当前值 → 找到
 
 **代码：**
+
 ```javascript
 /**
  * @param {number[][]} matrix
@@ -289,26 +303,26 @@ target = 20 → false
  */
 function searchMatrix(matrix, target) {
   if (matrix.length === 0 || matrix[0].length === 0) return false;
-  
+
   const m = matrix.length;
   const n = matrix[0].length;
-  
+
   // 从右上角开始
   let row = 0;
   let col = n - 1;
-  
+
   while (row < m && col >= 0) {
     const val = matrix[row][col];
-    
+
     if (val === target) {
       return true;
     } else if (val > target) {
-      col--;  // 当前值太大，排除当前列
+      col--; // 当前值太大，排除当前列
     } else {
-      row++;  // 当前值太小，排除当前行
+      row++; // 当前值太小，排除当前行
     }
   }
-  
+
   return false;
 }
 ```
@@ -325,23 +339,23 @@ function searchMatrix(matrix, target) {
 
 ## 知识点覆盖
 
-| 知识点 | 对应题目 | 核心思路 |
-|--------|----------|----------|
-| 滑动窗口 + Set | 题1 存在重复 II | 维护大小为 k 的窗口，检查重复 |
-| 位运算（异或） | 题2 找不同 | x^x=0 抵消，剩余即答案 |
-| 双向哈希表 | 题3 单词规律 | 两个 Map 保证双射 |
-| 水平扫描 | 题4 最长公共前缀 | 逐字符串缩短公共前缀 |
-| 有序矩阵搜索 | 题5 搜索二维矩阵 II | 右上角起点，行列排除 |
+| 知识点         | 对应题目            | 核心思路                      |
+| -------------- | ------------------- | ----------------------------- |
+| 滑动窗口 + Set | 题1 存在重复 II     | 维护大小为 k 的窗口，检查重复 |
+| 位运算（异或） | 题2 找不同          | x^x=0 抵消，剩余即答案        |
+| 双向哈希表     | 题3 单词规律        | 两个 Map 保证双射             |
+| 水平扫描       | 题4 最长公共前缀    | 逐字符串缩短公共前缀          |
+| 有序矩阵搜索   | 题5 搜索二维矩阵 II | 右上角起点，行列排除          |
 
 ## 与往期训练的区别
 
-| 往期已覆盖（34题） | 本次新增 |
-|---------------------|----------|
+| 往期已覆盖（34题）     | 本次新增                               |
+| ---------------------- | -------------------------------------- |
 | LC217 存在重复（全局） | LC219 存在重复 II（滑动窗口+距离约束） |
-| LC1 两数之和 | LC389 找不同（异或抵消） |
-| LC3 无重复最长子串 | LC290 单词规律（双射映射） |
-| LC14 最长公共前缀 | LC14 最长公共前缀（水平扫描+逐字符） |
-| LC11 盛水容器 | LC240 搜索二维矩阵 II（行列排除） |
+| LC1 两数之和           | LC389 找不同（异或抵消）               |
+| LC3 无重复最长子串     | LC290 单词规律（双射映射）             |
+| LC14 最长公共前缀      | LC14 最长公共前缀（水平扫描+逐字符）   |
+| LC11 盛水容器          | LC240 搜索二维矩阵 II（行列排除）      |
 
 **本次新增算法模式：** 滑动窗口+距离约束、位运算异或抵消、双向哈希表双射、水平扫描+逐字符比较、有序矩阵行列排除
 
@@ -349,15 +363,16 @@ function searchMatrix(matrix, target) {
 
 ## 训练总结
 
-| # | 题号 | 难度 | 核心技巧 | 时间 | 空间 |
-|---|------|------|----------|------|------|
-| 1 | #219 | 简单 | 滑动窗口 + Set | O(n) | O(min(n,k)) |
-| 2 | #389 | 简单 | 位运算异或 / 字符求差 | O(n) | O(1) |
-| 3 | #290 | 简单 | 双向哈希表（双射） | O(n) | O(n) |
-| 4 | #14 | 中等 | 水平扫描 / 逐字符比较 | O(S) | O(1) |
-| 5 | #240 | 中等 | 有序矩阵行列排除 | O(m+n) | O(1) |
+| #   | 题号 | 难度 | 核心技巧              | 时间   | 空间        |
+| --- | ---- | ---- | --------------------- | ------ | ----------- |
+| 1   | #219 | 简单 | 滑动窗口 + Set        | O(n)   | O(min(n,k)) |
+| 2   | #389 | 简单 | 位运算异或 / 字符求差 | O(n)   | O(1)        |
+| 3   | #290 | 简单 | 双向哈希表（双射）    | O(n)   | O(n)        |
+| 4   | #14  | 中等 | 水平扫描 / 逐字符比较 | O(S)   | O(1)        |
+| 5   | #240 | 中等 | 有序矩阵行列排除      | O(m+n) | O(1)        |
 
 **今日重点：**
+
 1. **滑动窗口+距离约束** — LC219 是 LC217 的升级版，核心区别是窗口大小限制。Set 的 add/delete 操作 O(1)，比每次遍历窗口高效得多。
 2. **异或抵消** — 位运算在"找唯一/找不同"类问题中是神器。LC136（只出现一次的数字）也是同样思路。记住：x^x=0, x^0=x, 交换律+结合律。
 3. **双向哈希表** — 凡是涉及"双射/一一映射"的问题，必须两个方向都检查。单向 Map 只能保证函数性，不能保证单射性。

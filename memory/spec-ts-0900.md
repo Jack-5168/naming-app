@@ -10,7 +10,14 @@
 将嵌套对象的所有属性变为只读。
 
 ```ts
-type DeepReadonly<T> = T extends (string | number | boolean | symbol | null | undefined | Function)
+type DeepReadonly<T> = T extends
+  | string
+  | number
+  | boolean
+  | symbol
+  | null
+  | undefined
+  | Function
   ? T
   : { readonly [K in keyof T]: DeepReadonly<T[K]> };
 
@@ -39,7 +46,14 @@ ru.address.geo.lat = 0;
 将嵌套对象的所有属性变为可选。
 
 ```ts
-type DeepPartial<T> = T extends (string | number | boolean | symbol | null | undefined | Function)
+type DeepPartial<T> = T extends
+  | string
+  | number
+  | boolean
+  | symbol
+  | null
+  | undefined
+  | Function
   ? T
   : { [K in keyof T]?: DeepPartial<T[K]> };
 
@@ -53,7 +67,7 @@ interface Config {
 }
 type PC = DeepPartial<Config>;
 declare const pc: PC;
-const c1: PC = {};                          // ✅ 全部可选
+const c1: PC = {}; // ✅ 全部可选
 const c2: PC = { server: { host: "localhost" } }; // ✅ 部分嵌套
 const c3: PC = { server: { host: "localhost", port: 3000 } }; // ✅ 完整
 ```
@@ -67,8 +81,8 @@ type TupleToUnion<T extends readonly unknown[]> = T[number];
 
 // 测试
 type R1 = TupleToUnion<["a", "b", "c"]>; // "a" | "b" | "c"
-type R2 = TupleToUnion<[1, 2, 3]>;       // 1 | 2 | 3
-type R3 = TupleToUnion<[]>;              // never
+type R2 = TupleToUnion<[1, 2, 3]>; // 1 | 2 | 3
+type R3 = TupleToUnion<[]>; // never
 
 // 验证
 const _r1: R1 = "b";
@@ -86,7 +100,7 @@ type TupleToObject<T extends readonly PropertyKey[]> = {
 
 // 测试
 type R1 = TupleToObject<["a", "b"]>; // { a: "a"; b: "b" }
-type R2 = TupleToObject<[1, 2]>;     // { 1: 1; 2: 2 }
+type R2 = TupleToObject<[1, 2]>; // { 1: 1; 2: 2 }
 
 declare const r1: R1;
 const _a: "a" = r1.a;
@@ -140,13 +154,18 @@ r1.description;
 获取元组的第一个元素类型。
 
 ```ts
-type First<T extends readonly unknown[]> = T extends readonly [infer F, ...unknown[]] ? F : never;
+type First<T extends readonly unknown[]> = T extends readonly [
+  infer F,
+  ...unknown[],
+]
+  ? F
+  : never;
 
 // 测试
-type R1 = First<[1, 2, 3]>;       // 1
-type R2 = First<["a", "b"]>;       // "a"
-type R3 = First<[]>;               // never
-type R4 = First<[only: string]>;   // string
+type R1 = First<[1, 2, 3]>; // 1
+type R2 = First<["a", "b"]>; // "a"
+type R3 = First<[]>; // never
+type R4 = First<[only: string]>; // string
 
 const _r1: R1 = 1;
 const _r2: R2 = "a";
@@ -157,12 +176,17 @@ const _r2: R2 = "a";
 获取元组的最后一个元素类型。
 
 ```ts
-type Last<T extends readonly unknown[]> = T extends readonly [...unknown[], infer L] ? L : never;
+type Last<T extends readonly unknown[]> = T extends readonly [
+  ...unknown[],
+  infer L,
+]
+  ? L
+  : never;
 
 // 测试
-type R1 = Last<[1, 2, 3]>;       // 3
+type R1 = Last<[1, 2, 3]>; // 3
 type R2 = Last<["a", "b", "c"]>; // "c"
-type R3 = Last<[42]>;             // 42
+type R3 = Last<[42]>; // 42
 
 const _r1: R1 = 3;
 const _r2: R2 = "c";
@@ -182,10 +206,10 @@ type Flatten<T extends readonly unknown[]> = T extends readonly []
     : [];
 
 // 测试
-type R1 = Flatten<[[1], [2, 3]]>;                    // [1, 2, 3]
-type R2 = Flatten<[[1, [2, 3]], [4]]>;               // [1, 2, 3, 4]
-type R3 = Flatten<[[]]>;                              // []
-type R4 = Flatten<[[1], [2], [3], [[4, [5]]]]>;      // [1, 2, 3, 4, 5]
+type R1 = Flatten<[[1], [2, 3]]>; // [1, 2, 3]
+type R2 = Flatten<[[1, [2, 3]], [4]]>; // [1, 2, 3, 4]
+type R3 = Flatten<[[]]>; // []
+type R4 = Flatten<[[1], [2], [3], [[4, [5]]]]>; // [1, 2, 3, 4, 5]
 
 declare const _r1: R1;
 declare const _r2: R2;
@@ -201,7 +225,7 @@ type MyExclude<T, U> = T extends U ? never : T;
 
 // 测试
 type R1 = MyExclude<"a" | "b" | "c", "a">; // "b" | "c"
-type R2 = MyExclude<1 | 2 | 3, 1 | 2>;     // 3
+type R2 = MyExclude<1 | 2 | 3, 1 | 2>; // 3
 
 const _r1: R1 = "b";
 const _r2: R2 = 3;
@@ -215,10 +239,10 @@ const _r2: R2 = 3;
 type Awaited<T> = T extends Promise<infer U> ? Awaited<U> : T;
 
 // 测试
-type R1 = Awaited<Promise<string>>;           // string
-type R2 = Awaited<Promise<Promise<number>>>;  // number
+type R1 = Awaited<Promise<string>>; // string
+type R2 = Awaited<Promise<Promise<number>>>; // number
 type R3 = Awaited<Promise<Promise<Promise<boolean>>>>; // boolean
-type R4 = Awaited<string>;                    // string
+type R4 = Awaited<string>; // string
 
 const _r1: R1 = "hello";
 const _r2: R2 = 42;
@@ -234,7 +258,7 @@ const _r4: R4 = "not a promise";
 type If<C extends boolean, T, F> = C extends true ? T : F;
 
 // 测试
-type R1 = If<true, "a", "b">;  // "a"
+type R1 = If<true, "a", "b">; // "a"
 type R2 = If<false, "a", "b">; // "b"
 
 const _r1: R1 = "a";
@@ -246,12 +270,15 @@ const _r2: R2 = "b";
 拼接两个元组。
 
 ```ts
-type Concat<T extends readonly unknown[], U extends readonly unknown[]> = [...T, ...U];
+type Concat<T extends readonly unknown[], U extends readonly unknown[]> = [
+  ...T,
+  ...U,
+];
 
 // 测试
-type R1 = Concat<[1, 2], [3, 4]>;             // [1, 2, 3, 4]
-type R2 = Concat<[], [1]>;                     // [1]
-type R3 = Concat<["a"], ["b", "c"]>;           // ["a", "b", "c"]
+type R1 = Concat<[1, 2], [3, 4]>; // [1, 2, 3, 4]
+type R2 = Concat<[], [1]>; // [1]
+type R3 = Concat<["a"], ["b", "c"]>; // ["a", "b", "c"]
 
 declare const _r1: R1;
 declare const _r2: R2;
@@ -266,8 +293,8 @@ declare const _r3: R3;
 type Push<T extends readonly unknown[], E> = [...T, E];
 
 // 测试
-type R1 = Push<[1, 2], 3>;    // [1, 2, 3]
-type R2 = Push<[], "x">;      // ["x"]
+type R1 = Push<[1, 2], 3>; // [1, 2, 3]
+type R2 = Push<[], "x">; // ["x"]
 
 declare const _r1: R1;
 declare const _r2: R2;
@@ -278,7 +305,10 @@ declare const _r2: R2;
 检查元组是否包含某个元素。
 
 ```ts
-type Includes<T extends readonly unknown[], E> = T extends readonly [infer F, ...infer Rest]
+type Includes<T extends readonly unknown[], E> = T extends readonly [
+  infer F,
+  ...infer Rest,
+]
   ? [F] extends [E]
     ? [E] extends [F]
       ? true
@@ -287,12 +317,12 @@ type Includes<T extends readonly unknown[], E> = T extends readonly [infer F, ..
   : false;
 
 // 测试
-type R1 = Includes<[1, 2, 3], 2>;     // true
-type R2 = Includes<[1, 2, 3], 4>;     // false
+type R1 = Includes<[1, 2, 3], 2>; // true
+type R2 = Includes<[1, 2, 3], 4>; // false
 type R3 = Includes<[1, 2, "3"], "3">; // true
-type R4 = Includes<[], 1>;             // false
+type R4 = Includes<[], 1>; // false
 // 注意：类型精确匹配，1 !== true
-type R5 = Includes<[1, 2], true>;      // false
+type R5 = Includes<[1, 2], true>; // false
 
 const _r1: R1 = true;
 const _r2: R2 = false;
@@ -323,8 +353,8 @@ interface Foo {
   c: boolean;
   d?: string;
 }
-type RK = RequiredKeys<Foo>;  // "a" | "c"
-type OK = OptionalKeys<Foo>;  // "b" | "d"
+type RK = RequiredKeys<Foo>; // "a" | "c"
+type OK = OptionalKeys<Foo>; // "b" | "d"
 
 const _rk: RK = "a";
 const _ok: OK = "b";
@@ -360,16 +390,19 @@ const _c: string = m.c;
 过滤元组中指定类型的元素。
 
 ```ts
-type TupleFilter<T extends readonly unknown[], U> = T extends readonly [infer F, ...infer Rest]
+type TupleFilter<T extends readonly unknown[], U> = T extends readonly [
+  infer F,
+  ...infer Rest,
+]
   ? [F] extends [U]
     ? [F, ...TupleFilter<Rest, U>]
     : TupleFilter<Rest, U>
   : [];
 
 // 测试
-type R1 = TupleFilter<[1, "a", 2, "b", 3], number>;  // [1, 2, 3]
-type R2 = TupleFilter<[1, "a", 2, "b", 3], string>;  // ["a", "b"]
-type R3 = TupleFilter<[], number>;                     // []
+type R1 = TupleFilter<[1, "a", 2, "b", 3], number>; // [1, 2, 3]
+type R2 = TupleFilter<[1, "a", 2, "b", 3], string>; // ["a", "b"]
+type R3 = TupleFilter<[], number>; // []
 
 declare const _r1: R1;
 declare const _r2: R2;
@@ -387,8 +420,8 @@ type StringToUnion<S extends string> = S extends `${infer F}${infer Rest}`
 
 // 测试
 type R1 = StringToUnion<"abc">; // "a" | "b" | "c"
-type R2 = StringToUnion<"">;    // never
-type R3 = StringToUnion<"a">;   // "a"
+type R2 = StringToUnion<"">; // never
+type R3 = StringToUnion<"a">; // "a"
 
 const _r1: R1 = "b";
 const _r2: R2 = undefined as never;
@@ -399,16 +432,18 @@ const _r2: R2 = undefined as never;
 反转元组类型。
 
 ```ts
-type Reverse<T extends readonly unknown[], Acc extends readonly unknown[] = []> =
-  T extends readonly [infer F, ...infer Rest]
-    ? Reverse<Rest, [F, ...Acc]>
-    : Acc;
+type Reverse<
+  T extends readonly unknown[],
+  Acc extends readonly unknown[] = [],
+> = T extends readonly [infer F, ...infer Rest]
+  ? Reverse<Rest, [F, ...Acc]>
+  : Acc;
 
 // 测试
-type R1 = Reverse<[1, 2, 3]>;        // [3, 2, 1]
-type R2 = Reverse<["a", "b"]>;       // ["b", "a"]
-type R3 = Reverse<[]>;               // []
-type R4 = Reverse<[1]>;              // [1]
+type R1 = Reverse<[1, 2, 3]>; // [3, 2, 1]
+type R2 = Reverse<["a", "b"]>; // ["b", "a"]
+type R3 = Reverse<[]>; // []
+type R4 = Reverse<[1]>; // [1]
 
 declare const _r1: R1;
 declare const _r2: R2;
@@ -421,16 +456,16 @@ declare const _r4: R4;
 
 ### 核心模式
 
-| 模式 | 语法 | 用途 |
-|------|------|------|
-| **条件类型分发** | `T extends U ? A : B` | 联合类型自动分发 |
-| **infer 提取** | `T extends Promise<infer U>` | 从复杂类型中提取子类型 |
-| **映射类型** | `[K in keyof T]` | 遍历对象键生成新类型 |
-| **key remapping** | `as P extends Q ? R : S` | 条件键重映射 |
-| **递归类型** | 类型引用自身 | 处理嵌套结构 |
-| **模板字面量** | `` `${A}${B}` `` | 字符串类型操作 |
-| **元组展开** | `[...T, ...U]` | 元组拼接/操作 |
-| **剩余元组** | `[infer F, ...infer Rest]` | 元组解构 |
+| 模式              | 语法                         | 用途                   |
+| ----------------- | ---------------------------- | ---------------------- |
+| **条件类型分发**  | `T extends U ? A : B`        | 联合类型自动分发       |
+| **infer 提取**    | `T extends Promise<infer U>` | 从复杂类型中提取子类型 |
+| **映射类型**      | `[K in keyof T]`             | 遍历对象键生成新类型   |
+| **key remapping** | `as P extends Q ? R : S`     | 条件键重映射           |
+| **递归类型**      | 类型引用自身                 | 处理嵌套结构           |
+| **模板字面量**    | `` `${A}${B}` ``             | 字符串类型操作         |
+| **元组展开**      | `[...T, ...U]`               | 元组拼接/操作          |
+| **剩余元组**      | `[infer F, ...infer Rest]`   | 元组解构               |
 
 ### 类型体操心法
 
@@ -465,7 +500,10 @@ declare const _r4: R4;
 ```ts
 // 类型断言辅助
 type Expect<T extends true> = T;
-type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends (<T>() => T extends Y ? 1 : 2) ? true : false;
+type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+    ? true
+    : false;
 
 // 验证几个关键类型
 type _test1 = Expect<Equal<TupleToUnion<["a", "b", "c"]>, "a" | "b" | "c">>;

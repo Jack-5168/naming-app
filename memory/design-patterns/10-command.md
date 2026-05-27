@@ -28,7 +28,7 @@ Invoker（调用者）──发出命令──→ Command（命令对象）─�
 // ====== Receiver：被操作的对象 ======
 class TextEditor {
   constructor() {
-    this.content = '';
+    this.content = "";
   }
 
   write(text) {
@@ -44,7 +44,7 @@ class TextEditor {
 
   clear() {
     const removed = this.content;
-    this.content = '';
+    this.content = "";
     return removed;
   }
 
@@ -55,8 +55,12 @@ class TextEditor {
 
 // ====== Command 接口 ======
 class Command {
-  execute() { throw new Error('Not implemented'); }
-  undo() { throw new Error('Not implemented'); }
+  execute() {
+    throw new Error("Not implemented");
+  }
+  undo() {
+    throw new Error("Not implemented");
+  }
 }
 
 // ====== Concrete Commands ======
@@ -81,7 +85,7 @@ class DeleteCommand extends Command {
     super();
     this.editor = editor;
     this.count = count;
-    this.deletedText = '';
+    this.deletedText = "";
   }
 
   execute() {
@@ -97,7 +101,7 @@ class ClearCommand extends Command {
   constructor(editor) {
     super();
     this.editor = editor;
-    this.deletedText = '';
+    this.deletedText = "";
   }
 
   execute() {
@@ -139,16 +143,20 @@ class CommandManager {
     return command;
   }
 
-  canUndo() { return this.undoStack.length > 0; }
-  canRedo() { return this.redoStack.length > 0; }
+  canUndo() {
+    return this.undoStack.length > 0;
+  }
+  canRedo() {
+    return this.redoStack.length > 0;
+  }
 }
 
 // ====== 使用 ======
 const editor = new TextEditor();
 const manager = new CommandManager();
 
-manager.execute(new WriteCommand(editor, 'Hello '));
-manager.execute(new WriteCommand(editor, 'World'));
+manager.execute(new WriteCommand(editor, "Hello "));
+manager.execute(new WriteCommand(editor, "World"));
 console.log(editor.getContent()); // "Hello World"
 
 manager.undo();
@@ -191,7 +199,7 @@ class AsyncCommandQueue {
   }
 
   _emit(event, data) {
-    this.listeners[event].forEach(fn => fn(data));
+    this.listeners[event].forEach((fn) => fn(data));
   }
 
   add(command) {
@@ -208,23 +216,27 @@ class AsyncCommandQueue {
 
     try {
       const result = await command.execute();
-      this.results.push({ command: command.name, result, status: 'success' });
-      this._emit('progress', {
+      this.results.push({ command: command.name, result, status: "success" });
+      this._emit("progress", {
         total: this.results.length + this.queue.length + (this.running - 1),
         completed: this.results.length,
         name: command.name,
       });
     } catch (error) {
-      this.results.push({ command: command.name, error: error.message, status: 'error' });
-      this._emit('error', { name: command.name, error });
-      if (command.onFailure === 'abort') throw error;
+      this.results.push({
+        command: command.name,
+        error: error.message,
+        status: "error",
+      });
+      this._emit("error", { name: command.name, error });
+      if (command.onFailure === "abort") throw error;
     }
 
     this.running--;
     this._runNext();
 
     if (this.running === 0 && this.queue.length === 0) {
-      this._emit('complete', this.results);
+      this._emit("complete", this.results);
     }
   }
 
@@ -239,7 +251,7 @@ class FetchCommand {
     this.name = name;
     this.url = url;
     this.options = options;
-    this.onFailure = options.onFailure || 'continue';
+    this.onFailure = options.onFailure || "continue";
   }
 
   async execute() {
@@ -260,7 +272,7 @@ class TransformCommand {
 
   async execute() {
     // 模拟异步处理
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
     return this.transformFn(this.data);
   }
 }
@@ -282,22 +294,25 @@ class SaveCommand {
 const queue = new AsyncCommandQueue(2);
 
 queue
-  .on('progress', ({ completed, total, name }) =>
-    console.log(`[${completed}/${total}] ${name} done`)
+  .on("progress", ({ completed, total, name }) =>
+    console.log(`[${completed}/${total}] ${name} done`),
   )
-  .on('error', ({ name, error }) =>
-    console.error(`❌ ${name}: ${error}`)
-  )
-  .on('complete', (results) =>
-    console.log('✅ All done:', results.length, 'commands')
+  .on("error", ({ name, error }) => console.error(`❌ ${name}: ${error}`))
+  .on("complete", (results) =>
+    console.log("✅ All done:", results.length, "commands"),
   );
 
 queue
-  .add(new FetchCommand('fetch-users', '/api/users'))
-  .add(new FetchCommand('fetch-orders', '/api/orders'))
-  .add(new FetchCommand('fetch-products', '/api/products'))
-  .add(new TransformCommand('merge-data', null, (data) => ({ users: [], orders: [] })))
-  .add(new SaveCommand('save-cache', 'app-data', { users: [], orders: [] }));
+  .add(new FetchCommand("fetch-users", "/api/users"))
+  .add(new FetchCommand("fetch-orders", "/api/orders"))
+  .add(new FetchCommand("fetch-products", "/api/products"))
+  .add(
+    new TransformCommand("merge-data", null, (data) => ({
+      users: [],
+      orders: [],
+    })),
+  )
+  .add(new SaveCommand("save-cache", "app-data", { users: [], orders: [] }));
 ```
 
 ## 实现 3：宏命令（Macro Command）
@@ -317,7 +332,7 @@ class MacroCommand extends Command {
   }
 
   execute() {
-    this.commands.forEach(cmd => cmd.execute());
+    this.commands.forEach((cmd) => cmd.execute());
   }
 
   undo() {
@@ -343,8 +358,12 @@ class Shape {
     this.y += dy;
   }
 
-  show() { this.visible = true; }
-  hide() { this.visible = false; }
+  show() {
+    this.visible = true;
+  }
+  hide() {
+    this.visible = false;
+  }
 }
 
 class Canvas {
@@ -358,11 +377,13 @@ class Canvas {
   }
 
   remove(shape) {
-    this.shapes = this.shapes.filter(s => s !== shape);
+    this.shapes = this.shapes.filter((s) => s !== shape);
     return shape;
   }
 
-  getShapes() { return [...this.shapes]; }
+  getShapes() {
+    return [...this.shapes];
+  }
 }
 
 // 具体命令
@@ -372,8 +393,12 @@ class AddShapeCommand extends Command {
     this.canvas = canvas;
     this.shape = shape;
   }
-  execute() { this.canvas.add(this.shape); }
-  undo() { this.canvas.remove(this.shape); }
+  execute() {
+    this.canvas.add(this.shape);
+  }
+  undo() {
+    this.canvas.remove(this.shape);
+  }
 }
 
 class MoveShapeCommand extends Command {
@@ -383,8 +408,12 @@ class MoveShapeCommand extends Command {
     this.dx = dx;
     this.dy = dy;
   }
-  execute() { this.shape.move(this.dx, this.dy); }
-  undo() { this.shape.move(-this.dx, -this.dy); }
+  execute() {
+    this.shape.move(this.dx, this.dy);
+  }
+  undo() {
+    this.shape.move(-this.dx, -this.dy);
+  }
 }
 
 class ToggleVisibilityCommand extends Command {
@@ -392,19 +421,23 @@ class ToggleVisibilityCommand extends Command {
     super();
     this.shape = shape;
   }
-  execute() { this.shape.visible ? this.shape.hide() : this.shape.show(); }
-  undo() { this.shape.visible ? this.shape.hide() : this.shape.show(); }
+  execute() {
+    this.shape.visible ? this.shape.hide() : this.shape.show();
+  }
+  undo() {
+    this.shape.visible ? this.shape.hide() : this.shape.show();
+  }
 }
 
 // 宏命令使用
 const canvas = new Canvas();
 const manager = new CommandManager();
 
-const rect = new Shape('rect', 0, 0, { width: 100, height: 50 });
-const circle = new Shape('circle', 50, 50, { radius: 25 });
+const rect = new Shape("rect", 0, 0, { width: 100, height: 50 });
+const circle = new Shape("circle", 50, 50, { radius: 25 });
 
 // 创建宏命令：同时添加两个形状
-const addBoth = new MacroCommand('add-both-shapes')
+const addBoth = new MacroCommand("add-both-shapes")
   .add(new AddShapeCommand(canvas, rect))
   .add(new AddShapeCommand(canvas, circle));
 
@@ -415,7 +448,7 @@ manager.undo(); // 一次性撤销两个
 console.log(canvas.getShapes().length); // 0
 
 // 复杂宏命令
-const createAndPosition = new MacroCommand('create-and-position')
+const createAndPosition = new MacroCommand("create-and-position")
   .add(new AddShapeCommand(canvas, rect))
   .add(new MoveShapeCommand(rect, 100, 100))
   .add(new AddShapeCommand(canvas, circle))
@@ -432,14 +465,14 @@ console.log(canvas.getShapes().length); // 0
 
 ## JS 原生体现
 
-| 原生 API / 场景 | 命令模式体现 |
-|----------------|-------------|
-| `setTimeout(fn, delay)` | 将回调封装为延迟执行的命令 |
-| DOM 事件监听 | 事件对象就是命令，回调就是 Receiver |
-| Redux `dispatch(action)` | action 是命令对象，reducer 是 Receiver |
-| Node.js `child_process.exec()` | 命令对象封装进程执行 |
-| Promise | 异步命令的封装，支持链式编排 |
-| `requestAnimationFrame(cb)` | 将渲染操作封装为命令 |
+| 原生 API / 场景                | 命令模式体现                           |
+| ------------------------------ | -------------------------------------- |
+| `setTimeout(fn, delay)`        | 将回调封装为延迟执行的命令             |
+| DOM 事件监听                   | 事件对象就是命令，回调就是 Receiver    |
+| Redux `dispatch(action)`       | action 是命令对象，reducer 是 Receiver |
+| Node.js `child_process.exec()` | 命令对象封装进程执行                   |
+| Promise                        | 异步命令的封装，支持链式编排           |
+| `requestAnimationFrame(cb)`    | 将渲染操作封装为命令                   |
 
 ## 与其他模式组合
 
@@ -458,12 +491,12 @@ class ObservableCommandManager extends CommandManager {
       timestamp: Date.now(),
     });
     // 通知监听者
-    this._notify('commandExecuted', command);
+    this._notify("commandExecuted", command);
   }
 
   _notify(event, data) {
     // 类似观察者模式的通知机制
-    (this._listeners?.[event] || []).forEach(fn => fn(data));
+    (this._listeners?.[event] || []).forEach((fn) => fn(data));
   }
 
   on(event, fn) {
@@ -493,7 +526,7 @@ class CommandFactory {
 }
 
 // 使用
-const cmd = CommandFactory.create('write', editor, 'Hello');
+const cmd = CommandFactory.create("write", editor, "Hello");
 manager.execute(cmd);
 ```
 
@@ -508,9 +541,9 @@ manager.execute(cmd);
 
 ## 与策略模式的区别
 
-| | 命令模式 | 策略模式 |
-|---|---------|---------|
-| 目的 | 封装"动作"，支持撤销/队列 | 封装"算法"，运行时切换 |
-| 状态 | 命令对象通常有状态（undo 信息） | 策略对象通常无状态 |
-| 生命周期 | 命令执行一次就完成 | 策略可反复使用 |
-| 关注点 | 做了什么、能否撤销 | 怎么做、哪种算法更好 |
+|          | 命令模式                        | 策略模式               |
+| -------- | ------------------------------- | ---------------------- |
+| 目的     | 封装"动作"，支持撤销/队列       | 封装"算法"，运行时切换 |
+| 状态     | 命令对象通常有状态（undo 信息） | 策略对象通常无状态     |
+| 生命周期 | 命令执行一次就完成              | 策略可反复使用         |
+| 关注点   | 做了什么、能否撤销              | 怎么做、哪种算法更好   |

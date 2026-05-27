@@ -7,7 +7,9 @@ console.log('=== 状态管理专项测试 ===\n');
 
 // ========== 示例 2: EventEmitter ==========
 class EventEmitter {
-  constructor() { this._events = new Map(); }
+  constructor() {
+    this._events = new Map();
+  }
 
   on(event, listener) {
     if (!this._events.has(event)) this._events.set(event, new Set());
@@ -15,7 +17,9 @@ class EventEmitter {
     return () => this._events.get(event)?.delete(listener);
   }
 
-  emit(event, ...args) { this._events.get(event)?.forEach((l) => l(...args)); }
+  emit(event, ...args) {
+    this._events.get(event)?.forEach((l) => l(...args));
+  }
 }
 
 console.log('--- 示例 2: EventEmitter ---');
@@ -33,7 +37,9 @@ class Store {
     this._listeners = new Set();
   }
 
-  getState() { return this._state; }
+  getState() {
+    return this._state;
+  }
 
   setState(partial) {
     this._state = { ...this._state, ...partial };
@@ -59,17 +65,27 @@ console.log('  ✅ Store 通过\n');
 // ========== 示例 4: Reducer ==========
 function counterReducer(state = { count: 0 }, action) {
   switch (action.type) {
-    case 'INCREMENT': return { count: state.count + (action.payload ?? 1) };
-    case 'DECREMENT': return { count: state.count - (action.payload ?? 1) };
-    case 'RESET': return { count: 0 };
-    default: return state;
+    case 'INCREMENT':
+      return { count: state.count + (action.payload ?? 1) };
+    case 'DECREMENT':
+      return { count: state.count - (action.payload ?? 1) };
+    case 'RESET':
+      return { count: 0 };
+    default:
+      return state;
   }
 }
 
 console.log('--- 示例 4: Reducer ---');
 console.assert(counterReducer({ count: 0 }, { type: 'INCREMENT' }).count === 1);
-console.assert(counterReducer({ count: 0 }, { type: 'INCREMENT' }).count === 1, '确定性');
-console.assert(counterReducer({ count: 0 }, { type: 'UNKNOWN' }).count === 0, '默认返回');
+console.assert(
+  counterReducer({ count: 0 }, { type: 'INCREMENT' }).count === 1,
+  '确定性',
+);
+console.assert(
+  counterReducer({ count: 0 }, { type: 'UNKNOWN' }).count === 0,
+  '默认返回',
+);
 console.log('  ✅ Reducer 通过\n');
 
 // ========== 示例 5: createStore ==========
@@ -84,7 +100,9 @@ function createStore(reducer, preloadedState) {
     }
   }
 
-  function getState() { return currentState; }
+  function getState() {
+    return currentState;
+  }
   function subscribe(listener) {
     nextListeners.add(listener);
     return () => nextListeners.delete(listener);
@@ -121,7 +139,10 @@ function applyMiddleware(...middlewares) {
   return (createStore) => (reducer, preloadedState) => {
     const store = createStore(reducer, preloadedState);
     let dispatch = store.dispatch;
-    const middlewareAPI = { getState: store.getState, dispatch: (a) => dispatch(a) };
+    const middlewareAPI = {
+      getState: store.getState,
+      dispatch: (a) => dispatch(a),
+    };
     const chain = middlewares.map((mw) => mw(middlewareAPI));
     dispatch = chain.reduceRight((a, b) => b(a), store.dispatch);
     return { ...store, dispatch };
@@ -142,7 +163,10 @@ const thunkMiddleware = (store) => (next) => (action) => {
 };
 
 console.log('--- 示例 7: Thunk ---');
-const thunkStore = applyMiddleware(thunkMiddleware)(createStore)(counterReducer, { count: 0 });
+const thunkStore = applyMiddleware(thunkMiddleware)(createStore)(
+  counterReducer,
+  { count: 0 },
+);
 thunkStore.dispatch((dispatch, getState) => {
   dispatch({ type: 'INCREMENT' });
   dispatch({ type: 'INCREMENT' });
@@ -169,8 +193,14 @@ function userReducer(state = { name: '' }, action) {
 }
 
 console.log('--- 示例 8: combineReducers ---');
-const rootReducer = combineReducers({ counter: counterReducer, user: userReducer });
-const s8 = createStore(rootReducer, { counter: { count: 0 }, user: { name: '' } });
+const rootReducer = combineReducers({
+  counter: counterReducer,
+  user: userReducer,
+});
+const s8 = createStore(rootReducer, {
+  counter: { count: 0 },
+  user: { name: '' },
+});
 s8.dispatch({ type: 'INCREMENT' });
 s8.dispatch({ type: 'SET_USER', payload: { name: 'Alice' } });
 console.assert(s8.getState().counter.count === 1);
@@ -183,14 +213,21 @@ function createZustand(fn) {
   const listeners = new Set();
 
   const setState = (partial, replace) => {
-    const nextState = typeof partial === 'function' ? partial(state) : (replace ? partial : { ...state, ...partial });
+    const nextState = typeof partial === 'function'
+      ? partial(state)
+      : replace
+        ? partial
+        : { ...state, ...partial };
     if (nextState === state) return;
     state = nextState;
     listeners.forEach((l) => l(state));
   };
 
   const getState = () => state;
-  const subscribe = (listener) => { listeners.add(listener); return () => listeners.delete(listener); };
+  const subscribe = (listener) => {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  };
 
   state = fn(setState, getState);
 
@@ -217,12 +254,16 @@ console.log('  ✅ Zustand 通过\n');
 
 // ========== 示例 12: 选择器 ==========
 function createSelector(selectorFn) {
-  let lastResult; let
-    lastArgs;
+  let lastResult;
+  let lastArgs;
   return (...args) => {
     const result = selectorFn(...args);
-    if (lastArgs && args.length === lastArgs.length
-        && args.every((a, i) => a === lastArgs[i]) && result === lastResult) {
+    if (
+      lastArgs
+      && args.length === lastArgs.length
+      && args.every((a, i) => a === lastArgs[i])
+      && result === lastResult
+    ) {
       return lastResult;
     }
     lastResult = result;
@@ -234,9 +275,14 @@ function createSelector(selectorFn) {
 console.log('--- 示例 12: 选择器 ---');
 const selectCount = (s) => s.counter.count;
 const selectUser = (s) => s.user;
-const selectDisplayName = createSelector((s) => `${selectUser(s).name} (${selectCount(s)})`);
+const selectDisplayName = createSelector(
+  (s) => `${selectUser(s).name} (${selectCount(s)})`,
+);
 
-const s12 = createStore(rootReducer, { counter: { count: 0 }, user: { name: 'Alice' } });
+const s12 = createStore(rootReducer, {
+  counter: { count: 0 },
+  user: { name: 'Alice' },
+});
 console.assert(selectDisplayName(s12.getState()) === 'Alice (0)');
 s12.dispatch({ type: 'INCREMENT' });
 console.assert(selectDisplayName(s12.getState()) === 'Alice (1)');
@@ -250,11 +296,19 @@ function withUndoRedo(reducer, initialState) {
     switch (action.type) {
       case 'UNDO': {
         if (past.length === 0) return state;
-        return { past: past.slice(0, -1), present: past[past.length - 1], future: [present, ...future] };
+        return {
+          past: past.slice(0, -1),
+          present: past[past.length - 1],
+          future: [present, ...future],
+        };
       }
       case 'REDO': {
         if (future.length === 0) return state;
-        return { past: [...past, present], present: future[0], future: future.slice(1) };
+        return {
+          past: [...past, present],
+          present: future[0],
+          future: future.slice(1),
+        };
       }
       default: {
         const newPresent = reducer(present, action);
@@ -266,10 +320,11 @@ function withUndoRedo(reducer, initialState) {
 }
 
 console.log('--- 示例 13: 时间旅行 ---');
-const undoStore = createStore(
-  withUndoRedo(counterReducer, { count: 0 }),
-  { past: [], present: { count: 0 }, future: [] },
-);
+const undoStore = createStore(withUndoRedo(counterReducer, { count: 0 }), {
+  past: [],
+  present: { count: 0 },
+  future: [],
+});
 undoStore.dispatch({ type: 'INCREMENT' });
 undoStore.dispatch({ type: 'INCREMENT' });
 undoStore.dispatch({ type: 'INCREMENT' });
@@ -319,9 +374,12 @@ function createReactiveState(initialState) {
 }
 
 console.log('--- 示例 15: Proxy 响应式 ---');
-let proxyCount = 0; let
-  proxyGlobal = 0;
-const { state: rState, watch } = createReactiveState({ count: 0, name: 'Alice' });
+let proxyCount = 0;
+let proxyGlobal = 0;
+const { state: rState, watch } = createReactiveState({
+  count: 0,
+  name: 'Alice',
+});
 watch('count', () => proxyCount++);
 const { subscribe } = createReactiveState({ count: 0 });
 subscribe(() => proxyGlobal++);
@@ -352,7 +410,10 @@ function createMachine(config) {
   return {
     send,
     getState: () => currentState,
-    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+    subscribe(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
   };
 }
 
@@ -378,9 +439,16 @@ console.log('  ✅ 状态机通过\n');
 
 // ========== 示例 17: 原子状态 ==========
 class Atom {
-  constructor(key, value) { this.key = key; this._value = value; this._listeners = new Set(); this._dependents = new Set(); }
+  constructor(key, value) {
+    this.key = key;
+    this._value = value;
+    this._listeners = new Set();
+    this._dependents = new Set();
+  }
 
-  get value() { return this._value; }
+  get value() {
+    return this._value;
+  }
 
   set value(v) {
     if (Object.is(this._value, v)) return;
@@ -389,27 +457,54 @@ class Atom {
     this._dependents.forEach((s) => s._invalidate());
   }
 
-  subscribe(fn) { this._listeners.add(fn); return () => this._listeners.delete(fn); }
+  subscribe(fn) {
+    this._listeners.add(fn);
+    return () => this._listeners.delete(fn);
+  }
 }
 
 class Selector {
-  constructor(key, { get }) { this.key = key; this._get = get; this._value = undefined; this._listeners = new Set(); this._dirty = true; }
+  constructor(key, { get }) {
+    this.key = key;
+    this._get = get;
+    this._value = undefined;
+    this._listeners = new Set();
+    this._dirty = true;
+  }
 
   get value() {
-    if (this._dirty) { this._value = this._get({ get: (a) => { a._dependents.add(this); return a.value; } }); this._dirty = false; }
+    if (this._dirty) {
+      this._value = this._get({
+        get: (a) => {
+          a._dependents.add(this);
+          return a.value;
+        },
+      });
+      this._dirty = false;
+    }
     return this._value;
   }
 
-  _invalidate() { this._dirty = true; this._listeners.forEach((fn) => fn(this.value)); }
+  _invalidate() {
+    this._dirty = true;
+    this._listeners.forEach((fn) => fn(this.value));
+  }
 
-  subscribe(fn) { this._listeners.add(fn); return () => this._listeners.delete(fn); }
+  subscribe(fn) {
+    this._listeners.add(fn);
+    return () => this._listeners.delete(fn);
+  }
 }
 
 console.log('--- 示例 17: 原子状态 ---');
 const countAtom = new Atom('count', 0);
-const doubleSel = new Selector('double', { get: ({ get }) => get(countAtom) * 2 });
+const doubleSel = new Selector('double', {
+  get: ({ get }) => get(countAtom) * 2,
+});
 let selValue = 0;
-doubleSel.subscribe((v) => { selValue = v; });
+doubleSel.subscribe((v) => {
+  selValue = v;
+});
 countAtom.value = 5;
 console.assert(selValue === 10, 'Selector 应自动更新');
 countAtom.value = 10;
@@ -420,23 +515,44 @@ console.log('  ✅ 原子状态通过\n');
 function todoReducer(state = { todos: [], filter: 'all', nextId: 1 }, action) {
   switch (action.type) {
     case 'ADD_TODO':
-      return { ...state, todos: [...state.todos, { ...action.payload, id: state.nextId }], nextId: state.nextId + 1 };
+      return {
+        ...state,
+        todos: [...state.todos, { ...action.payload, id: state.nextId }],
+        nextId: state.nextId + 1,
+      };
     case 'TOGGLE_TODO':
-      return { ...state, todos: state.todos.map((t) => (t.id === action.payload ? { ...t, done: !t.done } : t)) };
+      return {
+        ...state,
+        todos: state.todos.map((t) => (t.id === action.payload ? { ...t, done: !t.done } : t)),
+      };
     case 'DELETE_TODO':
-      return { ...state, todos: state.todos.filter((t) => t.id !== action.payload) };
+      return {
+        ...state,
+        todos: state.todos.filter((t) => t.id !== action.payload),
+      };
     case 'SET_FILTER':
       return { ...state, filter: action.payload };
     case 'CLEAR_COMPLETED':
       return { ...state, todos: state.todos.filter((t) => !t.done) };
-    default: return state;
+    default:
+      return state;
   }
 }
 
 console.log('--- 示例 18: Todo 应用 ---');
-const todoStore = createStore(todoReducer, { todos: [], filter: 'all', nextId: 1 });
-todoStore.dispatch({ type: 'ADD_TODO', payload: { text: '学习 Redux', done: false } });
-todoStore.dispatch({ type: 'ADD_TODO', payload: { text: '学习 Zustand', done: false } });
+const todoStore = createStore(todoReducer, {
+  todos: [],
+  filter: 'all',
+  nextId: 1,
+});
+todoStore.dispatch({
+  type: 'ADD_TODO',
+  payload: { text: '学习 Redux', done: false },
+});
+todoStore.dispatch({
+  type: 'ADD_TODO',
+  payload: { text: '学习 Zustand', done: false },
+});
 todoStore.dispatch({ type: 'TOGGLE_TODO', payload: 1 });
 console.assert(todoStore.getState().todos.length === 2);
 console.assert(todoStore.getState().todos[0].done === true);
@@ -451,12 +567,20 @@ const useCart = createZustand((set, get) => ({
   items: [],
   addItem: (item) => set((state) => {
     const existing = state.items.find((i) => i.id === item.id);
-    if (existing) return { items: state.items.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i)) };
+    if (existing) {
+      return {
+        items: state.items.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i)),
+      };
+    }
     return { items: [...state.items, { ...item, qty: 1 }] };
   }),
   removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-  get subtotal() { return get().items.reduce((sum, i) => sum + i.price * i.qty, 0); },
-  get itemCount() { return get().items.reduce((sum, i) => sum + i.qty, 0); },
+  get subtotal() {
+    return get().items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  },
+  get itemCount() {
+    return get().items.reduce((sum, i) => sum + i.qty, 0);
+  },
 }));
 
 console.log('--- 示例 19: Zustand 购物车 ---');
@@ -521,12 +645,15 @@ const app = createModernStore({
   },
 });
 
-let authChanged = 0; let
-  globalChanged = 0;
+let authChanged = 0;
+let globalChanged = 0;
 app.subscribe('auth', () => authChanged++);
 app.subscribe(() => globalChanged++);
 
-app.dispatch({ type: 'auth/LOGIN', payload: { user: { name: 'Alice' }, token: 'abc' } });
+app.dispatch({
+  type: 'auth/LOGIN',
+  payload: { user: { name: 'Alice' }, token: 'abc' },
+});
 console.assert(authChanged === 1, 'auth 应触发 1 次');
 console.assert(globalChanged === 1, '全局应触发 1 次');
 console.assert(app.getState().auth.user.name === 'Alice');

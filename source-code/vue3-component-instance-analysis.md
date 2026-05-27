@@ -20,6 +20,7 @@ renderer.ts (vnode → DOM patch)
 ```
 
 之前已精读：
+
 1. ✅ Vue 3 响应式系统 (reactive/effect/ref/dep)
 2. ✅ Vue 3 Scheduler (三队列 + 微任务调度)
 3. ✅ React Fiber / Hooks / Diff
@@ -37,59 +38,59 @@ renderer.ts (vnode → DOM patch)
 ```typescript
 export interface ComponentInternalInstance {
   // === 身份标识 ===
-  uid: number                          // 全局递增 ID (let uid = 0, uid++)
-  type: ConcreteComponent              // 组件定义对象 (Options API 对象 或 setup 函数)
-  parent: ComponentInternalInstance | null  // 父组件实例 (树形结构)
-  root: ComponentInternalInstance      // 根组件实例 (用于 provide/inject 向上查找)
-  appContext: AppContext               // 应用级上下文 (全局组件/指令/配置)
+  uid: number; // 全局递增 ID (let uid = 0, uid++)
+  type: ConcreteComponent; // 组件定义对象 (Options API 对象 或 setup 函数)
+  parent: ComponentInternalInstance | null; // 父组件实例 (树形结构)
+  root: ComponentInternalInstance; // 根组件实例 (用于 provide/inject 向上查找)
+  appContext: AppContext; // 应用级上下文 (全局组件/指令/配置)
 
   // === VNode 关系 ===
-  vnode: VNode                         // 父组件 vnode 树中代表自己的节点
-  next: VNode | null                   // 更新时：父组件传来的新 vnode (双缓冲)
-  subTree: VNode                       // 自己的 render 函数返回的 vnode 子树
+  vnode: VNode; // 父组件 vnode 树中代表自己的节点
+  next: VNode | null; // 更新时：父组件传来的新 vnode (双缓冲)
+  subTree: VNode; // 自己的 render 函数返回的 vnode 子树
 
   // === 响应式联动 (核心!) ===
-  effect: ReactiveEffect               // ReactiveEffect 实例 (连接 @vue/reactivity)
-  update: () => void                   // 强制更新函数 (effect.run 的包装)
-  job: SchedulerJob                    // 调度器任务 (传给 scheduler 的 SchedulerJob)
+  effect: ReactiveEffect; // ReactiveEffect 实例 (连接 @vue/reactivity)
+  update: () => void; // 强制更新函数 (effect.run 的包装)
+  job: SchedulerJob; // 调度器任务 (传给 scheduler 的 SchedulerJob)
 
   // === 渲染 ===
-  render: InternalRenderFunction | null  // 渲染函数 (setup 返回 或 template 编译)
-  ssrRender?: Function | null          // SSR 渲染函数
+  render: InternalRenderFunction | null; // 渲染函数 (setup 返回 或 template 编译)
+  ssrRender?: Function | null; // SSR 渲染函数
 
   // === provide/inject ===
-  provides: Data                       // 提供的数据 (原型链继承 parent.provides)
+  provides: Data; // 提供的数据 (原型链继承 parent.provides)
 
   // === EffectScope (自动清理) ===
-  scope: EffectScope                   // 响应式作用域 (组件卸载时自动 stop 所有 effect)
+  scope: EffectScope; // 响应式作用域 (组件卸载时自动 stop 所有 effect)
 
   // === 代理系统 ===
-  proxy: ComponentPublicInstance | null  // 公开代理 (this 指向的对象)
-  exposed: Record<string, any> | null    // expose() 暴露的属性
-  exposeProxy: Record<string, any> | null  // 暴露属性的代理
-  withProxy: ComponentPublicInstance | null  // runtime-compiled render 用的 withProxy
-  ctx: Data                            // 代理目标对象 (props/data/computed/methods 都挂这里)
+  proxy: ComponentPublicInstance | null; // 公开代理 (this 指向的对象)
+  exposed: Record<string, any> | null; // expose() 暴露的属性
+  exposeProxy: Record<string, any> | null; // 暴露属性的代理
+  withProxy: ComponentPublicInstance | null; // runtime-compiled render 用的 withProxy
+  ctx: Data; // 代理目标对象 (props/data/computed/methods 都挂这里)
 
   // === 状态 ===
-  data: Data                           // data() 返回的响应式对象
-  props: Data                          // 归一化的 props
-  attrs: Data                          // 未声明的 attrs (透传)
-  slots: InternalSlots                 // 插槽
-  refs: Data                           // template refs
-  setupState: Data                     // setup() 返回的响应式包装对象 (proxyRefs)
-  setupContext: SetupContext | null    // setup 的第二个参数 { attrs, slots, emit, expose }
+  data: Data; // data() 返回的响应式对象
+  props: Data; // 归一化的 props
+  attrs: Data; // 未声明的 attrs (透传)
+  slots: InternalSlots; // 插槽
+  refs: Data; // template refs
+  setupState: Data; // setup() 返回的响应式包装对象 (proxyRefs)
+  setupContext: SetupContext | null; // setup 的第二个参数 { attrs, slots, emit, expose }
 
   // === 生命周期钩子 (缩写) ===
-  isMounted: boolean                   // 是否已挂载
-  isUnmounted: boolean                 // 是否已卸载
-  bc: null  // beforeCreate
-  c: null   // created
-  bm: null  // beforeMount
-  m: null   // mounted
-  bu: null  // beforeUpdate
-  u: null   // updated
-  um: null  // beforeUnmount
-  bum: null // unmounted
+  isMounted: boolean; // 是否已挂载
+  isUnmounted: boolean; // 是否已卸载
+  bc: null; // beforeCreate
+  c: null; // created
+  bm: null; // beforeMount
+  m: null; // mounted
+  bu: null; // beforeUpdate
+  u: null; // updated
+  um: null; // beforeUnmount
+  bum: null; // unmounted
   // ... 更多钩子
 }
 ```
@@ -132,37 +133,37 @@ export interface ComponentInternalInstance {
 ## 三、实例创建 — createComponentInstance
 
 ```typescript
-let uid = 0  // 全局自增计数器
+let uid = 0; // 全局自增计数器
 
 export function createComponentInstance(
   vnode: VNode,
   parent: ComponentInternalInstance | null,
   suspense: SuspenseBoundary | null,
 ): ComponentInternalInstance {
-  const type = vnode.type as ConcreteComponent
+  const type = vnode.type as ConcreteComponent;
 
   // 继承父组件的 appContext，或从根 vnode 获取
   const appContext =
-    (parent ? parent.appContext : vnode.appContext) || emptyAppContext
+    (parent ? parent.appContext : vnode.appContext) || emptyAppContext;
 
   const instance: ComponentInternalInstance = {
-    uid: uid++,                    // 全局唯一 ID
-    vnode,                          // 关联的 vnode
-    type,                           // 组件定义
-    parent,                         // 父实例
-    appContext,                     // 应用上下文
-    root: null!,                    // 稍后设置
-    next: null,                     // 更新时的新 vnode
-    subTree: null!,                 // 稍后设置
-    effect: null!,                  // 稍后设置
-    update: null!,                  // 稍后设置
-    job: null!,                     // 稍后设置
+    uid: uid++, // 全局唯一 ID
+    vnode, // 关联的 vnode
+    type, // 组件定义
+    parent, // 父实例
+    appContext, // 应用上下文
+    root: null!, // 稍后设置
+    next: null, // 更新时的新 vnode
+    subTree: null!, // 稍后设置
+    effect: null!, // 稍后设置
+    update: null!, // 稍后设置
+    job: null!, // 稍后设置
 
     // 🎯 EffectScope: detached=true 表示独立作用域，不受外部 scope 影响
     scope: new EffectScope(true /* detached */),
 
-    render: null,                   // 稍后由 setup/compile 设置
-    proxy: null,                    // 稍后由 setupStatefulComponent 设置
+    render: null, // 稍后由 setup/compile 设置
+    proxy: null, // 稍后由 setupStatefulComponent 设置
     exposed: null,
     exposeProxy: null,
     withProxy: null,
@@ -172,10 +173,10 @@ export function createComponentInstance(
     provides: parent ? parent.provides : Object.create(appContext.provides),
 
     // useId 追踪
-    ids: parent ? parent.ids : ['', 0, 0],
+    ids: parent ? parent.ids : ["", 0, 0],
 
-    accessCache: null!,             // 属性访问缓存 (避免 hasOwnProperty 调用)
-    renderCache: [],                // 渲染缓存 (内联处理器等)
+    accessCache: null!, // 属性访问缓存 (避免 hasOwnProperty 调用)
+    renderCache: [], // 渲染缓存 (内联处理器等)
 
     // 局部注册的组件/指令
     components: null,
@@ -185,9 +186,9 @@ export function createComponentInstance(
     propsOptions: normalizePropsOptions(type, appContext),
     emitsOptions: normalizeEmitsOptions(type, appContext),
 
-    emit: null!,                    // 稍后 bind
-    emitted: null,                  // .once 事件追踪
-    propsDefaults: EMPTY_OBJ,       // props 默认值缓存
+    emit: null!, // 稍后 bind
+    emitted: null, // .once 事件追踪
+    propsDefaults: EMPTY_OBJ, // props 默认值缓存
     inheritAttrs: type.inheritAttrs,
 
     // 状态 (初始为空对象)
@@ -210,41 +211,52 @@ export function createComponentInstance(
     isMounted: false,
     isUnmounted: false,
     isDeactivated: false,
-    bc: null, c: null, bm: null, m: null,
-    bu: null, u: null, um: null, bum: null,
-    da: null, a: null, rtg: null, rtc: null, ec: null, sp: null,
-  }
+    bc: null,
+    c: null,
+    bm: null,
+    m: null,
+    bu: null,
+    u: null,
+    um: null,
+    bum: null,
+    da: null,
+    a: null,
+    rtg: null,
+    rtc: null,
+    ec: null,
+    sp: null,
+  };
 
   // ctx 是代理目标对象
   if (__DEV__) {
-    instance.ctx = createDevRenderContext(instance)
+    instance.ctx = createDevRenderContext(instance);
   } else {
-    instance.ctx = { _: instance }  // _ 指向 instance 自身 (内部访问)
+    instance.ctx = { _: instance }; // _ 指向 instance 自身 (内部访问)
   }
 
   // root 指向自己或父组件的 root
-  instance.root = parent ? parent.root : instance
+  instance.root = parent ? parent.root : instance;
 
   // bind emit: emit(instance, eventName, ...args)
-  instance.emit = emit.bind(null, instance)
+  instance.emit = emit.bind(null, instance);
 
   // Custom Element 特殊处理
   if (vnode.ce) {
-    vnode.ce(instance)
+    vnode.ce(instance);
   }
 
-  return instance
+  return instance;
 }
 ```
 
 ### 3.1 关键设计模式
 
-| 设计 | 源码体现 | 目的 |
-|------|----------|------|
-| **原型链继承** | `provides: parent ? parent.provides : Object.create(appContext.provides)` | provide/inject 向上查找 |
-| **空对象共享** | `ctx: EMPTY_OBJ, data: EMPTY_OBJ` 等 | 避免每个实例创建空对象，节省内存 |
-| **延迟初始化** | `root: null!`, `subTree: null!` | 创建时无法确定，稍后同步设置 |
-| **EffectScope 隔离** | `new EffectScope(true)` | 组件卸载时一键清理所有响应式副作用 |
+| 设计                 | 源码体现                                                                  | 目的                               |
+| -------------------- | ------------------------------------------------------------------------- | ---------------------------------- |
+| **原型链继承**       | `provides: parent ? parent.provides : Object.create(appContext.provides)` | provide/inject 向上查找            |
+| **空对象共享**       | `ctx: EMPTY_OBJ, data: EMPTY_OBJ` 等                                      | 避免每个实例创建空对象，节省内存   |
+| **延迟初始化**       | `root: null!`, `subTree: null!`                                           | 创建时无法确定，稍后同步设置       |
+| **EffectScope 隔离** | `new EffectScope(true)`                                                   | 组件卸载时一键清理所有响应式副作用 |
 
 ---
 
@@ -255,15 +267,16 @@ export function createComponentInstance(
 ### 4.1 currentInstance 是什么？
 
 ```typescript
-export let currentInstance: ComponentInternalInstance | null = null
+export let currentInstance: ComponentInternalInstance | null = null;
 
 export const getCurrentInstance: () => ComponentInternalInstance | null = () =>
-  currentInstance || currentRenderingInstance
+  currentInstance || currentRenderingInstance;
 ```
 
 **`currentInstance` 是一个全局变量**，指向当前正在执行 setup 的组件实例。
 
 **为什么需要它？**
+
 - `ref()` / `reactive()` / `computed()` / `watch()` 等 Composition API 需要知道当前属于哪个组件
 - 这样组件卸载时才能自动清理这些 effect
 
@@ -271,14 +284,15 @@ export const getCurrentInstance: () => ComponentInternalInstance | null = () =>
 
 ```typescript
 export const setCurrentInstance = (instance: ComponentInternalInstance) => {
-  const prev = currentInstance           // 保存上一个实例
-  internalSetCurrentInstance(instance)    // 设置为当前实例
-  instance.scope.on()                     // 🎯 开启 EffectScope 追踪
-  return (): void => {                    // 返回恢复函数
-    instance.scope.off()                  // 关闭 EffectScope 追踪
-    internalSetCurrentInstance(prev)      // 恢复上一个实例
-  }
-}
+  const prev = currentInstance; // 保存上一个实例
+  internalSetCurrentInstance(instance); // 设置为当前实例
+  instance.scope.on(); // 🎯 开启 EffectScope 追踪
+  return (): void => {
+    // 返回恢复函数
+    instance.scope.off(); // 关闭 EffectScope 追踪
+    internalSetCurrentInstance(prev); // 恢复上一个实例
+  };
+};
 ```
 
 ### 4.3 执行流程模拟
@@ -323,18 +337,19 @@ if (__SSR__) {
   // SSR 环境下可能有多个 Vue 副本 (runtime + server-renderer)
   // 使用全局注册器确保所有副本的 currentInstance 同步
   const registerGlobalSetter = (key: string, setter: Setter) => {
-    let setters: Setter[]
-    if (!(setters = g[key])) setters = g[key] = []
-    setters.push(setter)
+    let setters: Setter[];
+    if (!(setters = g[key])) setters = g[key] = [];
+    setters.push(setter);
     return (v: any) => {
-      if (setters.length > 1) setters.forEach(set => set(v))  // 通知所有副本
-      else setters[0](v)
-    }
-  }
+      if (setters.length > 1)
+        setters.forEach((set) => set(v)); // 通知所有副本
+      else setters[0](v);
+    };
+  };
   internalSetCurrentInstance = registerGlobalSetter(
     `__VUE_INSTANCE_SETTERS__`,
-    v => (currentInstance = v),
-  )
+    (v) => (currentInstance = v),
+  );
 }
 ```
 
@@ -350,24 +365,24 @@ export function setupComponent(
   isSSR = false,
   optimized = false,
 ): Promise<void> | undefined {
-  isSSR && setInSSRSetupState(isSSR)
+  isSSR && setInSSRSetupState(isSSR);
 
-  const { props, children } = instance.vnode
-  const isStateful = isStatefulComponent(instance)
+  const { props, children } = instance.vnode;
+  const isStateful = isStatefulComponent(instance);
 
   // 1. 初始化 props
-  initProps(instance, props, isStateful, isSSR)
+  initProps(instance, props, isStateful, isSSR);
 
   // 2. 初始化 slots
-  initSlots(instance, children, optimized || isSSR)
+  initSlots(instance, children, optimized || isSSR);
 
   // 3. 有状态组件 → 调用 setupStatefulComponent
   const setupResult = isStateful
     ? setupStatefulComponent(instance, isSSR)
-    : undefined  // 函数式组件无 setup
+    : undefined; // 函数式组件无 setup
 
-  isSSR && setInSSRSetupState(false)
-  return setupResult
+  isSSR && setInSSRSetupState(false);
+  return setupResult;
 }
 ```
 
@@ -469,15 +484,15 @@ function setupStatefulComponent(
 
 ### 6.1 逐行关键分析
 
-| 行 | 代码 | 为什么重要 |
-|----|------|-----------|
-| `pauseTracking()` | 暂停 effect 追踪 | setup 中的 `ref()` 等不应立即触发 effect，只在 render 时追踪 |
-| `setup.length > 1` | 检查参数数量 | 如果 setup 只接收 props，不创建 context 对象 (性能优化) |
-| `setCurrentInstance(instance)` | 压栈 | 让 Composition API 知道当前组件 |
-| `shallowReadonly(instance.props)` | 浅只读 | 开发环境防止直接修改 props |
-| `callWithErrorHandling` | 错误包裹 | setup 错误统一处理 (errorCaptured 钩子) |
-| `reset()` | 弹栈 | 恢复父实例，保证嵌套组件正确性 |
-| `resetTracking()` | 恢复追踪 | setup 完成后恢复依赖收集 |
+| 行                                | 代码             | 为什么重要                                                   |
+| --------------------------------- | ---------------- | ------------------------------------------------------------ |
+| `pauseTracking()`                 | 暂停 effect 追踪 | setup 中的 `ref()` 等不应立即触发 effect，只在 render 时追踪 |
+| `setup.length > 1`                | 检查参数数量     | 如果 setup 只接收 props，不创建 context 对象 (性能优化)      |
+| `setCurrentInstance(instance)`    | 压栈             | 让 Composition API 知道当前组件                              |
+| `shallowReadonly(instance.props)` | 浅只读           | 开发环境防止直接修改 props                                   |
+| `callWithErrorHandling`           | 错误包裹         | setup 错误统一处理 (errorCaptured 钩子)                      |
+| `reset()`                         | 弹栈             | 恢复父实例，保证嵌套组件正确性                               |
+| `resetTracking()`                 | 恢复追踪         | setup 完成后恢复依赖收集                                     |
 
 ### 6.2 setup.length > 1 的性能优化
 
@@ -508,27 +523,25 @@ export function handleSetupResult(
   if (isFunction(setupResult)) {
     // === 情况 1: setup 返回渲染函数 ===
     // 常见于手写 render 函数或 <script setup> 编译结果
-    instance.render = setupResult as InternalRenderFunction
-
+    instance.render = setupResult as InternalRenderFunction;
   } else if (isObject(setupResult)) {
     // === 情况 2: setup 返回绑定对象 ===
     // 最常见: return { count, doubled, increment }
 
     // 🎯 proxyRefs: 自动解包 ref
     // setupState.count 等价于 setupResult.count.value (如果 count 是 ref)
-    instance.setupState = proxyRefs(setupResult)
+    instance.setupState = proxyRefs(setupResult);
 
     if (__DEV__) {
-      exposeSetupStateOnRenderContext(instance)
-      instance.devtoolsRawSetupState = setupResult  // DevTools 调试
+      exposeSetupStateOnRenderContext(instance);
+      instance.devtoolsRawSetupState = setupResult; // DevTools 调试
     }
-
   } else if (__DEV__ && setupResult !== undefined) {
-    warn(`setup() should return an object...`)
+    warn(`setup() should return an object...`);
   }
 
   // 继续后续设置 (template 编译 / Options API)
-  finishComponentSetup(instance, isSSR)
+  finishComponentSetup(instance, isSSR);
 }
 ```
 
@@ -536,34 +549,37 @@ export function handleSetupResult(
 
 ```typescript
 // proxyRefs 源码 (来自 @vue/reactivity)
-export function proxyRefs<T extends object>(objectWithRefs: T): ShallowUnwrapRef<T> {
+export function proxyRefs<T extends object>(
+  objectWithRefs: T,
+): ShallowUnwrapRef<T> {
   return isReactive(objectWithRefs)
     ? objectWithRefs
-    : new Proxy(objectWithRefs, proxyRefsHandler)
+    : new Proxy(objectWithRefs, proxyRefsHandler);
 }
 
 const proxyRefsHandler: ProxyHandler<any> = {
   get(target, key, receiver) {
     // 如果是 ref，返回 .value；否则直接返回值
-    return isRef(target[key]) ? target[key].value : target[key]
+    return isRef(target[key]) ? target[key].value : target[key];
   },
   set(target, key, value, receiver) {
-    const existing = target[key]
+    const existing = target[key];
     if (isRef(existing) && !isRef(value)) {
       // 如果目标是 ref，设置 .value
-      existing.value = value
-      return true
+      existing.value = value;
+      return true;
     }
-    return Reflect.set(target, key, value, receiver)
-  }
-}
+    return Reflect.set(target, key, value, receiver);
+  },
+};
 ```
 
 **实际效果**:
+
 ```typescript
 // setup 中:
-const count = ref(0)
-return { count }
+const count = ref(0);
+return { count };
 
 // 模板中: {{ count }}  ← 自动解包为 count.value
 // setupState.count   ← 自动解包为 0
@@ -638,31 +654,31 @@ export function finishComponentSetup(
 ```typescript
 // applyOptions 内部流程 (简化):
 function applyOptions(instance) {
-  const options = instance.type
+  const options = instance.type;
 
   // data() → reactive(data()) → instance.data
   if (options.data) {
-    const data = options.data.call(publicThis)
-    instance.data = reactive(data)
+    const data = options.data.call(publicThis);
+    instance.data = reactive(data);
   }
 
   // computed → effect computed → 挂载到 ctx
   if (options.computed) {
     for (const key in options.computed) {
-      const getter = options.computed[key]
-      const e = computed(getter.bind(publicThis))
+      const getter = options.computed[key];
+      const e = computed(getter.bind(publicThis));
       Object.defineProperty(ctx, key, {
         get: () => e.value,
         enumerable: true,
-        configurable: true
-      })
+        configurable: true,
+      });
     }
   }
 
   // methods → 绑定 this
   if (options.methods) {
     for (const key in options.methods) {
-      ctx[key] = options.methods[key].bind(publicThis)
+      ctx[key] = options.methods[key].bind(publicThis);
     }
   }
 
@@ -680,26 +696,29 @@ export function createSetupContext(
   instance: ComponentInternalInstance,
 ): SetupContext {
   // expose 函数: 控制向父组件暴露什么
-  const expose: SetupContext['expose'] = exposed => {
-    instance.exposed = exposed || {}
-  }
+  const expose: SetupContext["expose"] = (exposed) => {
+    instance.exposed = exposed || {};
+  };
 
   if (__DEV__) {
     // 开发环境: 使用 getter 延迟创建 Proxy (避免 test-utils 覆盖)
-    let attrsProxy: Attrs
-    let slotsProxy: Slots
+    let attrsProxy: Attrs;
+    let slotsProxy: Slots;
     return Object.freeze({
       get attrs() {
-        return attrsProxy || (attrsProxy = new Proxy(instance.attrs, attrsProxyHandlers))
+        return (
+          attrsProxy ||
+          (attrsProxy = new Proxy(instance.attrs, attrsProxyHandlers))
+        );
       },
       get slots() {
-        return slotsProxy || (slotsProxy = getSlotsProxy(instance))
+        return slotsProxy || (slotsProxy = getSlotsProxy(instance));
       },
       get emit() {
-        return (event: string, ...args: any[]) => instance.emit(event, ...args)
+        return (event: string, ...args: any[]) => instance.emit(event, ...args);
       },
       expose,
-    })
+    });
   } else {
     // 生产环境: 直接创建
     return {
@@ -707,7 +726,7 @@ export function createSetupContext(
       slots: instance.slots,
       emit: instance.emit,
       expose,
-    }
+    };
   }
 }
 ```
@@ -718,22 +737,29 @@ export function createSetupContext(
 const attrsProxyHandlers = __DEV__
   ? {
       get(target: Data, key: string) {
-        markAttrsAccessed()              // 标记 attrs 被访问
-        track(target, TrackOpTypes.GET, '')  // 依赖收集
-        return target[key]
+        markAttrsAccessed(); // 标记 attrs 被访问
+        track(target, TrackOpTypes.GET, ""); // 依赖收集
+        return target[key];
       },
-      set() { warn(`attrs is readonly.`); return false },
-      deleteProperty() { warn(`attrs is readonly.`); return false },
+      set() {
+        warn(`attrs is readonly.`);
+        return false;
+      },
+      deleteProperty() {
+        warn(`attrs is readonly.`);
+        return false;
+      },
     }
   : {
       get(target: Data, key: string) {
-        track(target, TrackOpTypes.GET, '')  // 生产环境只追踪
-        return target[key]
+        track(target, TrackOpTypes.GET, ""); // 生产环境只追踪
+        return target[key];
       },
-    }
+    };
 ```
 
 **为什么 attrs 需要 Proxy？**
+
 - attrs 可能随父组件更新而变化
 - 访问 attrs 时需要触发依赖收集，这样父组件更新时子组件能正确重新渲染
 
@@ -744,7 +770,7 @@ const attrsProxyHandlers = __DEV__
 ```typescript
 export function getComponentPublicInstance(
   instance: ComponentInternalInstance,
-): ComponentPublicInstance | ComponentInternalInstance['exposed'] | null {
+): ComponentPublicInstance | ComponentInternalInstance["exposed"] | null {
   if (instance.exposed) {
     // 有 expose → 返回 exposeProxy
     return (
@@ -752,19 +778,19 @@ export function getComponentPublicInstance(
       (instance.exposeProxy = new Proxy(proxyRefs(markRaw(instance.exposed)), {
         get(target, key: string) {
           if (key in target) {
-            return target[key]          // 暴露的属性
+            return target[key]; // 暴露的属性
           } else if (key in publicPropertiesMap) {
-            return publicPropertiesMap[key](instance)  // $emit/$refs 等
+            return publicPropertiesMap[key](instance); // $emit/$refs 等
           }
         },
         has(target, key: string) {
-          return key in target || key in publicPropertiesMap
+          return key in target || key in publicPropertiesMap;
         },
       }))
-    )
+    );
   } else {
     // 无 expose → 返回完整 proxy (默认行为)
-    return instance.proxy
+    return instance.proxy;
   }
 }
 ```
@@ -921,16 +947,16 @@ renderer patch (renderer.ts)
 
 ## 十三、关键设计模式总结
 
-| 模式 | 在 component.ts 中的体现 | 好处 |
-|------|------------------------|------|
-| **栈式上下文** | `setCurrentInstance` 保存 prev，返回 reset 函数 | 嵌套组件不互相污染 |
-| **延迟初始化** | `root: null!` → 创建后同步设置 | 避免循环依赖 |
-| **原型链继承** | `provides: parent ? parent.provides : ...` | provide/inject 天然支持 |
-| **空对象共享** | `EMPTY_OBJ` 作为默认值 | 减少内存分配 |
-| **EffectScope 隔离** | `new EffectScope(true)` + scope.on/off | 组件卸载一键清理 |
-| **Proxy 分层** | proxy / exposeProxy / withProxy / attrsProxy | 不同场景不同代理行为 |
-| **性能优化** | `setup.length > 1` 才创建 context | 减少不必要的对象创建 |
-| **错误边界** | `callWithErrorHandling` 包裹 setup | 统一错误处理 + errorCaptured |
+| 模式                 | 在 component.ts 中的体现                        | 好处                         |
+| -------------------- | ----------------------------------------------- | ---------------------------- |
+| **栈式上下文**       | `setCurrentInstance` 保存 prev，返回 reset 函数 | 嵌套组件不互相污染           |
+| **延迟初始化**       | `root: null!` → 创建后同步设置                  | 避免循环依赖                 |
+| **原型链继承**       | `provides: parent ? parent.provides : ...`      | provide/inject 天然支持      |
+| **空对象共享**       | `EMPTY_OBJ` 作为默认值                          | 减少内存分配                 |
+| **EffectScope 隔离** | `new EffectScope(true)` + scope.on/off          | 组件卸载一键清理             |
+| **Proxy 分层**       | proxy / exposeProxy / withProxy / attrsProxy    | 不同场景不同代理行为         |
+| **性能优化**         | `setup.length > 1` 才创建 context               | 减少不必要的对象创建         |
+| **错误边界**         | `callWithErrorHandling` 包裹 setup              | 统一错误处理 + errorCaptured |
 
 ---
 
@@ -987,108 +1013,115 @@ A: 1. setup 返回 Promise → isAsyncSetup = true
 ```typescript
 // === 简化版 Vue 3 组件实例系统 ===
 
-let currentInstance = null
-let uid = 0
+let currentInstance = null;
+let uid = 0;
 
 class ComponentInstance {
   constructor(vnode, parent) {
-    this.uid = uid++
-    this.vnode = vnode
-    this.type = vnode.type
-    this.parent = parent
-    this.props = {}
-    this.setupState = {}
-    this.render = null
-    this.proxy = null
-    this.exposed = null
-    this.scope = new Set()  // 简化: effect 集合
+    this.uid = uid++;
+    this.vnode = vnode;
+    this.type = vnode.type;
+    this.parent = parent;
+    this.props = {};
+    this.setupState = {};
+    this.render = null;
+    this.proxy = null;
+    this.exposed = null;
+    this.scope = new Set(); // 简化: effect 集合
   }
 }
 
 // setCurrentInstance — 栈式切换
 function setCurrentInstance(instance) {
-  const prev = currentInstance
-  currentInstance = instance
-  return () => { currentInstance = prev }
+  const prev = currentInstance;
+  currentInstance = instance;
+  return () => {
+    currentInstance = prev;
+  };
 }
 
 // ref — 自动注册到当前组件 scope
 function ref(value) {
-  const r = { value, _isRef: true }
+  const r = { value, _isRef: true };
   if (currentInstance) {
-    currentInstance.scope.add(r)  // 注册到组件
+    currentInstance.scope.add(r); // 注册到组件
   }
-  return r
+  return r;
 }
 
 // proxyRefs — 自动解包
 function proxyRefs(obj) {
   return new Proxy(obj, {
     get(target, key) {
-      const val = target[key]
-      return val?._isRef ? val.value : val
+      const val = target[key];
+      return val?._isRef ? val.value : val;
     },
     set(target, key, value) {
-      const existing = target[key]
-      if (existing?._isRef) { existing.value = value; return true }
-      target[key] = value
-      return true
-    }
-  })
+      const existing = target[key];
+      if (existing?._isRef) {
+        existing.value = value;
+        return true;
+      }
+      target[key] = value;
+      return true;
+    },
+  });
 }
 
 // setupComponent — 简化版
 function setupComponent(instance) {
-  const { setup } = instance.type
-  if (!setup) return
+  const { setup } = instance.type;
+  if (!setup) return;
 
-  const reset = setCurrentInstance(instance)
+  const reset = setCurrentInstance(instance);
   const result = setup(instance.props, {
-    emit: (event, ...args) => console.log('emit:', event, args),
-    expose: (exposed) => { instance.exposed = exposed }
-  })
-  reset()
+    emit: (event, ...args) => console.log("emit:", event, args),
+    expose: (exposed) => {
+      instance.exposed = exposed;
+    },
+  });
+  reset();
 
   // 处理返回值
-  if (typeof result === 'function') {
-    instance.render = result
-  } else if (typeof result === 'object') {
-    instance.setupState = proxyRefs(result)
+  if (typeof result === "function") {
+    instance.render = result;
+  } else if (typeof result === "object") {
+    instance.setupState = proxyRefs(result);
   }
 
   // 创建代理
   instance.proxy = new Proxy(instance, {
     get(target, key) {
       // 优先级: setupState > props
-      if (key in target.setupState) return target.setupState[key]
-      if (key in target.props) return target.props[key]
-      return target[key]
-    }
-  })
+      if (key in target.setupState) return target.setupState[key];
+      if (key in target.props) return target.props[key];
+      return target[key];
+    },
+  });
 }
 
 // === 测试 ===
 const MyComponent = {
-  props: ['name'],
+  props: ["name"],
   setup(props) {
-    const count = ref(0)
-    const double = () => count.value * 2
+    const count = ref(0);
+    const double = () => count.value * 2;
 
     setTimeout(() => {
-      count.value++
-      console.log('count:', count.value, 'double:', double())
+      count.value++;
+      console.log("count:", count.value, "double:", double());
       // 模板中: count = 1 (自动解包), 不需要 .value
-    }, 100)
+    }, 100);
 
-    return { count, double }
-  }
-}
+    return { count, double };
+  },
+};
 
-const vnode = { type: MyComponent }
-const instance = new ComponentInstance(vnode, null)
-setupComponent(instance)
+const vnode = { type: MyComponent };
+const instance = new ComponentInstance(vnode, null);
+setupComponent(instance);
 
-console.log(instance.proxy.count)  // 0 (自动解包)
+console.log(instance.proxy.count); // 0 (自动解包)
 ```
 
 ---
@@ -1106,6 +1139,7 @@ console.log(instance.proxy.count)  // 0 (自动解包)
 ---
 
 **源码系列进度**:
+
 1. ✅ Vue 3 响应式系统 (Proxy + track/trigger + Link 双向链表)
 2. ✅ React Fiber 架构 (Fiber 节点 + 双缓冲 + Lane 模型)
 3. ✅ React Hooks 源码 (Hook 链表 + UpdateQueue + 调度)

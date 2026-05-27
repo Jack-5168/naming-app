@@ -3,7 +3,7 @@
  * 负责生活事件的录入、查询和关联分析
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export interface LifeEvent {
   id: number;
@@ -75,40 +75,42 @@ let autoIncrementId = 1;
 
 // 事件类型定义
 export const EVENT_TYPES = {
-  CAREER: 'career',
-  RELATIONSHIP: 'relationship',
-  HEALTH: 'health',
-  EDUCATION: 'education',
-  FINANCIAL: 'financial',
-  PERSONAL: 'personal',
-  FAMILY: 'family',
-  TRAVEL: 'travel',
-  OTHER: 'other',
+  CAREER: "career",
+  RELATIONSHIP: "relationship",
+  HEALTH: "health",
+  EDUCATION: "education",
+  FINANCIAL: "financial",
+  PERSONAL: "personal",
+  FAMILY: "family",
+  TRAVEL: "travel",
+  OTHER: "other",
 } as const;
 
 // 影响类型定义
 export const IMPACT_TYPES = {
-  POSITIVE: 'positive',
-  NEGATIVE: 'negative',
-  NEUTRAL: 'neutral',
+  POSITIVE: "positive",
+  NEGATIVE: "negative",
+  NEUTRAL: "neutral",
 } as const;
 
 // 人格维度定义
 export const DIMENSIONS = {
-  E: 'Extraversion', // 外向
-  I: 'Introversion', // 内向
-  N: 'Intuition', // 直觉
-  S: 'Sensing', // 感觉
-  T: 'Thinking', // 思考
-  F: 'Feeling', // 情感
-  J: 'Judging', // 判断
-  P: 'Perceiving', // 知觉
+  E: "Extraversion", // 外向
+  I: "Introversion", // 内向
+  N: "Intuition", // 直觉
+  S: "Sensing", // 感觉
+  T: "Thinking", // 思考
+  F: "Feeling", // 情感
+  J: "Judging", // 判断
+  P: "Perceiving", // 知觉
 } as const;
 
 /**
  * 创建生活事件
  */
-export async function createLifeEvent(params: CreateLifeEventParams): Promise<LifeEvent> {
+export async function createLifeEvent(
+  params: CreateLifeEventParams,
+): Promise<LifeEvent> {
   const id = autoIncrementId++;
 
   const event: LifeEvent = {
@@ -131,7 +133,7 @@ export async function createLifeEvent(params: CreateLifeEventParams): Promise<Li
 
   lifeEventsDB.set(id, event);
 
-  lifeEventEvents.emit('eventCreated', { event });
+  lifeEventEvents.emit("eventCreated", { event });
 
   return event;
 }
@@ -156,7 +158,9 @@ export async function getUserLifeEvents(
     offset?: number;
   },
 ): Promise<LifeEvent[]> {
-  let events = Array.from(lifeEventsDB.values()).filter((e) => e.userId === userId);
+  let events = Array.from(lifeEventsDB.values()).filter(
+    (e) => e.userId === userId,
+  );
 
   if (options?.startDate) {
     events = events.filter((e) => e.eventDate >= options.startDate!);
@@ -182,7 +186,10 @@ export async function getUserLifeEvents(
 /**
  * 更新生活事件
  */
-export async function updateLifeEvent(id: number, params: UpdateLifeEventParams): Promise<LifeEvent | null> {
+export async function updateLifeEvent(
+  id: number,
+  params: UpdateLifeEventParams,
+): Promise<LifeEvent | null> {
   const event = lifeEventsDB.get(id);
 
   if (!event) {
@@ -213,7 +220,7 @@ export async function updateLifeEvent(id: number, params: UpdateLifeEventParams)
 
   lifeEventsDB.set(id, event);
 
-  lifeEventEvents.emit('eventUpdated', { event });
+  lifeEventEvents.emit("eventUpdated", { event });
 
   return event;
 }
@@ -230,7 +237,7 @@ export async function deleteLifeEvent(id: number): Promise<boolean> {
 
   lifeEventsDB.delete(id);
 
-  lifeEventEvents.emit('eventDeleted', { eventId: id });
+  lifeEventEvents.emit("eventDeleted", { eventId: id });
 
   return true;
 }
@@ -238,7 +245,9 @@ export async function deleteLifeEvent(id: number): Promise<boolean> {
 /**
  * 分析生活事件影响
  */
-export async function analyzeLifeEvents(userId: number): Promise<LifeEventAnalysis> {
+export async function analyzeLifeEvents(
+  userId: number,
+): Promise<LifeEventAnalysis> {
   const events = await getUserLifeEvents(userId);
 
   // 按类型统计
@@ -250,9 +259,11 @@ export async function analyzeLifeEvents(userId: number): Promise<LifeEventAnalys
 
   // 按影响统计
   const eventsByImpact = {
-    positive: events.filter((e) => e.expectedImpact === 'positive').length,
-    negative: events.filter((e) => e.expectedImpact === 'negative').length,
-    neutral: events.filter((e) => e.expectedImpact === 'neutral' || !e.expectedImpact).length,
+    positive: events.filter((e) => e.expectedImpact === "positive").length,
+    negative: events.filter((e) => e.expectedImpact === "negative").length,
+    neutral: events.filter(
+      (e) => e.expectedImpact === "neutral" || !e.expectedImpact,
+    ).length,
   };
 
   // 影响趋势分析（按月）
@@ -262,13 +273,15 @@ export async function analyzeLifeEvents(userId: number): Promise<LifeEventAnalys
     eventCount: number;
   }> = [];
 
-  const eventsWithScore = events.filter((e) => e.actualImpactScore !== undefined);
+  const eventsWithScore = events.filter(
+    (e) => e.actualImpactScore !== undefined,
+  );
 
   if (eventsWithScore.length > 0) {
     const months = new Map<string, { total: number; count: number }>();
 
     for (const event of eventsWithScore) {
-      const period = `${event.eventDate.getFullYear()}-${String(event.eventDate.getMonth() + 1).padStart(2, '0')}`;
+      const period = `${event.eventDate.getFullYear()}-${String(event.eventDate.getMonth() + 1).padStart(2, "0")}`;
       const existing = months.get(period) || { total: 0, count: 0 };
 
       existing.total += event.actualImpactScore!;
@@ -326,33 +339,43 @@ export async function analyzeLifeEvents(userId: number): Promise<LifeEventAnalys
     const positiveRatio = eventsByImpact.positive / events.length;
 
     if (positiveRatio > 0.6) {
-      keyInsights.push('您的生活中积极事件占主导，显示出良好的生活状态和发展趋势。');
+      keyInsights.push(
+        "您的生活中积极事件占主导，显示出良好的生活状态和发展趋势。",
+      );
     } else if (positiveRatio < 0.3) {
-      keyInsights.push('近期挑战性事件较多，这可能是成长的契机，也需要注意心理调适。');
+      keyInsights.push(
+        "近期挑战性事件较多，这可能是成长的契机，也需要注意心理调适。",
+      );
     }
 
     // 找出最主要的事件类型
-    const topEventType = Object.entries(eventsByType).sort((a, b) => b[1] - a[1])[0];
+    const topEventType = Object.entries(eventsByType).sort(
+      (a, b) => b[1] - a[1],
+    )[0];
 
     if (topEventType) {
       const typeNames: Record<string, string> = {
-        career: '职业发展',
-        relationship: '人际关系',
-        health: '健康状况',
-        education: '学习成长',
-        financial: '财务状况',
-        personal: '个人发展',
-        family: '家庭生活',
-        travel: '旅行经历',
+        career: "职业发展",
+        relationship: "人际关系",
+        health: "健康状况",
+        education: "学习成长",
+        financial: "财务状况",
+        personal: "个人发展",
+        family: "家庭生活",
+        travel: "旅行经历",
       };
 
-      keyInsights.push(`${typeNames[topEventType[0]] || topEventType[0]}是您生活中的主要主题，共 ${topEventType[1]} 个事件。`);
+      keyInsights.push(
+        `${typeNames[topEventType[0]] || topEventType[0]}是您生活中的主要主题，共 ${topEventType[1]} 个事件。`,
+      );
     }
 
     if (dimensionCorrelations.length > 0) {
       const topDimension = dimensionCorrelations[0];
 
-      keyInsights.push(`探索性分析显示，您的生活事件与${topDimension.dimension}维度关联度最高（${topDimension.correlationScore}%）。*注意：这仅为统计关联，不代表因果关系。*`);
+      keyInsights.push(
+        `探索性分析显示，您的生活事件与${topDimension.dimension}维度关联度最高（${topDimension.correlationScore}%）。*注意：这仅为统计关联，不代表因果关系。*`,
+      );
     }
   }
 
@@ -369,16 +392,20 @@ export async function analyzeLifeEvents(userId: number): Promise<LifeEventAnalys
 /**
  * 生成相关性说明（探索性）
  */
-function generateCorrelationNote(dimension: string, count: number, allEvents: LifeEvent[]): string {
+function generateCorrelationNote(
+  dimension: string,
+  count: number,
+  allEvents: LifeEvent[],
+): string {
   const dimensionNames: Record<string, string> = {
-    E: '外向',
-    I: '内向',
-    N: '直觉',
-    S: '感觉',
-    T: '思考',
-    F: '情感',
-    J: '判断',
-    P: '知觉',
+    E: "外向",
+    I: "内向",
+    N: "直觉",
+    S: "感觉",
+    T: "思考",
+    F: "情感",
+    J: "判断",
+    P: "知觉",
   };
 
   const dimName = dimensionNames[dimension] || dimension;
@@ -406,7 +433,9 @@ function generateCorrelationNote(dimension: string, count: number, allEvents: Li
 /**
  * 批量导入生活事件
  */
-export async function bulkCreateLifeEvents(events: CreateLifeEventParams[]): Promise<LifeEvent[]> {
+export async function bulkCreateLifeEvents(
+  events: CreateLifeEventParams[],
+): Promise<LifeEvent[]> {
   const created: LifeEvent[] = [];
 
   for (const params of events) {
@@ -415,7 +444,10 @@ export async function bulkCreateLifeEvents(events: CreateLifeEventParams[]): Pro
 
       created.push(event);
     } catch (error) {
-      lifeEventEvents.emit('eventImportError', { params, error: (error as Error).message });
+      lifeEventEvents.emit("eventImportError", {
+        params,
+        error: (error as Error).message,
+      });
     }
   }
 
@@ -442,7 +474,7 @@ export async function clearUserLifeEvents(userId: number): Promise<number> {
     }
   }
 
-  lifeEventEvents.emit('eventsCleared', { userId, deleted });
+  lifeEventEvents.emit("eventsCleared", { userId, deleted });
 
   return deleted;
 }

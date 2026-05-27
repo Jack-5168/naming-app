@@ -11,14 +11,16 @@
  * Pricing: ¥99
  */
 
-import { Request, Response } from 'express';
-import { DualTestStatus, InvitationMethod } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import QRCode from 'qrcode';
-import { createPushNotification } from '../services/push-notification';
-import { analyzeCompatibility, CompatibilityResult } from '../services/compatibility-analyzer';
-import { prisma } from '../lib/prisma';
-
+import { Request, Response } from "express";
+import { DualTestStatus, InvitationMethod } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import QRCode from "qrcode";
+import { createPushNotification } from "../services/push-notification";
+import {
+  analyzeCompatibility,
+  CompatibilityResult,
+} from "../services/compatibility-analyzer";
+import { prisma } from "../lib/prisma";
 
 // ==================== Dual Test Invitation Management ====================
 
@@ -40,20 +42,21 @@ export async function createDualTestInvitation(req: Request, res: Response) {
     if (!userId || !testId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters: userId and testId',
+        error: "Missing required parameters: userId and testId",
       });
     }
 
     // Check if user has dual test access (¥99 feature)
-    const { checkFeatureAccess } = await import('./memberships');
-    const access = await checkFeatureAccess(userId, 'dual_test');
+    const { checkFeatureAccess } = await import("./memberships");
+    const access = await checkFeatureAccess(userId, "dual_test");
 
     if (!access.allowed) {
       return res.status(403).json({
         success: false,
-        error: 'No dual test access. Please upgrade membership or purchase separately (¥99).',
+        error:
+          "No dual test access. Please upgrade membership or purchase separately (¥99).",
         remaining: access.remaining,
-        upgradeUrl: '/membership/upgrade',
+        upgradeUrl: "/membership/upgrade",
       });
     }
 
@@ -68,7 +71,7 @@ export async function createDualTestInvitation(req: Request, res: Response) {
     if (!testResult) {
       return res.status(404).json({
         success: false,
-        error: 'Test record not found',
+        error: "Test record not found",
       });
     }
 
@@ -85,25 +88,28 @@ export async function createDualTestInvitation(req: Request, res: Response) {
         initiatorId: userId,
         initiatorTestId: Number(testId),
         inviteCode,
-        invitationMethod: invitationMethod || 'link',
-        inviteeEmail: inviteeEmail || '',
-        inviteeWechat: inviteeWechat || '',
-        status: 'pending',
+        invitationMethod: invitationMethod || "link",
+        inviteeEmail: inviteeEmail || "",
+        inviteeWechat: inviteeWechat || "",
+        status: "pending",
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
     });
 
     // Send invitation based on method
-    if (invitationMethod === 'wechat' && inviteeWechat) {
+    if (invitationMethod === "wechat" && inviteeWechat) {
       await sendWechatInvitation(inviteeWechat, inviteCode, userId);
-    } else if (invitationMethod === 'email' && inviteeEmail) {
+    } else if (invitationMethod === "email" && inviteeEmail) {
       await sendEmailInvitation(inviteeEmail, inviteCode, userId);
     }
 
     // Record feature usage
-    const { recordFeatureUsage } = await import('./memberships');
+    const { recordFeatureUsage } = await import("./memberships");
 
-    await recordFeatureUsage(userId, 'dual_test', { dualTestId: dualTest.id, testId });
+    await recordFeatureUsage(userId, "dual_test", {
+      dualTestId: dualTest.id,
+      testId,
+    });
 
     res.json({
       success: true,
@@ -115,15 +121,15 @@ export async function createDualTestInvitation(req: Request, res: Response) {
         invitationMethod: dualTest.invitationMethod,
         expiresAt: dualTest.expiresAt,
         price: 99,
-        currency: 'CNY',
+        currency: "CNY",
       },
     });
   } catch (error) {
-    console.error('Error creating dual test invitation:', error);
+    console.error("Error creating dual test invitation:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create dual test invitation',
-      details: error instanceof Error ? error.message : 'Unknown error',
+      error: "Failed to create dual test invitation",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -143,7 +149,7 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
     if (!userId || !inviteCode) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters',
+        error: "Missing required parameters",
       });
     }
 
@@ -163,14 +169,14 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Invitation not found',
+        error: "Invitation not found",
       });
     }
 
-    if (dualTest.status !== 'pending') {
+    if (dualTest.status !== "pending") {
       return res.status(400).json({
         success: false,
-        error: 'This invitation has already been used or expired',
+        error: "This invitation has already been used or expired",
         currentStatus: dualTest.status,
       });
     }
@@ -178,7 +184,7 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
     if (dualTest.initiatorId === userId) {
       return res.status(400).json({
         success: false,
-        error: 'Cannot accept your own invitation',
+        error: "Cannot accept your own invitation",
       });
     }
 
@@ -187,7 +193,7 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
       where: { id: dualTest.id },
       data: {
         participantId: userId,
-        status: 'accepted',
+        status: "accepted",
         acceptedAt: new Date(),
       },
     });
@@ -195,9 +201,9 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
     // Notify initiator
     await createPushNotification({
       userId: dualTest.initiatorId,
-      type: 'dual_test_invite',
-      title: '好友已接受合测邀请',
-      content: '你们可以开始进行双人合测了',
+      type: "dual_test_invite",
+      title: "好友已接受合测邀请",
+      content: "你们可以开始进行双人合测了",
       deepLink: `/dual-test/${dualTest.id}/result`,
     });
 
@@ -205,16 +211,16 @@ export async function acceptDualTestInvitation(req: Request, res: Response) {
       success: true,
       data: {
         dualTestId: dualTest.id,
-        status: 'accepted',
+        status: "accepted",
         initiator: dualTest.initiator,
-        message: 'Invitation accepted successfully',
+        message: "Invitation accepted successfully",
       },
     });
   } catch (error) {
-    console.error('Error accepting dual test invitation:', error);
+    console.error("Error accepting dual test invitation:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to accept dual test invitation',
+      error: "Failed to accept dual test invitation",
     });
   }
 }
@@ -235,7 +241,7 @@ export async function completeDualTest(req: Request, res: Response) {
     if (!userId || !dualTestId || !participantTestId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required parameters',
+        error: "Missing required parameters",
       });
     }
 
@@ -251,14 +257,14 @@ export async function completeDualTest(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Dual test not found',
+        error: "Dual test not found",
       });
     }
 
-    if (dualTest.status !== 'accepted') {
+    if (dualTest.status !== "accepted") {
       return res.status(400).json({
         success: false,
-        error: 'Dual test not ready for completion',
+        error: "Dual test not ready for completion",
         currentStatus: dualTest.status,
       });
     }
@@ -267,7 +273,7 @@ export async function completeDualTest(req: Request, res: Response) {
     if (dualTest.participantId !== userId) {
       return res.status(403).json({
         success: false,
-        error: 'Access denied',
+        error: "Access denied",
       });
     }
 
@@ -282,7 +288,7 @@ export async function completeDualTest(req: Request, res: Response) {
     if (!participantTestResult) {
       return res.status(404).json({
         success: false,
-        error: 'Participant test result not found',
+        error: "Participant test result not found",
       });
     }
 
@@ -290,32 +296,36 @@ export async function completeDualTest(req: Request, res: Response) {
     const compatibilityResult: CompatibilityResult = await analyzeCompatibility(
       dualTest.initiatorTestResult.answers as any,
       participantTestResult.answers as any,
-      dualTest.initiator.mbtiType || '',
-      participantTestResult.mbtiType || '',
+      dualTest.initiator.mbtiType || "",
+      participantTestResult.mbtiType || "",
     );
 
     // Update dual test with results
     await prisma.dualTest.update({
       where: { id: dualTest.id },
       data: {
-        status: 'completed',
+        status: "completed",
         participantTestId: Number(participantTestId),
         compatibilityScore: compatibilityResult.overallScore,
         conflictWarnings: JSON.stringify(compatibilityResult.conflictWarnings),
-        relationshipAdvice: JSON.stringify(compatibilityResult.relationshipAdvice),
-        dimensionAnalysis: JSON.stringify(compatibilityResult.dimensionAnalysis),
+        relationshipAdvice: JSON.stringify(
+          compatibilityResult.relationshipAdvice,
+        ),
+        dimensionAnalysis: JSON.stringify(
+          compatibilityResult.dimensionAnalysis,
+        ),
         completedAt: new Date(),
       },
     });
 
     // Record feature usage for both users
-    const { recordFeatureUsage } = await import('./memberships');
+    const { recordFeatureUsage } = await import("./memberships");
 
-    await recordFeatureUsage(dualTest.initiatorId, 'dual_test', {
+    await recordFeatureUsage(dualTest.initiatorId, "dual_test", {
       dualTestId: dualTest.id,
       completed: true,
     });
-    await recordFeatureUsage(dualTest.participantId!, 'dual_test', {
+    await recordFeatureUsage(dualTest.participantId!, "dual_test", {
       dualTestId: dualTest.id,
       completed: true,
     });
@@ -323,16 +333,16 @@ export async function completeDualTest(req: Request, res: Response) {
     // Notify both users
     await createPushNotification({
       userId: dualTest.initiatorId,
-      type: 'report_ready',
-      title: '双人合测报告已生成',
+      type: "report_ready",
+      title: "双人合测报告已生成",
       content: `你们的契合度为${Math.round(compatibilityResult.overallScore * 100)}%，点击查看完整分析`,
       deepLink: `/dual-test/${dualTest.id}/report`,
     });
 
     await createPushNotification({
       userId: dualTest.participantId!,
-      type: 'report_ready',
-      title: '双人合测报告已生成',
+      type: "report_ready",
+      title: "双人合测报告已生成",
       content: `你们的契合度为${Math.round(compatibilityResult.overallScore * 100)}%，点击查看完整分析`,
       deepLink: `/dual-test/${dualTest.id}/report`,
     });
@@ -346,15 +356,15 @@ export async function completeDualTest(req: Request, res: Response) {
         conflictWarnings: compatibilityResult.conflictWarnings,
         relationshipAdvice: compatibilityResult.relationshipAdvice,
         reportUrl: `/dual-test/${dualTest.id}/report`,
-        message: 'Dual test completed successfully',
+        message: "Dual test completed successfully",
       },
     });
   } catch (error) {
-    console.error('Error completing dual test:', error);
+    console.error("Error completing dual test:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to complete dual test',
-      details: error instanceof Error ? error.message : 'Unknown error',
+      error: "Failed to complete dual test",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -371,7 +381,7 @@ export async function getDualTestDetails(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -412,7 +422,7 @@ export async function getDualTestDetails(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Dual test not found',
+        error: "Dual test not found",
       });
     }
 
@@ -420,7 +430,7 @@ export async function getDualTestDetails(req: Request, res: Response) {
     if (dualTest.initiatorId !== userId && dualTest.participantId !== userId) {
       return res.status(403).json({
         success: false,
-        error: 'Access denied',
+        error: "Access denied",
       });
     }
 
@@ -447,17 +457,19 @@ export async function getDualTestDetails(req: Request, res: Response) {
           ...dualTest.initiator,
           testResult: dualTest.initiatorTestResult,
         },
-        participant: dualTest.participant ? {
-          ...dualTest.participant,
-          testResult: dualTest.participantTestResult,
-        } : null,
+        participant: dualTest.participant
+          ? {
+              ...dualTest.participant,
+              testResult: dualTest.participantTestResult,
+            }
+          : null,
       },
     });
   } catch (error) {
-    console.error('Error getting dual test details:', error);
+    console.error("Error getting dual test details:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get dual test details',
+      error: "Failed to get dual test details",
     });
   }
 }
@@ -474,7 +486,7 @@ export async function getDualTestReport(req: Request, res: Response) {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
+        error: "Unauthorized",
       });
     }
 
@@ -505,7 +517,7 @@ export async function getDualTestReport(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Dual test not found',
+        error: "Dual test not found",
       });
     }
 
@@ -513,14 +525,14 @@ export async function getDualTestReport(req: Request, res: Response) {
     if (dualTest.initiatorId !== userId && dualTest.participantId !== userId) {
       return res.status(403).json({
         success: false,
-        error: 'Access denied',
+        error: "Access denied",
       });
     }
 
-    if (dualTest.status !== 'completed') {
+    if (dualTest.status !== "completed") {
       return res.status(400).json({
         success: false,
-        error: 'Report not ready yet',
+        error: "Report not ready yet",
         currentStatus: dualTest.status,
       });
     }
@@ -541,7 +553,9 @@ export async function getDualTestReport(req: Request, res: Response) {
       data: {
         dualTestId: dualTest.id,
         compatibilityScore: Number(dualTest.compatibilityScore),
-        compatibilityLevel: getCompatibilityLevel(Number(dualTest.compatibilityScore)),
+        compatibilityLevel: getCompatibilityLevel(
+          Number(dualTest.compatibilityScore),
+        ),
         initiator: {
           ...dualTest.initiator,
           testResult: {
@@ -549,13 +563,15 @@ export async function getDualTestReport(req: Request, res: Response) {
             dimensionScores: dualTest.initiatorTestResult.dimensionScores,
           },
         },
-        participant: dualTest.participant ? {
-          ...dualTest.participant,
-          testResult: {
-            mbtiType: dualTest.participantTestResult.mbtiType,
-            dimensionScores: dualTest.participantTestResult.dimensionScores,
-          },
-        } : null,
+        participant: dualTest.participant
+          ? {
+              ...dualTest.participant,
+              testResult: {
+                mbtiType: dualTest.participantTestResult.mbtiType,
+                dimensionScores: dualTest.participantTestResult.dimensionScores,
+              },
+            }
+          : null,
         conflictWarnings,
         relationshipAdvice,
         dimensionAnalysis,
@@ -563,10 +579,10 @@ export async function getDualTestReport(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error getting dual test report:', error);
+    console.error("Error getting dual test report:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get dual test report',
+      error: "Failed to get dual test report",
     });
   }
 }
@@ -595,14 +611,14 @@ export async function getDualTestByInviteCode(req: Request, res: Response) {
     if (!dualTest) {
       return res.status(404).json({
         success: false,
-        error: 'Invitation not found',
+        error: "Invitation not found",
       });
     }
 
-    if (dualTest.status !== 'pending') {
+    if (dualTest.status !== "pending") {
       return res.status(400).json({
         success: false,
-        error: 'This invitation is no longer valid',
+        error: "This invitation is no longer valid",
         currentStatus: dualTest.status,
       });
     }
@@ -611,7 +627,7 @@ export async function getDualTestByInviteCode(req: Request, res: Response) {
     if (new Date() > dualTest.expiresAt!) {
       return res.status(400).json({
         success: false,
-        error: 'Invitation has expired',
+        error: "Invitation has expired",
       });
     }
 
@@ -625,10 +641,10 @@ export async function getDualTestByInviteCode(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error('Error getting dual test by invite code:', error);
+    console.error("Error getting dual test by invite code:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get invitation details',
+      error: "Failed to get invitation details",
     });
   }
 }
@@ -643,14 +659,14 @@ async function generateQRCode(url: string, size = 300): Promise<string> {
     const qrCode = await QRCode.toDataURL(url, {
       width: size,
       margin: 2,
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: "M",
     });
 
     return qrCode;
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    console.error("Error generating QR code:", error);
 
-    return '';
+    return "";
   }
 }
 
@@ -664,7 +680,9 @@ async function sendWechatInvitation(
 ): Promise<void> {
   try {
     // In production, integrate with WeChat template message API
-    console.log(`Sending WeChat invitation to ${wechatId}, code: ${inviteCode}`);
+    console.log(
+      `Sending WeChat invitation to ${wechatId}, code: ${inviteCode}`,
+    );
 
     // Placeholder for WeChat integration
     // await wechatService.sendTemplateMessage({
@@ -677,7 +695,7 @@ async function sendWechatInvitation(
     //   },
     // });
   } catch (error) {
-    console.error('Error sending WeChat invitation:', error);
+    console.error("Error sending WeChat invitation:", error);
   }
 }
 
@@ -705,7 +723,7 @@ async function sendEmailInvitation(
     //   `,
     // });
   } catch (error) {
-    console.error('Error sending email invitation:', error);
+    console.error("Error sending email invitation:", error);
   }
 }
 
@@ -714,18 +732,18 @@ async function sendEmailInvitation(
  */
 function getCompatibilityLevel(score: number): string {
   if (score >= 0.85) {
-    return 'excellent';
+    return "excellent";
   }
 
-  if (score >= 0.70) {
-    return 'good';
+  if (score >= 0.7) {
+    return "good";
   }
 
   if (score >= 0.55) {
-    return 'moderate';
+    return "moderate";
   }
 
-  return 'challenging';
+  return "challenging";
 }
 
 export default {

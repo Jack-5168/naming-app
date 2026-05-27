@@ -14,7 +14,7 @@ server:
   secret_key: "temporary-key-please-change-me"
   bind_address: "0.0.0.0"
   port: 8080
-  limiter: false  # Disable rate limiting for local use
+  limiter: false # Disable rate limiting for local use
   public_instance: false
 
 # Enable Bing search engine (critical for Chinese queries)

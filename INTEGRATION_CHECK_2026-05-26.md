@@ -1,4 +1,5 @@
 # Persona-Lab 集成检查报告
+
 **时间**: 2026-05-26 07:00 (UTC+8)
 **检查项**: 前后端集成、API 契约一致性、状态管理、错误传播
 
@@ -6,12 +7,12 @@
 
 ## 检查摘要
 
-| 检查项 | 状态 | 问题数 |
-|--------|------|--------|
-| 后端构建 | ❌ Failed | ~80 TS 错误 |
-| 前端构建 | ⚠️ Pending | - |
-| API 契约 | ❌ Mismatch | 2处 |
-| 状态管理 | ✅ OK | 0 |
+| 检查项   | 状态        | 问题数      |
+| -------- | ----------- | ----------- |
+| 后端构建 | ❌ Failed   | ~80 TS 错误 |
+| 前端构建 | ⚠️ Pending  | -           |
+| API 契约 | ❌ Mismatch | 2处         |
+| 状态管理 | ✅ OK       | 0           |
 
 ---
 
@@ -23,20 +24,20 @@
 
 #### Schema 缺失字段 (关键):
 
-| 文件 | 期望字段 | Schema 实际 |
-|------|----------|------------|
-| dual-test.ts | `invitationMethod` | ❌ 缺失 |
-| dual-test.ts | `expiresAt` | ❌ 缺失 |
-| dual-test.ts | `acceptedAt` | ❌ 缺失 |
-| dual-test.ts | `initiatorTestId` | ❌ 缺失 |
-| dual-test.ts | `participantTestId` | ❌ 缺失 |
-| dual-test.ts | `initiatorTestResult` | ❌ 缺失 |
-| dual-test.ts | `participantTestResult` | ❌ 缺失 |
-| share.ts | `inviteCode` | ⚠️ 存在但无关联 |
-| share.ts | `shareEvent` | ❌ 不存在 |
-| membership-benefits.ts | `membership` | ❌ 无 relation |
-| push-notification.ts | `PushNotificationType` | ❌ enum 缺失 |
-| push-notification.ts | `pushNotification` | ❌ table 缺失 |
+| 文件                   | 期望字段                | Schema 实际     |
+| ---------------------- | ----------------------- | --------------- |
+| dual-test.ts           | `invitationMethod`      | ❌ 缺失         |
+| dual-test.ts           | `expiresAt`             | ❌ 缺失         |
+| dual-test.ts           | `acceptedAt`            | ❌ 缺失         |
+| dual-test.ts           | `initiatorTestId`       | ❌ 缺失         |
+| dual-test.ts           | `participantTestId`     | ❌ 缺失         |
+| dual-test.ts           | `initiatorTestResult`   | ❌ 缺失         |
+| dual-test.ts           | `participantTestResult` | ❌ 缺失         |
+| share.ts               | `inviteCode`            | ⚠️ 存在但无关联 |
+| share.ts               | `shareEvent`            | ❌ 不存在       |
+| membership-benefits.ts | `membership`            | ❌ 无 relation  |
+| push-notification.ts   | `PushNotificationType`  | ❌ enum 缺失    |
+| push-notification.ts   | `pushNotification`      | ❌ table 缺失   |
 
 #### 修复建议:
 
@@ -66,20 +67,22 @@ enum PushNotificationType {
 
 ### 2. API 契约不一致
 
-| 前端期望 | 后端实际 | 状态 |
-|----------|----------|------|
-| `GET /quiz/questions` | `GET /api/v1/tests/sessions/:id/next` | ❌ 路径不匹配 |
-| `POST /quiz/answers` | `POST /api/v1/tests/sessions/:id/answer` | ❌ 路径不匹配 |
-| `POST /quiz/submit` | 无 | ❌ 缺失 |
-| `POST /quiz/results` | `GET /api/v1/tests/results/:id` | ⚠️ 方法不匹配 |
+| 前端期望              | 后端实际                                 | 状态          |
+| --------------------- | ---------------------------------------- | ------------- |
+| `GET /quiz/questions` | `GET /api/v1/tests/sessions/:id/next`    | ❌ 路径不匹配 |
+| `POST /quiz/answers`  | `POST /api/v1/tests/sessions/:id/answer` | ❌ 路径不匹配 |
+| `POST /quiz/submit`   | 无                                       | ❌ 缺失       |
+| `POST /quiz/results`  | `GET /api/v1/tests/results/:id`          | ⚠️ 方法不匹配 |
 
 **前端定义** (`miniapp/src/services/quiz-api.ts`):
+
 - `fetchQuestions()` → `/quiz/questions`
 - `saveAnswer()` → `/quiz/answers`
 - `submitAllAnswers()` → `/quiz/submit`
 - `getQuizResults()` → `/quiz/results`
 
 **后端路由** (`server/src/routes/index.ts`):
+
 - `/api/v1/tests/sessions` (POST)
 - `/api/v1/tests/sessions/:session_id/next` (GET)
 - `/api/v1/tests/sessions/:session_id/answer` (POST)
@@ -90,11 +93,12 @@ enum PushNotificationType {
 
 ### 3. 状态管理检查
 
-| Store | 类型 | 持久化 | 状态 |
-|-------|------|--------|------|
+| Store      | 类型              | 持久化       | 状态  |
+| ---------- | ----------------- | ------------ | ----- |
 | quiz-store | Zustand + persist | localStorage | ✅ OK |
 
 前端 quiz-store 实现完整:
+
 - Questions 数据结构与后端兼容
 - Answer 接口一致
 - Progress 计算正确
@@ -104,26 +108,29 @@ enum PushNotificationType {
 
 ### 4. 错误传播链
 
-| 场景 | 预期行为 | 实际行为 |
-|------|----------|----------|
-| API 超时 | 返回错误提示 | 降级到 mock ✓ |
-| 字段缺失 | 400 错误 | 500 崩溃 ❌ |
-| Schema 不同步 | N/A | 构建失败 |
+| 场景          | 预期行为     | 实际行为      |
+| ------------- | ------------ | ------------- |
+| API 超时      | 返回错误提示 | 降级到 mock ✓ |
+| 字段缺失      | 400 错误     | 500 崩溃 ❌   |
+| Schema 不同步 | N/A          | 构建失败      |
 
 ---
 
 ## 行动项
 
 ### 高优先级
+
 1. ⏳ **同步 Prisma Schema** - 对比 controller 和 schema，补充缺失字段
 2. ⏳ **统一 API 路径** - 修改前端 quiz-api.ts 适配 `/api/v1/tests/*`
 3. 🔄 **重新生成 Prisma Client** - 每次 schema 变更后执行
 
-### 中优先级  
+### 中优先级
+
 4. 📝 **补充测试端点** - `/api/v1/tests/submit` (批量提交)
 5. ⚠️ **处理可选字段** - dual-test 中可选字段未定义导致类型错误
 
 ### 低优先级
+
 6. 🧹 **清理遗留字段** - 移除 mock 代码中的过时引用
 7. 📦 **验证打包** - 确认生产环境能正常运行
 
@@ -131,13 +138,13 @@ enum PushNotificationType {
 
 ## 历史对比
 
-| 日期 | 构建 | API 一致性 | 状态管理 |
-|------|------|------------|----------|
-| 2026-05-25 | Pass (4) | Issue | OK |
-| 2026-05-26 | Fail (~80) | Issue | OK |
+| 日期       | 构建       | API 一致性 | 状态管理 |
+| ---------- | ---------- | ---------- | -------- |
+| 2026-05-25 | Pass (4)   | Issue      | OK       |
+| 2026-05-26 | Fail (~80) | Issue      | OK       |
 
 **变化**: 本次检查发现新增约 30 个 Prisma 类型错误，多来自 dual-test.ts 和 push-notification.ts 的新功能需求。
 
 ---
 
-*Generated by pl-integration-0700 cron*
+_Generated by pl-integration-0700 cron_

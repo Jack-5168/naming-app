@@ -48,7 +48,7 @@
 }
 
 .form-field-required .form-label::after {
-  content: ' *';
+  content: " *";
   color: var(--form-error-color);
 }
 

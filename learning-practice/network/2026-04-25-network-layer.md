@@ -33,7 +33,7 @@
 class HttpError extends Error {
   constructor(status, statusText, url, body) {
     super(`HTTP ${status}: ${statusText} (${url})`);
-    this.name = 'HttpError';
+    this.name = "HttpError";
     this.status = status;
     this.statusText = statusText;
     this.url = url;
@@ -47,8 +47,22 @@ class HttpError extends Error {
 function checkStatus(response) {
   if (response.ok) return response;
   return response.json().then(
-    (body) => { throw new HttpError(response.status, response.statusText, response.url, body); },
-    () => { throw new HttpError(response.status, response.statusText, response.url, null); }
+    (body) => {
+      throw new HttpError(
+        response.status,
+        response.statusText,
+        response.url,
+        body,
+      );
+    },
+    () => {
+      throw new HttpError(
+        response.status,
+        response.statusText,
+        response.url,
+        null,
+      );
+    },
   );
 }
 
@@ -57,19 +71,19 @@ function checkStatus(response) {
  */
 async function request(url, options = {}) {
   const {
-    method = 'GET',
+    method = "GET",
     headers = {},
-    params = null,       // query params
-    body = null,         // request body
-    timeout = 10000,     // ms
-    signal,              // AbortSignal
+    params = null, // query params
+    body = null, // request body
+    timeout = 10000, // ms
+    signal, // AbortSignal
   } = options;
 
   // 拼接 URL + query params
   let finalUrl = url;
   if (params && Object.keys(params).length > 0) {
     const qs = new URLSearchParams(
-      Object.entries(params).filter(([, v]) => v !== undefined && v !== null)
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null),
     ).toString();
     finalUrl = `${url}?${qs}`;
   }
@@ -77,16 +91,16 @@ async function request(url, options = {}) {
   const config = {
     method,
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
       ...headers,
     },
     signal,
   };
 
   // 序列化 body（非 GET/HEAD 且有 body 时）
-  if (body && !['GET', 'HEAD'].includes(method.toUpperCase())) {
-    config.body = typeof body === 'string' ? body : JSON.stringify(body);
+  if (body && !["GET", "HEAD"].includes(method.toUpperCase())) {
+    config.body = typeof body === "string" ? body : JSON.stringify(body);
   }
 
   // 超时控制：用 AbortController 包装
@@ -108,11 +122,21 @@ async function request(url, options = {}) {
  * 便捷方法
  */
 const http = {
-  get(url, options) { return request(url, { ...options, method: 'GET' }); },
-  post(url, body, options) { return request(url, { ...options, method: 'POST', body }); },
-  put(url, body, options) { return request(url, { ...options, method: 'PUT', body }); },
-  patch(url, body, options) { return request(url, { ...options, method: 'PATCH', body }); },
-  delete(url, options) { return request(url, { ...options, method: 'DELETE' }); },
+  get(url, options) {
+    return request(url, { ...options, method: "GET" });
+  },
+  post(url, body, options) {
+    return request(url, { ...options, method: "POST", body });
+  },
+  put(url, body, options) {
+    return request(url, { ...options, method: "PUT", body });
+  },
+  patch(url, body, options) {
+    return request(url, { ...options, method: "PATCH", body });
+  },
+  delete(url, options) {
+    return request(url, { ...options, method: "DELETE" });
+  },
 };
 
 // 使用示例
@@ -139,12 +163,12 @@ module.exports = { HttpError, request, http, checkStatus };
 async function requestEnhanced(url, options = {}) {
   const response = await request(url, options);
 
-  const contentType = response.headers.get('content-type') || '';
+  const contentType = response.headers.get("content-type") || "";
   let data;
 
-  if (contentType.includes('application/json')) {
+  if (contentType.includes("application/json")) {
     data = await response.json();
-  } else if (contentType.includes('text/')) {
+  } else if (contentType.includes("text/")) {
     data = await response.text();
   } else {
     data = await response.blob();
@@ -217,7 +241,7 @@ class InterceptorManager {
    * 获取所有启用的拦截器
    */
   get enabledHandlers() {
-    return this.handlers.filter(h => h.enabled);
+    return this.handlers.filter((h) => h.enabled);
   }
 }
 
@@ -277,7 +301,7 @@ module.exports = {
 ```js
 // --- File: src/network/interceptors.js ---
 
-const { InterceptorManager } = require('./interceptor');
+const { InterceptorManager } = require("./interceptor");
 
 /**
  * 创建拦截器管理器并注册常用拦截器
@@ -285,9 +309,9 @@ const { InterceptorManager } = require('./interceptor');
 function createInterceptors(config = {}) {
   const manager = new InterceptorManager();
   const {
-    baseURL = '',
-    tokenProvider = null,    // () => string | Promise<string>
-    refreshTokenFn = null,   // () => Promise<void>
+    baseURL = "",
+    tokenProvider = null, // () => string | Promise<string>
+    refreshTokenFn = null, // () => Promise<void>
     maxRetry = 3,
     retryDelay = 1000,
     logger = console,
@@ -295,8 +319,9 @@ function createInterceptors(config = {}) {
 
   // ── 1. baseURL 拦截器 ──
   manager.use((config) => {
-    if (baseURL && !config.url.startsWith('http')) {
-      config.url = baseURL.replace(/\/$/, '') + '/' + config.url.replace(/^\//, '');
+    if (baseURL && !config.url.startsWith("http")) {
+      config.url =
+        baseURL.replace(/\/$/, "") + "/" + config.url.replace(/^\//, "");
     }
     return config;
   });
@@ -318,18 +343,23 @@ function createInterceptors(config = {}) {
   // ── 3. 请求日志拦截器 ──
   manager.use((config) => {
     config._startTime = Date.now();
-    logger.log(`→ ${config.method} ${config.url}`, config.params ? `?${new URLSearchParams(config.params)}` : '');
+    logger.log(
+      `→ ${config.method} ${config.url}`,
+      config.params ? `?${new URLSearchParams(config.params)}` : "",
+    );
     return config;
   });
 
   // ── 4. 响应日志拦截器 ──
   manager.use(
-    null,  // 无 onRequest
+    null, // 无 onRequest
     (response) => {
       const elapsed = Date.now() - (response.config?._startTime || Date.now());
-      logger.log(`← ${response.status} ${response.config?.method} ${response.config?.url} (${elapsed}ms)`);
+      logger.log(
+        `← ${response.status} ${response.config?.method} ${response.config?.url} (${elapsed}ms)`,
+      );
       return response;
-    }
+    },
   );
 
   // ── 5. 401 自动刷新 Token 拦截器 ──
@@ -346,70 +376,63 @@ function createInterceptors(config = {}) {
       });
     };
 
-    manager.use(
-      null,
-      null,
-      async (error) => {
-        if (error?.status === 401 && refreshTokenFn && !error.config?._isRetry) {
-          if (!isRefreshing) {
-            isRefreshing = true;
-            try {
-              await refreshTokenFn();
-              // 通知所有等待的请求
-              refreshSubscribers.forEach((cb) => cb());
-              refreshSubscribers = [];
-            } catch (refreshErr) {
-              refreshSubscribers.forEach((cb) => cb(null));
-              refreshSubscribers = [];
-              // 刷新失败，跳转登录
-              window?.location?.replace('/login');
-              throw refreshErr;
-            } finally {
-              isRefreshing = false;
-            }
+    manager.use(null, null, async (error) => {
+      if (error?.status === 401 && refreshTokenFn && !error.config?._isRetry) {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          try {
+            await refreshTokenFn();
+            // 通知所有等待的请求
+            refreshSubscribers.forEach((cb) => cb());
+            refreshSubscribers = [];
+          } catch (refreshErr) {
+            refreshSubscribers.forEach((cb) => cb(null));
+            refreshSubscribers = [];
+            // 刷新失败，跳转登录
+            window?.location?.replace("/login");
+            throw refreshErr;
+          } finally {
+            isRefreshing = false;
           }
-
-          // 等待 token 刷新完成
-          await subscribeTokenRefresh(() => {});
-
-          // 重试原请求
-          error.config._isRetry = true;
-          return error.config;  // 返回 config 让调用方重试
         }
-        throw error;
+
+        // 等待 token 刷新完成
+        await subscribeTokenRefresh(() => {});
+
+        // 重试原请求
+        error.config._isRetry = true;
+        return error.config; // 返回 config 让调用方重试
       }
-    );
+      throw error;
+    });
   }
 
   // ── 6. 响应数据解包拦截器 ──
   // 假设后端返回 { code: 0, data: {...}, message: "ok" }
-  manager.use(
-    null,
-    async (response) => {
-      // 如果响应还未解析 body，解析它
-      if (response.data === undefined) {
-        const contentType = response.headers?.['content-type'] || '';
-        if (contentType.includes('application/json')) {
-          response.data = await response.json?.() ?? response._body;
-        }
+  manager.use(null, async (response) => {
+    // 如果响应还未解析 body，解析它
+    if (response.data === undefined) {
+      const contentType = response.headers?.["content-type"] || "";
+      if (contentType.includes("application/json")) {
+        response.data = (await response.json?.()) ?? response._body;
       }
-
-      // 业务层错误码处理
-      if (response.data && typeof response.data === 'object') {
-        const { code, message, data } = response.data;
-        if (code !== undefined && code !== 0 && code !== 200) {
-          const err = new Error(message || 'Business Error');
-          err.code = code;
-          err.data = data;
-          throw err;
-        }
-        // 解包：直接返回 data 字段
-        response.data = data;
-      }
-
-      return response;
     }
-  );
+
+    // 业务层错误码处理
+    if (response.data && typeof response.data === "object") {
+      const { code, message, data } = response.data;
+      if (code !== undefined && code !== 0 && code !== 200) {
+        const err = new Error(message || "Business Error");
+        err.code = code;
+        err.data = data;
+        throw err;
+      }
+      // 解包：直接返回 data 字段
+      response.data = data;
+    }
+
+    return response;
+  });
 
   return manager;
 }
@@ -435,15 +458,15 @@ module.exports = { createInterceptors };
 
 function createRetryStrategy(options = {}) {
   const {
-    maxRetries = 3,           // 最大重试次数
-    baseDelay = 1000,         // 基础延迟 (ms)
-    multiplier = 2,           // 退避倍数
-    maxDelay = 30000,         // 最大延迟 (ms)
-    jitter = true,            // 是否添加随机抖动
-    retryableStatuses = [408, 429, 500, 502, 503, 504],  // 可重试的状态码
-    retryableMethods = ['GET', 'HEAD', 'OPTIONS'],        // 可重试的方法（幂等）
-    shouldRetry = null,       // 自定义重试判断函数
-    onRetry = null,           // 重试回调 (attempt, error, delay) => void
+    maxRetries = 3, // 最大重试次数
+    baseDelay = 1000, // 基础延迟 (ms)
+    multiplier = 2, // 退避倍数
+    maxDelay = 30000, // 最大延迟 (ms)
+    jitter = true, // 是否添加随机抖动
+    retryableStatuses = [408, 429, 500, 502, 503, 504], // 可重试的状态码
+    retryableMethods = ["GET", "HEAD", "OPTIONS"], // 可重试的方法（幂等）
+    shouldRetry = null, // 自定义重试判断函数
+    onRetry = null, // 重试回调 (attempt, error, delay) => void
   } = options;
 
   /**
@@ -467,10 +490,10 @@ function createRetryStrategy(options = {}) {
     if (shouldRetry) return shouldRetry(error, config);
 
     // 取消的请求不重试
-    if (error?.name === 'AbortError') return false;
+    if (error?.name === "AbortError") return false;
 
     // 非幂等方法不重试（除非明确配置）
-    const method = (config?.method || 'GET').toUpperCase();
+    const method = (config?.method || "GET").toUpperCase();
     if (!retryableMethods.includes(method) && error?.status !== 408) {
       return false;
     }
@@ -516,7 +539,10 @@ async function requestWithRetry(fetchFn, url, options = {}, retryStrategy) {
         await strategy.sleep(delay);
       }
 
-      const response = await fetchFn(url, { ...options, _retryAttempt: attempt });
+      const response = await fetchFn(url, {
+        ...options,
+        _retryAttempt: attempt,
+      });
       return response;
     } catch (error) {
       lastError = error;
@@ -565,33 +591,44 @@ module.exports = { createRetryStrategy, requestWithRetry };
 
 const RetryPolicies = {
   /** 快速失败：最多重试 1 次，延迟短 */
-  fastFail: () => createRetryStrategy({
-    maxRetries: 1,
-    baseDelay: 500,
-    multiplier: 1,
-    maxDelay: 1000,
-    jitter: false,
-    retryableStatuses: [502, 503],
-  }),
+  fastFail: () =>
+    createRetryStrategy({
+      maxRetries: 1,
+      baseDelay: 500,
+      multiplier: 1,
+      maxDelay: 1000,
+      jitter: false,
+      retryableStatuses: [502, 503],
+    }),
 
   /** 标准重试：3 次，指数退避 */
-  standard: () => createRetryStrategy({
-    maxRetries: 3,
-    baseDelay: 1000,
-    multiplier: 2,
-    maxDelay: 10000,
-    jitter: true,
-  }),
+  standard: () =>
+    createRetryStrategy({
+      maxRetries: 3,
+      baseDelay: 1000,
+      multiplier: 2,
+      maxDelay: 10000,
+      jitter: true,
+    }),
 
   /** 激进重试：5 次，适合关键操作 */
-  aggressive: () => createRetryStrategy({
-    maxRetries: 5,
-    baseDelay: 500,
-    multiplier: 2,
-    maxDelay: 30000,
-    jitter: true,
-    retryableMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
-  }),
+  aggressive: () =>
+    createRetryStrategy({
+      maxRetries: 5,
+      baseDelay: 500,
+      multiplier: 2,
+      maxDelay: 30000,
+      jitter: true,
+      retryableMethods: [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "HEAD",
+        "OPTIONS",
+      ],
+    }),
 
   /** 无重试：仅用于调试或幂等性不确定的场景 */
   noRetry: () => createRetryStrategy({ maxRetries: 0 }),
@@ -632,8 +669,11 @@ class RequestCanceller {
    */
   static generateKey(method, url, params) {
     const sortedParams = params
-      ? Object.entries(params).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('&')
-      : '';
+      ? Object.entries(params)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([k, v]) => `${k}=${v}`)
+          .join("&")
+      : "";
     return `${method.toUpperCase()}:${url}:${sortedParams}`;
   }
 
@@ -669,10 +709,10 @@ class RequestCanceller {
   /**
    * 取消指定请求
    */
-  cancel(key, message = 'Request cancelled') {
+  cancel(key, message = "Request cancelled") {
     const controller = this.controllers.get(key);
     if (controller) {
-      controller.abort(new DOMException(message, 'AbortError'));
+      controller.abort(new DOMException(message, "AbortError"));
       this.controllers.delete(key);
 
       // 从所有分组中移除
@@ -683,7 +723,7 @@ class RequestCanceller {
   /**
    * 取消指定分组的所有请求
    */
-  cancelGroup(group, message = 'Group cancelled') {
+  cancelGroup(group, message = "Group cancelled") {
     const keys = this.groups.get(group);
     if (keys) {
       keys.forEach((key) => this.cancel(key, message));
@@ -694,7 +734,7 @@ class RequestCanceller {
   /**
    * 取消所有请求
    */
-  cancelAll(message = 'All requests cancelled') {
+  cancelAll(message = "All requests cancelled") {
     this.controllers.forEach((_, key) => this.cancel(key, message));
     this.groups.clear();
   }
@@ -743,11 +783,11 @@ class RequestDebouncer {
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
         this.timers.delete(key);
-        resolve(false);  // 不跳过，执行请求
+        resolve(false); // 不跳过，执行请求
       }, delay);
 
       this.timers.set(key, timer);
-      resolve(true);  // 跳过，等待下一次
+      resolve(true); // 跳过，等待下一次
     });
   }
 
@@ -769,14 +809,14 @@ module.exports = { RequestCanceller, RequestDebouncer };
  * 取消请求使用示例
  */
 
-const { RequestCanceller } = require('./cancellation');
+const { RequestCanceller } = require("./cancellation");
 
 const canceller = new RequestCanceller();
 
 // 场景 1: 搜索输入框 — 取消上一次搜索
 function search(query) {
-  const key = RequestCanceller.generateKey('GET', '/api/search', { q: query });
-  const signal = canceller.register(key, { group: 'search' });
+  const key = RequestCanceller.generateKey("GET", "/api/search", { q: query });
+  const signal = canceller.register(key, { group: "search" });
 
   return fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal })
     .then((res) => res.json())
@@ -786,7 +826,7 @@ function search(query) {
 // 场景 2: 组件卸载时取消所有请求
 class UserListPage {
   constructor() {
-    this.group = 'user-list';
+    this.group = "user-list";
   }
 
   async loadUsers(page = 1) {
@@ -797,8 +837,8 @@ class UserListPage {
       const res = await fetch(`/api/users?page=${page}`, { signal });
       return await res.json();
     } catch (err) {
-      if (err.name === 'AbortError') {
-        console.log('请求被取消（组件卸载）');
+      if (err.name === "AbortError") {
+        console.log("请求被取消（组件卸载）");
         return;
       }
       throw err;
@@ -809,13 +849,13 @@ class UserListPage {
 
   // 组件卸载
   componentWillUnmount() {
-    canceller.cancelGroup(this.group, '组件已卸载');
+    canceller.cancelGroup(this.group, "组件已卸载");
   }
 }
 
 // 场景 3: 路由切换时取消所有 API 请求
 function onRouteChange() {
-  canceller.cancelGroup('api', '路由已切换');
+  canceller.cancelGroup("api", "路由已切换");
 }
 
 module.exports = { canceller, search, UserListPage };
@@ -839,7 +879,7 @@ class ConcurrencyController {
   constructor(maxConcurrency = 6) {
     this.maxConcurrency = maxConcurrency;
     this.running = 0;
-    this.queue = [];  // { fn, resolve, reject }
+    this.queue = []; // { fn, resolve, reject }
   }
 
   /**
@@ -886,7 +926,7 @@ class ConcurrencyController {
    */
   clear() {
     const rejected = this.queue.splice(0);
-    rejected.forEach(({ reject }) => reject(new Error('Queue cleared')));
+    rejected.forEach(({ reject }) => reject(new Error("Queue cleared")));
   }
 }
 
@@ -917,10 +957,9 @@ class RequestDeduplicator {
       return this.inFlight.get(key);
     }
 
-    const promise = fetchFn()
-      .finally(() => {
-        this.inFlight.delete(key);
-      });
+    const promise = fetchFn().finally(() => {
+      this.inFlight.delete(key);
+    });
 
     this.inFlight.set(key, promise);
     return promise;
@@ -951,9 +990,9 @@ class RequestDeduplicator {
 function createDedupedFetch(fetchFn, deduplicator = new RequestDeduplicator()) {
   return function dedupedFetch(url, options = {}) {
     const key = RequestCanceller.generateKey(
-      options.method || 'GET',
+      options.method || "GET",
       url,
-      options.params
+      options.params,
     );
 
     return deduplicator.get(key, () => fetchFn(url, options));
@@ -983,14 +1022,14 @@ module.exports = { RequestDeduplicator, createDedupedFetch };
  * - Fetch: 不自动抛错 (4xx/5xx)、无超时、无拦截器、需手动处理
  */
 
-const axios = require('axios');
+const axios = require("axios");
 
 /**
  * 创建 Axios 实例
  */
 function createApiClient(config = {}) {
   const {
-    baseURL = '',
+    baseURL = "",
     timeout = 10000,
     tokenProvider = null,
     refreshTokenFn = null,
@@ -1001,18 +1040,22 @@ function createApiClient(config = {}) {
     baseURL,
     timeout,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     // Axios 内置的 xsrf 防护
-    xsrfCookieName: 'XSRF-TOKEN',
-    xsrfHeaderName: 'X-XSRF-TOKEN',
+    xsrfCookieName: "XSRF-TOKEN",
+    xsrfHeaderName: "X-XSRF-TOKEN",
     // 响应数据自动转换
-    transformResponse: [(data) => {
-      if (typeof data === 'string') {
-        try { data = JSON.parse(data); } catch (_) {}
-      }
-      return data;
-    }],
+    transformResponse: [
+      (data) => {
+        if (typeof data === "string") {
+          try {
+            data = JSON.parse(data);
+          } catch (_) {}
+        }
+        return data;
+      },
+    ],
   });
 
   // ── 请求拦截器 ──
@@ -1032,22 +1075,24 @@ function createApiClient(config = {}) {
       return config;
     },
     (error) => {
-      console.error('请求拦截器错误:', error);
+      console.error("请求拦截器错误:", error);
       return Promise.reject(error);
-    }
+    },
   );
 
   // ── 响应拦截器 ──
   api.interceptors.response.use(
     (response) => {
       const elapsed = Date.now() - (response.config._startTime || Date.now());
-      console.log(`← ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url} (${elapsed}ms)`);
+      console.log(
+        `← ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url} (${elapsed}ms)`,
+      );
 
       // 业务层解包
       const { data } = response;
-      if (data && typeof data === 'object' && 'code' in data) {
+      if (data && typeof data === "object" && "code" in data) {
         if (data.code !== 0 && data.code !== 200) {
-          const err = new Error(data.message || 'Business Error');
+          const err = new Error(data.message || "Business Error");
           err.code = data.code;
           err.data = data.data;
           throw err;
@@ -1059,7 +1104,11 @@ function createApiClient(config = {}) {
     },
     async (error) => {
       // ── 401 自动刷新 Token ──
-      if (error.response?.status === 401 && refreshTokenFn && !error.config?._isRetry) {
+      if (
+        error.response?.status === 401 &&
+        refreshTokenFn &&
+        !error.config?._isRetry
+      ) {
         // 防止并发刷新
         if (!api._isRefreshing) {
           api._isRefreshing = true;
@@ -1071,7 +1120,7 @@ function createApiClient(config = {}) {
             api._refreshSubscribers.forEach((cb) => cb());
           } catch (refreshErr) {
             api._refreshSubscribers.forEach((cb) => cb(null));
-            window?.location?.replace('/login');
+            window?.location?.replace("/login");
             return Promise.reject(refreshErr);
           } finally {
             api._isRefreshing = false;
@@ -1094,8 +1143,8 @@ function createApiClient(config = {}) {
 
       if (
         retryCount < maxRetries &&
-        error.code !== 'ERR_CANCELED' &&
-        ['GET', 'HEAD', 'OPTIONS'].includes(config.method?.toUpperCase())
+        error.code !== "ERR_CANCELED" &&
+        ["GET", "HEAD", "OPTIONS"].includes(config.method?.toUpperCase())
       ) {
         config.__retryCount = retryCount + 1;
         const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
@@ -1107,7 +1156,7 @@ function createApiClient(config = {}) {
 
       console.error(`请求失败: ${error.message}`, error.response?.status);
       return Promise.reject(error);
-    }
+    },
   );
 
   return api;
@@ -1159,16 +1208,16 @@ const {
   InterceptorManager,
   executeRequestInterceptors,
   executeResponseInterceptors,
-} = require('./interceptor');
-const { createRetryStrategy, requestWithRetry } = require('./retry');
-const { RequestCanceller, RequestDebouncer } = require('./cancellation');
-const { ConcurrencyController } = require('./concurrency');
-const { RequestDeduplicator } = require('./dedup');
+} = require("./interceptor");
+const { createRetryStrategy, requestWithRetry } = require("./retry");
+const { RequestCanceller, RequestDebouncer } = require("./cancellation");
+const { ConcurrencyController } = require("./concurrency");
+const { RequestDeduplicator } = require("./dedup");
 
 class HttpClient {
   constructor(options = {}) {
     const {
-      baseURL = '',
+      baseURL = "",
       timeout = 10000,
       maxConcurrency = 6,
       maxRetries = 3,
@@ -1176,7 +1225,7 @@ class HttpClient {
       retryMultiplier = 2,
       enableDedup = true,
       enableCache = true,
-      cacheTTL = 30000,    // 缓存 TTL (ms)
+      cacheTTL = 30000, // 缓存 TTL (ms)
       enableOffline = false,
       tokenProvider = null,
       refreshTokenFn = null,
@@ -1221,7 +1270,7 @@ class HttpClient {
 
     // 离线队列
     this.offlineQueue = enableOffline ? [] : null;
-    this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    this.isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
     // 性能监控
     this.metrics = {
@@ -1238,9 +1287,11 @@ class HttpClient {
     this._registerDefaults({ baseURL, tokenProvider, refreshTokenFn });
 
     // 在线/离线监听
-    if (enableOffline && typeof window !== 'undefined') {
-      window.addEventListener('online', () => this._goOnline());
-      window.addEventListener('offline', () => { this.isOnline = false; });
+    if (enableOffline && typeof window !== "undefined") {
+      window.addEventListener("online", () => this._goOnline());
+      window.addEventListener("offline", () => {
+        this.isOnline = false;
+      });
     }
   }
 
@@ -1250,8 +1301,9 @@ class HttpClient {
   _registerDefaults({ baseURL, tokenProvider, refreshTokenFn }) {
     // baseURL
     this.interceptors.use((config) => {
-      if (baseURL && !config.url.startsWith('http')) {
-        config.url = baseURL.replace(/\/$/, '') + '/' + config.url.replace(/^\//, '');
+      if (baseURL && !config.url.startsWith("http")) {
+        config.url =
+          baseURL.replace(/\/$/, "") + "/" + config.url.replace(/^\//, "");
       }
       return config;
     });
@@ -1261,7 +1313,10 @@ class HttpClient {
       this.interceptors.use(async (config) => {
         const token = await tokenProvider();
         if (token) {
-          config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
+          config.headers = {
+            ...config.headers,
+            Authorization: `Bearer ${token}`,
+          };
         }
         return config;
       });
@@ -1277,7 +1332,9 @@ class HttpClient {
     // 响应日志
     this.interceptors.use(null, (response) => {
       const elapsed = Date.now() - (response.config?._startTime || Date.now());
-      this.logger.log(`← ${response.status} ${response.config?.method} ${response.config?.url} (${elapsed}ms)`);
+      this.logger.log(
+        `← ${response.status} ${response.config?.method} ${response.config?.url} (${elapsed}ms)`,
+      );
       return response;
     });
 
@@ -1297,7 +1354,7 @@ class HttpClient {
             } catch (err) {
               refreshQueue.forEach((cb) => cb(null));
               refreshQueue = [];
-              window?.location?.replace('/login');
+              window?.location?.replace("/login");
               throw err;
             } finally {
               isRefreshing = false;
@@ -1317,14 +1374,18 @@ class HttpClient {
     // 业务解包
     this.interceptors.use(null, async (response) => {
       if (response.data === undefined && response.json) {
-        const contentType = response.headers?.['content-type'] || '';
-        if (contentType.includes('application/json')) {
+        const contentType = response.headers?.["content-type"] || "";
+        if (contentType.includes("application/json")) {
           response.data = await response.json();
         }
       }
-      if (response.data && typeof response.data === 'object' && 'code' in response.data) {
+      if (
+        response.data &&
+        typeof response.data === "object" &&
+        "code" in response.data
+      ) {
         if (response.data.code !== 0 && response.data.code !== 200) {
-          const err = new Error(response.data.message || 'Business Error');
+          const err = new Error(response.data.message || "Business Error");
           err.code = response.data.code;
           err.data = response.data.data;
           throw err;
@@ -1340,7 +1401,7 @@ class HttpClient {
    */
   async request(url, options = {}) {
     const {
-      method = 'GET',
+      method = "GET",
       headers = {},
       params = null,
       body = null,
@@ -1348,7 +1409,7 @@ class HttpClient {
       timeout: customTimeout,
       retry = true,
       dedup = true,
-      useCache = method.toUpperCase() === 'GET',
+      useCache = method.toUpperCase() === "GET",
       cacheTTL = this.cacheTTL,
       group = null,
       debounce = false,
@@ -1364,7 +1425,7 @@ class HttpClient {
     }
 
     // 2. 缓存（GET 请求）
-    if (useCache && this.cache && method.toUpperCase() === 'GET') {
+    if (useCache && this.cache && method.toUpperCase() === "GET") {
       const cacheKey = RequestCanceller.generateKey(method, url, params);
       const cached = this.cache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < cacheTTL) {
@@ -1374,16 +1435,36 @@ class HttpClient {
     }
 
     // 3. 去重
-    if (this.deduplicator && dedup && method.toUpperCase() === 'GET') {
+    if (this.deduplicator && dedup && method.toUpperCase() === "GET") {
       const dedupKey = RequestCanceller.generateKey(method, url, params);
-      return this.deduplicator.get(dedupKey, () => this._doRequest(url, {
-        ...options, method, headers, params, body, signal, timeout: customTimeout, retry, group,
-      }));
+      return this.deduplicator.get(dedupKey, () =>
+        this._doRequest(url, {
+          ...options,
+          method,
+          headers,
+          params,
+          body,
+          signal,
+          timeout: customTimeout,
+          retry,
+          group,
+        }),
+      );
     }
 
     // 4. 并发控制
     return this.concurrency.submit(() =>
-      this._doRequest(url, { ...options, method, headers, params, body, signal, timeout: customTimeout, retry, group })
+      this._doRequest(url, {
+        ...options,
+        method,
+        headers,
+        params,
+        body,
+        signal,
+        timeout: customTimeout,
+        retry,
+        group,
+      }),
     );
   }
 
@@ -1392,7 +1473,7 @@ class HttpClient {
    */
   async _doRequest(url, options = {}) {
     const {
-      method = 'GET',
+      method = "GET",
       headers = {},
       params = null,
       body = null,
@@ -1409,8 +1490,8 @@ class HttpClient {
       url,
       method,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
         ...headers,
       },
       params,
@@ -1420,19 +1501,26 @@ class HttpClient {
     };
 
     // 执行请求拦截器
-    config = await executeRequestInterceptors(this.interceptors.enabledHandlers, config);
+    config = await executeRequestInterceptors(
+      this.interceptors.enabledHandlers,
+      config,
+    );
 
     // 拼接 URL
     let finalUrl = config.url;
     if (config.params && Object.keys(config.params).length > 0) {
       const qs = new URLSearchParams(
-        Object.entries(config.params).filter(([, v]) => v !== undefined && v !== null)
+        Object.entries(config.params).filter(
+          ([, v]) => v !== undefined && v !== null,
+        ),
       ).toString();
       finalUrl = `${config.url}?${qs}`;
     }
 
     // 注册取消
-    const requestKey = group ? `${group}:${RequestCanceller.generateKey(method, finalUrl, config.params)}` : RequestCanceller.generateKey(method, finalUrl, config.params);
+    const requestKey = group
+      ? `${group}:${RequestCanceller.generateKey(method, finalUrl, config.params)}`
+      : RequestCanceller.generateKey(method, finalUrl, config.params);
     let abortSignal = externalSignal;
     if (!externalSignal) {
       abortSignal = this.canceller.register(requestKey, { group });
@@ -1444,8 +1532,11 @@ class HttpClient {
       headers: config.headers,
       signal: abortSignal,
     };
-    if (config.body && !['GET', 'HEAD'].includes(config.method.toUpperCase())) {
-      fetchOptions.body = typeof config.body === 'string' ? config.body : JSON.stringify(config.body);
+    if (config.body && !["GET", "HEAD"].includes(config.method.toUpperCase())) {
+      fetchOptions.body =
+        typeof config.body === "string"
+          ? config.body
+          : JSON.stringify(config.body);
     }
 
     // 超时
@@ -1457,14 +1548,23 @@ class HttpClient {
       // 执行请求（带重试）
       const fetchFn = (url, opts) => fetch(url, opts);
       const response = retry
-        ? await requestWithRetry(fetchFn, finalUrl, fetchOptions, this.retryStrategy)
+        ? await requestWithRetry(
+            fetchFn,
+            finalUrl,
+            fetchOptions,
+            this.retryStrategy,
+          )
         : await fetch(finalUrl, fetchOptions);
 
       // 检查状态
       if (!response.ok) {
         let bodyData;
-        try { bodyData = await response.json(); } catch (_) {}
-        const err = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        try {
+          bodyData = await response.json();
+        } catch (_) {}
+        const err = new Error(
+          `HTTP ${response.status}: ${response.statusText}`,
+        );
         err.status = response.status;
         err.statusText = response.statusText;
         err.url = response.url;
@@ -1474,11 +1574,11 @@ class HttpClient {
       }
 
       // 解析响应
-      const contentType = response.headers.get('content-type') || '';
+      const contentType = response.headers.get("content-type") || "";
       let data;
-      if (contentType.includes('application/json')) {
+      if (contentType.includes("application/json")) {
         data = await response.json();
-      } else if (contentType.includes('text/')) {
+      } else if (contentType.includes("text/")) {
         data = await response.text();
       } else {
         data = await response.blob();
@@ -1493,12 +1593,22 @@ class HttpClient {
       };
 
       // 执行响应拦截器
-      const processed = await executeResponseInterceptors(this.interceptors.enabledHandlers, result);
+      const processed = await executeResponseInterceptors(
+        this.interceptors.enabledHandlers,
+        result,
+      );
 
       // 缓存 GET 响应
-      if (this.cache && method.toUpperCase() === 'GET') {
-        const cacheKey = RequestCanceller.generateKey(method, finalUrl, config.params);
-        this.cache.set(cacheKey, { data: processed.data || processed, timestamp: Date.now() });
+      if (this.cache && method.toUpperCase() === "GET") {
+        const cacheKey = RequestCanceller.generateKey(
+          method,
+          finalUrl,
+          config.params,
+        );
+        this.cache.set(cacheKey, {
+          data: processed.data || processed,
+          timestamp: Date.now(),
+        });
       }
 
       // 更新指标
@@ -1507,10 +1617,9 @@ class HttpClient {
 
       this.canceller.cleanup(requestKey);
       return processed;
-
     } catch (error) {
       // 执行错误拦截器
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         this.metrics.cancelledRequests++;
         this.canceller.cleanup(requestKey);
         throw error;
@@ -1531,7 +1640,7 @@ class HttpClient {
                 headers: result.headers,
                 body: result.body,
                 params: result.params,
-                retry: false,  // 避免无限重试
+                retry: false, // 避免无限重试
               });
             }
           } catch (_) {}
@@ -1549,24 +1658,44 @@ class HttpClient {
   }
 
   // ── 便捷方法 ──
-  get(url, options) { return this.request(url, { ...options, method: 'GET' }); }
-  post(url, body, options) { return this.request(url, { ...options, method: 'POST', body }); }
-  put(url, body, options) { return this.request(url, { ...options, method: 'PUT', body }); }
-  patch(url, body, options) { return this.request(url, { ...options, method: 'PATCH', body }); }
-  delete(url, options) { return this.request(url, { ...options, method: 'DELETE' }); }
+  get(url, options) {
+    return this.request(url, { ...options, method: "GET" });
+  }
+  post(url, body, options) {
+    return this.request(url, { ...options, method: "POST", body });
+  }
+  put(url, body, options) {
+    return this.request(url, { ...options, method: "PUT", body });
+  }
+  patch(url, body, options) {
+    return this.request(url, { ...options, method: "PATCH", body });
+  }
+  delete(url, options) {
+    return this.request(url, { ...options, method: "DELETE" });
+  }
 
   // ── 批量请求 ──
   async all(...requests) {
-    return Promise.allSettled(requests.map(([url, opts]) => this.request(url, opts)));
+    return Promise.allSettled(
+      requests.map(([url, opts]) => this.request(url, opts)),
+    );
   }
 
   // ── 取消 ──
-  cancel(key) { this.canceller.cancel(key); }
-  cancelGroup(group) { this.canceller.cancelGroup(group); }
-  cancelAll() { this.canceller.cancelAll(); }
+  cancel(key) {
+    this.canceller.cancel(key);
+  }
+  cancelGroup(group) {
+    this.canceller.cancelGroup(group);
+  }
+  cancelAll() {
+    this.canceller.cancelAll();
+  }
 
   // ── 缓存 ──
-  clearCache() { this.cache?.clear(); }
+  clearCache() {
+    this.cache?.clear();
+  }
   invalidateCache(key) {
     if (this.cache) {
       // 清除所有以 key 开头的缓存
@@ -1580,12 +1709,19 @@ class HttpClient {
   getMetrics() {
     return {
       ...this.metrics,
-      avgLatency: this.metrics.totalRequests > 0
-        ? Math.round(this.metrics.totalLatency / this.metrics.successfulRequests)
-        : 0,
-      successRate: this.metrics.totalRequests > 0
-        ? ((this.metrics.successfulRequests / this.metrics.totalRequests) * 100).toFixed(1) + '%'
-        : '0%',
+      avgLatency:
+        this.metrics.totalRequests > 0
+          ? Math.round(
+              this.metrics.totalLatency / this.metrics.successfulRequests,
+            )
+          : 0,
+      successRate:
+        this.metrics.totalRequests > 0
+          ? (
+              (this.metrics.successfulRequests / this.metrics.totalRequests) *
+              100
+            ).toFixed(1) + "%"
+          : "0%",
       concurrency: this.concurrency.status,
       pendingRequests: this.canceller.pendingCount,
     };
@@ -1611,11 +1747,11 @@ module.exports = { HttpClient };
 ```js
 // --- File: src/network/example.js ---
 
-const { HttpClient } = require('./http-client');
+const { HttpClient } = require("./http-client");
 
 // ── 创建客户端 ──
 const client = new HttpClient({
-  baseURL: 'https://api.example.com',
+  baseURL: "https://api.example.com",
   timeout: 15000,
   maxConcurrency: 4,
   maxRetries: 3,
@@ -1623,42 +1759,44 @@ const client = new HttpClient({
   enableDedup: true,
   enableCache: true,
   cacheTTL: 60000,
-  tokenProvider: () => localStorage.getItem('access_token'),
+  tokenProvider: () => localStorage.getItem("access_token"),
   refreshTokenFn: async () => {
-    const res = await fetch('/auth/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: localStorage.getItem('refresh_token') }),
+    const res = await fetch("/auth/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        refresh_token: localStorage.getItem("refresh_token"),
+      }),
     });
     const { access_token, refresh_token } = await res.json();
-    localStorage.setItem('access_token', access_token);
-    localStorage.setItem('refresh_token', refresh_token);
+    localStorage.setItem("access_token", access_token);
+    localStorage.setItem("refresh_token", refresh_token);
   },
 });
 
 // 添加自定义拦截器
 client.interceptors.use((config) => {
   // 添加请求 ID 用于追踪
-  config.headers['X-Request-ID'] = crypto.randomUUID();
+  config.headers["X-Request-ID"] = crypto.randomUUID();
   return config;
 });
 
 // ── 基本请求 ──
 async function basicExamples() {
   // GET
-  const users = await client.get('/users', { params: { page: 1, limit: 20 } });
+  const users = await client.get("/users", { params: { page: 1, limit: 20 } });
 
   // POST
-  const newUser = await client.post('/users', { name: 'Alice', role: 'admin' });
+  const newUser = await client.post("/users", { name: "Alice", role: "admin" });
 
   // PUT
-  const updated = await client.put('/users/1', { name: 'Alice Updated' });
+  const updated = await client.put("/users/1", { name: "Alice Updated" });
 
   // DELETE
-  await client.delete('/users/1');
+  await client.delete("/users/1");
 
   // PATCH
-  const patched = await client.patch('/users/1', { role: 'superadmin' });
+  const patched = await client.patch("/users/1", { role: "superadmin" });
 }
 
 // ── 搜索（防抖 + 取消） ──
@@ -1666,12 +1804,12 @@ let searchController = null;
 async function searchUsers(query) {
   // 取消上一次搜索
   if (searchController) {
-    client.cancelGroup('search');
+    client.cancelGroup("search");
   }
 
-  const results = await client.get('/search/users', {
+  const results = await client.get("/search/users", {
     params: { q: query },
-    group: 'search',
+    group: "search",
     debounce: true,
     useCache: false,
   });
@@ -1682,13 +1820,13 @@ async function searchUsers(query) {
 // ── 批量请求 ──
 async function batchExamples() {
   const results = await client.all(
-    ['/api/users', { method: 'GET' }],
-    ['/api/posts', { method: 'GET' }],
-    ['/api/comments', { method: 'GET' }],
+    ["/api/users", { method: "GET" }],
+    ["/api/posts", { method: "GET" }],
+    ["/api/comments", { method: "GET" }],
   );
 
   results.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       console.log(`请求 ${i} 成功:`, result.value.data);
     } else {
       console.error(`请求 ${i} 失败:`, result.reason);
@@ -1699,20 +1837,20 @@ async function batchExamples() {
 // ── 组件卸载取消 ──
 class Dashboard {
   constructor() {
-    this.group = 'dashboard';
+    this.group = "dashboard";
   }
 
   async loadData() {
     const [users, stats, config] = await Promise.all([
-      client.get('/users', { group: this.group }),
-      client.get('/stats', { group: this.group }),
-      client.get('/config', { group: this.group }),
+      client.get("/users", { group: this.group }),
+      client.get("/stats", { group: this.group }),
+      client.get("/config", { group: this.group }),
     ]);
     return { users, stats, config };
   }
 
   destroy() {
-    client.cancelGroup(this.group, 'Dashboard 已卸载');
+    client.cancelGroup(this.group, "Dashboard 已卸载");
   }
 }
 
@@ -1720,20 +1858,26 @@ class Dashboard {
 function showMetrics() {
   const metrics = client.getMetrics();
   console.table({
-    '总请求数': metrics.totalRequests,
-    '成功': metrics.successfulRequests,
-    '失败': metrics.failedRequests,
-    '重试': metrics.retriedRequests,
-    '缓存命中': metrics.cachedRequests,
-    '取消': metrics.cancelledRequests,
-    '成功率': metrics.successRate,
-    '平均延迟': metrics.avgLatency + 'ms',
-    '并发中': metrics.concurrency.running,
-    '排队中': metrics.concurrency.pending,
+    总请求数: metrics.totalRequests,
+    成功: metrics.successfulRequests,
+    失败: metrics.failedRequests,
+    重试: metrics.retriedRequests,
+    缓存命中: metrics.cachedRequests,
+    取消: metrics.cancelledRequests,
+    成功率: metrics.successRate,
+    平均延迟: metrics.avgLatency + "ms",
+    并发中: metrics.concurrency.running,
+    排队中: metrics.concurrency.pending,
   });
 }
 
-module.exports = { client, basicExamples, searchUsers, batchExamples, Dashboard };
+module.exports = {
+  client,
+  basicExamples,
+  searchUsers,
+  batchExamples,
+  Dashboard,
+};
 ```
 
 ---
@@ -1758,18 +1902,18 @@ const createMockFetch = () => {
     const lastCall = calls[calls.length - 1];
 
     // 模拟超时
-    if (url.includes('/timeout')) {
+    if (url.includes("/timeout")) {
       return new Promise((_, reject) => {
         const timer = setTimeout(() => {
-          const error = new Error('The operation was aborted');
-          error.name = 'AbortError';
+          const error = new Error("The operation was aborted");
+          error.name = "AbortError";
           reject(error);
         }, 10);
         if (options?.signal) {
-          options.signal.addEventListener('abort', () => {
+          options.signal.addEventListener("abort", () => {
             clearTimeout(timer);
-            const error = new Error('The operation was aborted');
-            error.name = 'AbortError';
+            const error = new Error("The operation was aborted");
+            error.name = "AbortError";
             reject(error);
           });
         }
@@ -1777,26 +1921,26 @@ const createMockFetch = () => {
     }
 
     // 模拟 500
-    if (url.includes('/error')) {
+    if (url.includes("/error")) {
       return {
         ok: false,
         status: 500,
-        statusText: 'Internal Server Error',
+        statusText: "Internal Server Error",
         url,
-        headers: new Map([['content-type', 'application/json']]),
-        json: async () => ({ error: 'Server Error' }),
+        headers: new Map([["content-type", "application/json"]]),
+        json: async () => ({ error: "Server Error" }),
       };
     }
 
     // 模拟 401
-    if (url.includes('/unauthorized')) {
+    if (url.includes("/unauthorized")) {
       return {
         ok: false,
         status: 401,
-        statusText: 'Unauthorized',
+        statusText: "Unauthorized",
         url,
-        headers: new Map([['content-type', 'application/json']]),
-        json: async () => ({ error: 'Unauthorized' }),
+        headers: new Map([["content-type", "application/json"]]),
+        json: async () => ({ error: "Unauthorized" }),
       };
     }
 
@@ -1804,10 +1948,14 @@ const createMockFetch = () => {
     return {
       ok: true,
       status: 200,
-      statusText: 'OK',
+      statusText: "OK",
       url,
-      headers: new Map([['content-type', 'application/json']]),
-      json: async () => ({ code: 0, data: { id: 1, name: 'Test' }, message: 'ok' }),
+      headers: new Map([["content-type", "application/json"]]),
+      json: async () => ({
+        code: 0,
+        data: { id: 1, name: "Test" },
+        message: "ok",
+      }),
     };
   };
 
@@ -1817,74 +1965,75 @@ const createMockFetch = () => {
 
 // ── 测试: 基础 GET 请求 ──
 async function testBasicGet() {
-  console.log('测试: 基础 GET 请求');
+  console.log("测试: 基础 GET 请求");
 
-  const client = new HttpClient({ baseURL: 'https://api.test.com' });
+  const client = new HttpClient({ baseURL: "https://api.test.com" });
   // 这里需要替换全局 fetch，实际测试用 Jest mock
 
-  console.log('  ✅ GET /users?page=1 → 200');
-  console.log('  ✅ 自动拼接 query params');
-  console.log('  ✅ 自动设置 Content-Type');
+  console.log("  ✅ GET /users?page=1 → 200");
+  console.log("  ✅ 自动拼接 query params");
+  console.log("  ✅ 自动设置 Content-Type");
 }
 
 // ── 测试: 重试机制 ──
 async function testRetry() {
-  console.log('测试: 重试机制');
+  console.log("测试: 重试机制");
 
   const strategy = createRetryStrategy({
     maxRetries: 3,
-    baseDelay: 10,  // 测试用短延迟
+    baseDelay: 10, // 测试用短延迟
     multiplier: 2,
     jitter: false,
   });
 
-  console.log('  ✅ 第 1 次重试延迟: 10ms');
-  console.log('  ✅ 第 2 次重试延迟: 20ms');
-  console.log('  ✅ 第 3 次重试延迟: 40ms');
-  console.log('  ✅ 408/5xx 状态码触发重试');
-  console.log('  ✅ AbortError 不重试');
-  console.log('  ✅ POST 默认不重试（非幂等）');
+  console.log("  ✅ 第 1 次重试延迟: 10ms");
+  console.log("  ✅ 第 2 次重试延迟: 20ms");
+  console.log("  ✅ 第 3 次重试延迟: 40ms");
+  console.log("  ✅ 408/5xx 状态码触发重试");
+  console.log("  ✅ AbortError 不重试");
+  console.log("  ✅ POST 默认不重试（非幂等）");
 }
 
 // ── 测试: 请求取消 ──
 async function testCancellation() {
-  console.log('测试: 请求取消');
+  console.log("测试: 请求取消");
 
   const canceller = new RequestCanceller();
 
   // 注册请求
-  const signal = canceller.register('test-key');
-  console.log('  ✅ 注册请求，pending:', canceller.pendingCount);
+  const signal = canceller.register("test-key");
+  console.log("  ✅ 注册请求，pending:", canceller.pendingCount);
 
   // 取消请求
-  canceller.cancel('test-key');
-  console.log('  ✅ 取消请求，pending:', canceller.pendingCount);
+  canceller.cancel("test-key");
+  console.log("  ✅ 取消请求，pending:", canceller.pendingCount);
 
   // 分组取消
-  canceller.register('a', { group: 'g1' });
-  canceller.register('b', { group: 'g1' });
-  canceller.register('c', { group: 'g2' });
-  canceller.cancelGroup('g1');
-  console.log('  ✅ 分组取消，pending:', canceller.pendingCount);
+  canceller.register("a", { group: "g1" });
+  canceller.register("b", { group: "g1" });
+  canceller.register("c", { group: "g2" });
+  canceller.cancelGroup("g1");
+  console.log("  ✅ 分组取消，pending:", canceller.pendingCount);
 
   // 全部取消
   canceller.cancelAll();
-  console.log('  ✅ 全部取消，pending:', canceller.pendingCount);
+  console.log("  ✅ 全部取消，pending:", canceller.pendingCount);
 }
 
 // ── 测试: 并发控制 ──
 async function testConcurrency() {
-  console.log('测试: 并发控制');
+  console.log("测试: 并发控制");
 
   const controller = new ConcurrencyController(2);
   const results = [];
 
-  const slowTask = (id, delay) => new Promise((resolve) => {
-    setTimeout(() => {
-      results.push(id);
-      resolve(id);
-    }, delay);
-  });
+  const slowTask = (id, delay) =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        results.push(id);
+        resolve(id);
+      }, delay);
+    });
 
   // 提交 5 个任务，并发限制 2
   const promises = [
@@ -1896,71 +2045,99 @@ async function testConcurrency() {
   ];
 
   await Promise.all(promises);
-  console.log('  ✅ 完成顺序:', results.join(', '));
-  console.log('  ✅ 前 2 个先执行，后续按完成顺序入队');
+  console.log("  ✅ 完成顺序:", results.join(", "));
+  console.log("  ✅ 前 2 个先执行，后续按完成顺序入队");
 }
 
 // ── 测试: 请求去重 ──
 async function testDedup() {
-  console.log('测试: 请求去重');
+  console.log("测试: 请求去重");
 
   const deduplicator = new RequestDeduplicator();
   let callCount = 0;
 
   const fetchFn = async () => {
     callCount++;
-    return { data: 'result' };
+    return { data: "result" };
   };
 
   // 同时发起 3 个相同请求
   const [r1, r2, r3] = await Promise.all([
-    deduplicator.get('key1', fetchFn),
-    deduplicator.get('key1', fetchFn),
-    deduplicator.get('key1', fetchFn),
+    deduplicator.get("key1", fetchFn),
+    deduplicator.get("key1", fetchFn),
+    deduplicator.get("key1", fetchFn),
   ]);
 
-  console.log('  ✅ fetch 实际调用次数:', callCount, '(应为 1)');
-  console.log('  ✅ 三个请求返回相同结果:', r1 === r2 && r2 === r3);
+  console.log("  ✅ fetch 实际调用次数:", callCount, "(应为 1)");
+  console.log("  ✅ 三个请求返回相同结果:", r1 === r2 && r2 === r3);
 }
 
 // ── 测试: 拦截器链 ──
 async function testInterceptors() {
-  console.log('测试: 拦截器链');
+  console.log("测试: 拦截器链");
 
   const manager = new InterceptorManager();
   const log = [];
 
   // 请求拦截器
-  manager.use((config) => { log.push('req-1'); config.headers['X-1'] = '1'; return config; });
-  manager.use((config) => { log.push('req-2'); config.headers['X-2'] = '2'; return config; });
+  manager.use((config) => {
+    log.push("req-1");
+    config.headers["X-1"] = "1";
+    return config;
+  });
+  manager.use((config) => {
+    log.push("req-2");
+    config.headers["X-2"] = "2";
+    return config;
+  });
 
   // 响应拦截器
-  manager.use(null, (res) => { log.push('res-2'); res.data += '-res2'; return res; });
-  manager.use(null, (res) => { log.push('res-1'); res.data += '-res1'; return res; });
+  manager.use(null, (res) => {
+    log.push("res-2");
+    res.data += "-res2";
+    return res;
+  });
+  manager.use(null, (res) => {
+    log.push("res-1");
+    res.data += "-res1";
+    return res;
+  });
 
   // 错误拦截器
-  manager.use(null, null, (err) => { log.push('error'); throw err; });
+  manager.use(null, null, (err) => {
+    log.push("error");
+    throw err;
+  });
 
-  const config = await executeRequestInterceptors(manager.enabledHandlers, { url: '/test', headers: {} });
-  console.log('  ✅ 请求拦截器顺序:', log.join(', '));
-  console.log('  ✅ 请求头已注入:', config.headers['X-1'], config.headers['X-2']);
+  const config = await executeRequestInterceptors(manager.enabledHandlers, {
+    url: "/test",
+    headers: {},
+  });
+  console.log("  ✅ 请求拦截器顺序:", log.join(", "));
+  console.log(
+    "  ✅ 请求头已注入:",
+    config.headers["X-1"],
+    config.headers["X-2"],
+  );
 
   log.length = 0;
-  const response = await executeResponseInterceptors(manager.enabledHandlers, { data: 'original' });
-  console.log('  ✅ 响应拦截器顺序:', log.join(', '));
-  console.log('  ✅ 响应数据处理:', response.data);
+  const response = await executeResponseInterceptors(manager.enabledHandlers, {
+    data: "original",
+  });
+  console.log("  ✅ 响应拦截器顺序:", log.join(", "));
+  console.log("  ✅ 响应数据处理:", response.data);
 }
 
 // ── 运行所有测试 ──
 async function runAllTests() {
-  console.log('═══ 网络层单元测试 ═══\n');
+  console.log("═══ 网络层单元测试 ═══\n");
   await testBasicGet();
   await testRetry();
   await testCancellation();
   await testConcurrency();
   await testDedup();
   await testInterceptors();
-  console.log('\n═══ 全部测试通过 ✅ ═══');
+  console.log("\n═══ 全部测试通过 ✅ ═══");
 }
 
 // 导出
@@ -1987,18 +2164,18 @@ if (require.main === module) {
 
 ### Fetch vs Axios 对比
 
-| 特性 | Fetch | Axios |
-|------|-------|-------|
-| 体积 | 0 (原生) | ~13KB (gzip) |
-| JSON 自动转换 | ❌ 手动 | ✅ 内置 |
-| 超时 | ❌ 需 AbortController | ✅ timeout 配置 |
-| 拦截器 | ❌ 需自己实现 | ✅ 内置 |
-| 取消请求 | ✅ AbortController | ✅ CancelToken/AbortController |
-| 进度事件 | ❌ | ✅ onDownloadProgress |
-| xsrf 防护 | ❌ | ✅ 内置 |
-| 流式响应 | ✅ ReadableStream | ❌ |
-| SSR 支持 | ✅ (Node 18+) | ✅ |
-| 浏览器兼容 | IE11+ (需 polyfill) | 全支持 |
+| 特性          | Fetch                 | Axios                          |
+| ------------- | --------------------- | ------------------------------ |
+| 体积          | 0 (原生)              | ~13KB (gzip)                   |
+| JSON 自动转换 | ❌ 手动               | ✅ 内置                        |
+| 超时          | ❌ 需 AbortController | ✅ timeout 配置                |
+| 拦截器        | ❌ 需自己实现         | ✅ 内置                        |
+| 取消请求      | ✅ AbortController    | ✅ CancelToken/AbortController |
+| 进度事件      | ❌                    | ✅ onDownloadProgress          |
+| xsrf 防护     | ❌                    | ✅ 内置                        |
+| 流式响应      | ✅ ReadableStream     | ❌                             |
+| SSR 支持      | ✅ (Node 18+)         | ✅                             |
+| 浏览器兼容    | IE11+ (需 polyfill)   | 全支持                         |
 
 ### 拦截器设计模式
 
@@ -2017,12 +2194,12 @@ if (require.main === module) {
 
 ### 重试策略选择
 
-| 场景 | 策略 | 最大重试 | 基础延迟 | 倍数 |
-|------|------|---------|---------|------|
-| 搜索建议 | fastFail | 1 | 500ms | 1 |
-| 普通 API | standard | 3 | 1000ms | 2 |
-| 支付回调 | aggressive | 5 | 500ms | 2 |
-| 调试模式 | noRetry | 0 | - | - |
+| 场景     | 策略       | 最大重试 | 基础延迟 | 倍数 |
+| -------- | ---------- | -------- | -------- | ---- |
+| 搜索建议 | fastFail   | 1        | 500ms    | 1    |
+| 普通 API | standard   | 3        | 1000ms   | 2    |
+| 支付回调 | aggressive | 5        | 500ms    | 2    |
+| 调试模式 | noRetry    | 0        | -        | -    |
 
 ### 取消请求场景
 
@@ -2047,20 +2224,20 @@ if (require.main === module) {
 
 ## 代码统计
 
-| 模块 | 文件 | 代码行数 |
-|------|------|---------|
-| Fetch 基础封装 | fetch-base.js | ~80 |
-| Fetch 增强版 | fetch-enhanced.js | ~25 |
-| 拦截器系统 | interceptor.js | ~80 |
-| 常用拦截器 | interceptors.js | ~120 |
-| 重试机制 | retry.js | ~100 |
-| 重试策略 | retry-policies.js | ~30 |
-| 请求取消 | cancellation.js | ~100 |
-| 取消使用示例 | cancellation-usage.js | ~60 |
-| 并发控制 | concurrency.js | ~50 |
-| 请求去重 | dedup.js | ~50 |
-| Axios 封装 | axios-wrapper.js | ~130 |
-| 完整网络层 | http-client.js | ~350 |
-| 使用示例 | example.js | ~100 |
-| 单元测试 | http-client.test.js | ~150 |
-| **总计** | **13 个文件** | **~1425 行** |
+| 模块           | 文件                  | 代码行数     |
+| -------------- | --------------------- | ------------ |
+| Fetch 基础封装 | fetch-base.js         | ~80          |
+| Fetch 增强版   | fetch-enhanced.js     | ~25          |
+| 拦截器系统     | interceptor.js        | ~80          |
+| 常用拦截器     | interceptors.js       | ~120         |
+| 重试机制       | retry.js              | ~100         |
+| 重试策略       | retry-policies.js     | ~30          |
+| 请求取消       | cancellation.js       | ~100         |
+| 取消使用示例   | cancellation-usage.js | ~60          |
+| 并发控制       | concurrency.js        | ~50          |
+| 请求去重       | dedup.js              | ~50          |
+| Axios 封装     | axios-wrapper.js      | ~130         |
+| 完整网络层     | http-client.js        | ~350         |
+| 使用示例       | example.js            | ~100         |
+| 单元测试       | http-client.test.js   | ~150         |
+| **总计**       | **13 个文件**         | **~1425 行** |

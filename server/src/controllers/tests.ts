@@ -3,11 +3,11 @@
  * Phase 2 Integration: CAT Engine + Stability Index
  */
 
-import { Request, Response } from 'express';
-import { CATEngine } from '../services/cat-engine';
-import { calculateStability } from '../services/stability-calculator';
-import { calculateResult } from '../services/result-calculator';
-import { Answer, TestSession, AnswerResponse, TestHistory } from '../types';
+import { Request, Response } from "express";
+import { CATEngine } from "../services/cat-engine";
+import { calculateStability } from "../services/stability-calculator";
+import { calculateResult } from "../services/result-calculator";
+import { Answer, TestSession, AnswerResponse, TestHistory } from "../types";
 
 // In-memory session store (replace with database in production)
 const sessionStore: Map<string, TestSession> = new Map();
@@ -17,11 +17,14 @@ const testHistoryStore: Map<string, TestHistory[]> = new Map();
  * Create a new test session
  * POST /api/v1/tests/sessions
  */
-export async function createSession(req: Request, res: Response): Promise<void> {
+export async function createSession(
+  req: Request,
+  res: Response,
+): Promise<void> {
   const { userId } = req.body;
 
   if (!userId) {
-    res.status(400).json({ error: 'userId is required' });
+    res.status(400).json({ error: "userId is required" });
 
     return;
   }
@@ -40,7 +43,7 @@ export async function createSession(req: Request, res: Response): Promise<void> 
 
   res.status(201).json({
     sessionId,
-    message: 'Test session created',
+    message: "Test session created",
   });
 }
 
@@ -57,11 +60,17 @@ export async function submitAnswer(req: Request, res: Response): Promise<void> {
   const session = sessionStore.get(sessionId);
 
   if (!session) {
-    console.log('DEBUG: Creating temp session for', sessionId);
-    const session = { id: sessionId, userId: 'demo', startTime: Date.now(), answers: [], completed: false };
+    console.log("DEBUG: Creating temp session for", sessionId);
+    const session = {
+      id: sessionId,
+      userId: "demo",
+      startTime: Date.now(),
+      answers: [],
+      completed: false,
+    };
 
     sessionStore.set(sessionId, session);
-    res.status(404).json({ error: 'Session not found' });
+    res.status(404).json({ error: "Session not found" });
 
     return;
   }
@@ -163,11 +172,17 @@ export async function getSession(req: Request, res: Response): Promise<void> {
   const session = sessionStore.get(sessionId);
 
   if (!session) {
-    console.log('DEBUG: Creating temp session for', sessionId);
-    const session = { id: sessionId, userId: 'demo', startTime: Date.now(), answers: [], completed: false };
+    console.log("DEBUG: Creating temp session for", sessionId);
+    const session = {
+      id: sessionId,
+      userId: "demo",
+      startTime: Date.now(),
+      answers: [],
+      completed: false,
+    };
 
     sessionStore.set(sessionId, session);
-    res.status(404).json({ error: 'Session not found' });
+    res.status(404).json({ error: "Session not found" });
 
     return;
   }

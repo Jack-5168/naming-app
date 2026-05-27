@@ -15,7 +15,9 @@ class Subject {
   subscribe(observer) {
     if (!this.observers.includes(observer)) {
       this.observers.push(observer);
-      console.log(`[Subject] Observer subscribed (${this.observers.length} total)`);
+      console.log(
+        `[Subject] Observer subscribed (${this.observers.length} total)`,
+      );
     }
     return () => this.unsubscribe(observer);
   }
@@ -24,7 +26,9 @@ class Subject {
     const index = this.observers.indexOf(observer);
     if (index > -1) {
       this.observers.splice(index, 1);
-      console.log(`[Subject] Observer unsubscribed (${this.observers.length} remaining)`);
+      console.log(
+        `[Subject] Observer unsubscribed (${this.observers.length} remaining)`,
+      );
     }
   }
 
@@ -97,7 +101,9 @@ class EventBus {
       console.log(`[EventBus] No listeners for "${event}"`);
       return;
     }
-    console.log(`[EventBus] Emitting "${event}" to ${this.events[event].length} listeners`);
+    console.log(
+      `[EventBus] Emitting "${event}" to ${this.events[event].length} listeners`,
+    );
     this.events[event].forEach((callback) => callback(data));
   }
 
@@ -135,17 +141,23 @@ class PrioritySubject {
     const entry = { observer, priority };
     this.observers.push(entry);
     this.observers.sort((a, b) => b.priority - a.priority);
-    console.log(`[PrioritySubject] Observer subscribed with priority ${priority}`);
+    console.log(
+      `[PrioritySubject] Observer subscribed with priority ${priority}`,
+    );
     return () => this.unsubscribe(observer);
   }
 
   unsubscribe(observer) {
-    this.observers = this.observers.filter((entry) => entry.observer !== observer);
+    this.observers = this.observers.filter(
+      (entry) => entry.observer !== observer,
+    );
     console.log('[PrioritySubject] Observer unsubscribed');
   }
 
   notify(data) {
-    console.log(`\n[PrioritySubject] Notifying ${this.observers.length} observers by priority...`);
+    console.log(
+      `\n[PrioritySubject] Notifying ${this.observers.length} observers by priority...`,
+    );
     this.observers.forEach(({ observer, priority }) => {
       console.log(`  [Priority ${priority}]`);
       observer.update(data);
@@ -177,7 +189,9 @@ class AsyncSubject {
 
   subscribe(observer) {
     this.observers.push(observer);
-    console.log(`[AsyncSubject] Observer subscribed (${this.observers.length} total)`);
+    console.log(
+      `[AsyncSubject] Observer subscribed (${this.observers.length} total)`,
+    );
     return () => this.unsubscribe(observer);
   }
 
@@ -186,7 +200,9 @@ class AsyncSubject {
   }
 
   async notify(data) {
-    console.log(`[AsyncSubject] Notifying ${this.observers.length} observers asynchronously...`);
+    console.log(
+      `[AsyncSubject] Notifying ${this.observers.length} observers asynchronously...`,
+    );
     const startTime = Date.now();
 
     const results = await Promise.all(
@@ -249,7 +265,9 @@ class NewsAgency {
       this.channels[channelName] = this.channels[channelName].filter(
         (obs) => obs !== observer,
       );
-      console.log(`[NewsAgency] ${observer.name} unsubscribed from ${channelName}`);
+      console.log(
+        `[NewsAgency] ${observer.name} unsubscribed from ${channelName}`,
+      );
     }
   }
 

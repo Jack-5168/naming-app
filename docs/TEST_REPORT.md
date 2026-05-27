@@ -123,14 +123,14 @@ Tests:       23 passed, 23 total
 
 ```
 -------------------|---------|----------|---------|---------|-------------------
-File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 -------------------|---------|----------|---------|---------|-------------------
-All files          |   87.45 |    82.31 |   89.12 |   88.23 |                   
- services          |         |          |         |         |                   
-  cost-control.ts  |   91.23 |    85.71 |   93.33 |   92.11 | 145-150           
-  llm-report.ts    |   85.67 |    80.45 |   88.24 |   86.32 | 234-245,312-318   
- controllers       |         |          |         |         |                   
-  life-events.ts   |   86.12 |    81.25 |   87.50 |   87.01 | 178-185,267-275   
+All files          |   87.45 |    82.31 |   89.12 |   88.23 |
+ services          |         |          |         |         |
+  cost-control.ts  |   91.23 |    85.71 |   93.33 |   92.11 | 145-150
+  llm-report.ts    |   85.67 |    80.45 |   88.24 |   86.32 | 234-245,312-318
+ controllers       |         |          |         |         |
+  life-events.ts   |   86.12 |    81.25 |   87.50 |   87.01 | 178-185,267-275
 -------------------|---------|----------|---------|---------|-------------------
 ```
 
@@ -146,6 +146,7 @@ npx autocannon -c 20 -d 10 http://localhost:3000/api/v1/reports/generate
 ```
 
 结果：
+
 ```
 Running 10s test @ http://localhost:3000/api/v1/reports/generate
 20 connections
@@ -207,8 +208,8 @@ forbiddenWords.forEach(word => {
 ### 免责声明检查
 
 ```javascript
-expect(reportContent.content).toContain('免责声明');
-expect(reportContent.content).toContain('仅供参考');
+expect(reportContent.content).toContain("免责声明");
+expect(reportContent.content).toContain("仅供参考");
 ```
 
 **结果**: ✅ 所有报告包含免责声明
@@ -216,8 +217,8 @@ expect(reportContent.content).toContain('仅供参考');
 ### 结构完整性检查
 
 ```javascript
-const requiredSections = ['核心特质', '优势', '成长建议', '职业', '人际'];
-requiredSections.forEach(section => {
+const requiredSections = ["核心特质", "优势", "成长建议", "职业", "人际"];
+requiredSections.forEach((section) => {
   expect(reportContent.content).toContain(section);
 });
 ```
@@ -226,14 +227,14 @@ requiredSections.forEach(section => {
 
 ## 验收结论
 
-| 验收标准 | 状态 | 说明 |
-|---------|------|------|
-| 报告质量 | ✅ 通过 | 内容通顺、有洞察力、无绝对化表述 |
-| 成本控制 | ✅ 通过 | 单份成本 <¥0.5，预算监控正常 |
-| 性能指标 | ✅ 通过 | 生成时间 <15s，支持 20 QPS |
-| 生活事件 | ✅ 通过 | 录入流畅、分析合理、声明明确 |
-| 用户体验 | ✅ 通过 | 阅读体验良好、导航清晰 |
-| 测试覆盖率 | ✅ 通过 | 87.45% > 85% |
+| 验收标准   | 状态    | 说明                             |
+| ---------- | ------- | -------------------------------- |
+| 报告质量   | ✅ 通过 | 内容通顺、有洞察力、无绝对化表述 |
+| 成本控制   | ✅ 通过 | 单份成本 <¥0.5，预算监控正常     |
+| 性能指标   | ✅ 通过 | 生成时间 <15s，支持 20 QPS       |
+| 生活事件   | ✅ 通过 | 录入流畅、分析合理、声明明确     |
+| 用户体验   | ✅ 通过 | 阅读体验良好、导航清晰           |
+| 测试覆盖率 | ✅ 通过 | 87.45% > 85%                     |
 
 **总体评估**: ✅ Phase 3 所有验收标准均已达成
 

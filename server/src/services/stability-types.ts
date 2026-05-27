@@ -7,7 +7,7 @@
 /**
  * MBTI 维度枚举
  */
-export type MBTIDimension = 'O' | 'C' | 'E' | 'A' | 'N';
+export type MBTIDimension = "O" | "C" | "E" | "A" | "N";
 
 /**
  * 单次测试结果
@@ -58,7 +58,7 @@ export interface StabilityResult {
   confidenceBand: [number, number];
 
   /** 状态标识 */
-  status: 'stable' | 'evolving' | 'unstable' | 'insufficient_data';
+  status: "stable" | "evolving" | "unstable" | "insufficient_data";
 
   /** 各维度统计信息 */
   perDimension: {
