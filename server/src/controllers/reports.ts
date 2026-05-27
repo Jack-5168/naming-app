@@ -11,38 +11,9 @@
  */
 
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import * as winston from 'winston';
 import { generateReport, getRateLimitStatus, reportEvents } from '../services/llm-report';
 import { recordFeatureUsage } from './memberships';
-
-// 扩展 Express Request 类型以包含 user 属性
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: number;
-        email: string;
-        deviceId?: string;
-      };
-    }
-  }
-}
-
-const prisma = new PrismaClient();
-
-// 配置日志记录器
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json(),
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/reports.log' }),
-  ],
-});
+import { prisma, logger } from '../lib/logger';
 
 // ==================== 类型定义 ====================
 

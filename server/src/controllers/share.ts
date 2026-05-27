@@ -19,7 +19,6 @@ import { PrismaClient, ShareChannel, ShareType } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 
-const prisma = new PrismaClient();
 
 // ==================== Share Card Generation ====================
 

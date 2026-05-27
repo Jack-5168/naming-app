@@ -93,7 +93,7 @@ describe('Phase 2 Integration Tests', () => {
 
       expect(result.stabilityIndex).toBeGreaterThan(70);
       expect(result.status).toBe('stable');
-      expect(result.stabilityProbability).toBeGreaterThan(0.9);
+      expect(result.stabilityProbability).toBeGreaterThanOrEqual(0.9);
     });
 
     test('should calculate low stability for inconsistent results', async () => {

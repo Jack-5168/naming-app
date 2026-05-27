@@ -9,12 +9,11 @@
  */
 
 import { Request, Response } from 'express';
-import { PrismaClient, DualTestStatus, ReferralStatus, CommissionStatus } from '@prisma/client';
+import { DualTestStatus, ReferralStatus, CommissionStatus } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import { createPushNotification } from '../services/push-notification';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 // ==================== Dual Test (双人合测) ====================
 

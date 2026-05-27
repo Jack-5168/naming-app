@@ -14,7 +14,6 @@ import { PrismaClient, MembershipLevel, MembershipStatus, OrderStatus, PushNotif
 import * as crypto from 'crypto';
 import { createPushNotification } from '../services/push-notification';
 
-const prisma = new PrismaClient();
 
 // ==================== Configuration ====================
 

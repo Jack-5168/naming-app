@@ -13,8 +13,8 @@
     "Phase 6": { "status": "in-progress", "desc": "上线准备 (支付+安全+上架)", "startDate": "2026-05-12", "originalTarget": "2026-05-25", "targetEnd": "待定", "currentDay": 15, "delayReason": "Prisma schema不同步导致构建失败" }
   },
   "today": {
-    "date": "2026-05-26",
-    "summary": "Phase 6 Day 16 — 构建失败 (~80 TS错误)，Prisma schema 不同步，API 路径不匹配。"
+    "date": "2026-05-27",
+    "summary": "Phase 6 Day 17 — 后端~60 TS错误(Prisma未导入)，前端需legacy provider构建成功，API 2处不匹配。"
   },
   "lastNight": {
     "timestamp": "2026-05-26T23:00:00+08:00",
@@ -25,15 +25,13 @@
     }
   },
   "buildStatus": {
-    "lastCheck": "2026-05-26T07:05:00+08:00",
+    "lastCheck": "2026-05-27T07:05:00+08:00",
     "backend": "failed",
-    "errors": "~80 TS errors",
-    "rootCause": "Prisma schema 不同步",
-    "missingFields": [
-      "dual-test.ts: invitationMethod, expiresAt, acceptedAt, initiatorTestId, participantTestId, initiatorTestResult, participantTestResult",
-      "push-notification: PushNotificationType enum, pushNotification table",
-      "membership-benefits: membership relation"
-    ]
+    "errors": "~60 TS errors",
+    "rootCause": "Prisma client 未导入/生成",
+    "details": "Cannot find name 'prisma' in 11 files",
+    "affected": ["memberships.ts", "payments.ts", "share.ts", "reports.ts"],
+    "frontend": "warning-needs-legacy-provider"
   },
   "apiContracts": {
     "issue": "前端 /quiz/* 与后端 /api/v1/tests/* 路径不匹配",

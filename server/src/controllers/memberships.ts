@@ -13,7 +13,6 @@ import { Request, Response } from 'express';
 import { PrismaClient, MembershipLevel, MembershipStatus, OrderStatus } from '@prisma/client';
 import { createPushNotification } from '../services/push-notification';
 
-const prisma = new PrismaClient();
 
 // ==================== Membership Products Configuration ====================
 

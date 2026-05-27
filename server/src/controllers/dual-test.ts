@@ -12,13 +12,13 @@
  */
 
 import { Request, Response } from 'express';
-import { PrismaClient, DualTestStatus, InvitationMethod } from '@prisma/client';
+import { DualTestStatus, InvitationMethod } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import { createPushNotification } from '../services/push-notification';
 import { analyzeCompatibility, CompatibilityResult } from '../services/compatibility-analyzer';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
 
 // ==================== Dual Test Invitation Management ====================
 
