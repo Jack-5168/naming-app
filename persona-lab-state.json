@@ -1,36 +1,36 @@
 {
   "project": "人格探索局 (Persona Lab)",
-  "lastUpdated": "2026-05-26T23:00:00+08:00",
+  "lastUpdated": "2026-05-27T23:00:00+08:00",
   "currentPhase": "Phase 6 - 上线准备 (延期)",
-  "currentDay": 16,
-  "currentDayDate": "2026-05-26",
+  "currentDay": 17,
+  "currentDayDate": "2026-05-27",
   "phases": {
     "Phase 1": { "status": "completed", "desc": "MVP 核心", "completedDate": "2026-04-21" },
     "Phase 2": { "status": "completed", "desc": "集成 + 优化", "completedDate": "2026-04-22" },
     "Phase 3": { "status": "completed", "desc": "UI/UX 重构", "completedDate": "2026-05-07" },
     "Phase 4": { "status": "completed", "desc": "商业化 + 增长", "completedDate": "2026-05-09" },
     "Phase 5": { "status": "completed", "desc": "会员/增长/分析/性能/内容/通知/测试", "completedDate": "2026-05-11", "days": "8天计划1天完成", "commits": 12, "newFiles": 30, "newLines": "~8000+" },
-    "Phase 6": { "status": "in-progress", "desc": "上线准备 (支付+安全+上架)", "startDate": "2026-05-12", "originalTarget": "2026-05-25", "targetEnd": "待定", "currentDay": 15, "delayReason": "Prisma schema不同步导致构建失败" }
+    "Phase 6": { "status": "in-progress", "desc": "上线准备 (支付+安全+上架)", "startDate": "2026-05-12", "originalTarget": "2026-05-25", "targetEnd": "待定", "currentDay": 17, "delayReason": "Prisma schema未同步导致构建失败, 缺失依赖winston/@types/qrcode" }
   },
   "today": {
     "date": "2026-05-27",
-    "summary": "Phase 6 Day 17 — 后端~60 TS错误(Prisma未导入)，前端需legacy provider构建成功，API 2处不匹配。"
+    "summary": "Phase 6 Day 17 — 后端~113 TS错误(Prisma schema未同步+缺失依赖)"
   },
   "lastNight": {
-    "timestamp": "2026-05-26T23:00:00+08:00",
+    "timestamp": "2026-05-27T23:00:00+08:00",
     "checks": ["晚间复盘"],
     "results": {
       "retroCompleted": true,
-      "stateFile": "D5B81C43-2026-05-26.md"
+      "stateFile": "D5B81C43-2026-05-27.md"
     }
   },
   "buildStatus": {
-    "lastCheck": "2026-05-27T07:05:00+08:00",
+    "lastCheck": "2026-05-27T23:00:00+08:00",
     "backend": "failed",
-    "errors": "~60 TS errors",
-    "rootCause": "Prisma client 未导入/生成",
-    "details": "Cannot find name 'prisma' in 11 files",
-    "affected": ["memberships.ts", "payments.ts", "share.ts", "reports.ts"],
+    "errors": "~113 TS errors",
+    "rootCause": "Prisma schema未同步 + 缺失依赖",
+    "details": "winston未安装, @types/qrcode缺失, Prisma缺失InvitationMethod/enum, DualTest缺expiresAt/acceptedAt/mbtiType等字段",
+    "affected": ["auth.ts(winston)", "dual-test.ts(qrcode/prisma字段)", "users.ts(mbtiType)"],
     "frontend": "warning-needs-legacy-provider"
   },
   "apiContracts": {
@@ -39,7 +39,7 @@
     "backendPaths": ["/api/v1/tests/sessions", "/api/v1/tests/sessions/:id/next", "/api/v1/tests/sessions/:id/answer"]
   },
   "dependencies": {
-    "server": { "vulnerabilities": 5, "outdated": 15 },
+    "server": { "vulnerabilities": 5, "outdated": 15, "missingDeps": ["winston", "@types/qrcode"] },
     "miniapp": { "vulnerabilities": 83, "critical": 9, "high": 22, "moderate": 30, "low": 3 }
   },
   "codeHealth": {
@@ -53,7 +53,9 @@
       "index.ts 12个路由未挂载",
       "会员升级接口无支付验证",
       "测试提交答案缺少会话所有权验证",
-      "app.config.ts subpackage路径不匹配"
+      "app.config.ts subpackage路径不匹配",
+      "Prisma schema缺失字段(见buildStatus)",
+      "缺失依赖winston/@types/qrcode"
     ],
     "p1Issues": [
       "聊天服务无WebSocket认证",
@@ -74,12 +76,15 @@
     },
     "week3": {
       "range": "5/26-6/1",
-      "focus": "修复构建 + 上架"
+      "focus": "修复构建 + 上架",
+      "day1": "确认构建失败，113 TS错误",
+      "day2": "待处理"
     }
   },
-  "notes": "Day 16 晚间复盘: 构建失败，需要同步 Prisma schema。优先处理: 1) 补字段到schema, 2) 修复路由挂载, 3) 处理TS错误, 4) 修复miniapp漏洞",
+  "notes": "Day 17 晚间复盘: 构建失败，需要: 1) 安装winston/@types/qrcode, 2) 同步Prisma schema(添加字段+enum), 3) 运行prisma generate, 4) 修复路由挂载, 5) 处理TS错误",
   "retrospectives": [
     { "date": "2026-05-25", "issue": "原定上线日", "outcome": "未上线" },
-    { "date": "2026-05-26", "issue": "构建失败", "outcome": "延期中" }
+    { "date": "2026-05-26", "issue": "构建失败", "outcome": "延期中" },
+    { "date": "2026-05-27", "issue": "构建仍失败(错误增加)", "outcome": "延期第3天" }
   ]
 }
